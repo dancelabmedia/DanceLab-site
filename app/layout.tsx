@@ -20,7 +20,7 @@ const dmSans = DM_Sans({
 
 export const metadata: Metadata = {
   title: 'Dance Lab — Le média qui fait découvrir, comprendre et vivre la danse',
-  description:
+  description: 
     'Dance Lab est le média de référence pour découvrir, comprendre et vivre la danse. Podcast, articles, agenda culturel, ressources professionnelles.',
   openGraph: {
     title: 'Dance Lab',
@@ -35,7 +35,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="fr" 
       className={`${playfair.variable} ${dmSans.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        {children}
+      </body>
     </html>
   )
 }

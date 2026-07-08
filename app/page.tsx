@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import SiteLayout from '../components/SiteLayout'
 
 /* =====================================================
    SVG ICONS (réutilisables)
@@ -187,7 +188,8 @@ export default function DanceLabPage() {
 
   /* ── Rendu ────────────────────────────────────────── */
   return (
-    <>
+    <SiteLayout>
+      <>
       {/* ========================================
           SEARCH OVERLAY
       ======================================== */}
@@ -375,7 +377,7 @@ export default function DanceLabPage() {
 
           <div className="hero-btns">
             <a 
-              href="https://feed.ausha.co/yvVqGgCrEkqK"
+              href="https://smartlink.ausha.co/dance-lab"
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-primary"
@@ -850,6 +852,8 @@ export default function DanceLabPage() {
           </div>
         </div>
       </footer>
-    </>
+
+      </>
+    </SiteLayout>
   )
 }
