@@ -147,7 +147,15 @@ export default function DanceLabPage() {
   /* Fade-up animation via IntersectionObserver */
   useEffect(() => {
     const obs = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('vis') }),
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add('vis')
+          } else {
+            e.target.classList.remove('vis')
+          }
+        })
+      },
       { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
     )
     document.querySelectorAll('.fu').forEach((el) => obs.observe(el))
@@ -333,12 +341,13 @@ export default function DanceLabPage() {
         <div className="container">
           <div className="ep-grid">
             {/* Image */}
-            <div className="ep-img-wrap fu">
+            <div className="ep-img-wrap fu episode-image-reveal">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={latestEpisode.image}
                 alt={`${latestEpisode.guest}, invité(e) de l'épisode ${latestEpisode.number}`}
                 loading="lazy"
+                className="latest-episode-img"
               />
               <div className="ep-badge">
                 <span className="lbl">Ép.</span>

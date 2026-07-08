@@ -195,12 +195,30 @@ button {
 .tag-outline { border: 1px solid var(--color-secondary); color: var(--color-text-muted); }
 
 /* Fade-up animation */
-.fu  { opacity: 0; transform: translateY(28px); transition: opacity .7s ease, transform .7s ease; }
-.fu.vis { opacity: 1; transform: none; }
+.fu {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .8s ease, transform .8s cubic-bezier(.22,1,.36,1);
+  will-change: opacity, transform;
+}
+
+.fu.vis {
+  opacity: 1;
+  transform: none;
+}
+
 .d1 { transition-delay: .10s; }
 .d2 { transition-delay: .20s; }
 .d3 { transition-delay: .30s; }
 .d4 { transition-delay: .40s; }
+
+.latest-episode-img {
+  transition: transform .8s ease;
+}
+
+.latest-episode-img:hover {
+  transform: scale(1.02);
+}
 
 /* ===========================
    HEADER / NAV
@@ -516,6 +534,7 @@ button {
   top: -22px;
   right: -22px;
   left: auto;
+  z-index: 2;
   width: 84px;
   height: 84px;
   border-radius: 50%;
@@ -525,7 +544,7 @@ button {
   align-items: center;
   justify-content: center;
   color: #fff;
-  box-shadow: 0 8px 28px rgba(255,69,0,.45);
+  box-shadow: 0 8px 28px rgba(35,48,51,.45);
 }
 .ep-badge .lbl { font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
 .ep-badge .num { font-family: var(--font-display); font-size: 26px; font-weight: 700; line-height: 1; }
@@ -1104,6 +1123,10 @@ button {
 
 }
 
-.latest-episode-img {
-  object-position: center 20%;
+.episode-image-reveal img {
+  transition: transform .8s ease;
+}
+
+.episode-image-reveal:hover img {
+  transform: scale(1.02);
 }
