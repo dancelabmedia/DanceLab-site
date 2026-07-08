@@ -130,6 +130,7 @@ const TICKER_ITEMS = ['Podcast', 'Articles', 'Agenda culturel', "Portraits d'art
 export default function DanceLabPage() {
   const [searchOpen, setSearchOpen]   = useState(false)
   const [mobileOpen, setMobileOpen]   = useState(false)
+  const [mobileSubOpen, setMobileSubOpen] = useState<string | null>(null)
   const [scrolled, setScrolled]       = useState(false)
   const [playing, setPlaying]         = useState<Record<string, boolean>>({})
   const [progress, setProgress]       = useState(33)
@@ -221,14 +222,47 @@ export default function DanceLabPage() {
       <nav className={`mobile-nav${mobileOpen ? ' open' : ''}`}>
         <button className="mobile-nav-close" onClick={() => setMobileOpen(false)}>✕</button>
         {[
-          { label: 'Découvrir',  href: '#' },
-          { label: 'Écouter',    href: '#ecouter' },
-          { label: 'Sortir',     href: '#agenda' },
-          { label: 'Explorer',   href: '#explorer' },
-          { label: 'Ressources', href: '#ressources' },
-          { label: 'À propos',   href: '#' },
-        ].map(({ label, href }) => (
-          <a key={label} href={href} onClick={() => setMobileOpen(false)}>{label}</a>
+          {
+            label: 'Découvrir',
+            items: ['Articles culture', 'Histoire des styles', 'Décryptages', 'Tendances', 'Artistes à suivre'],
+          },
+          {
+            label: 'Écouter',
+            items: ['Derniers épisodes', 'Incontournables', 'Interviews', 'Playlists thématiques'],
+          },
+          {
+            label: 'Sortir',
+            items: ['Spectacles', 'Festivals', 'Événements gratuits'],
+          },
+          {
+            label: 'Explorer',
+            items: ['Styles de danse', 'Chorégraphes', 'Compagnies', 'Métiers de la danse'],
+          },
+          {
+            label: 'Ressources',
+            items: ['Guides pratiques', 'Conseils carrière', 'Partenaires'],
+          },
+          {
+            label: 'À propos',
+            items: [],
+          },
+        ].map(({ label, items }) => (
+          <div key={label} className="mobile-menu-group">
+            <button
+              type="button"
+              className="mobile-menu-title"
+              onClick={() => setMobileSubOpen(mobileSubOpen === label ? null : label)}
+            >
+              {label}
+            </button>
+            {mobileSubOpen === label && items.length > 0 && (
+              <div className="mobile-submenu">
+                {items.map((item) => (
+                  <a key={item} href="#" onClick={() => setMobileOpen(false)}>{item}</a>
+                ))}
+              </div>
+            )}
+          </div>
         ))}
       </nav>
 
