@@ -505,7 +505,12 @@ button {
 =========================== */
 .ep-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
 .ep-img-wrap { position: relative; }
-.ep-img-wrap img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 6px; }
+.ep-img-wrap img {
+  width: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  border-radius: 6px;
+}
 .ep-badge {
   position: absolute;
   top: -22px; left: -22px;
@@ -1096,3 +1101,6 @@ button {
 
 }
 
+.latest-episode-img {
+  object-position: center 20%;
+}
