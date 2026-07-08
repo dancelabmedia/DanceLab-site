@@ -307,6 +307,7 @@ export default function DanceLabPage() {
               Découvrir l&apos;univers Dance Lab <IconArrow />
             </a>
           </div>
+        </div>
 
         <div className="hero-scroll" aria-hidden="true">
           <span>Scroll</span>
@@ -355,25 +356,6 @@ export default function DanceLabPage() {
               <h2 className="ep-title">{latestEpisode.title}</h2>
               <p className="ep-guest">Avec <strong>{latestEpisode.guest}</strong></p>
               <p className="ep-desc">{latestEpisode.description}</p>
-
-              {/* Player */}
-              <div className="player">
-                <div className="player-top">
-                  <button className="play-btn" onClick={() => togglePlay('main')} aria-label="Lire l'épisode">
-                    {playing['main'] ? <IconPause /> : <IconPlay />}
-                  </button>
-                  <div className="player-info">
-                    <div className="player-title">Dance Lab #{latestEpisode.number} — {latestEpisode.guest}</div>
-                    <div className="player-sub">Dance Lab Podcast</div>
-                  </div>
-                  <div className="player-time">
-                    {latestEpisode.duration}
-                  </div>
-                </div>
-                <div className="progress" onClick={seekProgress}>
-                  <div className="progress-fill" style={{ width: `${progress}%` }} />
-                </div>
-              </div>
 
               {/* Plateformes */}
               <div className="platforms">
