@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import SiteLayout from '../components/SiteLayout'
 
 /* =====================================================
    SVG ICONS (réutilisables)
@@ -188,7 +187,6 @@ export default function DanceLabPage() {
 
   /* ── Rendu ────────────────────────────────────────── */
   return (
-    <SiteLayout>
       <>
       {/* ========================================
           SEARCH OVERLAY
@@ -294,9 +292,9 @@ export default function DanceLabPage() {
             </li>
 
             <li className="nav-dropdown">
-              <a href="#ecouter">Écouter</a>
+              <a href="/ecouter">Écouter</a>
               <div className="dropdown-menu">
-                <a href="#">Derniers épisodes</a>
+                <a href="/ecouter#episodes">Derniers épisodes</a>
                 <a href="#">Incontournables</a>
                 <a href="#">Interviews</a>
                 <a href="#">Playlists thématiques</a>
@@ -854,6 +852,5 @@ export default function DanceLabPage() {
       </footer>
 
       </>
-    </SiteLayout>
   )
 }

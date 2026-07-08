@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Playfair_Display, DM_Sans } from 'next/font/google'
 import './globals.css'
+import SiteLayout from '../components/SiteLayout'
 
 
 const playfair = Playfair_Display({
@@ -18,10 +19,11 @@ const dmSans = DM_Sans({
   display: 'swap',
 })
 
+
 export const metadata: Metadata = {
   title: 'Dance Lab — Le média qui fait découvrir, comprendre et vivre la danse',
-  description: 
-    'Dance Lab est le média de référence pour découvrir, comprendre et vivre la danse. Podcast, articles, agenda culturel, ressources professionnelles.',
+  description:
+    'Dance Lab est le média de référence pour découvrir, comprendre et vivre la danse.',
   openGraph: {
     title: 'Dance Lab',
     description: 'Le média qui fait découvrir, comprendre et vivre la danse.',
@@ -29,14 +31,14 @@ export const metadata: Metadata = {
   },
 }
 
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html 
-      lang="fr" 
-      className={`${playfair.variable} ${dmSans.variable}`}
-    >
+    <html lang="fr">
       <body>
-        {children}
+        <SiteLayout>
+          {children}
+        </SiteLayout>
       </body>
     </html>
   )
