@@ -8,7 +8,7 @@ export default function AProposPage() {
       <section className="about-hero">
         <div className="container about-hero-grid">
 
-          <div className="about-hero-image fu d1">
+          <div className="about-hero-image">
             <img
               src="/images/maiwenn-about.jpg"
               alt="Maïwenn Bramoullé, fondatrice de Dance Lab"
@@ -21,21 +21,26 @@ export default function AProposPage() {
 
       {/* INTRODUCTION */}
       <section className="section">
-        <div className="container about-text fu">
-
+        <div className="container about-text">
+          <h1>À propos de Dance Lab</h1>
+          <h2>Maïwenn Bramoullé</h2>
+          <h3>Fondatrice de Dance Lab</h3>
+          <p>
+            Danseuse, chorégraphe, productrice et créatrice de contenus, j’ai créé
+            Dance Lab avec une conviction simple :
+            <strong> la danse mérite d’être racontée autrement.</strong>
+          </p>
           <p>
             Derrière chaque artiste, chaque parcours et chaque carrière,
             il existe une histoire. Des rencontres, des doutes, des choix,
             des sacrifices, des apprentissages, des réussites, mais aussi
             des réalités souvent invisibles.
           </p>
-
           <p>
             À travers Dance Lab, je pars à la rencontre de celles et ceux
             qui font vivre la danse pour mettre en lumière leurs expériences,
             leurs visions et leurs histoires.
           </p>
-
           <p>
             Le projet est né d’une envie : créer un espace où la danse ne se
             limite pas à ce que l’on voit sur scène, mais où l’on comprend aussi
@@ -44,10 +49,8 @@ export default function AProposPage() {
             milieu, les idées reçues, mais aussi la richesse, la créativité et la
             passion qui animent cet univers.
           </p>
-
         </div>
       </section>
-
 
       {/* MEDIA */}
       <section className="section about-soft">
@@ -164,7 +167,7 @@ export default function AProposPage() {
       {/* CREATION */}
       <section className="section about-soft">
 
-        <div className="container about-text fu">
+        <div className="container about-text">
 
           <h2>
             De l’interprétation à la création
@@ -201,7 +204,7 @@ export default function AProposPage() {
       {/* ENTREPRENEURIAT */}
       <section className="section">
 
-        <div className="container about-text fu">
+        <div className="container about-text">
 
           <h2>
             Créer des espaces pour raconter et transmettre
@@ -234,7 +237,7 @@ export default function AProposPage() {
       {/* MISSION */}
       <section className="about-mission">
 
-        <div className="container about-text fu">
+        <div className="container about-text">
 
           <h2>
             La mission de Dance Lab
