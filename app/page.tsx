@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { episodes } from "../data/episodes"
 
 /* =====================================================
    SVG ICONS (réutilisables)
@@ -87,10 +88,10 @@ const FEATURED_EPISODES = [
 ]
 
 const GUESTS = [
-  { seed: 'guest_sofia', name: 'Sofia Amaral', role: 'Chorégraphe · Cie Éclat', ep: '#87', quote: "La danse m'a appris à habiter mon corps et à raconter des histoires sans mots.", delay: '' },
-  { seed: 'guest_julien', name: 'Julien Moreau', role: 'Danseur · Chorégraphe indépendant', ep: '#72', quote: "Être indépendant, c'est choisir sa liberté chaque matin en la réinventant.", delay: 'd1' },
-  { seed: 'guest_amara', name: 'Amara Diallo', role: "B-boy · Fondateur d'Urban Roots", ep: '#79', quote: "Le hip-hop est une philosophie. La danse n'en est que l'expression la plus visible.", delay: 'd2' },
-  { seed: 'guest_lea', name: 'Léa Fontaine', role: 'Pédagogue · Directrice artistique', ep: '#83', quote: "Enseigner la danse, c'est transmettre une façon d'être au monde.", delay: 'd3' },
+  { seed: 'guest_sofia', name: 'Sofia Amaral', role: 'Chorégraphe · Cie Éclat', ep: '118', quote: "La danse m'a appris à habiter mon corps et à raconter des histoires sans mots.", delay: '' },
+  { seed: 'guest_julien', name: 'Julien Moreau', role: 'Danseur · Chorégraphe indépendant', ep: '72', quote: "Être indépendant, c'est choisir sa liberté chaque matin en la réinventant.", delay: 'd1' },
+  { seed: 'guest_amara', name: 'Amara Diallo', role: "B-boy · Fondateur d'Urban Roots", ep: '79', quote: "Le hip-hop est une philosophie. La danse n'en est que l'expression la plus visible.", delay: 'd2' },
+  { seed: 'guest_lea', name: 'Léa Fontaine', role: 'Pédagogue · Directrice artistique', ep: '83', quote: "Enseigner la danse, c'est transmettre une façon d'être au monde.", delay: 'd3' },
 ]
 
 const TEXT_ARTICLES = [
@@ -186,6 +187,7 @@ export default function DanceLabPage() {
   }
 
   /* ── Rendu ────────────────────────────────────────── */
+  const latestEpisode = episodes[0]
   return (
       <>
       {/* ========================================
@@ -293,7 +295,7 @@ export default function DanceLabPage() {
 
           <div className="hero-btns">
             <a 
-              href="https://smartlink.ausha.co/dance-lab"
+              href={latestEpisode.link}
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-primary"
@@ -372,13 +374,13 @@ export default function DanceLabPage() {
             <div className="ep-img-wrap fu">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="https://picsum.photos/seed/dancelab_ep87/800/600"
-                alt="Yasmine Habib, invitée de l'épisode 118"
+                src={latestEpisode.image}
+                alt={`${latestEpisode.guest}, invité(e) de l'épisode ${latestEpisode.number}`}
                 loading="lazy"
               />
               <div className="ep-badge">
                 <span className="lbl">Ép.</span>
-                <span className="num">87</span>
+                <span className="num">{latestEpisode.number}</span>
               </div>
             </div>
 
@@ -387,16 +389,11 @@ export default function DanceLabPage() {
               <span className="section-label">Dernier épisode</span>
               <div className="ep-meta">
                 <span className="tag tag-accent">Nouveau</span>
-                <span className="ep-dur"><IconClock /> 58 min</span>
+                <span className="ep-dur"><IconClock /> {latestEpisode.duration}</span>
               </div>
-              <h2 className="ep-title">
-                Ce que le milieu de la danse ne montre pas : hypocrisie, critiques et toxicité
-              </h2>
-              <p className="ep-guest">Avec <strong>Yasmine Habib</strong></p>
-              <p className="ep-desc">
-                Une conversation sans filtre autour du heels, de la transmission, des valeurs,
-                de l&apos;hypocrisie dans le milieu de la danse, des contrats et des droits des artistes.
-              </p>
+              <h2 className="ep-title">{latestEpisode.title}</h2>
+              <p className="ep-guest">Avec <strong>{latestEpisode.guest}</strong></p>
+              <p className="ep-desc">{latestEpisode.description}</p>
 
               {/* Player */}
               <div className="player">
@@ -405,10 +402,12 @@ export default function DanceLabPage() {
                     {playing['main'] ? <IconPause /> : <IconPlay />}
                   </button>
                   <div className="player-info">
-                    <div className="player-title">Dance Lab #118 — Yasmine Habib</div>
+                    <div className="player-title">Dance Lab #{latestEpisode.number} — {latestEpisode.guest}</div>
                     <div className="player-sub">Dance Lab Podcast</div>
                   </div>
-                  <div className="player-time">20:24 / 58:07</div>
+                  <div className="player-time">
+                    {latestEpisode.duration}
+                  </div>
                 </div>
                 <div className="progress" onClick={seekProgress}>
                   <div className="progress-fill" style={{ width: `${progress}%` }} />
@@ -420,7 +419,7 @@ export default function DanceLabPage() {
                 <span className="platform-lbl">Disponible sur :</span>
 
                 <a
-                  href="https://open.spotify.com/episode/2VLDcDqB2rMrIJWIGWuz0U"
+                  href={latestEpisode.spotify}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="plt"
@@ -429,7 +428,7 @@ export default function DanceLabPage() {
                 </a>
 
                 <a
-                  href="https://podcasts.apple.com/us/podcast/118-ce-que-le-milieu-de-la-danse-ne-montre-pas/id1743269399?i=1000775727039"
+                  href={latestEpisode.apple}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="plt"
@@ -438,7 +437,7 @@ export default function DanceLabPage() {
                 </a>
 
                 <a
-                  href="https://youtu.be/l24JCicz3aw?si=FwPgv9BxgYfBpe2R"
+                  href={latestEpisode.youtube}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="plt"
@@ -447,7 +446,7 @@ export default function DanceLabPage() {
                 </a>
 
                 <a
-                  href="https://link.deezer.com/s/33M1VkjTdFjPxcgeJIIHU"
+                  href={latestEpisode.deezer}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="plt"
@@ -523,7 +522,7 @@ export default function DanceLabPage() {
                 </div>
                 <h3 className="guest-name">{name}</h3>
                 <p className="guest-role">{role}</p>
-                <span className="guest-ep">→ Épisode {ep}</span>
+                <span className="guest-ep">→ Ep. {ep}</span>
               </div>
             ))}
           </div>
