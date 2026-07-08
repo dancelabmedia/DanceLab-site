@@ -2,7 +2,7 @@ import { episodes } from "../../data/episodes"
 
 export default function EcouterPage() {
   return (
-    <main className="episodes-page">
+    <main id="episodes" className="episodes-page">
 
       <section className="episodes-header">
         <div className="container">

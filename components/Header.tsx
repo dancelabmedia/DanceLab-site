@@ -63,7 +63,7 @@ export default function Header() {
             <a href="/ecouter">Écouter</a>
 
             <div className="dropdown-menu">
-              <a href="/ecouter/derniers-episodes">Derniers épisodes</a>
+              <a href="/ecouter">Derniers épisodes</a>
               <a href="#">Incontournables</a>
               <a href="#">Interviews</a>
               <a href="#">Playlists thématiques</a>
