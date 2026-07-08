@@ -359,7 +359,6 @@ export default function DanceLabPage() {
 
               {/* Plateformes */}
               <div className="platforms">
-                <span className="platform-lbl">Disponible sur :</span>
 
                 <a
                   href={latestEpisode.spotify}
@@ -367,7 +366,7 @@ export default function DanceLabPage() {
                   rel="noopener noreferrer"
                   className="plt"
                 >
-                  🎵 Spotify
+                  <img src="/icons/spotify.svg" alt="Spotify" />
                 </a>
 
                 <a
@@ -376,7 +375,7 @@ export default function DanceLabPage() {
                   rel="noopener noreferrer"
                   className="plt"
                 >
-                  🎙 Apple Podcasts
+                  <img src="/icons/apple-podcasts.svg" alt="Apple Podcasts" />
                 </a>
 
                 <a
@@ -385,7 +384,7 @@ export default function DanceLabPage() {
                   rel="noopener noreferrer"
                   className="plt"
                 >
-                  ▶️ YouTube
+                  <img src="/icons/youtube.svg" alt="YouTube" />
                 </a>
 
                 <a
@@ -394,7 +393,7 @@ export default function DanceLabPage() {
                   rel="noopener noreferrer"
                   className="plt"
                 >
-                  🎧 Deezer
+                  <img src="/icons/deezer.svg" alt="Deezer" />
                 </a>
               </div>
             </div>

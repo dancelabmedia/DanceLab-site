@@ -554,13 +554,8 @@ button {
 .platforms {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 18px;
   flex-wrap: nowrap;
-}
-
-.platform-lbl {
-  font-size: 13px;
-  color: var(--color-text-muted);
 }
 
 .plt {
@@ -569,13 +564,41 @@ button {
   justify-content: center;
   padding: 0;
   border: none;
-  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
 }
 
 .plt img {
-  width: 18px;
-  height: 18px;
+  width: 38px;
+  height: 38px;
   object-fit: contain;
+}
+
+.plt img[src*="spotify"] {
+  width: 88px;
+  height: 88px;
+}
+
+.plt img[src*="youtube"] {
+  width: 100px;
+  height: 100px;
+}
+
+@media (max-width: 640px) {
+  .platforms {
+    gap: 12px;
+  }
+
+  .plt img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .plt img[src*="spotify"],
+  .plt img[src*="youtube"] {
+    width: 80px;
+    height: 80px;
+  }
 }
 
 /* ===========================
