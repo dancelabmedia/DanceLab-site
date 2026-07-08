@@ -373,7 +373,7 @@ export default function DanceLabPage() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="https://picsum.photos/seed/dancelab_ep87/800/600"
-                alt="Sofia Amaral, invitée de l'épisode 87"
+                alt="Yasmine Habib, invitée de l'épisode 118"
                 loading="lazy"
               />
               <div className="ep-badge">
@@ -390,13 +390,12 @@ export default function DanceLabPage() {
                 <span className="ep-dur"><IconClock /> 58 min</span>
               </div>
               <h2 className="ep-title">
-                La danse comme langage universel : parcours d&apos;une chorégraphe entre deux cultures
+                Ce que le milieu de la danse ne montre pas : hypocrisie, critiques et toxicité
               </h2>
-              <p className="ep-guest">Avec <strong>Sofia Amaral</strong> — Chorégraphe, Compagnie Éclat</p>
+              <p className="ep-guest">Avec <strong>Yasmine Habib</strong></p>
               <p className="ep-desc">
-                Sofia Amaral revient sur son parcours entre le Portugal et la France, sa vision de la
-                création contemporaine, les défis de monter sa propre compagnie et comment transformer
-                le doute en force créatrice.
+                Une conversation sans filtre autour du heels, de la transmission, des valeurs,
+                de l&apos;hypocrisie dans le milieu de la danse, des contrats et des droits des artistes.
               </p>
 
               {/* Player */}
@@ -406,7 +405,7 @@ export default function DanceLabPage() {
                     {playing['main'] ? <IconPause /> : <IconPlay />}
                   </button>
                   <div className="player-info">
-                    <div className="player-title">Dance Lab #87 — Sofia Amaral</div>
+                    <div className="player-title">Dance Lab #118 — Yasmine Habib</div>
                     <div className="player-sub">Dance Lab Podcast</div>
                   </div>
                   <div className="player-time">20:24 / 58:07</div>
@@ -419,10 +418,42 @@ export default function DanceLabPage() {
               {/* Plateformes */}
               <div className="platforms">
                 <span className="platform-lbl">Disponible sur :</span>
-                <a href="#" className="plt">🎵 Spotify</a>
-                <a href="#" className="plt">🎙 Apple Podcasts</a>
-                <a href="#" className="plt">▶️ YouTube</a>
-                <a href="#" className="plt">🎧 Deezer</a>
+
+                <a
+                  href="https://open.spotify.com/episode/2VLDcDqB2rMrIJWIGWuz0U"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="plt"
+                >
+                  🎵 Spotify
+                </a>
+
+                <a
+                  href="https://podcasts.apple.com/us/podcast/118-ce-que-le-milieu-de-la-danse-ne-montre-pas/id1743269399?i=1000775727039"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="plt"
+                >
+                  🎙 Apple Podcasts
+                </a>
+
+                <a
+                  href="https://youtu.be/l24JCicz3aw?si=FwPgv9BxgYfBpe2R"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="plt"
+                >
+                  ▶️ YouTube
+                </a>
+
+                <a
+                  href="https://link.deezer.com/s/33M1VkjTdFjPxcgeJIIHU"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="plt"
+                >
+                  🎧 Deezer
+                </a>
               </div>
             </div>
           </div>
