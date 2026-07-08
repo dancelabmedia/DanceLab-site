@@ -9,7 +9,7 @@ export default function SiteLayout({
 }) {
   return (
     <>
-      <div>TEST HEADER</div>
+      <Header />
       {children}
     </>
   )
