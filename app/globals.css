@@ -513,8 +513,11 @@ button {
 }
 .ep-badge {
   position: absolute;
-  top: -22px; left: -22px;
-  width: 84px; height: 84px;
+  top: -22px;
+  right: -22px;
+  left: auto;
+  width: 84px;
+  height: 84px;
   border-radius: 50%;
   background: var(--color-primary-light);
   display: flex;
