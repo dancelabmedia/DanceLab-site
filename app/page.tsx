@@ -308,45 +308,6 @@ export default function DanceLabPage() {
             </a>
           </div>
 
-          <div className="hero-platforms">
-            <span>Disponible sur</span>
-
-            <div className="platform-links">
-              <a 
-                href="https://open.spotify.com/show/1E4QoAHY6I5LyNVxBYOIJ4?si=a3083832359847e5"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Spotify
-              </a>
-
-              <a 
-                href="https://podcasts.apple.com/fr/podcast/dance-lab/id1743269399"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Apple Podcasts
-              </a>
-
-              <a 
-                href="https://link.deezer.com/s/33LngLuGSjs26gQNmuuxn"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Deezer
-              </a>
-
-              <a 
-                href="https://www.youtube.com/@maiwennbramoulle"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                YouTube
-              </a>
-            </div>
-          </div>
-        </div>
-
         <div className="hero-scroll" aria-hidden="true">
           <span>Scroll</span>
           <div className="scroll-line" />
