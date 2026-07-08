@@ -13,6 +13,6 @@
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
-    "typescript": "7.0.2"
+    "typescript": "^5.9.2"
   }
 }
