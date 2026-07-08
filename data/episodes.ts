@@ -4,6 +4,11 @@ export const episodes = [
     title: "Ce que le milieu de la danse ne montre pas : hypocrisie, critiques et toxicité",
     guest: "Yasmine Habib",
     image: "/episodes/yasminehabib118.png",
+    duration: "1 h",
+    spotify: "https://open.spotify.com/episode/2VLDcDqB2rMrIJWIGWuz0U",
+    apple: "https://podcasts.apple.com/us/podcast/118-ce-que-le-milieu-de-la-danse-ne-montre-pas/id1743269399?i=1000775727039",
+    youtube: "https://youtu.be/l24JCicz3aw?si=FwPgv9BxgYfBpe2R",
+    deezer: "https://link.deezer.com/s/33M1VkjTdFjPxcgeJIIHU",
     link: "https://smartlink.ausha.co/dance-lab/118-avec-yasmine-habib",
     description:
       "Une conversation sans filtre autour du heels, de la transmission, des valeurs, de l'hypocrisie dans le milieu de la danse, des contrats et des droits des artistes."
@@ -13,6 +18,7 @@ export const episodes = [
     title: "Ce qu'on sacrifie pour vivre de la danse : ambition, longévité et raconter sa propre histoire",
     guest: "Tatiana Seguin",
     image: "/episodes/tatianaseguin117.png",
+    duration: "1 h",
     link: "https://smartlink.ausha.co/dance-lab/117-ce-qu-on-sacrifie-pour-vivre-de-la-danse-ambition-longevite-et-raconter-sa-propre-histoire-avec-tatiana-seguin",
     description:
       "Une discussion autour de l'ambition, de la scène, de la transmission, de la maternité et de la construction d'une carrière artistique."
@@ -22,6 +28,7 @@ export const episodes = [
     title: "Devenir danseur : ce que ça implique vraiment (sans tabou)",
     guest: "Julien Ramade",
     image: "/episodes/julienramade116.png",
+    duration: "1 h",
     link: "https://smartlink.ausha.co/dance-lab/116-avec-julien-ramade-2",
     description:
       "Un échange sur les blessures, la précarité, les contrats, la pédagogie et la réalité du métier de danseur."
@@ -31,6 +38,7 @@ export const episodes = [
     title: "Ma kiné m’a expliqué pourquoi les danseurs.ses se blessent autant",
     guest: "Laura Malié-Leclerc",
     image: "/episodes/lauramalieleclerc115.png",
+    duration: "1 h",
     link: "https://smartlink.ausha.co/dance-lab/115-avec-laura-malie-leclerc",
     description:
       "Prévention, échauffement, blessures et importance de considérer le danseur comme un véritable athlète."
@@ -40,6 +48,7 @@ export const episodes = [
     title: "Être danseur.se ne suffit plus : les compétences qui font vraiment la différence",
     guest: "Rose Otentick",
     image: "/episodes/roseotentick114.png",
+    duration: "1 h",
     link: "https://smartlink.ausha.co/dance-lab/114-avec-laura-malie-leclerc",
     description:
       "Une réflexion sur les castings, les valeurs, les agents et la construction d'une carrière durable."
@@ -49,6 +58,7 @@ export const episodes = [
     title: "S’il n’y a plus le mot danse, qu’est-ce que je suis : Krump, JJB et transmission",
     guest: "Grichka Rootz",
     image: "/episodes/grichkarootz113.png",
+    duration: "1 h",
     link: "https://smartlink.ausha.co/dance-lab/113-avec-grichka-rootz-2",
     description:
       "Un épisode autour du krump, de l'identité, de la transmission et du dépassement de soi."
@@ -58,6 +68,7 @@ export const episodes = [
     title: "La légitimité artistique : faut-il vraiment attendre qu’on nous la donne",
     guest: "Lÿdie La PëstE",
     image: "/episodes/lydielapeste112.png",
+    duration: "1 h",
     link: "https://smartlink.ausha.co/dance-lab/112",
     description:
       "Une conversation sur la création, la peur, la légitimité et le fait d'oser explorer de nouvelles voies."
@@ -67,6 +78,7 @@ export const episodes = [
     title: "Penser l’artiste au-delà de la danse : légitimité, bienveillance et santé mentale",
     guest: "Johan Nus",
     image: "/episodes/johannus111.png",
+    duration: "1 h",
     link: "https://smartlink.ausha.co/dance-lab/111-avec-johan-nus",
     description:
       "Un épisode sur la responsabilité artistique, les environnements de travail et l'humain derrière l'artiste."
@@ -76,6 +88,7 @@ export const episodes = [
     title: "Comment durer dans les métiers créatifs : Tour du monde, dépression, résilience",
     guest: "Frédéric Fontan",
     image: "/episodes/fredericfontan110.png",
+    duration: "1 h",
     link: "https://smartlink.ausha.co/dance-lab/110-avec-frederic-fontan",
     description:
       "Un témoignage sur la création, la résilience, la santé mentale et la longévité dans les métiers artistiques."
