@@ -89,7 +89,7 @@ const FEATURED_EPISODES = [
 ]
 
 const GUESTS = [
-  { image: 'yasminehabib118.png', slug: '118-yasmine-habib', name: 'Yasmine Habib', role: 'Danseuse · Heels · Créatrice', ep: '118', quote: "Une conversation sans filtre autour du heels, de la transmission et des droits des artistes.", delay: '' },
+  { image: 'yasminehabib118.png', slug: '118-yasmine-habib', name: 'Yasmine Habib', role: 'Danseuse · Chorégraphe · Professeure de danse', ep: '118', quote: "J’ai pas fait l’hypocrite pour arriver là où j’en suis.", delay: '' },
   { image: 'tatianaseguin117.png', slug: '117-tatiana-seguin', name: 'Tatiana Seguin', role: 'Chorégraphe · Cie Tatiana Seguin', ep: '117', quote: "Avant de faire un choix carriériste, je fais un choix humain", delay: 'd1' },
   { image: 'julienramade116.png', slug: '116-julien-ramade', name: 'Julien Ramade', role: 'Danseur · Chorégraphe', ep: '116', quote: "Il ne faut pas sous-estimer la force d’une formation.", delay: 'd2' },
   { image: 'lauramalieleclerc115.png', slug: '115-laura-malie-leclerc', name: 'Laura Malié-Leclerc', role: "Kinésithérapeute du sport spécialisée dans la danse", ep: '115', quote: "La douleur c’est le premier signal du corps pour te dire qu’il y a quelque chose qui ne va pas.", delay: 'd3' },

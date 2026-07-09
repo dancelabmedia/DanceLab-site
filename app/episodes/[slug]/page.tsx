@@ -380,35 +380,43 @@ export default async function EpisodePage({ params }: PageProps) {
 
         .episode-kicker,
         .episode-meta {
-          font-size: 0.82rem;
-          font-weight: 800;
+          font-family: var(--font-body);
+          font-size: 0.74rem;
+          font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0;
+          line-height: 1.2;
         }
 
         .episode-hero h1 {
-          max-width: 940px;
-          margin: 14px 0;
-          font-size: clamp(2.6rem, 7vw, 6.6rem);
-          line-height: 0.95;
+          max-width: 980px;
+          margin: 18px 0;
+          font-family: var(--font-display);
+          font-size: 6.8rem;
+          font-weight: 600;
+          line-height: 0.92;
           letter-spacing: 0;
+          text-wrap: balance;
         }
 
         .episode-guest,
         .episode-excerpt {
           max-width: 760px;
-          font-size: clamp(1rem, 2vw, 1.22rem);
-          line-height: 1.55;
+          font-size: 1.18rem;
+          line-height: 1.78;
         }
 
         .episode-hero blockquote {
           max-width: 820px;
-          margin: 26px 0;
-          padding-left: 22px;
+          margin: 34px 0;
+          padding-left: 26px;
           border-left: 3px solid #d8c299;
-          font-size: clamp(1.2rem, 2.5vw, 2rem);
-          line-height: 1.35;
+          font-family: var(--font-display);
+          font-size: 2.4rem;
+          font-weight: 500;
+          line-height: 1.16;
           font-style: italic;
+          text-wrap: balance;
         }
 
         .episode-meta,
@@ -434,20 +442,25 @@ export default async function EpisodePage({ params }: PageProps) {
           margin: 0 auto;
           display: grid;
           grid-template-columns: minmax(0, 1fr) 330px;
-          gap: 48px;
-          padding: 72px 0;
+          gap: 56px;
+          padding: 88px 0;
         }
 
         .episode-main h2,
         .episode-panel h2,
         .episode-similar h2 {
-          margin: 0 0 18px;
-          font-size: 1.25rem;
+          margin: 0 0 22px;
+          font-family: var(--font-display);
+          font-size: 1.85rem;
+          font-weight: 600;
+          line-height: 1.1;
+          letter-spacing: 0;
         }
 
         .episode-main p {
-          font-size: 1.08rem;
-          line-height: 1.75;
+          max-width: 68ch;
+          font-size: 1.1rem;
+          line-height: 1.9;
         }
 
         .episode-player {
@@ -471,13 +484,20 @@ export default async function EpisodePage({ params }: PageProps) {
           display: grid;
           grid-template-columns: 74px minmax(0, 1fr);
           gap: 16px;
-          padding: 16px 0;
+          padding: 18px 0;
           border-top: 1px solid rgba(0, 0, 0, 0.16);
         }
 
         .episode-chapters span {
           color: #755f3e;
-          font-weight: 800;
+          font-size: 0.92rem;
+          font-weight: 700;
+          line-height: 1.4;
+        }
+
+        .episode-chapters strong {
+          font-size: 1.02rem;
+          line-height: 1.45;
         }
 
         .episode-sidebar {
@@ -489,12 +509,14 @@ export default async function EpisodePage({ params }: PageProps) {
         .episode-panel {
           border: 1px solid rgba(0, 0, 0, 0.14);
           border-radius: 8px;
-          padding: 22px;
+          padding: 24px;
           background: white;
         }
 
         .episode-panel-name {
-          font-weight: 800;
+          font-size: 1.04rem;
+          font-weight: 700;
+          line-height: 1.4;
         }
 
         .episode-share,
@@ -508,7 +530,8 @@ export default async function EpisodePage({ params }: PageProps) {
           border-radius: 999px;
           background: #ece6dc;
           padding: 9px 12px;
-          font-size: 0.9rem;
+          font-size: 0.86rem;
+          line-height: 1.2;
         }
 
         .episode-similar {
@@ -538,13 +561,17 @@ export default async function EpisodePage({ params }: PageProps) {
 
         .episode-similar-grid span {
           color: #d8c299;
-          font-size: 0.82rem;
-          font-weight: 800;
+          font-size: 0.74rem;
+          font-weight: 700;
           text-transform: uppercase;
+          letter-spacing: 0;
         }
 
         .episode-similar-grid strong {
-          font-size: 1.15rem;
+          font-family: var(--font-display);
+          font-size: 1.35rem;
+          font-weight: 600;
+          line-height: 1.12;
         }
 
         .episode-similar-grid p {
@@ -560,14 +587,48 @@ export default async function EpisodePage({ params }: PageProps) {
             padding-bottom: 44px;
           }
 
+          .episode-hero h1 {
+            font-size: 4.2rem;
+            line-height: 0.96;
+          }
+
+          .episode-guest,
+          .episode-excerpt {
+            font-size: 1.04rem;
+            line-height: 1.72;
+          }
+
+          .episode-hero blockquote {
+            font-size: 1.9rem;
+            line-height: 1.18;
+          }
+
           .episode-body {
             grid-template-columns: 1fr;
             gap: 28px;
-            padding: 48px 0;
+            padding: 60px 0;
           }
 
           .episode-similar-grid {
             grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 560px) {
+          .episode-hero h1 {
+            font-size: 3rem;
+            line-height: 1;
+          }
+
+          .episode-hero blockquote {
+            font-size: 1.45rem;
+            padding-left: 18px;
+          }
+
+          .episode-main h2,
+          .episode-panel h2,
+          .episode-similar h2 {
+            font-size: 1.45rem;
           }
         }
       `}</style>

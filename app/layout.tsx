@@ -1,13 +1,13 @@
 import type { Metadata } from 'next'
-import { Playfair_Display, DM_Sans } from 'next/font/google'
+import { Cormorant_Garamond, DM_Sans } from 'next/font/google'
 import './globals.css'
 import SiteLayout from '../components/SiteLayout'
 
 
-const playfair = Playfair_Display({
+const displayFont = Cormorant_Garamond({
   subsets: ['latin'],
   variable: '--font-display',
-  weight: ['400', '600', '700'],
+  weight: ['400', '500', '600', '700'],
   style: ['normal', 'italic'],
   display: 'swap',
 })
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr">
-      <body>
+      <body className={`${displayFont.variable} ${dmSans.variable}`}>
         <SiteLayout>
           {children}
         </SiteLayout>
