@@ -6,7 +6,25 @@ export default function AProposPage() {
 
       {/* HERO */}
       <section className="about-hero">
+
         <div className="container about-hero-grid">
+
+          <div className="about-hero-content">
+
+            <span className="section-label">
+              À propos
+            </span>
+
+            <h1>
+              Le média qui raconte la danse autrement.
+            </h1>
+
+            <p>
+              Derrière chaque personne, une histoire.
+            </p>
+
+          </div>
+
 
           <div className="about-hero-image">
             <img
@@ -16,6 +34,7 @@ export default function AProposPage() {
           </div>
 
         </div>
+
       </section>
 
 
@@ -219,8 +238,7 @@ export default function AProposPage() {
           <p>
             Cette démarche s’inscrit dans un écosystème plus large autour de la
             création avec 2.6 Productions, une structure dédiée à la production
-            audiovisuelle et artistique, ainsi qu’avec Twalk Club, un projet mêlant
-            marche, échange et créativité.
+            audiovisuelle et artistique.
           </p>
 
           <p>

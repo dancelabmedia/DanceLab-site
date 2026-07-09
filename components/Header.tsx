@@ -110,7 +110,7 @@ export default function Header() {
 
 
           <li>
-            <a href="#">À propos</a>
+            <a href="/a-propos">À propos</a>
           </li>
 
 

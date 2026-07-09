@@ -1,6 +1,7 @@
 'use client'
 
 import Header from './Header'
+import Footer from './Footer'
 
 export default function SiteLayout({
   children,
@@ -11,6 +12,7 @@ export default function SiteLayout({
     <>
       <Header />
       {children}
+      <Footer />
     </>
   )
 }

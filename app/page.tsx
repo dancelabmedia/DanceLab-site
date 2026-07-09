@@ -197,7 +197,7 @@ export default function DanceLabPage() {
   /* ── Rendu ────────────────────────────────────────── */
   const latestEpisode = episodes[0]
   return (
-      <>
+      <main>
       {/* ========================================
           SEARCH OVERLAY
       ======================================== */}
@@ -238,7 +238,12 @@ export default function DanceLabPage() {
           },
           {
             label: 'Écouter',
-            items: ['Derniers épisodes', 'Incontournables', 'Interviews', 'Playlists thématiques'],
+            items: [
+              { label: 'Derniers épisodes', href: '/ecouter/derniers-episodes' },
+              { label: 'Incontournables', href: '#' },
+              { label: 'Interviews', href: '#' },
+              { label: 'Playlists thématiques', href: '#' },
+            ],
           },
           {
             label: 'Sortir',
@@ -254,22 +259,40 @@ export default function DanceLabPage() {
           },
           {
             label: 'À propos',
+            href: '/a-propos',
             items: [],
           },
-        ].map(({ label, items }) => (
+        ].map(({ label, items, href }) => (
           <div key={label} className="mobile-menu-group">
-            <button
-              type="button"
-              className="mobile-menu-title"
-              onClick={() => setMobileSubOpen(mobileSubOpen === label ? null : label)}
-            >
-              {label}
-            </button>
+            {href ? (
+              <a 
+                href={href}
+                className="mobile-menu-title"
+                onClick={() => setMobileOpen(false)}
+              >
+                {label}
+              </a>
+            ) : (
+              <button
+                type="button"
+                className="mobile-menu-title"
+                onClick={() => setMobileSubOpen(mobileSubOpen === label ? null : label)}
+              >
+                {label}
+              </button>
+            )}
             {mobileSubOpen === label && items.length > 0 && (
               <div className="mobile-submenu">
-                {items.map((item) => (
-                  <a key={item} href="#" onClick={() => setMobileOpen(false)}>{item}</a>
-                ))}
+                {items.map((item) => {
+                  const itemLabel = typeof item === 'string' ? item : item.label;
+                  const itemHref = typeof item === 'string' ? '#' : item.href;
+
+                  return (
+                    <a key={itemLabel} href={itemHref} onClick={() => setMobileOpen(false)}>
+                      {itemLabel}
+                    </a>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -674,82 +697,6 @@ export default function DanceLabPage() {
         </div>
       </section>
 
-      {/* ========================================
-          FOOTER
-      ======================================== */}
-      <footer className="footer">
-        <div className="container">
-          <div className="footer-grid">
-            {/* Marque */}
-            <div>
-              <a href="#" className="logo footer-logo">Dance<span>Lab</span></a>
-              <p className="footer-tagline">
-                Le média qui ouvre les portes du monde de la danse — pour les professionnels,
-                les passionnés et les curieux.
-              </p>
-              <div className="socials">
-                <a href="#" className="social-btn" aria-label="Instagram">📷</a>
-                <a href="#" className="social-btn" aria-label="TikTok">🎵</a>
-                <a href="#" className="social-btn" aria-label="YouTube">▶️</a>
-                <a href="#" className="social-btn" aria-label="Spotify">🎙</a>
-              </div>
-            </div>
-
-            {/* Découvrir */}
-            <div>
-              <p className="foot-col-title">Découvrir</p>
-              <ul className="foot-links">
-                {['Articles culture', 'Histoire des styles', 'Décryptages', 'Tendances', 'Artistes à suivre'].map((l) => (
-                  <li key={l}><a href="#">{l}</a></li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Écouter + Sortir */}
-            <div>
-              <p className="foot-col-title">Écouter</p>
-              <ul className="foot-links">
-                {['Derniers épisodes', 'Incontournables', 'Interviews', 'Playlists thématiques'].map((l) => (
-                  <li key={l}><a href="#">{l}</a></li>
-                ))}
-              </ul>
-              <p className="foot-col-title" style={{ marginTop: '26px' }}>Sortir</p>
-              <ul className="foot-links">
-                {['Spectacles', 'Festivals', 'Événements gratuits'].map((l) => (
-                  <li key={l}><a href="#">{l}</a></li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Explorer + Ressources */}
-            <div>
-              <p className="foot-col-title">Explorer</p>
-              <ul className="foot-links">
-                {['Styles de danse', 'Chorégraphes', 'Compagnies', 'Métiers de la danse'].map((l) => (
-                  <li key={l}><a href="#">{l}</a></li>
-                ))}
-              </ul>
-              <p className="foot-col-title" style={{ marginTop: '26px' }}>Ressources</p>
-              <ul className="foot-links">
-                {['Guides pratiques', 'Conseils carrière', 'Partenaires', 'À propos'].map((l) => (
-                  <li key={l}><a href="#">{l}</a></li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Barre légale */}
-          <div className="foot-bottom">
-            <p className="foot-copy">© 2026 Dance Lab — Tous droits réservés</p>
-            <ul className="foot-legal">
-              <li><a href="#">Mentions légales</a></li>
-              <li><a href="#">Confidentialité</a></li>
-              <li><a href="#">Contact</a></li>
-            </ul>
-          </div>
-        </div>
-      </footer>
-
-      </>
+    </main>
   )
 }

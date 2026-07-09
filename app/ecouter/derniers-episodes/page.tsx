@@ -6,6 +6,7 @@ export default function DerniersEpisodesPage() {
 
       <section className="episodes-header">
         <div className="container">
+
           <span className="section-label">
             Podcast Dance Lab
           </span>
@@ -15,43 +16,94 @@ export default function DerniersEpisodesPage() {
           </h1>
 
           <p>
-            Retrouvez les dernières conversations Dance Lab.
+            Conversations, parcours et réflexions autour de la danse, du métier d'artiste et de tout ce qui se cache derrière la scène.
           </p>
+
+          <div className="episodes-stats">
+
+            <div className="episodes-search">
+              <input
+                type="text"
+                placeholder="Rechercher un invité, un thème..."
+              />
+            </div>
+
+          </div>
+
+
+          <div className="episodes-filters">
+
+            <button className="active">
+              Tous
+            </button>
+
+            <button>
+              Droit
+            </button>
+
+            <button>
+              Santé mentale
+            </button>
+
+            <button>
+              Carrière
+            </button>
+
+            <button>
+              Entrepreneuriat
+            </button>
+
+          </div>
+
         </div>
       </section>
 
+
       <section className="episodes-list">
+
         <div className="container">
 
           <div className="episodes-grid">
 
-            {episodes.slice(0, 9).map((episode) => (
+            {episodes.map((episode) => (
+
               <article
                 key={episode.number}
                 className="episode-card"
               >
 
-                <img
-                  src={episode.image}
-                  alt={episode.guest}
-                  className="episode-image"
-                />
+                <div className="episode-image-wrapper">
+
+                  <img
+                    src={episode.image}
+                    alt={episode.guest}
+                    className="episode-image"
+                  />
+
+                </div>
+
 
                 <div className="episode-content">
 
-                  <span className="episode-number">
+                  <span className="episode-meta">
                     Épisode {episode.number}
                   </span>
 
-                  <h2>{episode.title}</h2>
+
+                  <h2>
+                    {episode.title}
+                  </h2>
+
 
                   <h3>
                     Avec {episode.guest}
                   </h3>
 
+
                   <p>
                     {episode.description}
                   </p>
+
 
                   <a
                     href={episode.link}
@@ -64,11 +116,13 @@ export default function DerniersEpisodesPage() {
                 </div>
 
               </article>
+
             ))}
 
           </div>
 
         </div>
+
       </section>
 
     </main>
