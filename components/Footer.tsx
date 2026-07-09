@@ -1,4 +1,39 @@
 export default function Footer() {
+  const discoverLinks = [
+    { label: 'Articles culture', href: '/#magazine' },
+    { label: 'Histoire des styles', href: '/#magazine' },
+    { label: 'Décryptages', href: '/#magazine' },
+    { label: 'Tendances', href: '/#magazine' },
+    { label: 'Artistes à suivre', href: '/#interviews' },
+  ]
+
+  const listenLinks = [
+    { label: 'Derniers épisodes', href: '/#ecouter' },
+    { label: 'Incontournables', href: '/#ecouter' },
+    { label: 'Interviews', href: '/#interviews' },
+    { label: 'Playlists thématiques', href: '/#ecouter' },
+  ]
+
+  const outingLinks = [
+    { label: 'Spectacles', href: '/#agenda' },
+    { label: 'Festivals', href: '/#agenda' },
+    { label: 'Événements gratuits', href: '/#agenda' },
+  ]
+
+  const exploreLinks = [
+    { label: 'Styles de danse', href: '/#explorer' },
+    { label: 'Chorégraphes', href: '/#explorer' },
+    { label: 'Compagnies', href: '/#explorer' },
+    { label: 'Métiers de la danse', href: '/#explorer' },
+  ]
+
+  const resourceLinks = [
+    { label: 'Guides pratiques', href: '/#ressources' },
+    { label: 'Conseils carrière', href: '/#ressources' },
+    { label: 'Partenaires', href: '/#ressources' },
+    { label: 'À propos', href: '/a-propos' },
+  ]
+
   return (
     <footer className="footer">
       <div className="container">
@@ -6,7 +41,7 @@ export default function Footer() {
 
           {/* Marque */}
           <div>
-            <a href="#" className="logo footer-logo">
+            <a href="/" className="logo footer-logo">
               Dance<span>Lab</span>
             </a>
 
@@ -29,15 +64,9 @@ export default function Footer() {
             <p className="foot-col-title">Découvrir</p>
 
             <ul className="foot-links">
-              {[
-                'Articles culture',
-                'Histoire des styles',
-                'Décryptages',
-                'Tendances',
-                'Artistes à suivre'
-              ].map((l) => (
-                <li key={l}>
-                  <a href="#">{l}</a>
+              {discoverLinks.map((item) => (
+                <li key={item.label}>
+                  <a href={item.href}>{item.label}</a>
                 </li>
               ))}
             </ul>
@@ -49,14 +78,9 @@ export default function Footer() {
             <p className="foot-col-title">Écouter</p>
 
             <ul className="foot-links">
-              {[
-                'Derniers épisodes',
-                'Incontournables',
-                'Interviews',
-                'Playlists thématiques'
-              ].map((l) => (
-                <li key={l}>
-                  <a href="#">{l}</a>
+              {listenLinks.map((item) => (
+                <li key={item.label}>
+                  <a href={item.href}>{item.label}</a>
                 </li>
               ))}
             </ul>
@@ -67,13 +91,9 @@ export default function Footer() {
             </p>
 
             <ul className="foot-links">
-              {[
-                'Spectacles',
-                'Festivals',
-                'Événements gratuits'
-              ].map((l) => (
-                <li key={l}>
-                  <a href="#">{l}</a>
+              {outingLinks.map((item) => (
+                <li key={item.label}>
+                  <a href={item.href}>{item.label}</a>
                 </li>
               ))}
             </ul>
@@ -85,14 +105,9 @@ export default function Footer() {
             <p className="foot-col-title">Explorer</p>
 
             <ul className="foot-links">
-              {[
-                'Styles de danse',
-                'Chorégraphes',
-                'Compagnies',
-                'Métiers de la danse'
-              ].map((l) => (
-                <li key={l}>
-                  <a href="#">{l}</a>
+              {exploreLinks.map((item) => (
+                <li key={item.label}>
+                  <a href={item.href}>{item.label}</a>
                 </li>
               ))}
             </ul>
@@ -103,12 +118,7 @@ export default function Footer() {
             </p>
 
             <ul className="foot-links">
-              {[
-                { label: 'Guides pratiques', href: '#' },
-                { label: 'Conseils carrière', href: '#' },
-                { label: 'Partenaires', href: '#' },
-                { label: 'À propos', href: '/a-propos' },
-              ].map((item) => (
+              {resourceLinks.map((item) => (
                 <li key={item.label}>
                   <a href={item.href}>
                     {item.label}
@@ -136,7 +146,7 @@ export default function Footer() {
               <a href="#">Confidentialité</a>
             </li>
             <li>
-              <a href="#">Contact</a>
+              <a href="/#newsletter">Contact</a>
             </li>
           </ul>
 

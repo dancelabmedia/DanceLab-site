@@ -538,7 +538,7 @@ export default function DanceLabPage() {
       {/* ========================================
           INVITÉS
       ======================================== */}
-      <section className="section">
+      <section className="section" id="interviews">
         <div className="container">
           <div className="section-header">
             <div className="sh-left">
