@@ -679,10 +679,47 @@ button {
 /* ===========================
    GUESTS
 =========================== */
-.guests-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
-.guest-card { cursor: pointer; text-align: center; }
+.guests-grid {
+  display: flex;
+  gap: 28px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 0 22px;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 0;
+  cursor: grab;
+  -webkit-overflow-scrolling: touch;
+}
+.guests-grid.is-dragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+}
+.guests-grid::-webkit-scrollbar { height: 8px; }
+.guests-grid::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 999px;
+}
+.guests-grid::-webkit-scrollbar-thumb {
+  background: var(--color-primary-light);
+  border-radius: 999px;
+}
+.guest-card {
+  flex: 0 0 clamp(230px, 23vw, 292px);
+  cursor: pointer;
+  text-align: center;
+  scroll-snap-align: start;
+  color: inherit;
+  text-decoration: none;
+  user-select: none;
+}
 .guest-img-wrap { position: relative; overflow: hidden; border-radius: 6px; margin-bottom: 18px; }
-.guest-img-wrap img { width: 100%; aspect-ratio: 3/4; object-fit: cover; transition: transform .55s ease; }
+.guest-img-wrap img {
+  width: 100%;
+  aspect-ratio: 3/4;
+  object-fit: cover;
+  transition: transform .55s ease;
+  pointer-events: none;
+}
 .guest-card:hover .guest-img-wrap img { transform: scale(1.05); }
 .guest-overlay {
   position: absolute;
@@ -909,8 +946,8 @@ button {
     grid-template-columns: 1fr;
   }
 
-  .guests-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .guest-card {
+    flex-basis: clamp(220px, 42vw, 280px);
   }
 
   .explore-inner {
@@ -1089,8 +1126,8 @@ button {
     grid-template-columns: 1fr;
   }
 
-  .guests-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .guest-card {
+    flex-basis: clamp(220px, 42vw, 280px);
   }
 
   .explore-inner {
@@ -1120,8 +1157,11 @@ button {
 @media (max-width: 520px) {
 
   .guests-grid {
-    grid-template-columns: 1fr 1fr;
     gap: 16px;
+  }
+
+  .guest-card {
+    flex-basis: 72vw;
   }
 
   .explore-inner {

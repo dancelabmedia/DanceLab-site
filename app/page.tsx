@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { episodes } from "../data/episodes"
 import Link from "next/link"
 
@@ -89,9 +89,10 @@ const FEATURED_EPISODES = [
 ]
 
 const GUESTS = [
-  { image: 'tatianaseguin117.png', slug: '117-tatiana-seguin', name: 'Tatiana Seguin', role: 'Chorégraphe · Cie Tatiana Seguin', ep: '117', quote: "Avant de faire un choix carriériste, je fais un choix humain", delay: '' },
-  { image: 'julienramade116.png', slug: '116-julien-ramade', name: 'Julien Ramade', role: 'Danseur · Chorégraphe', ep: '116', quote: "Il ne faut pas sous-estimer la force d’une formation.", delay: 'd1' },
-  { image: 'lauramalieleclerc115.png', slug: '115-laura-malie-leclerc', name: 'Laura Malié-Leclerc', role: "Kinésithérapeute du sport spécialisée dans la danse", ep: '115', quote: "La douleur c’est le premier signal du corps pour te dire qu’il y a quelque chose qui ne va pas.", delay: 'd2' },
+  { image: 'yasminehabib118.png', slug: '118-yasmine-habib', name: 'Yasmine Habib', role: 'Danseuse · Heels · Créatrice', ep: '118', quote: "Une conversation sans filtre autour du heels, de la transmission et des droits des artistes.", delay: '' },
+  { image: 'tatianaseguin117.png', slug: '117-tatiana-seguin', name: 'Tatiana Seguin', role: 'Chorégraphe · Cie Tatiana Seguin', ep: '117', quote: "Avant de faire un choix carriériste, je fais un choix humain", delay: 'd1' },
+  { image: 'julienramade116.png', slug: '116-julien-ramade', name: 'Julien Ramade', role: 'Danseur · Chorégraphe', ep: '116', quote: "Il ne faut pas sous-estimer la force d’une formation.", delay: 'd2' },
+  { image: 'lauramalieleclerc115.png', slug: '115-laura-malie-leclerc', name: 'Laura Malié-Leclerc', role: "Kinésithérapeute du sport spécialisée dans la danse", ep: '115', quote: "La douleur c’est le premier signal du corps pour te dire qu’il y a quelque chose qui ne va pas.", delay: 'd3' },
   { image: 'grichkarootz113.png', slug: '113-grichka-rootz', name: 'Grichka Rootz', role: 'Danseur · Chorégraphe · Pionnier du krump en France.', ep: '113', quote: "Le jiu-jitsu, pour moi c’est comme le krump dans la danse : c’est complet", delay: 'd3' },
 ]
 
@@ -136,6 +137,13 @@ export default function DanceLabPage() {
   const [playing, setPlaying]         = useState<Record<string, boolean>>({})
   const [progress, setProgress]       = useState(33)
   const [nlDone, setNlDone]           = useState(false)
+  const guestTrackRef = useRef<HTMLDivElement | null>(null)
+  const guestDrag = useRef({
+    active: false,
+    moved: false,
+    startX: 0,
+    scrollLeft: 0,
+  })
 
   /* Scroll → header opacity */
   useEffect(() => {
@@ -180,6 +188,48 @@ export default function DanceLabPage() {
 
   const togglePlay = (id: string) =>
     setPlaying((p) => ({ ...p, [id]: !p[id] }))
+
+  const startGuestDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+    const track = guestTrackRef.current
+    if (!track) return
+
+    guestDrag.current = {
+      active: true,
+      moved: false,
+      startX: e.clientX,
+      scrollLeft: track.scrollLeft,
+    }
+    track.classList.add('is-dragging')
+    track.setPointerCapture(e.pointerId)
+  }
+
+  const moveGuestDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+    const track = guestTrackRef.current
+    if (!track || !guestDrag.current.active) return
+
+    const distance = e.clientX - guestDrag.current.startX
+    if (Math.abs(distance) > 6) guestDrag.current.moved = true
+    track.scrollLeft = guestDrag.current.scrollLeft - distance
+  }
+
+  const endGuestDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+    const track = guestTrackRef.current
+    if (!track) return
+
+    guestDrag.current.active = false
+    track.classList.remove('is-dragging')
+    if (track.hasPointerCapture(e.pointerId)) {
+      track.releasePointerCapture(e.pointerId)
+    }
+  }
+
+  const stopGuestClickAfterDrag = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!guestDrag.current.moved) return
+
+    e.preventDefault()
+    e.stopPropagation()
+    guestDrag.current.moved = false
+  }
 
   const seekProgress = (e: React.MouseEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect()
@@ -498,7 +548,15 @@ export default function DanceLabPage() {
             </div>
             <a href="#" className="see-all">Tous les épisodes <IconArrow /></a>
           </div>
-          <div className="guests-grid">
+          <div
+            className="guests-grid"
+            ref={guestTrackRef}
+            onPointerDown={startGuestDrag}
+            onPointerMove={moveGuestDrag}
+            onPointerUp={endGuestDrag}
+            onPointerCancel={endGuestDrag}
+            onClickCapture={stopGuestClickAfterDrag}
+          >
             {GUESTS.map(({ image, slug, name, role, ep, quote, delay }) => (
               <Link href={`/episodes/${slug}`} key={image} className={`guest-card fu${delay ? ' ' + delay : ''}`}>
                 <div className="guest-img-wrap">
