@@ -89,12 +89,14 @@ const FEATURED_EPISODES = [
 ]
 
 const GUESTS = [
-  { image: 'yasminehabib118.png', slug: '118-yasmine-habib', name: 'Yasmine Habib', role: 'Danseuse · Heels · Créatrice', ep: '118', quote: "Une conversation sans filtre autour du heels, de la transmission et des droits des artistes.", delay: '' },
+  { image: 'yasminehabib118.png', slug: '118-yasmine-habib', name: 'Yasmine Habib', role: 'Danseuse · Chorégraphe · Professeure de danse', ep: '118', quote: "J’ai pas fait l’hypocrite pour arriver là où j’en suis.", delay: '' },
   { image: 'tatianaseguin117.png', slug: '117-tatiana-seguin', name: 'Tatiana Seguin', role: 'Chorégraphe · Cie Tatiana Seguin', ep: '117', quote: "Avant de faire un choix carriériste, je fais un choix humain", delay: 'd1' },
   { image: 'julienramade116.png', slug: '116-julien-ramade', name: 'Julien Ramade', role: 'Danseur · Chorégraphe', ep: '116', quote: "Il ne faut pas sous-estimer la force d’une formation.", delay: 'd2' },
   { image: 'lauramalieleclerc115.png', slug: '115-laura-malie-leclerc', name: 'Laura Malié-Leclerc', role: "Kinésithérapeute du sport spécialisée dans la danse", ep: '115', quote: "La douleur c’est le premier signal du corps pour te dire qu’il y a quelque chose qui ne va pas.", delay: 'd3' },
   { image: 'grichkarootz113.png', slug: '113-grichka-rootz', name: 'Grichka Rootz', role: 'Danseur · Chorégraphe · Pionnier du krump en France.', ep: '113', quote: "Le jiu-jitsu, pour moi c’est comme le krump dans la danse : c’est complet", delay: 'd3' },
 ]
+
+const LOOPED_GUESTS = [...GUESTS, ...GUESTS, ...GUESTS]
 
 const TEXT_ARTICLES = [
   { tag: 'Guide', title: 'Comment assister à un battle de danse pour la première fois ?', meta: 'Guide complet du débutant · 5 min de lecture', delay: 'd1' },
@@ -186,8 +188,42 @@ export default function DanceLabPage() {
     return () => { document.body.style.overflow = '' }
   }, [searchOpen, mobileOpen])
 
+  useEffect(() => {
+    const track = guestTrackRef.current
+    if (!track) return
+
+    const setMiddleLoop = () => {
+      track.scrollLeft = track.scrollWidth / 3
+    }
+
+    requestAnimationFrame(setMiddleLoop)
+    window.addEventListener('resize', setMiddleLoop)
+    return () => window.removeEventListener('resize', setMiddleLoop)
+  }, [])
+
   const togglePlay = (id: string) =>
     setPlaying((p) => ({ ...p, [id]: !p[id] }))
+
+  const keepGuestCarouselLooping = () => {
+    const track = guestTrackRef.current
+    if (!track) return
+
+    const segment = track.scrollWidth / 3
+    const maxScroll = track.scrollWidth - track.clientWidth
+    const edge = Math.max(48, track.clientWidth * 0.18)
+    let shift = 0
+
+    if (track.scrollLeft <= edge) {
+      shift = segment
+    } else if (track.scrollLeft >= maxScroll - edge) {
+      shift = -segment
+    }
+
+    if (!shift) return
+
+    track.scrollLeft += shift
+    guestDrag.current.scrollLeft += shift
+  }
 
   const startGuestDrag = (e: React.PointerEvent<HTMLDivElement>) => {
     const track = guestTrackRef.current
@@ -210,6 +246,7 @@ export default function DanceLabPage() {
     const distance = e.clientX - guestDrag.current.startX
     if (Math.abs(distance) > 6) guestDrag.current.moved = true
     track.scrollLeft = guestDrag.current.scrollLeft - distance
+    keepGuestCarouselLooping()
   }
 
   const endGuestDrag = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -555,22 +592,33 @@ export default function DanceLabPage() {
             onPointerMove={moveGuestDrag}
             onPointerUp={endGuestDrag}
             onPointerCancel={endGuestDrag}
+            onScroll={keepGuestCarouselLooping}
             onClickCapture={stopGuestClickAfterDrag}
           >
-            {GUESTS.map(({ image, slug, name, role, ep, quote, delay }) => (
-              <Link href={`/episodes/${slug}`} key={slug} className={`guest-card fu${delay ? ' ' + delay : ''}`}>
-                <div className="guest-img-wrap">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={`/images/les-invites/${image}`} alt={name} loading="lazy" />
-                  <div className="guest-overlay">
-                    <p className="guest-quote">&ldquo;{quote}&rdquo;</p>
+            {LOOPED_GUESTS.map(({ image, slug, name, role, ep, quote, delay }, index) => {
+              const isClone = index < GUESTS.length || index >= GUESTS.length * 2
+
+              return (
+                <Link
+                  href={`/episodes/${slug}`}
+                  key={`${slug}-${index}`}
+                  className={`guest-card fu${delay ? ' ' + delay : ''}`}
+                  aria-hidden={isClone}
+                  tabIndex={isClone ? -1 : undefined}
+                >
+                  <div className="guest-img-wrap">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={`/images/les-invites/${image}`} alt={name} loading="lazy" />
+                    <div className="guest-overlay">
+                      <p className="guest-quote">&ldquo;{quote}&rdquo;</p>
+                    </div>
                   </div>
-                </div>
-                <h3 className="guest-name">{name}</h3>
-                <p className="guest-role">{role}</p>
-                <span className="guest-ep">→ Ep. {ep}</span>
-              </Link>
-            ))}
+                  <h3 className="guest-name">{name}</h3>
+                  <p className="guest-role">{role}</p>
+                  <span className="guest-ep">→ Ep. {ep}</span>
+                </Link>
+              )
+            })}
           </div>
         </div>
       </section>
