@@ -96,6 +96,8 @@ const GUESTS = [
   { image: 'grichkarootz113.png', slug: '113-grichka-rootz', name: 'Grichka Rootz', role: 'Danseur · Chorégraphe · Pionnier du krump en France.', ep: '113', quote: "Le jiu-jitsu, pour moi c’est comme le krump dans la danse : c’est complet", delay: 'd3' },
 ]
 
+const LOOPED_GUESTS = [...GUESTS, ...GUESTS, ...GUESTS]
+
 const TEXT_ARTICLES = [
   { tag: 'Guide', title: 'Comment assister à un battle de danse pour la première fois ?', meta: 'Guide complet du débutant · 5 min de lecture', delay: 'd1' },
   { tag: 'Portrait', title: "Les chorégraphes qui façonnent la danse contemporaine aujourd'hui", meta: 'Panorama 2026 · 7 min de lecture', delay: 'd2' },
@@ -186,8 +188,41 @@ export default function DanceLabPage() {
     return () => { document.body.style.overflow = '' }
   }, [searchOpen, mobileOpen])
 
+  useEffect(() => {
+    const track = guestTrackRef.current
+    if (!track) return
+
+    const setMiddlePosition = () => {
+      const segment = track.scrollWidth / 3
+      track.scrollLeft = segment
+    }
+
+    requestAnimationFrame(setMiddlePosition)
+    window.addEventListener('resize', setMiddlePosition)
+    return () => window.removeEventListener('resize', setMiddlePosition)
+  }, [])
+
   const togglePlay = (id: string) =>
     setPlaying((p) => ({ ...p, [id]: !p[id] }))
+
+  const keepGuestCarouselLooping = () => {
+    const track = guestTrackRef.current
+    if (!track) return
+
+    const segment = track.scrollWidth / 3
+    const firstLoopEnd = segment * 0.5
+    const lastLoopStart = segment * 1.5
+
+    if (track.scrollLeft < firstLoopEnd) {
+      track.scrollLeft += segment
+      guestDrag.current.scrollLeft += segment
+    }
+
+    if (track.scrollLeft > lastLoopStart) {
+      track.scrollLeft -= segment
+      guestDrag.current.scrollLeft -= segment
+    }
+  }
 
   const startGuestDrag = (e: React.PointerEvent<HTMLDivElement>) => {
     const track = guestTrackRef.current
@@ -210,6 +245,7 @@ export default function DanceLabPage() {
     const distance = e.clientX - guestDrag.current.startX
     if (Math.abs(distance) > 6) guestDrag.current.moved = true
     track.scrollLeft = guestDrag.current.scrollLeft - distance
+    keepGuestCarouselLooping()
   }
 
   const endGuestDrag = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -555,10 +591,11 @@ export default function DanceLabPage() {
             onPointerMove={moveGuestDrag}
             onPointerUp={endGuestDrag}
             onPointerCancel={endGuestDrag}
+            onScroll={keepGuestCarouselLooping}
             onClickCapture={stopGuestClickAfterDrag}
           >
-            {GUESTS.map(({ image, slug, name, role, ep, quote, delay }) => (
-              <Link href={`/episodes/${slug}`} key={image} className={`guest-card fu${delay ? ' ' + delay : ''}`}>
+            {LOOPED_GUESTS.map(({ image, slug, name, role, ep, quote, delay }, index) => (
+              <Link href={`/episodes/${slug}`} key={`${slug}-${index}`} className={`guest-card fu${delay ? ' ' + delay : ''}`}>
                 <div className="guest-img-wrap">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={`/images/les-invites/${image}`} alt={name} loading="lazy" />

@@ -684,25 +684,18 @@ button {
   gap: 28px;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 4px 0 22px;
+  padding: 4px 0;
   scroll-snap-type: x mandatory;
   scroll-padding: 0;
   cursor: grab;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
 .guests-grid.is-dragging {
   cursor: grabbing;
   scroll-snap-type: none;
 }
-.guests-grid::-webkit-scrollbar { height: 8px; }
-.guests-grid::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.06);
-  border-radius: 999px;
-}
-.guests-grid::-webkit-scrollbar-thumb {
-  background: var(--color-primary-light);
-  border-radius: 999px;
-}
+.guests-grid::-webkit-scrollbar { display: none; }
 .guest-card {
   flex: 0 0 clamp(230px, 23vw, 292px);
   cursor: pointer;
