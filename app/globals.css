@@ -171,9 +171,10 @@ button {
 .see-all {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  font-size: 13px;
+  gap: 8px;
+  font-size: 15px;
   font-weight: 600;
+  letter-spacing: 0.02em;
   color: var(--color-primary-light);
   white-space: nowrap;
   transition: gap .2s;

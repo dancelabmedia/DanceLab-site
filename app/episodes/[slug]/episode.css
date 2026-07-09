@@ -1,0 +1,207 @@
+.episode-page {
+  background: #fbfaf7;
+  color: #151515;
+}
+
+.episode-hero {
+  position: relative;
+  min-height: 92vh;
+  display: flex;
+  align-items: flex-end;
+  background-position: center;
+  background-size: cover;
+  isolation: isolate;
+}
+
+.episode-hero__shade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.76), rgba(0, 0, 0, 0.22)),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.72), transparent 48%);
+}
+
+.episode-hero__content {
+  width: min(1120px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 120px 0 72px;
+  color: white;
+}
+
+.episode-kicker,
+.episode-meta {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.episode-hero h1 {
+  max-width: 920px;
+  margin: 14px 0;
+  font-size: clamp(2.8rem, 8vw, 6.8rem);
+  line-height: 0.95;
+  letter-spacing: 0;
+}
+
+.episode-guest,
+.episode-excerpt {
+  max-width: 760px;
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  line-height: 1.55;
+}
+
+.episode-meta,
+.episode-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.episode-meta span,
+.episode-actions a,
+.episode-share a,
+.episode-links a {
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 10px 14px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.episode-body {
+  width: min(1120px, calc(100% - 40px));
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 48px;
+  padding: 72px 0;
+}
+
+.episode-main h2,
+.episode-panel h2,
+.episode-similar h2 {
+  margin: 0 0 18px;
+  font-size: 1.25rem;
+}
+
+.episode-main p {
+  font-size: 1.08rem;
+  line-height: 1.75;
+}
+
+.episode-player {
+  margin-bottom: 44px;
+}
+
+.episode-player iframe {
+  display: block;
+  border: 0;
+  border-radius: 8px;
+}
+
+.episode-chapters {
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.episode-chapters li {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.16);
+}
+
+.episode-chapters span {
+  color: #755f3e;
+  font-weight: 800;
+}
+
+.episode-sidebar {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+}
+
+.episode-panel {
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  border-radius: 8px;
+  padding: 22px;
+  background: white;
+}
+
+.episode-share,
+.episode-links,
+.episode-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.episode-tags span {
+  border-radius: 999px;
+  background: #ece6dc;
+  padding: 9px 12px;
+  font-size: 0.9rem;
+}
+
+.episode-similar {
+  width: min(1120px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 0 0 80px;
+}
+
+.episode-similar__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.episode-similar__grid a {
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 8px;
+  border-radius: 8px;
+  padding: 20px;
+  background: #151515;
+  color: white;
+  text-decoration: none;
+}
+
+.episode-similar__grid span {
+  color: #d8c299;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.episode-similar__grid strong {
+  font-size: 1.15rem;
+}
+
+.episode-similar__grid p {
+  margin: 0;
+}
+
+@media (max-width: 820px) {
+  .episode-hero {
+    min-height: 86vh;
+  }
+
+  .episode-body {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 48px 0;
+  }
+
+  .episode-similar__grid {
+    grid-template-columns: 1fr;
+  }
+}

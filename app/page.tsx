@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { episodes } from "../data/episodes"
+import Link from "next/link"
 
 /* =====================================================
    SVG ICONS (réutilisables)
@@ -54,7 +55,7 @@ const IconClock = () => (
 const FEATURED_EPISODES = [
   {
     id: 'ep72',
-    seed: 'dancelab_ep72',
+    image: 'dancelab_ep72',
     tag: 'Carrière',
     ep: '72',
     title: 'Construire sa carrière de danseur indépendant en 2026',
@@ -65,7 +66,7 @@ const FEATURED_EPISODES = [
   },
   {
     id: 'ep65',
-    seed: 'dancelab_ep65',
+    image: 'dancelab_ep65',
     tag: 'Santé mentale',
     ep: '65',
     title: 'Prendre soin de soi : santé mentale et danse professionnelle',
@@ -76,7 +77,7 @@ const FEATURED_EPISODES = [
   },
   {
     id: 'ep58',
-    seed: 'dancelab_ep58',
+    image: 'dancelab_ep58',
     tag: 'Entrepreneuriat',
     ep: '58',
     title: "Monter sa compagnie de danse : de l'idée à la réalité",
@@ -88,22 +89,21 @@ const FEATURED_EPISODES = [
 ]
 
 const GUESTS = [
-  { seed: 'guest_sofia', name: 'Sofia Amaral', role: 'Chorégraphe · Cie Éclat', ep: '118', quote: "La danse m'a appris à habiter mon corps et à raconter des histoires sans mots.", delay: '' },
-  { seed: 'guest_julien', name: 'Julien Moreau', role: 'Danseur · Chorégraphe indépendant', ep: '72', quote: "Être indépendant, c'est choisir sa liberté chaque matin en la réinventant.", delay: 'd1' },
-  { seed: 'guest_amara', name: 'Amara Diallo', role: "B-boy · Fondateur d'Urban Roots", ep: '79', quote: "Le hip-hop est une philosophie. La danse n'en est que l'expression la plus visible.", delay: 'd2' },
-  { seed: 'guest_lea', name: 'Léa Fontaine', role: 'Pédagogue · Directrice artistique', ep: '83', quote: "Enseigner la danse, c'est transmettre une façon d'être au monde.", delay: 'd3' },
+  { image: 'tatianaseguin117.png', slug: '117-tatiana-seguin', name: 'Tatiana Seguin', role: 'Chorégraphe · Cie Tatiana Seguin', ep: '117', quote: "Avant de faire un choix carriériste, je fais un choix humain", delay: '' },
+  { image: 'julienramade116.png', slug: '116-julien-ramade', name: 'Julien Ramade', role: 'Danseur · Chorégraphe', ep: '116', quote: "Il ne faut pas sous-estimer la force d’une formation.", delay: 'd1' },
+  { image: 'lauramalieleclerc115.png', slug: '115-laura-malie-leclerc', name: 'Laura Malié-Leclerc', role: "Kinésithérapeute du sport spécialisée dans la danse", ep: '115', quote: "La douleur c’est le premier signal du corps pour te dire qu’il y a quelque chose qui ne va pas.", delay: 'd2' },
+  { image: 'grichkarootz113.png', slug: '113-grichka-rootz', name: 'Grichka Rootz', role: 'Danseur · Chorégraphe · Pionnier du krump en France.', ep: '113', quote: "Le jiu-jitsu, pour moi c’est comme le krump dans la danse : c’est complet", delay: 'd3' },
 ]
 
 const TEXT_ARTICLES = [
-  { tag: 'Sortir', title: 'Quels spectacles de danse voir à Paris ce week-end ?', meta: 'Notre sélection hebdomadaire · 4 min de lecture', delay: '' },
   { tag: 'Guide', title: 'Comment assister à un battle de danse pour la première fois ?', meta: 'Guide complet du débutant · 5 min de lecture', delay: 'd1' },
   { tag: 'Portrait', title: "Les chorégraphes qui façonnent la danse contemporaine aujourd'hui", meta: 'Panorama 2026 · 7 min de lecture', delay: 'd2' },
 ]
 
 const AGENDA_EVENTS = [
-  { seed: 'agenda_giselle', day: '12', month: 'Juillet', year: '2026', title: 'Giselle revisitée — Akram Khan Company', venue: 'Théâtre du Châtelet · Paris', type: 'Spectacle', free: false, delay: '' },
-  { seed: 'agenda_montpellier', day: '18', month: 'Juillet', year: '2026', title: 'Festival Montpellier Danse 2026', venue: 'Opéra Comédie · Montpellier', type: 'Festival', free: false, delay: 'd1' },
-  { seed: 'agenda_battle', day: '20', month: 'Juillet', year: '2026', title: 'Battle Cercle des Batailles — édition spéciale', venue: 'La Villette · Paris', type: 'Battle · Entrée libre', free: true, delay: 'd2' },
+  { image: 'agenda_giselle', day: '12', month: 'Juillet', year: '2026', title: 'Giselle revisitée — Akram Khan Company', venue: 'Théâtre du Châtelet · Paris', type: 'Spectacle', free: false, delay: '' },
+  { image: 'agenda_montpellier', day: '18', month: 'Juillet', year: '2026', title: 'Festival Montpellier Danse 2026', venue: 'Opéra Comédie · Montpellier', type: 'Festival', free: false, delay: 'd1' },
+  { image: 'agenda_battle', day: '20', month: 'Juillet', year: '2026', title: 'Battle Cercle des Batailles — édition spéciale', venue: 'La Villette · Paris', type: 'Battle · Entrée libre', free: true, delay: 'd2' },
 ]
 
 const EXPLORE_ITEMS = [
@@ -365,33 +365,47 @@ export default function DanceLabPage() {
           <div className="ep-grid">
             {/* Image */}
             <div className="ep-img-wrap fu episode-image-reveal">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={latestEpisode.image}
-                alt={`${latestEpisode.guest}, invité(e) de l'épisode ${latestEpisode.number}`}
-                loading="lazy"
-                className="latest-episode-img"
-              />
-              <div className="ep-badge">
-                <span className="lbl">Ép.</span>
-                <span className="num">{latestEpisode.number}</span>
-              </div>
+              <Link href={`/episodes/${latestEpisode.slug}`} className="latest-episode-link">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={latestEpisode.image}
+                  alt={`${latestEpisode.guest}, invité(e) de l'épisode ${latestEpisode.number}`}
+                  loading="lazy"
+                  className="latest-episode-img"
+                />
+                <div className="ep-badge">
+                  <span className="lbl">Ép.</span>
+                  <span className="num">{latestEpisode.number}</span>
+                </div>
+              </Link>
             </div>
 
             {/* Info */}
             <div className="ep-info fu d1">
               <span className="section-label">Dernier épisode</span>
+
               <div className="ep-meta">
                 <span className="tag tag-accent">Nouveau</span>
-                <span className="ep-dur"><IconClock /> {latestEpisode.duration}</span>
+                <span className="ep-dur">
+                  <IconClock /> {latestEpisode.duration}
+                </span>
               </div>
-              <h2 className="ep-title">{latestEpisode.title}</h2>
-              <p className="ep-guest">Avec <strong>{latestEpisode.guest}</strong></p>
+
+              <Link
+                href={`/episodes/${latestEpisode.slug}`}
+                className="latest-episode-title-link"
+              >
+                <h2 className="ep-title">{latestEpisode.title}</h2>
+              </Link>
+
+              <p className="ep-guest">
+                Avec <strong>{latestEpisode.guest}</strong>
+              </p>
+
               <p className="ep-desc">{latestEpisode.description}</p>
 
               {/* Plateformes */}
               <div className="platforms">
-
                 <a
                   href={latestEpisode.spotify}
                   target="_blank"
@@ -447,10 +461,10 @@ export default function DanceLabPage() {
             <a href="#" className="see-all">Tous les épisodes <IconArrow /></a>
           </div>
           <div className="ep-cards">
-            {FEATURED_EPISODES.map(({ id, seed, tag, ep, title, excerpt, guest, duration, delay }) => (
+            {FEATURED_EPISODES.map(({ id, image, tag, ep, title, excerpt, guest, duration, delay }) => (
               <div key={id} className={`ep-card fu${delay ? ' ' + delay : ''}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`https://picsum.photos/seed/${seed}/640/360`} alt={title} loading="lazy" />
+                <img src={`https://picsum.photos/image/${image}/640/360`} alt={title} loading="lazy" />
                 <div className="ep-card-body">
                   <div className="ep-card-tags">
                     <span className="tag tag-gray">{tag}</span>
@@ -478,18 +492,18 @@ export default function DanceLabPage() {
         <div className="container">
           <div className="section-header">
             <div className="sh-left">
-              <span className="section-label">La famille Dance Lab</span>
+              <span className="section-label">Interviews</span>
               <h2 className="section-title">Les invités</h2>
-              <p className="section-sub">Chorégraphes, danseurs, pédagogues, entrepreneurs — des voix qui façonnent la danse d&apos;aujourd&apos;hui.</p>
+              <p className="section-sub">Chorégraphes, danseurs, pédagogues, entrepreneurs : des voix qui façonnent la danse d&apos;aujourd&apos;hui et de demain.</p>
             </div>
-            <a href="#" className="see-all">Tous les invités <IconArrow /></a>
+            <a href="#" className="see-all">Tous les épisodes <IconArrow /></a>
           </div>
           <div className="guests-grid">
-            {GUESTS.map(({ seed, name, role, ep, quote, delay }) => (
-              <div key={seed} className={`guest-card fu${delay ? ' ' + delay : ''}`}>
+            {GUESTS.map(({ image, slug, name, role, ep, quote, delay }) => (
+              <Link href={`/episodes/${slug}`} key={image} className={`guest-card fu${delay ? ' ' + delay : ''}`}>
                 <div className="guest-img-wrap">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={`https://picsum.photos/seed/${seed}/400/533`} alt={name} loading="lazy" />
+                  <img src={`/images/les-invites/${image}`} alt={name} loading="lazy" />
                   <div className="guest-overlay">
                     <p className="guest-quote">&ldquo;{quote}&rdquo;</p>
                   </div>
@@ -497,7 +511,7 @@ export default function DanceLabPage() {
                 <h3 className="guest-name">{name}</h3>
                 <p className="guest-role">{role}</p>
                 <span className="guest-ep">→ Ep. {ep}</span>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -518,10 +532,10 @@ export default function DanceLabPage() {
           </div>
 
           {/* Grille photo principale */}
-          <div className="mag-main fu">
-            <div className="art-card art-card-big">
+            <div className="mag-main fu">
+            <a href="#" className="art-card art-card-big">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://picsum.photos/seed/mag_break/900/540" alt="Breakdance olympique" loading="lazy" />
+              <img src="https://picsum.photos/image/mag_break/900/540" alt="Breakdance olympique" loading="lazy" />
               <div className="art-overlay">
                 <p className="art-cat">Décryptage</p>
                 <h3 className="art-title">
@@ -529,11 +543,11 @@ export default function DanceLabPage() {
                 </h3>
                 <p className="art-meta">7 juillet 2026 · 8 min de lecture</p>
               </div>
-            </div>
+            </a>
             <div className="mag-side">
               <div className="art-card art-card-sm">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="https://picsum.photos/seed/mag_waacking/600/380" alt="Waacking" loading="lazy" />
+                <img src="https://picsum.photos/image/mag_waacking/600/380" alt="Waacking" loading="lazy" />
                 <div className="art-overlay">
                   <p className="art-cat">Culture</p>
                   <h3 className="art-title">Comprendre le waacking : origines, codes et artistes incontournables</h3>
@@ -542,7 +556,7 @@ export default function DanceLabPage() {
               </div>
               <div className="art-card art-card-sm">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="https://picsum.photos/seed/mag_festival/600/380" alt="Festivals" loading="lazy" />
+                <img src="https://picsum.photos/image/mag_festival/600/380" alt="Festivals" loading="lazy" />
                 <div className="art-overlay">
                   <p className="art-cat">Agenda</p>
                   <h3 className="art-title">Les festivals de danse incontournables en France cet été</h3>
@@ -579,10 +593,14 @@ export default function DanceLabPage() {
             <a href="#" className="see-all">Tout l&apos;agenda <IconArrow /></a>
           </div>
           <div className="agenda-grid">
-            {AGENDA_EVENTS.map(({ seed, day, month, year, title, venue, type, free, delay }) => (
-              <div key={seed} className={`ag-card fu${delay ? ' ' + delay : ''}`}>
+            {AGENDA_EVENTS.map(({ image, day, month, year, title, venue, type, free, delay }) => (
+              <a
+                href="#"
+                key={image}
+                className={`guest-card fu${delay ? ' ' + delay : ''}`}
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`https://picsum.photos/seed/${seed}/600/450`} alt={title} loading="lazy" />
+                <img src={`https://picsum.photos/image/${image}/600/450`} alt={title} loading="lazy" />
                 <div className="ag-body">
                   <div className="ag-date">
                     <span className="ag-day">{day}</span>
@@ -605,7 +623,7 @@ export default function DanceLabPage() {
                   <span className="ag-type">{type}</span>
                   <span className="ag-cta">Voir →</span>
                 </div>
-              </div>
+              </a>
             ))}
           </div>
         </div>
@@ -679,7 +697,7 @@ export default function DanceLabPage() {
             </span>
             <h2 className="nl-title">Le meilleur de la danse, chaque semaine</h2>
             <p className="nl-desc">
-              Interviews, spectacles à découvrir, conseils professionnels et actualités culturelles —
+              Interviews, spectacles à découvrir, conseils professionnels et actualités culturelles -
               directement dans votre boîte mail. Gratuit, sans spam.
             </p>
             <form className="nl-form" onSubmit={handleNewsletter}>

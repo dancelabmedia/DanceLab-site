@@ -1,6 +1,7 @@
 export const episodes = [
   {
     number: 118,
+    slug: "118-yasmine-habib",
     title: "Ce que le milieu de la danse ne montre pas : hypocrisie, critiques et toxicité",
     guest: "Yasmine Habib",
     image: "/episodes/yasminehabib118.png",
