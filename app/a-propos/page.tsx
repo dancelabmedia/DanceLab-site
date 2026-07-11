@@ -1,11 +1,9 @@
-import Link from "next/link";
-
 export default function AProposPage() {
   return (
-    <main>
+    <main className="about-page">
 
       {/* HERO */}
-      <section className="about-hero">
+      <section className="about-hero about-chapter">
 
         <div className="container about-hero-grid">
 
@@ -39,9 +37,8 @@ export default function AProposPage() {
 
 
       {/* INTRODUCTION */}
-      <section className="section">
+      <section className="section about-intro about-chapter">
         <div className="container about-text">
-          <h1>À propos de Dance Lab</h1>
           <h2>Maïwenn Bramoullé</h2>
           <h3>Fondatrice de Dance Lab</h3>
           <p>
@@ -72,9 +69,9 @@ export default function AProposPage() {
       </section>
 
       {/* MEDIA */}
-      <section className="section about-soft">
+      <section className="section about-soft about-media about-chapter">
 
-        <div className="container">
+        <div className="container about-media-grid">
 
           <div className="about-heading fu">
 
@@ -110,13 +107,20 @@ export default function AProposPage() {
 
           </div>
 
+          <div className="about-story-image">
+            <img
+              src="/images/maiwenn-1.JPG"
+              alt="Maïwenn Bramoullé, interprète et créatrice"
+            />
+          </div>
+
         </div>
 
       </section>
 
 
       {/* PARCOURS */}
-      <section className="section">
+      <section className="section about-parcours about-chapter">
 
         <div className="container about-grid">
 
@@ -184,36 +188,46 @@ export default function AProposPage() {
 
 
       {/* CREATION */}
-      <section className="section about-soft">
+      <section className="section about-soft about-creation about-chapter">
 
-        <div className="container about-text">
+        <div className="container about-closing-grid">
 
-          <h2>
-            De l’interprétation à la création
-          </h2>
+          <div className="about-text">
 
-          <p>
-            Au-delà de mon parcours d’interprète, je développe également une
-            activité de chorégraphe, assistante chorégraphe et coordinatrice artistique.
-          </p>
+            <h2>
+              De l’interprétation à la création
+            </h2>
 
-          <p>
-            J’accompagne des projets artistiques, événementiels et audiovisuels
-            pour différents acteurs comme BMW, Dassault Systèmes, Icade, DTR Fight
-            ou encore Spoade.
-          </p>
+            <p>
+              Au-delà de mon parcours d’interprète, je développe également une
+              activité de chorégraphe, assistante chorégraphe et coordinatrice artistique.
+            </p>
 
-          <p>
-            Je travaille également sur des projets télévisés, notamment pour
-            Soprano : Le Concert des 1000 Choristes diffusé sur TF1.
-          </p>
+            <p>
+              J’accompagne des projets artistiques, événementiels et audiovisuels
+              pour différents acteurs comme BMW, Dassault Systèmes, Icade, DTR Fight
+              ou encore Spoade.
+            </p>
 
-          <p>
-            Ces expériences m’ont permis de comprendre les multiples réalités
-            du métier d’artiste : le travail invisible derrière chaque création,
-            les moments de remise en question, les rencontres qui changent une
-            trajectoire, mais aussi les problématiques qui traversent le milieu artistique.
-          </p>
+            <p>
+              Je travaille également sur des projets télévisés, notamment pour
+              Soprano : Le Concert des 1000 Choristes diffusé sur TF1.
+            </p>
+
+            <p>
+              Ces expériences m’ont permis de comprendre les multiples réalités
+              du métier d’artiste : le travail invisible derrière chaque création,
+              les moments de remise en question, les rencontres qui changent une
+              trajectoire, mais aussi les problématiques qui traversent le milieu artistique.
+            </p>
+
+          </div>
+
+          <div className="about-editorial-mark" aria-hidden="true">
+            <span>Créer</span>
+            <span>Produire</span>
+            <span>Transmettre</span>
+          </div>
 
         </div>
 
@@ -221,31 +235,42 @@ export default function AProposPage() {
 
 
       {/* ENTREPRENEURIAT */}
-      <section className="section">
+      <section className="section about-entrepreneur about-chapter">
 
-        <div className="container about-text">
+        <div className="container about-entrepreneur-grid">
 
-          <h2>
-            Créer des espaces pour raconter et transmettre
-          </h2>
+          <div className="about-text">
 
-          <p>
-            Attirée depuis longtemps par l’entrepreneuriat et la création de projets,
-            je fonde Dance Lab en 2024 avec l’envie de créer un média qui rapproche
-            les artistes, les professionnels et le grand public.
-          </p>
+            <h2>
+              Créer des espaces pour raconter et transmettre
+            </h2>
 
-          <p>
-            Cette démarche s’inscrit dans un écosystème plus large autour de la
-            création avec 2.6 Productions, une structure dédiée à la production
-            audiovisuelle et artistique.
-          </p>
+            <p>
+              Attirée depuis longtemps par l’entrepreneuriat et la création de projets,
+              je fonde Dance Lab en 2024 avec l’envie de créer un média qui rapproche
+              les artistes, les professionnels et le grand public.
+            </p>
 
-          <p>
-            À travers ces différents projets, mon objectif reste le même :
-            créer des espaces qui permettent de raconter, transmettre et faire
-            émerger de nouvelles connexions.
-          </p>
+            <p>
+              Cette démarche s’inscrit dans un écosystème plus large autour de la
+              création avec 2.6 Productions, une structure dédiée à la production
+              audiovisuelle et artistique.
+            </p>
+
+            <p>
+              À travers ces différents projets, mon objectif reste le même :
+              créer des espaces qui permettent de raconter, transmettre et faire
+              émerger de nouvelles connexions.
+            </p>
+
+          </div>
+
+          <div className="about-closing-image">
+            <img
+              src="/images/maiwenn-2.jpg"
+              alt="Maïwenn Bramoullé travaillant sur Dance Lab"
+            />
+          </div>
 
         </div>
 
@@ -253,40 +278,40 @@ export default function AProposPage() {
 
 
       {/* MISSION */}
-      <section className="about-mission">
+      <section className="about-mission about-chapter">
 
-        <div className="container about-text">
+        <div className="container about-mission-inner">
 
-          <h2>
-            La mission de Dance Lab
-          </h2>
+          <div className="about-mission-heading">
+            <h2>
+              La mission de <span>Dance Lab</span>
+            </h2>
 
-          <h3>
-            Faire découvrir, comprendre et vivre la danse.
-          </h3>
+            <h3>
+              Faire découvrir, comprendre et vivre la danse.
+            </h3>
+          </div>
 
-          <p>
-            Donner la parole à celles et ceux qui ont un lien avec la danse.
-            Artistes, professionnels, experts, passionnés, amateurs ou acteurs
-            qui contribuent à faire évoluer cet univers : chaque regard permet
-            de mieux comprendre la richesse et la complexité de la danse.
-          </p>
+          <div className="about-mission-copy">
+            <p>
+              Donner la parole à celles et ceux qui ont un lien avec la danse.
+              Artistes, professionnels, experts, passionnés, amateurs ou acteurs
+              qui contribuent à faire évoluer cet univers : chaque regard permet
+              de mieux comprendre la richesse et la complexité de la danse.
+            </p>
 
-          <p>
-            Mettre en lumière les parcours, transmettre des connaissances,
-            questionner les réalités du milieu et partager des histoires qui
-            inspirent celles et ceux qui dansent, mais aussi celles et ceux
-            qui souhaitent simplement découvrir et mieux comprendre cet univers.
-          </p>
+            <p>
+              Mettre en lumière les parcours, transmettre des connaissances,
+              questionner les réalités du milieu et partager des histoires qui
+              inspirent celles et ceux qui dansent, mais aussi celles et ceux
+              qui souhaitent simplement découvrir et mieux comprendre cet univers.
+            </p>
 
-          <p>
-            Dance Lab est un média pensé pour toutes les personnes qui aiment
-            la danse : des professionnels aux passionnés, des curieux aux futurs danseurs.
-          </p>
-
-          <h3>
-            Bienvenue dans l’univers Dance Lab.
-          </h3>
+            <p>
+              Dance Lab est un média pensé pour toutes les personnes qui aiment
+              la danse : des professionnels aux passionnés, des curieux aux futurs danseurs.
+            </p>
+          </div>
 
         </div>
 

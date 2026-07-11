@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { featuredAgendaEvents } from "./agenda/agenda-data"
+import { magazineArticles } from "./decouvrir/articles-data"
 import { episodes } from "../data/episodes"
 import Link from "next/link"
 
@@ -101,18 +103,12 @@ const TEXT_ARTICLES = [
   { tag: 'Portrait', title: "Les chorégraphes qui façonnent la danse contemporaine aujourd'hui", meta: 'Panorama 2026 · 7 min de lecture', delay: 'd2' },
 ]
 
-const AGENDA_EVENTS = [
-  { image: 'agenda_giselle', day: '12', month: 'Juillet', year: '2026', title: 'Giselle revisitée — Akram Khan Company', venue: 'Théâtre du Châtelet · Paris', type: 'Spectacle', free: false, delay: '' },
-  { image: 'agenda_montpellier', day: '18', month: 'Juillet', year: '2026', title: 'Festival Montpellier Danse 2026', venue: 'Opéra Comédie · Montpellier', type: 'Festival', free: false, delay: 'd1' },
-  { image: 'agenda_battle', day: '20', month: 'Juillet', year: '2026', title: 'Battle Cercle des Batailles — édition spéciale', venue: 'La Villette · Paris', type: 'Battle · Entrée libre', free: true, delay: 'd2' },
-]
-
 const EXPLORE_ITEMS = [
-  { icon: '💃', label: 'Styles de danse', sub: 'Hip-hop, contemporain, classique, afro, waacking et plus encore', delay: '' },
-  { icon: '✍️', label: 'Chorégraphes', sub: "Les créateurs qui façonnent l'art chorégraphique d'aujourd'hui", delay: 'd1' },
-  { icon: '🎭', label: 'Compagnies', sub: 'De la Comédie-Française au collectif underground', delay: 'd2' },
-  { icon: '🌟', label: 'Artistes', sub: 'Portraits, parcours et coulisses de ceux qui font la danse', delay: 'd3' },
-  { icon: '🎓', label: 'Métiers', sub: 'Danseur, chorégraphe, répétiteur, régisseur, critique…', delay: 'd4' },
+  { icon: '💃', label: 'Styles de danse', sub: 'Hip-hop, contemporain, classique, afro, waacking et plus encore', href: '/explorer/styles-de-danse', delay: '' },
+  { icon: '✍️', label: 'Chorégraphes', sub: "Les créateurs qui façonnent l'art chorégraphique d'aujourd'hui", href: '/explorer/choregraphes', delay: 'd1' },
+  { icon: '🎭', label: 'Compagnies', sub: 'De la Comédie-Française au collectif underground', href: '/explorer/compagnies', delay: 'd2' },
+  { icon: '🌟', label: 'Artistes', sub: 'Portraits, parcours et coulisses de ceux qui font la danse', href: '/explorer/artistes', delay: 'd3' },
+  { icon: '🎓', label: 'Métiers', sub: 'Danseur, chorégraphe, répétiteur, régisseur, critique…', href: '/explorer/metiers-de-la-danse', delay: 'd4' },
 ]
 
 const RESOURCES = [
@@ -126,18 +122,44 @@ const RESOURCES = [
 
 const TICKER_ITEMS = ['Podcast', 'Articles', 'Agenda culturel', "Portraits d'artistes", 'Ressources pro', 'Styles de danse', 'Festivals', 'Interviews', 'Compagnies', 'Spectacles']
 
+function getAgendaHomeDateParts(dates: string) {
+  if (dates === 'À compléter') {
+    return {
+      day: 'À',
+      detail: 'compléter',
+    }
+  }
+
+  if (dates.toLowerCase().startsWith('juillet')) {
+    return {
+      day: 'Été',
+      detail: dates,
+    }
+  }
+
+  const [day, ...rest] = dates.split(' ')
+
+  return {
+    day,
+    detail: rest.join(' ').trim() || dates,
+  }
+}
+
 /* =====================================================
    COMPOSANT PRINCIPAL
 ===================================================== */
 export default function DanceLabPage() {
   const [searchOpen, setSearchOpen]   = useState(false)
-  const [mobileOpen, setMobileOpen]   = useState(false)
-  const [mobileSubOpen, setMobileSubOpen] = useState<string | null>(null)
   const [scrolled, setScrolled]       = useState(false)
   const [playing, setPlaying]         = useState<Record<string, boolean>>({})
   const [progress, setProgress]       = useState(33)
-  const [nlDone, setNlDone]           = useState(false)
+  const [newsletterStatus, setNewsletterStatus] = useState<
+    'idle' | 'loading' | 'success' | 'invalid' | 'error'
+  >('idle')
   const guestTrackRef = useRef<HTMLDivElement | null>(null)
+  const newsletterInputRef = useRef<HTMLInputElement | null>(null)
+  const newsletterSubmittedRef = useRef(false)
+  const newsletterTimeoutRef = useRef<number | null>(null)
   const guestDrag = useRef({
     active: false,
     moved: false,
@@ -173,7 +195,7 @@ export default function DanceLabPage() {
   /* Keyboard shortcuts (Échap / ⌘K) */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { setSearchOpen(false); setMobileOpen(false) }
+      if (e.key === 'Escape') setSearchOpen(false)
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setSearchOpen(true) }
     }
     document.addEventListener('keydown', onKey)
@@ -182,9 +204,15 @@ export default function DanceLabPage() {
 
   /* Body scroll lock quand overlay ouvert */
   useEffect(() => {
-    document.body.style.overflow = searchOpen || mobileOpen ? 'hidden' : ''
+    document.body.style.overflow = searchOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
-  }, [searchOpen, mobileOpen])
+  }, [searchOpen])
+
+  useEffect(() => {
+    return () => {
+      if (newsletterTimeoutRef.current) window.clearTimeout(newsletterTimeoutRef.current)
+    }
+  }, [])
 
   const togglePlay = (id: string) =>
     setPlaying((p) => ({ ...p, [id]: !p[id] }))
@@ -231,17 +259,54 @@ export default function DanceLabPage() {
     guestDrag.current.moved = false
   }
 
+  const moveHeroArt = (e: React.MouseEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2
+
+    e.currentTarget.style.setProperty('--hero-parallax-x', x.toFixed(3))
+    e.currentTarget.style.setProperty('--hero-parallax-y', y.toFixed(3))
+  }
+
+  const resetHeroArt = (e: React.MouseEvent<HTMLElement>) => {
+    e.currentTarget.style.setProperty('--hero-parallax-x', '0')
+    e.currentTarget.style.setProperty('--hero-parallax-y', '0')
+  }
+
   const seekProgress = (e: React.MouseEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect()
     setProgress(((e.clientX - r.left) / r.width) * 100)
   }
 
   const handleNewsletter = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setNlDone(true)
-    const input = e.currentTarget.querySelector('input') as HTMLInputElement
-    if (input) input.value = ''
-    setTimeout(() => setNlDone(false), 3500)
+    const form = e.currentTarget
+    const input = newsletterInputRef.current
+    const email = input?.value.trim() ?? ''
+
+    if (!input?.checkValidity() || !email) {
+      e.preventDefault()
+      setNewsletterStatus('invalid')
+      return
+    }
+
+    setNewsletterStatus('loading')
+    newsletterSubmittedRef.current = true
+
+    if (newsletterTimeoutRef.current) window.clearTimeout(newsletterTimeoutRef.current)
+    newsletterTimeoutRef.current = window.setTimeout(() => {
+      if (!newsletterSubmittedRef.current) return
+      newsletterSubmittedRef.current = false
+      setNewsletterStatus('error')
+    }, 12000)
+  }
+
+  const handleNewsletterFrameLoad = () => {
+    if (!newsletterSubmittedRef.current) return
+
+    newsletterSubmittedRef.current = false
+    if (newsletterTimeoutRef.current) window.clearTimeout(newsletterTimeoutRef.current)
+    if (newsletterInputRef.current) newsletterInputRef.current.value = ''
+    setNewsletterStatus('success')
   }
 
   /* ── Rendu ────────────────────────────────────────── */
@@ -277,84 +342,78 @@ export default function DanceLabPage() {
       </div>
 
       {/* ========================================
-          MOBILE MENU
-      ======================================== */}
-      <nav className={`mobile-nav${mobileOpen ? ' open' : ''}`}>
-        <button className="mobile-nav-close" onClick={() => setMobileOpen(false)}>✕</button>
-        {[
-          {
-            label: 'Découvrir',
-            items: ['Articles culture', 'Histoire des styles', 'Décryptages', 'Tendances', 'Artistes à suivre'],
-          },
-          {
-            label: 'Écouter',
-            items: [
-              { label: 'Derniers épisodes', href: '/ecouter/derniers-episodes' },
-              { label: 'Incontournables', href: '#' },
-              { label: 'Interviews', href: '#' },
-              { label: 'Playlists thématiques', href: '#' },
-            ],
-          },
-          {
-            label: 'Sortir',
-            items: ['Spectacles', 'Festivals', 'Événements gratuits'],
-          },
-          {
-            label: 'Explorer',
-            items: ['Styles de danse', 'Chorégraphes', 'Compagnies', 'Métiers de la danse'],
-          },
-          {
-            label: 'Ressources',
-            items: ['Guides pratiques', 'Conseils carrière', 'Partenaires'],
-          },
-          {
-            label: 'À propos',
-            href: '/a-propos',
-            items: [],
-          },
-        ].map(({ label, items, href }) => (
-          <div key={label} className="mobile-menu-group">
-            {href ? (
-              <a 
-                href={href}
-                className="mobile-menu-title"
-                onClick={() => setMobileOpen(false)}
-              >
-                {label}
-              </a>
-            ) : (
-              <button
-                type="button"
-                className="mobile-menu-title"
-                onClick={() => setMobileSubOpen(mobileSubOpen === label ? null : label)}
-              >
-                {label}
-              </button>
-            )}
-            {mobileSubOpen === label && items.length > 0 && (
-              <div className="mobile-submenu">
-                {items.map((item) => {
-                  const itemLabel = typeof item === 'string' ? item : item.label;
-                  const itemHref = typeof item === 'string' ? '#' : item.href;
-
-                  return (
-                    <a key={itemLabel} href={itemHref} onClick={() => setMobileOpen(false)}>
-                      {itemLabel}
-                    </a>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        ))}
-      </nav>
-
-      {/* ========================================
           HERO
       ======================================== */}
-      <section className="hero" id="hero">
+      <section
+        className="hero"
+        id="hero"
+        onMouseMove={moveHeroArt}
+        onMouseLeave={resetHeroArt}
+      >
         <div className="hero-line" />
         <div className="hero-bg" />
+        <div className="hero-signature" aria-hidden="true">
+          <div className="hero-orbit hero-orbit-a" />
+          <div className="hero-orbit hero-orbit-b" />
+          <div className="hero-halo hero-halo-a" />
+          <div className="hero-halo hero-halo-b" />
+
+          <svg className="hero-motion-art" viewBox="0 0 920 920" role="img">
+            <defs>
+              <linearGradient id="danceTrace" x1="114" y1="790" x2="810" y2="116" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stopColor="#5B7377" stopOpacity="0.18" />
+                <stop offset="0.42" stopColor="#C1D0DF" stopOpacity="0.92" />
+                <stop offset="1" stopColor="#FFFFFF" stopOpacity="0.46" />
+              </linearGradient>
+              <linearGradient id="danceTraceSoft" x1="188" y1="210" x2="734" y2="732" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stopColor="#FFFFFF" stopOpacity="0.1" />
+                <stop offset="0.52" stopColor="#C1D0DF" stopOpacity="0.55" />
+                <stop offset="1" stopColor="#5B7377" stopOpacity="0.08" />
+              </linearGradient>
+              <radialGradient id="pulseCore" cx="50%" cy="50%" r="50%">
+                <stop offset="0" stopColor="#FFFFFF" stopOpacity="0.96" />
+                <stop offset="0.42" stopColor="#C1D0DF" stopOpacity="0.64" />
+                <stop offset="1" stopColor="#5B7377" stopOpacity="0" />
+              </radialGradient>
+              <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="10" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+
+            <g className="hero-gridlines">
+              <path d="M92 706 C252 578 358 494 456 334 C534 206 638 130 806 92" />
+              <path d="M112 780 C278 616 406 608 526 448 C630 310 688 248 810 196" />
+              <path d="M170 180 C304 236 344 344 452 456 C558 566 668 630 790 748" />
+            </g>
+
+            <g className="hero-ribbons">
+              <path className="hero-ribbon hero-ribbon-main" d="M126 718 C230 548 368 612 442 434 C526 232 692 210 798 92" />
+              <path className="hero-ribbon hero-ribbon-secondary" d="M118 508 C268 384 322 230 486 252 C644 272 658 502 810 610" />
+              <path className="hero-ribbon hero-ribbon-third" d="M258 790 C318 612 494 630 544 456 C594 282 724 252 808 314" />
+            </g>
+
+            <g className="hero-core" filter="url(#softGlow)">
+              <circle cx="500" cy="438" r="118" fill="url(#pulseCore)" />
+              <circle cx="500" cy="438" r="12" fill="#F6F8F9" />
+              <circle cx="500" cy="438" r="48" fill="none" stroke="#C1D0DF" strokeOpacity="0.42" strokeWidth="1.5" />
+            </g>
+
+            <g className="hero-particles">
+              <circle cx="238" cy="650" r="3.5" />
+              <circle cx="310" cy="372" r="2.5" />
+              <circle cx="412" cy="212" r="4" />
+              <circle cx="614" cy="256" r="3" />
+              <circle cx="742" cy="424" r="4.5" />
+              <circle cx="646" cy="688" r="2.8" />
+              <circle cx="468" cy="748" r="3.4" />
+              <circle cx="778" cy="178" r="2.4" />
+            </g>
+          </svg>
+        </div>
         <div className="hero-overlay" />
         <div className="hero-content">
           <div className="hero-eyebrow">
@@ -363,7 +422,7 @@ export default function DanceLabPage() {
           </div>
 
           <h1 className="hero-title">
-            Le média qui fait<br />
+            Le 1er média qui fait<br />
             <em>découvrir, comprendre</em><br />
             et vivre la danse.
           </h1>
@@ -500,15 +559,15 @@ export default function DanceLabPage() {
       {/* ========================================
           ÉPISODES INCONTOURNABLES
       ======================================== */}
-      <section className="section section--gray">
+      <section className="section section--gray" id="incontournables">
         <div className="container">
           <div className="section-header">
             <div className="sh-left">
               <span className="section-label">À écouter absolument</span>
               <h2 className="section-title">Épisodes incontournables</h2>
-              <p className="section-sub">Nos épisodes les plus marquants sur la carrière, la création et la vie d&apos;artiste.</p>
+              <p className="section-sub">Nos épisodes les plus marquants.</p>
             </div>
-            <a href="#" className="see-all">Tous les épisodes <IconArrow /></a>
+            <a href="/ecouter" className="see-all">Tous les épisodes <IconArrow /></a>
           </div>
           <div className="ep-cards">
             {FEATURED_EPISODES.map(({ id, image, tag, ep, title, excerpt, guest, duration, delay }) => (
@@ -546,7 +605,7 @@ export default function DanceLabPage() {
               <h2 className="section-title">Les invités</h2>
               <p className="section-sub">Chorégraphes, danseurs, pédagogues, entrepreneurs, juristes, professionnels de santé : des voix qui façonnent la danse d&apos;aujourd&apos;hui et de demain.</p>
             </div>
-            <a href="#" className="see-all">Tous les épisodes <IconArrow /></a>
+            <a href="/ecouter" className="see-all">Tous les épisodes <IconArrow /></a>
           </div>
           <div
             className="guests-grid"
@@ -584,14 +643,14 @@ export default function DanceLabPage() {
             <div className="sh-left">
               <span className="section-label">Magazine</span>
               <h2 className="section-title">Découvrir la danse</h2>
-              <p className="section-sub">Culture, histoire, tendances — une fenêtre ouverte sur tous les univers de la danse.</p>
+              <p className="section-sub">Culture, histoire et tendances</p>
             </div>
-            <a href="#" className="see-all">Tous les articles <IconArrow /></a>
+            <a href="/decouvrir" className="see-all">Tous les articles <IconArrow /></a>
           </div>
 
           {/* Grille photo principale */}
             <div className="mag-main fu">
-            <a href="#" className="art-card art-card-big">
+            <a href="/decouvrir/articles/pourquoi-le-breakdance-est-devenu-olympique" className="art-card art-card-big">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="https://picsum.photos/image/mag_break/900/540" alt="Breakdance olympique" loading="lazy" />
               <div className="art-overlay">
@@ -603,7 +662,7 @@ export default function DanceLabPage() {
               </div>
             </a>
             <div className="mag-side">
-              <div className="art-card art-card-sm">
+              <a href="/decouvrir/articles/comprendre-le-waacking-histoire-culture-influences" className="art-card art-card-sm">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="https://picsum.photos/image/mag_waacking/600/380" alt="Waacking" loading="lazy" />
                 <div className="art-overlay">
@@ -611,8 +670,8 @@ export default function DanceLabPage() {
                   <h3 className="art-title">Comprendre le waacking : origines, codes et artistes incontournables</h3>
                   <p className="art-meta">5 juillet 2026 · 5 min</p>
                 </div>
-              </div>
-              <div className="art-card art-card-sm">
+              </a>
+              <a href="/decouvrir/articles/festivals-danse-incontournables-ete" className="art-card art-card-sm">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="https://picsum.photos/image/mag_festival/600/380" alt="Festivals" loading="lazy" />
                 <div className="art-overlay">
@@ -620,18 +679,36 @@ export default function DanceLabPage() {
                   <h3 className="art-title">Les festivals de danse incontournables en France cet été</h3>
                   <p className="art-meta">2 juillet 2026 · 6 min</p>
                 </div>
-              </div>
+              </a>
             </div>
           </div>
 
           {/* Cartes texte */}
           <div className="text-cards" style={{ marginTop: '20px' }}>
             {TEXT_ARTICLES.map(({ tag, title, meta, delay }) => (
-              <a key={title} href="#" className={`txt-card fu${delay ? ' ' + delay : ''}`}>
+              <a
+                key={title}
+                href={tag === 'Portrait' ? '/decouvrir/artistes-a-suivre' : '/decouvrir/articles-culture'}
+                className={`txt-card fu${delay ? ' ' + delay : ''}`}
+              >
                 <span className="tag tag-gray">{tag}</span>
                 <h3>{title}</h3>
                 <p>{meta}</p>
               </a>
+            ))}
+          </div>
+
+          <div className="magazine-article-strip">
+            {magazineArticles.map((article) => (
+              <Link
+                key={article.slug}
+                href={`/decouvrir/articles/${article.slug}`}
+                className="magazine-article-link"
+              >
+                <span>{article.category}</span>
+                <strong>{article.title}</strong>
+                <small>{article.meta}</small>
+              </Link>
             ))}
           </div>
         </div>
@@ -646,43 +723,51 @@ export default function DanceLabPage() {
             <div className="sh-left">
               <span className="section-label">Agenda culturel</span>
               <h2 className="section-title">Sortir &amp; vivre la danse</h2>
-              <p className="section-sub">Spectacles, festivals, expositions, événements — ne manquez rien de ce qui se passe.</p>
+              <p className="section-sub">Spectacles, festivals, expositions, événements, ne manquez rien.</p>
             </div>
-            <a href="#" className="see-all">Tout l&apos;agenda <IconArrow /></a>
+            <a href="/agenda" className="see-all">Tout l&apos;agenda <IconArrow /></a>
           </div>
           <div className="agenda-grid">
-            {AGENDA_EVENTS.map(({ image, day, month, year, title, venue, type, free, delay }) => (
-              <a
-                href="#"
-                key={image}
-                className={`guest-card fu${delay ? ' ' + delay : ''}`}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`https://picsum.photos/image/${image}/600/450`} alt={title} loading="lazy" />
-                <div className="ag-body">
-                  <div className="ag-date">
-                    <span className="ag-day">{day}</span>
-                    <div>
-                      <div className="ag-month">{month}</div>
-                      <div className="ag-year">{year}</div>
+            {featuredAgendaEvents.map((event, index) => {
+              const dateParts = getAgendaHomeDateParts(event.dates)
+
+              return (
+                <a
+                  href={event.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  key={event.slug}
+                  className={`guest-card fu${index === 1 ? ' d1' : index === 2 ? ' d2' : ''}`}
+                >
+                  {event.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={event.image} alt={event.title} loading="lazy" />
+                  ) : (
+                    <div className="agenda-home-placeholder">
+                      <span>Image officielle</span>
+                      <strong>À compléter</strong>
                     </div>
+                  )}
+                  <div className="ag-body">
+                    <div className="ag-date">
+                      <span className="ag-day">{dateParts.day}</span>
+                      <div>
+                        <div className="ag-month">{dateParts.detail}</div>
+                        <div className="ag-year">{event.city}</div>
+                      </div>
+                    </div>
+                    <h3 className="ag-title">{event.title}</h3>
+                    <p className="ag-venue">
+                      <IconPin /> {event.venue} · {event.city}
+                    </p>
                   </div>
-                  <h3 className="ag-title">{title}</h3>
-                  <p className="ag-venue">
-                    <IconPin /> {venue}
-                    {free && (
-                      <span className="tag tag-accent" style={{ marginLeft: '8px', fontSize: '9px' }}>
-                        Gratuit
-                      </span>
-                    )}
-                  </p>
-                </div>
-                <div className="ag-foot">
-                  <span className="ag-type">{type}</span>
-                  <span className="ag-cta">Voir →</span>
-                </div>
-              </a>
-            ))}
+                  <div className="ag-foot">
+                    <span className="ag-type">{event.category}</span>
+                    <span className="ag-cta">Voir →</span>
+                  </div>
+                </a>
+              )
+            })}
           </div>
         </div>
       </section>
@@ -692,18 +777,20 @@ export default function DanceLabPage() {
       ======================================== */}
       <section className="explore-band" id="explorer">
         <div className="container">
-          <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-            <span className="section-label">L&apos;univers Dance Lab</span>
-            <h2 className="section-title" style={{ color: '#fff' }}>Explorer la danse</h2>
+          <div className="section-header section-header--solo">
+            <div className="sh-left">
+              <span className="section-label">L&apos;univers Dance Lab</span>
+              <h2 className="section-title" style={{ color: '#fff' }}>Explorer la danse</h2>
+            </div>
           </div>
         </div>
         <div className="explore-inner">
-          {EXPLORE_ITEMS.map(({ icon, label, sub, delay }) => (
-            <div key={label} className={`explore-item fu${delay ? ' ' + delay : ''}`}>
+          {EXPLORE_ITEMS.map(({ icon, label, sub, href, delay }) => (
+            <a key={label} href={href} className={`explore-item fu${delay ? ' ' + delay : ''}`}>
               <div className="explore-icon">{icon}</div>
               <div className="explore-label">{label}</div>
               <div className="explore-sub">{sub}</div>
-            </div>
+            </a>
           ))}
         </div>
       </section>
@@ -750,25 +837,72 @@ export default function DanceLabPage() {
 
         <div className="container">
           <div className="nl-inner">
-            <span className="section-label" style={{ display: 'block', marginBottom: '14px' }}>
+            <span className="section-label">
               Newsletter hebdomadaire
             </span>
-            <h2 className="nl-title">Le meilleur de la danse, chaque semaine</h2>
+            <h2 className="nl-title">Recevez chaque semaine le meilleur de la danse.</h2>
             <p className="nl-desc">
-              Interviews, spectacles à découvrir, conseils professionnels et actualités culturelles -
+              Interviews, spectacles à découvrir, conseils professionnels et actualités culturelles,
               directement dans votre boîte mail. Gratuit, sans spam.
             </p>
-            <form className="nl-form" onSubmit={handleNewsletter}>
-              <input className="nl-input" type="email" placeholder="Votre adresse e-mail" aria-label="Adresse e-mail" required />
+            <form
+              className="nl-form"
+              action="https://dancelablemedia.substack.com/api/v1/free?nojs=true"
+              method="post"
+              target="substack-newsletter-frame"
+              onSubmit={handleNewsletter}
+              noValidate
+            >
+              <input
+                ref={newsletterInputRef}
+                className="nl-input"
+                type="email"
+                name="email"
+                placeholder="Adresse e-mail"
+                aria-label="Adresse e-mail"
+                aria-invalid={newsletterStatus === 'invalid'}
+                required
+              />
+              <input type="hidden" name="source" value="dance-lab-site" />
+              <input type="hidden" name="current_url" value="https://dancelablemedia.substack.com/" />
+              <input type="hidden" name="current_referrer" value="" />
+              <input type="hidden" name="first_url" value="" />
+              <input type="hidden" name="first_referrer" value="" />
+              <input type="hidden" name="first_session_url" value="" />
+              <input type="hidden" name="first_session_referrer" value="" />
+              <input type="hidden" name="referral_code" value="" />
               <button
                 type="submit"
                 className="btn btn-primary"
-                style={nlDone ? { background: '#22c55e' } : undefined}
+                disabled={newsletterStatus === 'loading'}
               >
-                {nlDone ? '✓ Inscrit !' : "S'abonner"}
+                Recevoir la newsletter
               </button>
             </form>
-            <p className="nl-note">Plus de 4 800 passionnés de danse déjà inscrits · Désinscription en un clic</p>
+            <iframe
+              title="Inscription newsletter Substack"
+              name="substack-newsletter-frame"
+              className="nl-frame"
+              onLoad={handleNewsletterFrameLoad}
+            />
+            <div className="nl-message" aria-live="polite">
+              {newsletterStatus === 'loading' ? (
+                <p>Envoi en cours...</p>
+              ) : null}
+              {newsletterStatus === 'success' ? (
+                <p className="nl-message-success">
+                  Bienvenue dans l’univers Dance Lab ✨ Votre inscription est bien enregistrée.
+                </p>
+              ) : null}
+              {newsletterStatus === 'invalid' ? (
+                <p className="nl-message-error">Adresse e-mail invalide.</p>
+              ) : null}
+              {newsletterStatus === 'error' ? (
+                <p className="nl-message-error">
+                  Erreur de connexion. Merci de réessayer dans quelques instants.
+                </p>
+              ) : null}
+            </div>
           </div>
         </div>
       </section>

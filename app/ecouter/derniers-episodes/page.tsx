@@ -1,4 +1,5 @@
 import { episodes } from "../../../data/episodes"
+import Link from "next/link"
 
 export default function DerniersEpisodesPage() {
   return (
@@ -12,7 +13,7 @@ export default function DerniersEpisodesPage() {
           </span>
 
           <h1>
-            Derniers épisodes
+            Tous les épisodes
           </h1>
 
           <p>
@@ -67,8 +68,9 @@ export default function DerniersEpisodesPage() {
 
             {episodes.map((episode) => (
 
-              <article
+              <Link
                 key={episode.number}
+                href={`/episodes/${episode.slug}`}
                 className="episode-card"
               >
 
@@ -105,17 +107,13 @@ export default function DerniersEpisodesPage() {
                   </p>
 
 
-                  <a
-                    href={episode.link}
-                    target="_blank"
-                    className="btn btn-primary"
-                  >
+                  <span className="btn btn-primary">
                     Écouter l'épisode
-                  </a>
+                  </span>
 
                 </div>
 
-              </article>
+              </Link>
 
             ))}
 

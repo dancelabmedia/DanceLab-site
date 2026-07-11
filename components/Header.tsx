@@ -20,6 +20,30 @@ const IconMenu = () => (
 export default function Header() {
 
   const [scrolled, setScrolled] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [mobileSubOpen, setMobileSubOpen] = useState<string | null>(null)
+
+  const listenLinks = [
+    { label: 'Tous les épisodes', href: '/ecouter' },
+    { label: 'Incontournables', href: '/ecouter/incontournables' },
+    { label: 'Playlists thématiques', href: '/ecouter/playlists-thematiques' },
+  ]
+
+  const discoverLinks = [
+    { label: 'Articles culture', href: '/decouvrir/articles-culture' },
+    { label: 'Histoire des styles', href: '/decouvrir/histoire-des-styles' },
+    { label: 'Décryptages', href: '/decouvrir/decryptages' },
+    { label: 'Tendances', href: '/decouvrir/tendances' },
+    { label: 'Artistes à suivre', href: '/decouvrir/artistes-a-suivre' },
+  ]
+
+  const exploreLinks = [
+    { label: 'Styles de danse', href: '/explorer/styles-de-danse' },
+    { label: 'Chorégraphes', href: '/explorer/choregraphes' },
+    { label: 'Compagnies', href: '/explorer/compagnies' },
+    { label: 'Artistes', href: '/explorer/artistes' },
+    { label: 'Métiers de la danse', href: '/explorer/metiers-de-la-danse' },
+  ]
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
@@ -46,64 +70,67 @@ export default function Header() {
         <ul className="nav-links">
 
           <li className="nav-dropdown">
-            <a href="#">Découvrir</a>
+            <a href="/decouvrir">Découvrir</a>
 
             <div className="dropdown-menu">
-              <a href="#">Articles culture</a>
-              <a href="#">Histoire des styles</a>
-              <a href="#">Décryptages</a>
-              <a href="#">Tendances</a>
-              <a href="#">Artistes à suivre</a>
+              {discoverLinks.map((item) => (
+                <a key={item.label} href={item.href}>
+                  {item.label}
+                </a>
+              ))}
             </div>
 
           </li>
 
 
           <li className="nav-dropdown">
-            <a href="/ecouter">Écouter</a>
+            <button type="button" className="nav-dropdown-trigger">
+              Écouter
+            </button>
 
             <div className="dropdown-menu">
-              <a href="/ecouter#episodes">Derniers épisodes</a>
-              <a href="#">Incontournables</a>
-              <a href="#">Interviews</a>
-              <a href="#">Playlists thématiques</a>
+              {listenLinks.map((item) => (
+                <a key={item.label} href={item.href}>
+                  {item.label}
+                </a>
+              ))}
             </div>
 
           </li>
 
 
           <li className="nav-dropdown">
-            <a href="#">Sortir</a>
+            <a href="/agenda">Sortir</a>
 
             <div className="dropdown-menu">
-              <a href="#">Spectacles</a>
-              <a href="#">Festivals</a>
-              <a href="#">Événements gratuits</a>
+              <a href="/agenda">Spectacles</a>
+              <a href="/agenda">Festivals</a>
+              <a href="/agenda">Événements gratuits</a>
             </div>
 
           </li>
 
 
           <li className="nav-dropdown">
-            <a href="#">Explorer</a>
+            <a href="/explorer">Explorer</a>
 
             <div className="dropdown-menu">
-              <a href="#">Styles de danse</a>
-              <a href="#">Chorégraphes</a>
-              <a href="#">Compagnies</a>
-              <a href="#">Métiers de la danse</a>
+              {exploreLinks.map((item) => (
+                <a key={item.label} href={item.href}>
+                  {item.label}
+                </a>
+              ))}
             </div>
 
           </li>
 
 
           <li className="nav-dropdown">
-            <a href="#">Ressources</a>
+            <a href="/#ressources">Ressources</a>
 
             <div className="dropdown-menu">
-              <a href="#">Guides pratiques</a>
-              <a href="#">Conseils carrière</a>
-              <a href="#">Partenaires</a>
+              <a href="/#ressources">Guides &amp; conseils</a>
+              <a href="/#ressources">Partenaires</a>
             </div>
 
           </li>
@@ -139,12 +166,85 @@ export default function Header() {
           <button
             className="nav-burger"
             aria-label="Menu"
+            onClick={() => setMobileOpen(true)}
           >
             <IconMenu />
           </button>
 
         </div>
 
+      </nav>
+
+      <nav className={`mobile-nav${mobileOpen ? ' open' : ''}`}>
+        <button
+          className="mobile-nav-close"
+          onClick={() => setMobileOpen(false)}
+          aria-label="Fermer"
+        >
+          ✕
+        </button>
+
+        {[
+          {
+            label: 'Découvrir',
+            items: discoverLinks,
+          },
+          {
+            label: 'Écouter',
+            items: listenLinks,
+          },
+          {
+            label: 'Sortir',
+            items: [
+              { label: 'Spectacles', href: '/agenda' },
+              { label: 'Festivals', href: '/agenda' },
+              { label: 'Événements gratuits', href: '/agenda' },
+            ],
+          },
+          {
+            label: 'Explorer',
+            items: exploreLinks,
+          },
+          {
+            label: 'Ressources',
+            items: [
+              { label: 'Guides & conseils', href: '/#ressources' },
+              { label: 'Partenaires', href: '/#ressources' },
+            ],
+          },
+        ].map((group) => (
+          <div key={group.label} className="mobile-menu-group">
+            <button
+              type="button"
+              className="mobile-menu-title"
+              onClick={() => setMobileSubOpen(mobileSubOpen === group.label ? null : group.label)}
+            >
+              {group.label}
+            </button>
+
+            {mobileSubOpen === group.label ? (
+              <div className="mobile-submenu">
+                {group.items.map((item) => (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {item.label}
+                  </a>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ))}
+
+        <a
+          href="/a-propos"
+          className="mobile-menu-title"
+          onClick={() => setMobileOpen(false)}
+        >
+          À propos
+        </a>
       </nav>
     </header>
   )

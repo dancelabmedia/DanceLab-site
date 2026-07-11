@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { existsSync } from "node:fs";
+import path from "node:path";
 
 type Episode = {
   image: string;
@@ -113,6 +115,27 @@ const EPISODES: Episode[] = [
     tags: ["Santé", "Prévention", "Corps"],
   },
   {
+    image: "roseotentick114.png",
+    slug: "114-rose-otentick",
+    number: "114",
+    title: "Être danseur.se ne suffit plus : les compétences qui font vraiment la différence",
+    guest: "Rose Otentick",
+    role: "Danseuse · Artiste interprète",
+    quote:
+      "Une réflexion sur les castings, les valeurs, les agents et la construction d'une carrière durable.",
+    excerpt:
+      "Une réflexion sur les castings, les valeurs, les agents et la construction d'une carrière durable.",
+    description:
+      "Dans cet épisode de Dance Lab, Rose Otentick aborde les compétences qui font la différence dans une carrière de danseur : les castings, les valeurs, les agents et la manière de construire une trajectoire durable.",
+    duration: "1 h",
+    category: "Carrière",
+    spotifyEmbedUrl: "",
+    appleUrl: "",
+    youtubeUrl: "",
+    chapters: [],
+    tags: ["Carrière", "Casting", "Compétences"],
+  },
+  {
     image: "grichkarootz113.png",
     slug: "113-grichka-rootz",
     number: "113",
@@ -133,7 +156,87 @@ const EPISODES: Episode[] = [
     chapters: [],
     tags: ["Krump", "Culture urbaine", "Expression"],
   },
+  {
+    image: "lydielapeste112.png",
+    slug: "112-lydie-la-peste",
+    number: "112",
+    title: "La légitimité artistique : faut-il vraiment attendre qu’on nous la donne",
+    guest: "Lÿdie La PëstE",
+    role: "Artiste · Créatrice",
+    quote:
+      "Une conversation sur la création, la peur, la légitimité et le fait d'oser explorer de nouvelles voies.",
+    excerpt:
+      "Une conversation sur la création, la peur, la légitimité et le fait d'oser explorer de nouvelles voies.",
+    description:
+      "Dans cet épisode de Dance Lab, Lÿdie La PëstE parle de création, de peur, de légitimité et de la nécessité d'oser explorer de nouvelles voies artistiques sans attendre une validation extérieure.",
+    duration: "1 h",
+    category: "Création",
+    spotifyEmbedUrl: "",
+    appleUrl: "",
+    youtubeUrl: "",
+    chapters: [],
+    tags: ["Légitimité", "Création", "Parcours"],
+  },
+  {
+    image: "johannus111.png",
+    slug: "111-johan-nus",
+    number: "111",
+    title: "Penser l’artiste au-delà de la danse : légitimité, bienveillance et santé mentale",
+    guest: "Johan Nus",
+    role: "Artiste · Chorégraphe",
+    quote:
+      "Un épisode sur la responsabilité artistique, les environnements de travail et l'humain derrière l'artiste.",
+    excerpt:
+      "Un épisode sur la responsabilité artistique, les environnements de travail et l'humain derrière l'artiste.",
+    description:
+      "Dans cet épisode de Dance Lab, Johan Nus interroge la place de l'artiste au-delà de la danse : la légitimité, la bienveillance, la santé mentale, la responsabilité artistique et les environnements de travail.",
+    duration: "1 h",
+    category: "Santé mentale",
+    spotifyEmbedUrl: "",
+    appleUrl: "",
+    youtubeUrl: "",
+    chapters: [],
+    tags: ["Santé mentale", "Légitimité", "Bienveillance"],
+  },
+  {
+    image: "fredericfontan110.png",
+    slug: "110-frederic-fontan",
+    number: "110",
+    title: "Comment durer dans les métiers créatifs : Tour du monde, dépression, résilience",
+    guest: "Frédéric Fontan",
+    role: "Artiste · Créatif",
+    quote:
+      "Un témoignage sur la création, la résilience, la santé mentale et la longévité dans les métiers artistiques.",
+    excerpt:
+      "Un témoignage sur la création, la résilience, la santé mentale et la longévité dans les métiers artistiques.",
+    description:
+      "Dans cet épisode de Dance Lab, Frédéric Fontan partage un témoignage autour de la création, de la résilience, de la santé mentale et de la manière de durer dans les métiers artistiques et créatifs.",
+    duration: "1 h",
+    category: "Parcours",
+    spotifyEmbedUrl: "",
+    appleUrl: "",
+    youtubeUrl: "",
+    chapters: [],
+    tags: ["Résilience", "Création", "Longévité"],
+  },
 ];
+
+const CARD_IMAGE_DIR = "/episodes";
+const HEADER_IMAGE_DIR = "/images/les-invites";
+
+function publicFileExists(publicPath: string) {
+  return existsSync(path.join(process.cwd(), "public", publicPath.replace(/^\//, "")));
+}
+
+function getEpisodeCardImage(episode: Episode) {
+  return `${CARD_IMAGE_DIR}/${episode.image}`;
+}
+
+function getEpisodeHeaderImage(episode: Episode) {
+  const headerImage = `${HEADER_IMAGE_DIR}/${episode.image}`;
+
+  return publicFileExists(headerImage) ? headerImage : getEpisodeCardImage(episode);
+}
 
 function getEpisodeBySlug(slug: string) {
   return EPISODES.find((episode) => episode.slug === slug);
@@ -165,7 +268,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  const imageUrl = `/episodes/${episode.image}`;
+  const imageUrl = getEpisodeHeaderImage(episode);
 
   return {
     title: `${episode.title} | Dance Lab`,
@@ -189,6 +292,7 @@ export default async function EpisodePage({ params }: PageProps) {
 
   const similarEpisodes = getSimilarEpisodes(episode.slug);
   const episodeUrl = `https://dancelab.fr/episodes/${episode.slug}`;
+  const headerImage = getEpisodeHeaderImage(episode);
 
   return (
     <>
@@ -196,7 +300,7 @@ export default async function EpisodePage({ params }: PageProps) {
         <section className="episode-hero">
           <img
             className="episode-hero-image"
-            src={`/episodes/${episode.image}`}
+            src={headerImage}
             alt={episode.guest}
           />
 
@@ -351,6 +455,7 @@ export default async function EpisodePage({ params }: PageProps) {
           width: 100%;
           height: 100%;
           object-fit: cover;
+          object-position: center 28%;
           z-index: -2;
         }
 
@@ -359,8 +464,8 @@ export default async function EpisodePage({ params }: PageProps) {
           inset: 0;
           z-index: -1;
           background:
-            linear-gradient(90deg, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.22)),
-            linear-gradient(0deg, rgba(0, 0, 0, 0.78), transparent 50%);
+            linear-gradient(90deg, rgba(0, 0, 0, 0.84), rgba(0, 0, 0, 0.2) 58%, rgba(0, 0, 0, 0.34)),
+            linear-gradient(0deg, rgba(0, 0, 0, 0.8), transparent 54%);
         }
 
         .episode-hero-content {

@@ -1,4 +1,5 @@
 import { episodes } from "../../data/episodes"
+import Link from "next/link"
 
 export default function EcouterPage() {
   return (
@@ -30,8 +31,9 @@ export default function EcouterPage() {
           <div className="episodes-grid">
 
             {episodes.map((episode) => (
-              <article
+              <Link
                 key={episode.number}
+                href={`/episodes/${episode.slug}`}
                 className="episode-card"
               >
 
@@ -59,18 +61,13 @@ export default function EcouterPage() {
                     {episode.description}
                   </p>
 
-                  <a
-                    href={episode.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-primary"
-                  >
+                  <span className="btn btn-primary">
                     Écouter l'épisode
-                  </a>
+                  </span>
 
                 </div>
 
-              </article>
+              </Link>
             ))}
 
           </div>

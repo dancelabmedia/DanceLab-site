@@ -16,6 +16,7 @@ export const episodes = [
   },
   {
     number: 117,
+    slug: "117-tatiana-seguin",
     title: "Ce qu'on sacrifie pour vivre de la danse : ambition, longévité et raconter sa propre histoire",
     guest: "Tatiana Seguin",
     image: "/episodes/tatianaseguin117.png",
@@ -26,6 +27,7 @@ export const episodes = [
   },
   {
     number: 116,
+    slug: "116-julien-ramade",
     title: "Devenir danseur : ce que ça implique vraiment (sans tabou)",
     guest: "Julien Ramade",
     image: "/episodes/julienramade116.png",
@@ -36,6 +38,7 @@ export const episodes = [
   },
   {
     number: 115,
+    slug: "115-laura-malie-leclerc",
     title: "Ma kiné m’a expliqué pourquoi les danseurs.ses se blessent autant",
     guest: "Laura Malié-Leclerc",
     image: "/episodes/lauramalieleclerc115.png",
@@ -46,6 +49,7 @@ export const episodes = [
   },
   {
     number: 114,
+    slug: "114-rose-otentick",
     title: "Être danseur.se ne suffit plus : les compétences qui font vraiment la différence",
     guest: "Rose Otentick",
     image: "/episodes/roseotentick114.png",
@@ -56,6 +60,7 @@ export const episodes = [
   },
   {
     number: 113,
+    slug: "113-grichka-rootz",
     title: "S’il n’y a plus le mot danse, qu’est-ce que je suis : Krump, JJB et transmission",
     guest: "Grichka Rootz",
     image: "/episodes/grichkarootz113.png",
@@ -66,6 +71,7 @@ export const episodes = [
   },
   {
     number: 112,
+    slug: "112-lydie-la-peste",
     title: "La légitimité artistique : faut-il vraiment attendre qu’on nous la donne",
     guest: "Lÿdie La PëstE",
     image: "/episodes/lydielapeste112.png",
@@ -76,6 +82,7 @@ export const episodes = [
   },
   {
     number: 111,
+    slug: "111-johan-nus",
     title: "Penser l’artiste au-delà de la danse : légitimité, bienveillance et santé mentale",
     guest: "Johan Nus",
     image: "/episodes/johannus111.png",
@@ -86,6 +93,7 @@ export const episodes = [
   },
   {
     number: 110,
+    slug: "110-frederic-fontan",
     title: "Comment durer dans les métiers créatifs : Tour du monde, dépression, résilience",
     guest: "Frédéric Fontan",
     image: "/episodes/fredericfontan110.png",
