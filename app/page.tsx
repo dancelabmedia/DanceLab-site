@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { featuredAgendaEvents } from "./agenda/agenda-data"
+import { featuredAgendaEvents, formatAgendaDateRange } from "./agenda/agenda-data"
+import type { AgendaEvent } from "./agenda/agenda-data"
 import { magazineArticles } from "./decouvrir/articles-data"
 import { episodes } from "../data/episodes"
 import Link from "next/link"
@@ -72,7 +73,7 @@ const FEATURED_EPISODES = [
     tag: 'Santé mentale',
     ep: '65',
     title: 'Prendre soin de soi : santé mentale et danse professionnelle',
-    excerpt: "Comment les danseurs vivent la pression et le doute — avec Marie Lecomte, psychologue du sport.",
+    excerpt: "Comment les danseurs vivent la pression et le doute - avec Marie Lecomte, psychologue du sport.",
     guest: 'Marie Lecomte',
     duration: '52min',
     delay: 'd1',
@@ -113,35 +114,30 @@ const EXPLORE_ITEMS = [
 
 const RESOURCES = [
   { icon: '📄', title: 'Contrats & juridique', desc: "Modèles de contrats, droits d'auteur, fiches pratiques pour comprendre vos obligations et protéger votre travail.", delay: '' },
-  { icon: '🎭', title: 'Intermittence', desc: "Comprendre le régime, calculer ses heures, gérer l'administratif — un guide complet pour naviguer dans le système.", delay: 'd1' },
-  { icon: '🎯', title: 'Auditions & casting', desc: "Préparer son book, rédiger un CV de danseur, réussir ses auditions — nos conseils et checklists pratiques.", delay: 'd2' },
-  { icon: '📱', title: 'Communication & réseaux', desc: "Construire sa marque personnelle, maîtriser Instagram, créer un site — outils et stratégies pour exister en ligne.", delay: '' },
-  { icon: '💡', title: 'Entrepreneuriat artistique', desc: "Monter sa structure, trouver des financements, gérer la comptabilité — ressources pour les artistes entrepreneurs.", delay: 'd1' },
-  { icon: '🗓️', title: 'Organisation de carrière', desc: "Planifier sa saison, gérer ses projets, se fixer des objectifs — des outils pour prendre en main son parcours.", delay: 'd2' },
+  { icon: '🎭', title: 'Intermittence', desc: "Comprendre le régime, calculer ses heures, gérer l'administratif - un guide complet pour naviguer dans le système.", delay: 'd1' },
+  { icon: '🎯', title: 'Auditions & casting', desc: "Préparer son book, rédiger un CV de danseur, réussir ses auditions - nos conseils et checklists pratiques.", delay: 'd2' },
+  { icon: '📱', title: 'Communication & réseaux', desc: "Construire sa marque personnelle, maîtriser Instagram, créer un site - outils et stratégies pour exister en ligne.", delay: '' },
+  { icon: '💡', title: 'Entrepreneuriat artistique', desc: "Monter sa structure, trouver des financements, gérer la comptabilité - ressources pour les artistes entrepreneurs.", delay: 'd1' },
+  { icon: '🗓️', title: 'Organisation de carrière', desc: "Planifier sa saison, gérer ses projets, se fixer des objectifs - des outils pour prendre en main son parcours.", delay: 'd2' },
 ]
 
 const TICKER_ITEMS = ['Podcast', 'Articles', 'Agenda culturel', "Portraits d'artistes", 'Ressources pro', 'Styles de danse', 'Festivals', 'Interviews', 'Compagnies', 'Spectacles']
 
-function getAgendaHomeDateParts(dates: string) {
-  if (dates === 'À compléter') {
+function getAgendaHomeDateParts(event: AgendaEvent) {
+  const formattedDate = formatAgendaDateRange(event)
+
+  if (formattedDate === 'À compléter') {
     return {
       day: 'À',
       detail: 'compléter',
     }
   }
 
-  if (dates.toLowerCase().startsWith('juillet')) {
-    return {
-      day: 'Été',
-      detail: dates,
-    }
-  }
-
-  const [day, ...rest] = dates.split(' ')
+  const [day, ...rest] = formattedDate.split(' ')
 
   return {
     day,
-    detail: rest.join(' ').trim() || dates,
+    detail: rest.join(' ').trim() || formattedDate,
   }
 }
 
@@ -422,7 +418,7 @@ export default function DanceLabPage() {
           </div>
 
           <h1 className="hero-title">
-            Le 1er média qui fait<br />
+            Le <span className="hero-rank" aria-label="premier"><span className="hero-rank-number">1</span><span className="hero-rank-suffix">er</span></span> média qui fait<br />
             <em>découvrir, comprendre</em><br />
             et vivre la danse.
           </h1>
@@ -656,7 +652,7 @@ export default function DanceLabPage() {
               <div className="art-overlay">
                 <p className="art-cat">Décryptage</p>
                 <h3 className="art-title">
-                  Pourquoi le breakdance est devenu une discipline olympique — et ce que ça change pour la danse urbaine
+                  Pourquoi le breakdance est devenu une discipline olympique - et ce que ça change pour la danse urbaine
                 </h3>
                 <p className="art-meta">7 juillet 2026 · 8 min de lecture</p>
               </div>
@@ -729,11 +725,11 @@ export default function DanceLabPage() {
           </div>
           <div className="agenda-grid">
             {featuredAgendaEvents.map((event, index) => {
-              const dateParts = getAgendaHomeDateParts(event.dates)
+              const dateParts = getAgendaHomeDateParts(event)
 
               return (
                 <a
-                  href={event.href}
+                  href={event.officialUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   key={event.slug}

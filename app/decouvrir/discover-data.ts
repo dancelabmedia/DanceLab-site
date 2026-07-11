@@ -45,7 +45,7 @@ export const featuredDiscoverArticles = [
   {
     category: "Décryptage",
     title:
-      "Pourquoi le breakdance est devenu une discipline olympique — et ce que ça change pour la danse urbaine",
+      "Pourquoi le breakdance est devenu une discipline olympique - et ce que ça change pour la danse urbaine",
     meta: "18 juin 2026 · 8 min de lecture",
     href: "/decouvrir/articles/pourquoi-le-breakdance-est-devenu-olympique",
   },

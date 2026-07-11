@@ -76,7 +76,7 @@ export default function Footer() {
             </a>
 
             <p className="footer-tagline">
-              Le média qui ouvre les portes du monde de la danse — pour les professionnels,
+              Le média qui ouvre les portes du monde de la danse - pour les professionnels,
               les passionnés et les curieux.
             </p>
 
@@ -117,7 +117,7 @@ export default function Footer() {
 
         <div className="foot-bottom">
           <p className="foot-copy">
-            © 2026 Dance Lab — Tous droits réservés
+            © 2026 Dance Lab - Tous droits réservés
           </p>
 
           <ul className="foot-legal">

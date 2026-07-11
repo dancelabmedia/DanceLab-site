@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
 import { Cormorant_Garamond, DM_Sans } from 'next/font/google'
+import 'leaflet/dist/leaflet.css'
 import './globals.css'
 import SiteLayout from '../components/SiteLayout'
 
@@ -22,7 +23,7 @@ const dmSans = DM_Sans({
 
 
 export const metadata: Metadata = {
-  title: 'Dance Lab — Le média qui fait découvrir, comprendre et vivre la danse',
+  title: 'Dance Lab - Le média qui fait découvrir, comprendre et vivre la danse',
   description:
     'Dance Lab est le média de référence pour découvrir, comprendre et vivre la danse.',
   openGraph: {
