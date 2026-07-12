@@ -82,7 +82,7 @@ function fitMapToEvents(L: LeafletModule, map: LeafletMap, events: AgendaEvent[]
 function getPopupHtml(group: EventGroup) {
   if (group.events.length === 1) {
     const event = group.events[0]
-    const eventLink = event.ticketUrl || event.officialUrl
+    const eventLink = `/sortir/${event.slug}`
 
     return `
       <article class="agenda-leaflet-popup">
@@ -97,7 +97,7 @@ function getPopupHtml(group: EventGroup) {
         <p>${escapeHtml(event.price)}</p>
         ${
           eventLink
-            ? `<a href="${escapeHtml(eventLink)}" target="_blank" rel="noopener noreferrer">${event.ticketUrl ? "Réserver" : "Voir l'événement"}</a>`
+            ? `<a href="${escapeHtml(eventLink)}" target="_blank" rel="noopener noreferrer">Voir l'événement</a>`
             : "<em>À compléter</em>"
         }
       </article>
@@ -112,7 +112,7 @@ function getPopupHtml(group: EventGroup) {
         ${group.events
           .map(
             (event) => {
-              const eventLink = event.ticketUrl || event.officialUrl
+              const eventLink = `/sortir/${event.slug}`
 
               return `
               <li>

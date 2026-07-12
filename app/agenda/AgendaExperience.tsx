@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import AgendaMap from "./AgendaMap"
 import type { AgendaEvent } from "./agenda-data"
@@ -12,8 +13,8 @@ type AgendaExperienceProps = {
 const ALL = "Tous"
 const EVENTS_PER_PAGE = 12
 
-function getEventLink(event: AgendaEvent) {
-  return event.ticketUrl || event.officialUrl || ""
+function getEventPageUrl(event: AgendaEvent) {
+  return `/sortir/${event.slug}`
 }
 
 function isFreeEvent(event: AgendaEvent) {
@@ -292,7 +293,6 @@ function AgendaCard({
   onFocus: () => void
 }) {
   const location = resolveAgendaEventLocation(event)
-  const eventLink = getEventLink(event)
 
   return (
     <article className={`agenda-premium-card${isActive ? " is-active" : ""}`}>
@@ -324,18 +324,12 @@ function AgendaCard({
         </div>
 
         <div className="agenda-card-footer">
-          <small>Source : {event.sourceLabel}</small>
+          <small>{event.venue}</small>
           <div className="agenda-card-actions">
             <button type="button" onClick={onFocus}>
               Voir sur la carte
             </button>
-            {eventLink ? (
-              <a href={eventLink} target="_blank" rel="noopener noreferrer">
-                {event.ticketUrl ? "Réserver" : "Voir l'événement"}
-              </a>
-            ) : (
-              <span className="agenda-card-missing-link">À compléter</span>
-            )}
+            <Link href={getEventPageUrl(event)}>Voir l'événement</Link>
           </div>
         </div>
       </div>

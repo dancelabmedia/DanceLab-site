@@ -226,9 +226,7 @@ function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
     endDate
   )
   const officialUrl =
-    getText(findProperty(properties, ["Lien", "URL", "Lien officiel", "Site", "OfficialUrl", "Page officielle"])) ||
-    page.url ||
-    ""
+    getText(findProperty(properties, ["Lien", "URL", "Lien officiel", "Site", "OfficialUrl", "Page officielle"])) || ""
   const ticketUrl = getText(findProperty(properties, ["Billetterie", "Réservation", "Reservation", "Ticket", "Tickets"]))
   const source = getText(findProperty(properties, ["Source", "Organisateur", "Organizer"])) || "Notion"
   const coordinates = getCoordinates(properties)
