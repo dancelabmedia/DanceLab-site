@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import type { AgendaCategory, AgendaEvent, AgendaStatus } from "../../agenda/agenda-data"
-import { agendaEvents } from "../../agenda/agenda-data"
 
 export const dynamic = "force-dynamic"
 
@@ -87,6 +86,39 @@ function getText(property?: NotionProperty) {
   return ""
 }
 
+function getNumber(property?: NotionProperty) {
+  const textValue = getText(property)
+  const normalized = textValue.replace(",", ".")
+  const parsed = Number(normalized)
+
+  return Number.isFinite(parsed) ? parsed : undefined
+}
+
+function getCoordinates(properties: Record<string, NotionProperty>) {
+  const latitude = getNumber(findProperty(properties, ["Latitude", "lat"]))
+  const longitude = getNumber(findProperty(properties, ["Longitude", "lng", "lon"]))
+  const combined = getText(
+    findProperty(properties, ["Coordonnées", "Coordonnees", "Coordinates", "GPS", "Géolocalisation", "Geolocalisation"])
+  )
+
+  if (typeof latitude === "number" && typeof longitude === "number") {
+    return { latitude, longitude }
+  }
+
+  const match = combined.match(/(-?\d+(?:[.,]\d+)?)\s*[,;]\s*(-?\d+(?:[.,]\d+)?)/)
+  if (!match) return {}
+
+  const parsedLatitude = Number(match[1].replace(",", "."))
+  const parsedLongitude = Number(match[2].replace(",", "."))
+
+  if (!Number.isFinite(parsedLatitude) || !Number.isFinite(parsedLongitude)) return {}
+
+  return {
+    latitude: parsedLatitude,
+    longitude: parsedLongitude,
+  }
+}
+
 function getDate(property?: NotionProperty) {
   if (!property) return null
   if (property.type === "date") return property.date ?? null
@@ -139,11 +171,25 @@ function isPastEvent(event: AgendaEvent) {
 
 function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
   const properties = page.properties
-  const title = getText(findProperty(properties, ["title", "Titre", "Nom", "Name", "Événement", "Evenement", "Event"]))
+  const title = getText(
+    findProperty(properties, [
+      "title",
+      "Titre",
+      "Nom",
+      "Name",
+      "Événement",
+      "Evenement",
+      "Event",
+      "Nom de l'événement",
+      "Nom de l’événement",
+    ])
+  )
 
   if (!title) return null
 
-  const date = getDate(findProperty(properties, ["date", "Date", "Dates", "Période", "Periode", "Quand"]))
+  const date = getDate(
+    findProperty(properties, ["date", "Date", "Dates", "Période", "Periode", "Quand", "Début", "Debut"])
+  )
   const startDate = date?.start?.slice(0, 10) || "9999-12-31"
   const endDate = date?.end?.slice(0, 10) || undefined
 
@@ -154,11 +200,12 @@ function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
     endDate
   )
   const officialUrl =
-    getText(findProperty(properties, ["Lien", "URL", "Lien officiel", "Site", "OfficialUrl"])) || page.url || ""
+    getText(findProperty(properties, ["Lien", "URL", "Lien officiel", "Site", "OfficialUrl", "Page officielle"])) ||
+    page.url ||
+    ""
   const ticketUrl = getText(findProperty(properties, ["Billetterie", "Réservation", "Reservation", "Ticket", "Tickets"]))
   const source = getText(findProperty(properties, ["Source", "Organisateur", "Organizer"])) || "Notion"
-  const latitude = Number(getText(findProperty(properties, ["Latitude", "lat"])))
-  const longitude = Number(getText(findProperty(properties, ["Longitude", "lng", "lon"])))
+  const coordinates = getCoordinates(properties)
   const image = getCoverUrl(page, findProperty(properties, ["Image", "Photo", "Affiche", "Visuel", "Cover"]))
 
   const event: AgendaEvent = {
@@ -174,8 +221,8 @@ function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
     address: getText(findProperty(properties, ["Adresse", "Address"])) || undefined,
     city: getText(findProperty(properties, ["Ville", "City", "Commune"])) || "À compléter",
     postalCode: getText(findProperty(properties, ["Code postal", "CP", "PostalCode"])) || undefined,
-    latitude: Number.isFinite(latitude) ? latitude : undefined,
-    longitude: Number.isFinite(longitude) ? longitude : undefined,
+    latitude: coordinates.latitude,
+    longitude: coordinates.longitude,
     price: getText(findProperty(properties, ["Prix", "Tarif", "Tarifs", "Price"])) || "À compléter",
     category,
     officialUrl,
@@ -192,7 +239,7 @@ function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
 }
 
 async function fetchAllNotionPages() {
-  if (!NOTION_TOKEN) return null
+  if (!NOTION_TOKEN) throw new Error("Missing NOTION_TOKEN")
 
   const pages: NotionPage[] = []
   let startCursor: string | undefined
@@ -232,22 +279,20 @@ export async function GET() {
   try {
     const notionPages = await fetchAllNotionPages()
     const events = notionPages
-      ? notionPages
-          .map(normalizeNotionPage)
-          .filter((event): event is AgendaEvent => Boolean(event))
-          .filter((event) => !isPastEvent(event))
-      : agendaEvents.filter((event) => !isPastEvent(event))
+      .map(normalizeNotionPage)
+      .filter((event): event is AgendaEvent => Boolean(event))
+      .filter((event) => !isPastEvent(event))
 
     return NextResponse.json({
-      source: notionPages ? "notion" : "fallback",
+      source: "notion",
       events: sortEvents(events),
     })
   } catch (error) {
     console.error(error)
     return NextResponse.json({
-      source: "fallback",
+      source: "notion",
       error: "notion_unavailable",
-      events: sortEvents(agendaEvents.filter((event) => !isPastEvent(event))),
+      events: [],
     })
   }
 }

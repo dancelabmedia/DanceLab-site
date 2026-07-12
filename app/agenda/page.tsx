@@ -1,6 +1,5 @@
 import type { Metadata } from "next"
 import AgendaExperience from "./AgendaExperience"
-import { upcomingAgendaEvents } from "./agenda-data"
 
 export const metadata: Metadata = {
   title: "Agenda culturel | Dance Lab",
@@ -22,7 +21,7 @@ export default function AgendaPage() {
         </div>
       </section>
 
-      <AgendaExperience events={upcomingAgendaEvents} />
+      <AgendaExperience events={[]} />
     </main>
   )
 }

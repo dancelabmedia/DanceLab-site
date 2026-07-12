@@ -1530,7 +1530,8 @@ button {
 }
 
 .agenda-card-footer a,
-.agenda-card-footer button {
+.agenda-card-footer button,
+.agenda-card-footer .agenda-card-missing-link {
   border: 0;
   padding: 0;
   background: transparent;
@@ -1539,6 +1540,11 @@ button {
   font-size: 0.88rem;
   font-weight: 800;
   cursor: pointer;
+}
+
+.agenda-card-footer .agenda-card-missing-link {
+  color: var(--color-text-muted);
+  cursor: default;
 }
 
 .agenda-card-footer button {
@@ -1719,6 +1725,13 @@ button {
   color: var(--color-text-dark);
 }
 
+.agenda-leaflet-popup img {
+  width: calc(100% + 36px);
+  height: 116px;
+  margin: -18px -18px 8px;
+  object-fit: cover;
+}
+
 .agenda-leaflet-popup span {
   color: var(--color-primary-light);
   font-size: 0.68rem;
@@ -1743,6 +1756,13 @@ button {
 .agenda-leaflet-popup a {
   color: var(--color-primary-dark);
   font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.agenda-leaflet-popup em {
+  color: var(--color-text-muted);
+  font-size: 0.84rem;
+  font-style: normal;
   font-weight: 800;
 }
 

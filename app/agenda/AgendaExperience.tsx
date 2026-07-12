@@ -13,7 +13,7 @@ const ALL = "Tous"
 const EVENTS_PER_PAGE = 12
 
 function getEventLink(event: AgendaEvent) {
-  return event.ticketUrl || event.officialUrl
+  return event.ticketUrl || event.officialUrl || ""
 }
 
 function isFreeEvent(event: AgendaEvent) {
@@ -125,7 +125,7 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
               <h2>À venir ou en cours</h2>
               {hasNotionError ? (
                 <p className="agenda-sync-note">
-                  Agenda Notion momentanément indisponible - affichage de secours.
+                  Agenda Notion momentanément indisponible. Les événements seront affichés dès que la connexion sera rétablie.
                 </p>
               ) : null}
             </div>
@@ -143,7 +143,9 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
               <p>
                 {isLoading
                   ? "Chargement des événements..."
-                  : "Aucun événement ne correspond à ces filtres pour le moment."}
+                  : hasNotionError
+                    ? "Impossible de récupérer les événements Notion pour le moment."
+                    : "Aucun événement ne correspond à ces filtres pour le moment."}
               </p>
             </div>
           ) : null}
@@ -290,6 +292,7 @@ function AgendaCard({
   onFocus: () => void
 }) {
   const location = resolveAgendaEventLocation(event)
+  const eventLink = getEventLink(event)
 
   return (
     <article className={`agenda-premium-card${isActive ? " is-active" : ""}`}>
@@ -338,9 +341,13 @@ function AgendaCard({
             <button type="button" onClick={onFocus}>
               Voir sur la carte
             </button>
-            <a href={getEventLink(event)} target="_blank" rel="noopener noreferrer">
-              {event.ticketUrl ? "Réserver" : "Voir l'événement"}
-            </a>
+            {eventLink ? (
+              <a href={eventLink} target="_blank" rel="noopener noreferrer">
+                {event.ticketUrl ? "Réserver" : "Voir l'événement"}
+              </a>
+            ) : (
+              <span className="agenda-card-missing-link">À compléter</span>
+            )}
           </div>
         </div>
       </div>

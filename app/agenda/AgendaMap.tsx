@@ -82,14 +82,24 @@ function fitMapToEvents(L: LeafletModule, map: LeafletMap, events: AgendaEvent[]
 function getPopupHtml(group: EventGroup) {
   if (group.events.length === 1) {
     const event = group.events[0]
+    const eventLink = event.ticketUrl || event.officialUrl
 
     return `
       <article class="agenda-leaflet-popup">
+        ${
+          event.image
+            ? `<img src="${escapeHtml(event.image)}" alt="${escapeHtml(event.title)}" loading="lazy" />`
+            : ""
+        }
         <span>${escapeHtml(event.category)}</span>
         <strong>${escapeHtml(event.title)}</strong>
         <p>${escapeHtml(formatAgendaDateRange(event))} · ${escapeHtml(event.venue)} · ${escapeHtml(event.city)}</p>
         <p>${escapeHtml(event.price)}</p>
-        <a href="${escapeHtml(event.ticketUrl || event.officialUrl)}" target="_blank" rel="noopener noreferrer">${event.ticketUrl ? "Réserver" : "Voir l'événement"}</a>
+        ${
+          eventLink
+            ? `<a href="${escapeHtml(eventLink)}" target="_blank" rel="noopener noreferrer">${event.ticketUrl ? "Réserver" : "Voir l'événement"}</a>`
+            : "<em>À compléter</em>"
+        }
       </article>
     `
   }
@@ -101,14 +111,20 @@ function getPopupHtml(group: EventGroup) {
       <ul>
         ${group.events
           .map(
-            (event) => `
+            (event) => {
+              const eventLink = event.ticketUrl || event.officialUrl
+
+              return `
               <li>
-                <a href="${escapeHtml(event.ticketUrl || event.officialUrl)}" target="_blank" rel="noopener noreferrer">
-                  ${escapeHtml(event.title)}
-                </a>
+                ${
+                  eventLink
+                    ? `<a href="${escapeHtml(eventLink)}" target="_blank" rel="noopener noreferrer">${escapeHtml(event.title)}</a>`
+                    : `<strong>${escapeHtml(event.title)}</strong>`
+                }
                 <small>${escapeHtml(formatAgendaDateRange(event))}</small>
               </li>
             `
+            }
           )
           .join("")}
       </ul>
