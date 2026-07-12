@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { formatAgendaDateRange } from "./agenda/agenda-data"
+import { featuredAgendaEvents, formatAgendaDateRange } from "./agenda/agenda-data"
 import type { AgendaEvent } from "./agenda/agenda-data"
 import { magazineArticles } from "./decouvrir/articles-data"
 import { episodes } from "../data/episodes"
@@ -153,7 +153,7 @@ export default function DanceLabPage() {
   const [newsletterStatus, setNewsletterStatus] = useState<
     'idle' | 'loading' | 'success' | 'invalid' | 'error'
   >('idle')
-  const [homeAgendaEvents, setHomeAgendaEvents] = useState<AgendaEvent[]>([])
+  const [homeAgendaEvents, setHomeAgendaEvents] = useState<AgendaEvent[]>(featuredAgendaEvents)
   const guestTrackRef = useRef<HTMLDivElement | null>(null)
   const newsletterInputRef = useRef<HTMLInputElement | null>(null)
   const newsletterSubmittedRef = useRef(false)
@@ -223,9 +223,13 @@ export default function DanceLabPage() {
         const data = await response.json()
         if (cancelled || !Array.isArray(data.events)) return
 
-        setHomeAgendaEvents(data.events.slice(0, HOME_AGENDA_LIMIT))
+        setHomeAgendaEvents(
+          data.events.length > 0
+            ? data.events.slice(0, HOME_AGENDA_LIMIT)
+            : featuredAgendaEvents
+        )
       } catch {
-        setHomeAgendaEvents([])
+        setHomeAgendaEvents(featuredAgendaEvents)
       }
     }
 
@@ -247,9 +251,13 @@ export default function DanceLabPage() {
         const data = await response.json()
         if (cancelled || !Array.isArray(data.events)) return
 
-        setHomeAgendaEvents(data.events.slice(0, HOME_AGENDA_LIMIT))
+        setHomeAgendaEvents(
+          data.events.length > 0
+            ? data.events.slice(0, HOME_AGENDA_LIMIT)
+            : featuredAgendaEvents
+        )
       } catch {
-        setHomeAgendaEvents([])
+        setHomeAgendaEvents(featuredAgendaEvents)
       }
     }
 
@@ -357,7 +365,7 @@ export default function DanceLabPage() {
 
   /* ── Rendu ────────────────────────────────────────── */
   const latestEpisode = episodes[0]
-  const agendaPreviewEvents = homeAgendaEvents
+  const agendaPreviewEvents = homeAgendaEvents.length > 0 ? homeAgendaEvents : featuredAgendaEvents
 
   return (
       <main>
@@ -782,17 +790,14 @@ export default function DanceLabPage() {
                 <Link
                   href={`/sortir/${event.slug}`}
                   key={event.slug}
-                  className={`guest-card fu${index === 1 ? ' d1' : index === 2 ? ' d2' : ''}`}
+                  className="guest-card"
                 >
-                  {event.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={event.image} alt={event.title} loading="lazy" />
-                  ) : (
-                    <div className="agenda-home-placeholder">
-                      <span>Image officielle</span>
-                      <strong>À compléter</strong>
-                    </div>
-                  )}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={event.image || "/images/Couverture.png"}
+                    alt={event.title}
+                    loading="lazy"
+                  />
                   <div className="ag-body">
                     <div className="ag-date">
                       <span className="ag-day">{dateParts.day}</span>
