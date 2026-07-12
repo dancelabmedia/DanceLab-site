@@ -46,19 +46,19 @@ export const featuredDiscoverArticles = [
     category: "Décryptage",
     title:
       "Pourquoi le breakdance est devenu une discipline olympique - et ce que ça change pour la danse urbaine",
-    meta: "18 juin 2026 · 8 min de lecture",
+    meta: "18.06.26 · 8 min de lecture",
     href: "/decouvrir/articles/pourquoi-le-breakdance-est-devenu-olympique",
   },
   {
     category: "Culture",
     title: "Comprendre le waacking : origines, codes et artistes incontournables",
-    meta: "25 juin 2026 · 7 min de lecture",
+    meta: "25.06.26 · 7 min de lecture",
     href: "/decouvrir/articles/comprendre-le-waacking-histoire-culture-influences",
   },
   {
     category: "Agenda",
     title: "Les festivals de danse incontournables en France cet été",
-    meta: "2 juillet 2026 · 6 min de lecture",
+    meta: "02.07.26 · 6 min de lecture",
     href: "/decouvrir/articles/festivals-danse-incontournables-ete",
   },
   {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { featuredAgendaEvents, formatAgendaDateRange } from "./agenda/agenda-data"
+import { formatAgendaDateRange } from "./agenda/agenda-data"
 import type { AgendaEvent } from "./agenda/agenda-data"
 import { magazineArticles } from "./decouvrir/articles-data"
 import { episodes } from "../data/episodes"
@@ -121,23 +121,24 @@ const RESOURCES = [
   { icon: '🗓️', title: 'Organisation de carrière', desc: "Planifier sa saison, gérer ses projets, se fixer des objectifs - des outils pour prendre en main son parcours.", delay: 'd2' },
 ]
 
-const TICKER_ITEMS = ['Podcast', 'Articles', 'Agenda culturel', "Portraits d'artistes", 'Ressources pro', 'Styles de danse', 'Festivals', 'Interviews', 'Compagnies', 'Spectacles']
+const TICKER_ITEMS = ['Podcast', 'Articles', 'Agenda culturel', "Portraits d\'artistes", 'Ressources pro', 'Styles de danse', 'Festivals', 'Interviews', 'Compagnies', 'Spectacles']
+const HOME_AGENDA_LIMIT = 3
 
 function getAgendaHomeDateParts(event: AgendaEvent) {
   const formattedDate = formatAgendaDateRange(event)
 
   if (formattedDate === 'À compléter') {
     return {
-      day: 'À',
-      detail: 'compléter',
+      day: 'À compléter',
+      detail: '',
     }
   }
 
-  const [day, ...rest] = formattedDate.split(' ')
+  const [start, end] = formattedDate.split(' au ')
 
   return {
-    day,
-    detail: rest.join(' ').trim() || formattedDate,
+    day: start,
+    detail: end ? `au ${end}` : '',
   }
 }
 
@@ -152,6 +153,7 @@ export default function DanceLabPage() {
   const [newsletterStatus, setNewsletterStatus] = useState<
     'idle' | 'loading' | 'success' | 'invalid' | 'error'
   >('idle')
+  const [homeAgendaEvents, setHomeAgendaEvents] = useState<AgendaEvent[]>([])
   const guestTrackRef = useRef<HTMLDivElement | null>(null)
   const newsletterInputRef = useRef<HTMLInputElement | null>(null)
   const newsletterSubmittedRef = useRef(false)
@@ -207,6 +209,54 @@ export default function DanceLabPage() {
   useEffect(() => {
     return () => {
       if (newsletterTimeoutRef.current) window.clearTimeout(newsletterTimeoutRef.current)
+    }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadHomeAgenda() {
+      try {
+        const response = await fetch('/api/agenda', { cache: 'no-store' })
+        if (!response.ok) return
+
+        const data = await response.json()
+        if (cancelled || !Array.isArray(data.events)) return
+
+        setHomeAgendaEvents(data.events.slice(0, HOME_AGENDA_LIMIT))
+      } catch {
+        setHomeAgendaEvents([])
+      }
+    }
+
+    loadHomeAgenda()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadHomeAgenda() {
+      try {
+        const response = await fetch('/api/agenda', { cache: 'no-store' })
+        if (!response.ok) return
+
+        const data = await response.json()
+        if (cancelled || !Array.isArray(data.events)) return
+
+        setHomeAgendaEvents(data.events.slice(0, HOME_AGENDA_LIMIT))
+      } catch {
+        setHomeAgendaEvents([])
+      }
+    }
+
+    loadHomeAgenda()
+
+    return () => {
+      cancelled = true
     }
   }, [])
 
@@ -307,6 +357,8 @@ export default function DanceLabPage() {
 
   /* ── Rendu ────────────────────────────────────────── */
   const latestEpisode = episodes[0]
+  const agendaPreviewEvents = homeAgendaEvents
+
   return (
       <main>
       {/* ========================================
@@ -612,7 +664,7 @@ export default function DanceLabPage() {
             onPointerCancel={endGuestDrag}
             onClickCapture={stopGuestClickAfterDrag}
           >
-            {GUESTS.map(({ image, slug, name, role, ep, quote, delay }) => (
+            {GUESTS.map(({ image, slug, name, role, quote, delay }) => (
               <Link href={`/episodes/${slug}`} key={slug} className={`guest-card fu${delay ? ' ' + delay : ''}`}>
                 <div className="guest-img-wrap">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -623,7 +675,6 @@ export default function DanceLabPage() {
                 </div>
                 <h3 className="guest-name">{name}</h3>
                 <p className="guest-role">{role}</p>
-                <span className="guest-ep">→ Ep. {ep}</span>
               </Link>
             ))}
           </div>
@@ -654,7 +705,7 @@ export default function DanceLabPage() {
                 <h3 className="art-title">
                   Pourquoi le breakdance est devenu une discipline olympique - et ce que ça change pour la danse urbaine
                 </h3>
-                <p className="art-meta">7 juillet 2026 · 8 min de lecture</p>
+                <p className="art-meta">07.07.26 · 8 min de lecture</p>
               </div>
             </a>
             <div className="mag-side">
@@ -664,7 +715,7 @@ export default function DanceLabPage() {
                 <div className="art-overlay">
                   <p className="art-cat">Culture</p>
                   <h3 className="art-title">Comprendre le waacking : origines, codes et artistes incontournables</h3>
-                  <p className="art-meta">5 juillet 2026 · 5 min</p>
+                  <p className="art-meta">05.07.26 · 5 min</p>
                 </div>
               </a>
               <a href="/decouvrir/articles/festivals-danse-incontournables-ete" className="art-card art-card-sm">
@@ -673,7 +724,7 @@ export default function DanceLabPage() {
                 <div className="art-overlay">
                   <p className="art-cat">Agenda</p>
                   <h3 className="art-title">Les festivals de danse incontournables en France cet été</h3>
-                  <p className="art-meta">2 juillet 2026 · 6 min</p>
+                  <p className="art-meta">02.07.26 · 6 min</p>
                 </div>
               </a>
             </div>
@@ -721,17 +772,15 @@ export default function DanceLabPage() {
               <h2 className="section-title">Sortir &amp; vivre la danse</h2>
               <p className="section-sub">Spectacles, festivals, expositions, événements, ne manquez rien.</p>
             </div>
-            <a href="/agenda" className="see-all">Tout l&apos;agenda <IconArrow /></a>
+            <Link href="/agenda" className="see-all">Tout l&apos;agenda <IconArrow /></Link>
           </div>
           <div className="agenda-grid">
-            {featuredAgendaEvents.map((event, index) => {
+            {agendaPreviewEvents.map((event, index) => {
               const dateParts = getAgendaHomeDateParts(event)
 
               return (
-                <a
-                  href={event.officialUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href={`/sortir/${event.slug}`}
                   key={event.slug}
                   className={`guest-card fu${index === 1 ? ' d1' : index === 2 ? ' d2' : ''}`}
                 >
@@ -761,7 +810,7 @@ export default function DanceLabPage() {
                     <span className="ag-type">{event.category}</span>
                     <span className="ag-cta">Voir →</span>
                   </div>
-                </a>
+                </Link>
               )
             })}
           </div>
@@ -804,7 +853,7 @@ export default function DanceLabPage() {
                 Tout ce dont un danseur a besoin pour gérer sa carrière, se protéger et évoluer.
               </p>
             </div>
-            <a href="#" className="see-all">Toutes les ressources <IconArrow /></a>
+            <a href="/#ressources" className="see-all">Toutes les ressources <IconArrow /></a>
           </div>
           <div className="res-grid">
             {RESOURCES.map(({ icon, title, desc, delay }) => (
@@ -812,7 +861,7 @@ export default function DanceLabPage() {
                 <div className="res-icon">{icon}</div>
                 <h3 className="res-title">{title}</h3>
                 <p className="res-desc">{desc}</p>
-                <a href="#" className="res-link">Accéder <IconArrow /></a>
+                <a href="/#ressources" className="res-link">Accéder <IconArrow /></a>
               </div>
             ))}
           </div>

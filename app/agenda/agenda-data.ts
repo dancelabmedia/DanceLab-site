@@ -70,7 +70,7 @@ export function formatAgendaDate(date: string) {
 
   if (!year || !month || !day) return "À compléter"
 
-  return `${day} - ${month} - ${year}`
+  return `${day}.${month}.${year.slice(-2)}`
 }
 
 export function formatAgendaDateRange(event: AgendaEvent) {

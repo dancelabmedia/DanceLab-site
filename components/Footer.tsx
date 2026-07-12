@@ -122,13 +122,13 @@ export default function Footer() {
 
           <ul className="foot-legal">
             <li>
-              <a href="#">Mentions légales</a>
+              <a href="/mentions-legales">Mentions légales</a>
             </li>
             <li>
-              <a href="#">Politique de confidentialité</a>
+              <a href="/politique-confidentialite">Politique de confidentialité</a>
             </li>
             <li>
-              <a href="#">Gestion des cookies</a>
+              <a href="/gestion-cookies">Gestion des cookies</a>
             </li>
           </ul>
         </div>

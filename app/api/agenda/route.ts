@@ -677,6 +677,35 @@ function sortEvents(events: AgendaEvent[]) {
   return [...events].sort((a, b) => a.startDate.localeCompare(b.startDate))
 }
 
+function cleanVisibleText(value: string) {
+  return value.replace(/[--]/g, "-")
+}
+
+function sanitizeAgendaEvent(event: AgendaEvent): AgendaEvent {
+  return {
+    ...event,
+    title: cleanVisibleText(event.title),
+    description: cleanVisibleText(event.description),
+    dates: cleanVisibleText(event.dates),
+    venue: cleanVisibleText(event.venue),
+    address: event.address ? cleanVisibleText(event.address) : undefined,
+    city: cleanVisibleText(event.city),
+    postalCode: event.postalCode ? cleanVisibleText(event.postalCode) : undefined,
+    price: cleanVisibleText(event.price),
+    time: event.time ? cleanVisibleText(event.time) : undefined,
+    source: cleanVisibleText(event.source),
+    sourceLabel: cleanVisibleText(event.sourceLabel),
+    additionalInfo: event.additionalInfo?.map((item) => ({
+      label: cleanVisibleText(item.label),
+      value: cleanVisibleText(item.value),
+    })),
+  }
+}
+
+async function prepareAgendaResponseEvents(events: AgendaEvent[]) {
+  return sortEvents(await enrichEventsWithCoordinates(events)).map(sanitizeAgendaEvent)
+}
+
 function getAgendaEventKey(event: AgendaEvent) {
   return normalizeName([event.title, event.startDate, event.venue, event.city].join("|"))
 }
@@ -822,7 +851,7 @@ export async function GET() {
 
     return NextResponse.json({
       source: "notion+selection-nationale",
-      events: sortEvents(await enrichEventsWithCoordinates(events)),
+      events: await prepareAgendaResponseEvents(events),
     })
   } catch (error) {
     console.error(error)
@@ -835,7 +864,7 @@ export async function GET() {
       source: "selection-nationale",
       error: "notion_unavailable",
       detail,
-      events: sortEvents(await enrichEventsWithCoordinates(mergeAgendaSources([]))),
+      events: await prepareAgendaResponseEvents(mergeAgendaSources([])),
     })
   }
 }

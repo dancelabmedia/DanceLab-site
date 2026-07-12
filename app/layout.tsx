@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import Script from 'next/script'
 import { Cormorant_Garamond, DM_Sans } from 'next/font/google'
 import 'leaflet/dist/leaflet.css'
 import './globals.css'
@@ -37,18 +36,6 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr">
-      <Script id="scroll-restoration" strategy="beforeInteractive">
-        {`
-          try {
-            if ('scrollRestoration' in window.history) {
-              window.history.scrollRestoration = 'manual';
-            }
-            if (!window.location.hash) {
-              window.scrollTo(0, 0);
-            }
-          } catch (error) {}
-        `}
-      </Script>
       <body className={`${displayFont.variable} ${dmSans.variable}`}>
         <SiteLayout>
           {children}

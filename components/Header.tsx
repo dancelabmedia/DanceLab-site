@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 const IconSearch = () => (
@@ -18,10 +19,8 @@ const IconMenu = () => (
 )
 
 export default function Header() {
-
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [mobileSubOpen, setMobileSubOpen] = useState<string | null>(null)
 
   const listenLinks = [
     { label: 'Tous les épisodes', href: '/ecouter' },
@@ -45,6 +44,29 @@ export default function Header() {
     { label: 'Métiers de la danse', href: '/explorer/metiers-de-la-danse' },
   ]
 
+  const navGroups = [
+    { label: 'Découvrir', href: '/decouvrir', items: discoverLinks },
+    { label: 'Écouter', href: '/ecouter', items: listenLinks },
+    {
+      label: 'Sortir',
+      href: '/agenda',
+      items: [
+        { label: 'Spectacles', href: '/agenda' },
+        { label: 'Festivals', href: '/agenda' },
+        { label: 'Événements gratuits', href: '/agenda' },
+      ],
+    },
+    { label: 'Explorer', href: '/explorer', items: exploreLinks },
+    {
+      label: 'Ressources',
+      href: '/#ressources',
+      items: [
+        { label: 'Guides & conseils', href: '/#ressources' },
+        { label: 'Partenaires', href: '/#ressources' },
+      ],
+    },
+  ]
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
 
@@ -53,115 +75,47 @@ export default function Header() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  const closeMobileMenu = () => setMobileOpen(false)
 
   return (
     <header className={`header${scrolled ? ' scrolled' : ''}`}>
       <nav className="nav">
-
-        <a href="/" className="logo">
-          <img
-            src="/logo.png"
-            alt="Dance Lab"
-            className="logo-image"
-          />
-        </a>
-
+        <Link href="/" className="logo" onClick={closeMobileMenu}>
+          <img src="/logo.png" alt="Dance Lab" className="logo-image" />
+        </Link>
 
         <ul className="nav-links">
+          {navGroups.map((group) => (
+            <li key={group.label} className="nav-dropdown">
+              <Link href={group.href}>{group.label}</Link>
 
-          <li className="nav-dropdown">
-            <a href="/decouvrir">Découvrir</a>
-
-            <div className="dropdown-menu">
-              {discoverLinks.map((item) => (
-                <a key={item.label} href={item.href}>
-                  {item.label}
-                </a>
-              ))}
-            </div>
-
-          </li>
-
-
-          <li className="nav-dropdown">
-            <button type="button" className="nav-dropdown-trigger">
-              Écouter
-            </button>
-
-            <div className="dropdown-menu">
-              {listenLinks.map((item) => (
-                <a key={item.label} href={item.href}>
-                  {item.label}
-                </a>
-              ))}
-            </div>
-
-          </li>
-
-
-          <li className="nav-dropdown">
-            <a href="/agenda">Sortir</a>
-
-            <div className="dropdown-menu">
-              <a href="/agenda">Spectacles</a>
-              <a href="/agenda">Festivals</a>
-              <a href="/agenda">Événements gratuits</a>
-            </div>
-
-          </li>
-
-
-          <li className="nav-dropdown">
-            <a href="/explorer">Explorer</a>
-
-            <div className="dropdown-menu">
-              {exploreLinks.map((item) => (
-                <a key={item.label} href={item.href}>
-                  {item.label}
-                </a>
-              ))}
-            </div>
-
-          </li>
-
-
-          <li className="nav-dropdown">
-            <a href="/#ressources">Ressources</a>
-
-            <div className="dropdown-menu">
-              <a href="/#ressources">Guides &amp; conseils</a>
-              <a href="/#ressources">Partenaires</a>
-            </div>
-
-          </li>
-
+              <div className="dropdown-menu">
+                {group.items.map((item) => (
+                  <Link key={item.label} href={item.href}>
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </li>
+          ))}
 
           <li>
-            <a href="/a-propos">À propos</a>
+            <Link href="/a-propos">À propos</Link>
           </li>
-
-
         </ul>
 
-
         <div className="nav-right">
-
-          <button
-            className="nav-icon-btn"
-            aria-label="Rechercher"
-          >
+          <button className="nav-icon-btn" aria-label="Rechercher">
             <IconSearch />
           </button>
 
-
-          <a
+          <Link
             href="/#newsletter"
             className="btn btn-primary"
             style={{ padding: '10px 20px', fontSize: '13px' }}
           >
             Newsletter
-          </a>
-
+          </Link>
 
           <button
             className="nav-burger"
@@ -170,81 +124,41 @@ export default function Header() {
           >
             <IconMenu />
           </button>
-
         </div>
-
       </nav>
 
       <nav className={`mobile-nav${mobileOpen ? ' open' : ''}`}>
         <button
           className="mobile-nav-close"
-          onClick={() => setMobileOpen(false)}
+          onClick={closeMobileMenu}
           aria-label="Fermer"
         >
           ✕
         </button>
 
-        {[
-          {
-            label: 'Découvrir',
-            items: discoverLinks,
-          },
-          {
-            label: 'Écouter',
-            items: listenLinks,
-          },
-          {
-            label: 'Sortir',
-            items: [
-              { label: 'Spectacles', href: '/agenda' },
-              { label: 'Festivals', href: '/agenda' },
-              { label: 'Événements gratuits', href: '/agenda' },
-            ],
-          },
-          {
-            label: 'Explorer',
-            items: exploreLinks,
-          },
-          {
-            label: 'Ressources',
-            items: [
-              { label: 'Guides & conseils', href: '/#ressources' },
-              { label: 'Partenaires', href: '/#ressources' },
-            ],
-          },
-        ].map((group) => (
+        {navGroups.map((group) => (
           <div key={group.label} className="mobile-menu-group">
-            <button
-              type="button"
+            <Link
+              href={group.href}
               className="mobile-menu-title"
-              onClick={() => setMobileSubOpen(mobileSubOpen === group.label ? null : group.label)}
+              onClick={closeMobileMenu}
             >
               {group.label}
-            </button>
+            </Link>
 
-            {mobileSubOpen === group.label ? (
-              <div className="mobile-submenu">
-                {group.items.map((item) => (
-                  <a
-                    key={item.label}
-                    href={item.href}
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    {item.label}
-                  </a>
-                ))}
-              </div>
-            ) : null}
+            <div className="mobile-submenu">
+              {group.items.map((item) => (
+                <Link key={item.label} href={item.href} onClick={closeMobileMenu}>
+                  {item.label}
+                </Link>
+              ))}
+            </div>
           </div>
         ))}
 
-        <a
-          href="/a-propos"
-          className="mobile-menu-title"
-          onClick={() => setMobileOpen(false)}
-        >
+        <Link href="/a-propos" className="mobile-menu-title" onClick={closeMobileMenu}>
           À propos
-        </a>
+        </Link>
       </nav>
     </header>
   )
