@@ -3,7 +3,7 @@ import type { AgendaCategory, AgendaEvent, AgendaStatus } from "../../agenda/age
 
 export const dynamic = "force-dynamic"
 
-const NOTION_VERSION = "2022-06-28"
+const NOTION_VERSION = "2025-09-03"
 const DEFAULT_DATABASE_ID = "c06a1552cfcc4522ae68d32f833b3cf3"
 const NOTION_TOKEN = process.env.NOTION_TOKEN || process.env.NOTION_API_KEY
 const NOTION_DATABASE_ID = process.env.NOTION_AGENDA_DATABASE_ID || DEFAULT_DATABASE_ID
@@ -36,6 +36,32 @@ type NotionPage = {
   cover?: { type: "external" | "file"; external?: { url?: string }; file?: { url?: string } } | null
   url?: string
   properties: Record<string, NotionProperty>
+}
+
+type NotionApiError = {
+  status?: number
+  code?: string
+  message?: string
+}
+
+type NotionDataSource = {
+  id: string
+  name?: string
+}
+
+type NotionDatabaseResponse = {
+  data_sources?: NotionDataSource[]
+}
+
+class NotionRequestError extends Error {
+  status: number
+  code?: string
+
+  constructor(status: number, code: string | undefined, message: string) {
+    super(message)
+    this.status = status
+    this.code = code
+  }
 }
 
 function todayIso() {
@@ -238,34 +264,59 @@ function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
   return event
 }
 
+async function notionRequest<T>(path: string, init?: RequestInit) {
+  const response = await fetch(`https://api.notion.com/v1/${path}`, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${NOTION_TOKEN}`,
+      "Content-Type": "application/json",
+      "Notion-Version": NOTION_VERSION,
+      ...(init?.headers || {}),
+    },
+    cache: "no-store",
+  })
+
+  if (!response.ok) {
+    const error = (await response.json().catch(() => ({}))) as NotionApiError
+    throw new NotionRequestError(
+      response.status,
+      error.code,
+      error.message || `Notion API error: ${response.status}`
+    )
+  }
+
+  return (await response.json()) as T
+}
+
+async function resolveDataSourceId() {
+  const database = await notionRequest<NotionDatabaseResponse>(`databases/${NOTION_DATABASE_ID}`, {
+    method: "GET",
+  })
+
+  return database.data_sources?.[0]?.id || NOTION_DATABASE_ID
+}
+
 async function fetchAllNotionPages() {
   if (!NOTION_TOKEN) throw new Error("Missing NOTION_TOKEN")
 
+  const dataSourceId = await resolveDataSourceId()
   const pages: NotionPage[] = []
   let startCursor: string | undefined
 
   do {
-    const response = await fetch(`https://api.notion.com/v1/databases/${NOTION_DATABASE_ID}/query`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${NOTION_TOKEN}`,
-        "Content-Type": "application/json",
-        "Notion-Version": NOTION_VERSION,
-      },
-      body: JSON.stringify({
-        page_size: 100,
-        start_cursor: startCursor,
-      }),
-      cache: "no-store",
-    })
+    const data = await notionRequest<{ results: NotionPage[]; has_more: boolean; next_cursor?: string | null }>(
+      `data_sources/${dataSourceId}/query`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          page_size: 100,
+          start_cursor: startCursor,
+        }),
+      }
+    )
 
-    if (!response.ok) {
-      throw new Error(`Notion API error: ${response.status}`)
-    }
-
-    const data = await response.json()
-    pages.push(...(data.results as NotionPage[]))
-    startCursor = data.has_more ? data.next_cursor : undefined
+    pages.push(...data.results)
+    startCursor = data.has_more ? data.next_cursor || undefined : undefined
   } while (startCursor)
 
   return pages
@@ -289,9 +340,15 @@ export async function GET() {
     })
   } catch (error) {
     console.error(error)
+    const detail =
+      error instanceof NotionRequestError
+        ? { status: error.status, code: error.code, message: error.message }
+        : { message: error instanceof Error ? error.message : "Unknown Notion error" }
+
     return NextResponse.json({
       source: "notion",
       error: "notion_unavailable",
+      detail,
       events: [],
     })
   }

@@ -316,24 +316,12 @@ function AgendaCard({
         <h3>{event.title}</h3>
         <p>{event.description}</p>
 
-        <dl className="agenda-details">
-          <div>
-            <dt>Dates</dt>
-            <dd>{formatAgendaDateRange(event)}</dd>
-          </div>
-          <div>
-            <dt>Lieu</dt>
-            <dd>{location.isComplete ? `${event.venue} · ${event.city}` : "Adresse à compléter"}</dd>
-          </div>
-          <div>
-            <dt>Prix</dt>
-            <dd>{event.price}</dd>
-          </div>
-          <div>
-            <dt>Vérifié</dt>
-            <dd>{event.lastVerifiedAt}</dd>
-          </div>
-        </dl>
+        <div className="agenda-card-meta-line" aria-label="Informations de l'événement">
+          <span>{event.category}</span>
+          <span>{event.city}</span>
+          <span>{formatAgendaDateRange(event)}</span>
+          <span>{event.price}</span>
+        </div>
 
         <div className="agenda-card-footer">
           <small>Source : {event.sourceLabel}</small>
