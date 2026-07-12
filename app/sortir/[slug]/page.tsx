@@ -1,71 +1,37 @@
-"use client"
-
 import Link from "next/link"
-import { useParams } from "next/navigation"
-import { useEffect, useMemo, useState } from "react"
+import { notFound } from "next/navigation"
 import type { AgendaEvent } from "../../agenda/agenda-data"
 import { formatAgendaDateRange, resolveAgendaEventLocation } from "../../agenda/agenda-data"
 
-export default function SortirEventPage() {
-  const params = useParams<{ slug: string }>()
-  const [events, setEvents] = useState<AgendaEvent[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [hasError, setHasError] = useState(false)
+export const dynamic = "force-dynamic"
 
-  useEffect(() => {
-    let cancelled = false
+async function getAgendaEvents() {
+  const baseUrl =
+    process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3010"
 
-    async function loadEvent() {
-      try {
-        const response = await fetch("/api/agenda", { cache: "no-store" })
-        if (!response.ok) throw new Error("Agenda unavailable")
-        const data = await response.json()
+  const response = await fetch(`${baseUrl}/api/agenda`, {
+    cache: "no-store",
+  })
 
-        if (!cancelled) {
-          setEvents(Array.isArray(data.events) ? data.events : [])
-          setHasError(Boolean(data.error))
-        }
-      } catch {
-        if (!cancelled) setHasError(true)
-      } finally {
-        if (!cancelled) setIsLoading(false)
-      }
-    }
+  if (!response.ok) return []
 
-    loadEvent()
+  const data = await response.json()
+  return Array.isArray(data.events) ? (data.events as AgendaEvent[]) : []
+}
 
-    return () => {
-      cancelled = true
-    }
-  }, [])
+export default async function SortirEventPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}) {
+  const { slug } = await params
+  const events = await getAgendaEvents()
+  const event = events.find((item) => item.slug === slug)
 
-  const event = useMemo(
-    () => events.find((item) => item.slug === params.slug),
-    [events, params.slug]
-  )
-
-  if (isLoading) {
-    return (
-      <main className="agenda-detail-page">
-        <section className="agenda-detail-empty">
-          <span className="section-label">Sortir</span>
-          <p>Chargement de l'événement...</p>
-        </section>
-      </main>
-    )
-  }
-
-  if (!event || hasError) {
-    return (
-      <main className="agenda-detail-page">
-        <section className="agenda-detail-empty">
-          <span className="section-label">Sortir</span>
-          <h1>Événement introuvable</h1>
-          <p>Les informations de cet événement ne sont pas disponibles pour le moment.</p>
-          <Link href="/agenda">Retour à l'agenda</Link>
-        </section>
-      </main>
-    )
+  if (!event) {
+    notFound()
   }
 
   const location = resolveAgendaEventLocation(event)

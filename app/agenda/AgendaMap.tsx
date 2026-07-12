@@ -97,7 +97,7 @@ function getPopupHtml(group: EventGroup) {
         <p>${escapeHtml(event.price)}</p>
         ${
           eventLink
-            ? `<a href="${escapeHtml(eventLink)}" target="_blank" rel="noopener noreferrer">Voir l'événement</a>`
+            ? `<a href="${escapeHtml(eventLink)}">Voir l'événement</a>`
             : "<em>À compléter</em>"
         }
       </article>
@@ -118,7 +118,7 @@ function getPopupHtml(group: EventGroup) {
               <li>
                 ${
                   eventLink
-                    ? `<a href="${escapeHtml(eventLink)}" target="_blank" rel="noopener noreferrer">${escapeHtml(event.title)}</a>`
+                    ? `<a href="${escapeHtml(eventLink)}">${escapeHtml(event.title)}</a>`
                     : `<strong>${escapeHtml(event.title)}</strong>`
                 }
                 <small>${escapeHtml(formatAgendaDateRange(event))}</small>
@@ -183,7 +183,7 @@ export default function AgendaMap({ events, activeSlug, onSelectEvent }: AgendaM
       L.control.zoom({ position: "topright" }).addTo(map)
       L.control
         .attribution({ position: "bottomleft", prefix: false })
-        .addAttribution('&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>')
+        .addAttribution('&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>')
         .addTo(map)
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
