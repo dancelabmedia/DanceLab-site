@@ -5287,3 +5287,12 @@ p,
     grid-template-columns: 1fr;
   }
 }
+
+
+.agenda-detail-extra {
+  margin-top: 46px;
+}
+
+.agenda-detail-extra h2 {
+  margin-bottom: 18px;
+}

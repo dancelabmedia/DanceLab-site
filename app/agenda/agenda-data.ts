@@ -25,9 +25,11 @@ export type AgendaEvent = {
   latitude?: number
   longitude?: number
   price: string
+  time?: string
   category: AgendaCategory
   officialUrl: string
   ticketUrl?: string
+  additionalInfo?: Array<{ label: string; value: string }>
   source: string
   sourceLabel: string
   lastVerifiedAt: string

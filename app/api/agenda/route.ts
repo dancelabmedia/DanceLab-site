@@ -17,8 +17,6 @@ type NotionProperty = {
   multi_select?: Array<{ name?: string }>
   date?: { start?: string; end?: string | null } | null
   url?: string | null
-  email?: string | null
-  phone_number?: string | null
   number?: number | null
   checkbox?: boolean
   files?: Array<{ type: "external" | "file"; name?: string; external?: { url?: string }; file?: { url?: string } }>
@@ -34,23 +32,16 @@ type NotionProperty = {
 type NotionPage = {
   id: string
   cover?: { type: "external" | "file"; external?: { url?: string }; file?: { url?: string } } | null
-  url?: string
   properties: Record<string, NotionProperty>
 }
 
 type NotionApiError = {
-  status?: number
   code?: string
   message?: string
 }
 
-type NotionDataSource = {
-  id: string
-  name?: string
-}
-
 type NotionDatabaseResponse = {
-  data_sources?: NotionDataSource[]
+  data_sources?: Array<{ id: string; name?: string }>
 }
 
 class NotionRequestError extends Error {
@@ -63,6 +54,8 @@ class NotionRequestError extends Error {
     this.code = code
   }
 }
+
+const GEOCODE_CACHE = new Map<string, { latitude: number; longitude: number } | null>()
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10)
@@ -77,15 +70,22 @@ function slugify(value: string) {
     .replace(/^-|-$/g, "")
 }
 
+function normalizeName(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+}
+
 function findProperty(properties: Record<string, NotionProperty>, aliases: string[]) {
-  const normalizedAliases = aliases.map((alias) => alias.toLowerCase())
-  const entry = Object.entries(properties).find(([name]) => normalizedAliases.includes(name.toLowerCase()))
+  const normalizedAliases = aliases.map(normalizeName)
+  const entry = Object.entries(properties).find(([name]) => normalizedAliases.includes(normalizeName(name)))
 
   if (entry) return entry[1]
 
   return Object.values(properties).find((property) => {
-    if (aliases.includes("title") && property.type === "title") return true
-    if (aliases.includes("date") && property.type === "date") return true
+    if (normalizedAliases.includes("title") && property.type === "title") return true
+    if (normalizedAliases.includes("date") && property.type === "date") return true
     return false
   })
 }
@@ -99,8 +99,6 @@ function getText(property?: NotionProperty) {
   if (property.type === "status") return property.status?.name || ""
   if (property.type === "multi_select") return property.multi_select?.map((item) => item.name).filter(Boolean).join(", ") || ""
   if (property.type === "url") return property.url || ""
-  if (property.type === "email") return property.email || ""
-  if (property.type === "phone_number") return property.phone_number || ""
   if (property.type === "number") return typeof property.number === "number" ? String(property.number) : ""
   if (property.type === "checkbox") return property.checkbox ? "Oui" : "Non"
   if (property.type === "formula") {
@@ -113,36 +111,8 @@ function getText(property?: NotionProperty) {
 }
 
 function getNumber(property?: NotionProperty) {
-  const textValue = getText(property)
-  const normalized = textValue.replace(",", ".")
-  const parsed = Number(normalized)
-
+  const parsed = Number(getText(property).replace(",", "."))
   return Number.isFinite(parsed) ? parsed : undefined
-}
-
-function getCoordinates(properties: Record<string, NotionProperty>) {
-  const latitude = getNumber(findProperty(properties, ["Latitude", "lat"]))
-  const longitude = getNumber(findProperty(properties, ["Longitude", "lng", "lon"]))
-  const combined = getText(
-    findProperty(properties, ["Coordonnées", "Coordonnees", "Coordinates", "GPS", "Géolocalisation", "Geolocalisation"])
-  )
-
-  if (typeof latitude === "number" && typeof longitude === "number") {
-    return { latitude, longitude }
-  }
-
-  const match = combined.match(/(-?\d+(?:[.,]\d+)?)\s*[,;]\s*(-?\d+(?:[.,]\d+)?)/)
-  if (!match) return {}
-
-  const parsedLatitude = Number(match[1].replace(",", "."))
-  const parsedLongitude = Number(match[2].replace(",", "."))
-
-  if (!Number.isFinite(parsedLatitude) || !Number.isFinite(parsedLongitude)) return {}
-
-  return {
-    latitude: parsedLatitude,
-    longitude: parsedLongitude,
-  }
 }
 
 function getDate(property?: NotionProperty) {
@@ -155,7 +125,6 @@ function getDate(property?: NotionProperty) {
 function getFileUrl(property?: NotionProperty) {
   const file = property?.files?.[0]
   if (!file) return ""
-
   return file.type === "external" ? file.external?.url || "" : file.file?.url || ""
 }
 
@@ -167,7 +136,7 @@ function getCoverUrl(page: NotionPage, imageProperty?: NotionProperty) {
 }
 
 function normalizeCategory(value: string): AgendaCategory {
-  const normalized = value.toLowerCase()
+  const normalized = normalizeName(value)
   if (normalized.includes("festival")) return "Festival"
   if (normalized.includes("battle")) return "Battle"
   if (normalized.includes("atelier") || normalized.includes("stage")) return "Atelier"
@@ -179,7 +148,7 @@ function normalizeCategory(value: string): AgendaCategory {
 }
 
 function normalizeStatus(value: string, startDate: string, endDate?: string): AgendaStatus {
-  const normalized = value.toLowerCase()
+  const normalized = normalizeName(value)
   if (normalized.includes("annul")) return "Annulé"
   if (normalized.includes("report")) return "Reporté"
   if (normalized.includes("complet")) return "Complet"
@@ -195,71 +164,90 @@ function isPastEvent(event: AgendaEvent) {
   return Boolean(event.endDate ? event.endDate < today : event.startDate < today)
 }
 
+function getCoordinatesFromProperties(properties: Record<string, NotionProperty>) {
+  const latitude = getNumber(findProperty(properties, ["Latitude", "lat"]))
+  const longitude = getNumber(findProperty(properties, ["Longitude", "lng", "lon"]))
+  const combined = getText(findProperty(properties, ["Coordonnées", "Coordonnees", "Coordinates", "GPS", "Géolocalisation", "Geolocalisation"]))
+
+  if (typeof latitude === "number" && typeof longitude === "number") {
+    return { latitude, longitude }
+  }
+
+  const match = combined.match(/(-?\d+(?:[.,]\d+)?)\s*[,;]\s*(-?\d+(?:[.,]\d+)?)/)
+  if (!match) return {}
+
+  const parsedLatitude = Number(match[1].replace(",", "."))
+  const parsedLongitude = Number(match[2].replace(",", "."))
+
+  if (!Number.isFinite(parsedLatitude) || !Number.isFinite(parsedLongitude)) return {}
+  return { latitude: parsedLatitude, longitude: parsedLongitude }
+}
+
+function getAdditionalInfo(properties: Record<string, NotionProperty>) {
+  const aliases = new Set([
+    "informations complementaires",
+    "information complementaire",
+    "infos",
+    "infos pratiques",
+    "public",
+    "duree",
+    "durée",
+    "accessibilite",
+    "accessibilité",
+    "compagnie",
+    "artiste",
+    "organisateur",
+  ])
+
+  return Object.entries(properties)
+    .map(([label, property]) => ({ label, value: getText(property) }))
+    .filter((item) => item.value && aliases.has(normalizeName(item.label)))
+}
+
 function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
   const properties = page.properties
-  const title = getText(
-    findProperty(properties, [
-      "title",
-      "Titre",
-      "Nom",
-      "Name",
-      "Événement",
-      "Evenement",
-      "Event",
-      "Nom de l'événement",
-      "Nom de l’événement",
-    ])
-  )
+  const title = getText(findProperty(properties, ["title", "Titre", "Nom", "Name", "Événement", "Evenement", "Event", "Nom de l'événement", "Nom de l’événement"]))
 
   if (!title) return null
 
-  const date = getDate(
-    findProperty(properties, ["date", "Date", "Dates", "Période", "Periode", "Quand", "Début", "Debut"])
-  )
+  const date = getDate(findProperty(properties, ["date", "Date", "Dates", "Période", "Periode", "Quand", "Début", "Debut"]))
   const startDate = date?.start?.slice(0, 10) || "9999-12-31"
   const endDate = date?.end?.slice(0, 10) || undefined
-
-  const category = normalizeCategory(getText(findProperty(properties, ["Type", "Catégorie", "Categorie", "Category"])))
-  const status = normalizeStatus(
-    getText(findProperty(properties, ["Statut", "Status", "État", "Etat"])),
-    startDate,
-    endDate
-  )
-  const officialUrl =
-    getText(findProperty(properties, ["Lien", "URL", "Lien officiel", "Site", "OfficialUrl", "Page officielle"])) || ""
-  const ticketUrl = getText(findProperty(properties, ["Billetterie", "Réservation", "Reservation", "Ticket", "Tickets"]))
+  const address = getText(findProperty(properties, ["Adresse", "Address", "Adresse complète", "Adresse complete"])) || undefined
+  const city = getText(findProperty(properties, ["Ville", "City", "Commune"])) || "À compléter"
+  const postalCode = getText(findProperty(properties, ["Code postal", "CP", "PostalCode"])) || undefined
+  const venue = getText(findProperty(properties, ["Lieu", "Salle", "Venue", "Théâtre", "Theatre"])) || "À compléter"
+  const coordinates = getCoordinatesFromProperties(properties)
   const source = getText(findProperty(properties, ["Source", "Organisateur", "Organizer"])) || "Notion"
-  const coordinates = getCoordinates(properties)
+  const ticketUrl = getText(findProperty(properties, ["Billetterie", "Réservation", "Reservation", "Ticket", "Tickets"]))
+  const officialUrl = getText(findProperty(properties, ["Lien", "URL", "Lien officiel", "Site", "OfficialUrl", "Page officielle"])) || ""
   const image = getCoverUrl(page, findProperty(properties, ["Image", "Photo", "Affiche", "Visuel", "Cover"]))
 
-  const event: AgendaEvent = {
+  return {
     slug: slugify(`${title}-${startDate}`),
     title,
-    description:
-      getText(findProperty(properties, ["Description", "Résumé", "Resume", "Texte", "Notes"])) || "À compléter",
+    description: getText(findProperty(properties, ["Description", "Résumé", "Resume", "Texte", "Notes"])) || "À compléter",
     image: image || undefined,
     dates: date?.start ? "Date renseignée" : "À compléter",
     startDate,
     endDate,
-    venue: getText(findProperty(properties, ["Lieu", "Salle", "Venue", "Théâtre", "Theatre"])) || "À compléter",
-    address: getText(findProperty(properties, ["Adresse", "Address"])) || undefined,
-    city: getText(findProperty(properties, ["Ville", "City", "Commune"])) || "À compléter",
-    postalCode: getText(findProperty(properties, ["Code postal", "CP", "PostalCode"])) || undefined,
+    venue,
+    address,
+    city,
+    postalCode,
     latitude: coordinates.latitude,
     longitude: coordinates.longitude,
     price: getText(findProperty(properties, ["Prix", "Tarif", "Tarifs", "Price"])) || "À compléter",
-    category,
+    time: getText(findProperty(properties, ["Horaires", "Horaire", "Heure", "Heures", "Time"])) || undefined,
+    category: normalizeCategory(getText(findProperty(properties, ["Type", "Catégorie", "Categorie", "Category"]))),
     officialUrl,
     ticketUrl: ticketUrl || undefined,
+    additionalInfo: getAdditionalInfo(properties),
     source,
     sourceLabel: source,
-    lastVerifiedAt:
-      getText(findProperty(properties, ["Dernière vérification", "Derniere verification", "Vérifié le", "Verifie le"])) ||
-      todayIso(),
-    status,
+    lastVerifiedAt: getText(findProperty(properties, ["Dernière vérification", "Derniere verification", "Vérifié le", "Verifie le"])) || todayIso(),
+    status: normalizeStatus(getText(findProperty(properties, ["Statut", "Status", "État", "Etat"])), startDate, endDate),
   }
-
-  return event
 }
 
 async function notionRequest<T>(path: string, init?: RequestInit) {
@@ -276,21 +264,14 @@ async function notionRequest<T>(path: string, init?: RequestInit) {
 
   if (!response.ok) {
     const error = (await response.json().catch(() => ({}))) as NotionApiError
-    throw new NotionRequestError(
-      response.status,
-      error.code,
-      error.message || `Notion API error: ${response.status}`
-    )
+    throw new NotionRequestError(response.status, error.code, error.message || `Notion API error: ${response.status}`)
   }
 
   return (await response.json()) as T
 }
 
 async function resolveDataSourceId() {
-  const database = await notionRequest<NotionDatabaseResponse>(`databases/${NOTION_DATABASE_ID}`, {
-    method: "GET",
-  })
-
+  const database = await notionRequest<NotionDatabaseResponse>(`databases/${NOTION_DATABASE_ID}`, { method: "GET" })
   return database.data_sources?.[0]?.id || NOTION_DATABASE_ID
 }
 
@@ -324,6 +305,68 @@ function sortEvents(events: AgendaEvent[]) {
   return [...events].sort((a, b) => a.startDate.localeCompare(b.startDate))
 }
 
+function getGeocodeQuery(event: AgendaEvent) {
+  if (!event.city || event.city === "À compléter") return ""
+  return [event.address, event.postalCode, event.city, "France"].filter(Boolean).join(", ")
+}
+
+async function geocodeEvent(event: AgendaEvent) {
+  if (typeof event.latitude === "number" && typeof event.longitude === "number") return event
+
+  const query = getGeocodeQuery(event)
+  if (!query) return event
+
+  if (GEOCODE_CACHE.has(query)) {
+    const cached = GEOCODE_CACHE.get(query)
+    return cached ? { ...event, latitude: cached.latitude, longitude: cached.longitude } : event
+  }
+
+  try {
+    const params = new URLSearchParams({
+      q: query,
+      format: "json",
+      limit: "1",
+      countrycodes: "fr",
+    })
+
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?${params.toString()}`, {
+      headers: {
+        Accept: "application/json",
+        "Accept-Language": "fr",
+        "User-Agent": "DanceLabAgenda/1.0",
+      },
+      cache: "no-store",
+    })
+
+    if (!response.ok) throw new Error("Geocoding unavailable")
+
+    const results = (await response.json()) as Array<{ lat?: string; lon?: string }>
+    const latitude = Number(results[0]?.lat)
+    const longitude = Number(results[0]?.lon)
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      GEOCODE_CACHE.set(query, null)
+      return event
+    }
+
+    GEOCODE_CACHE.set(query, { latitude, longitude })
+    return { ...event, latitude, longitude }
+  } catch {
+    GEOCODE_CACHE.set(query, null)
+    return event
+  }
+}
+
+async function enrichEventsWithCoordinates(events: AgendaEvent[]) {
+  const enriched: AgendaEvent[] = []
+
+  for (const event of events) {
+    enriched.push(await geocodeEvent(event))
+  }
+
+  return enriched
+}
+
 export async function GET() {
   try {
     const notionPages = await fetchAllNotionPages()
@@ -334,7 +377,7 @@ export async function GET() {
 
     return NextResponse.json({
       source: "notion",
-      events: sortEvents(events),
+      events: sortEvents(await enrichEventsWithCoordinates(events)),
     })
   } catch (error) {
     console.error(error)

@@ -1,3 +1,4 @@
+import { headers } from "next/headers"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import type { AgendaEvent } from "../../agenda/agenda-data"
@@ -6,14 +7,12 @@ import { formatAgendaDateRange, resolveAgendaEventLocation } from "../../agenda/
 export const dynamic = "force-dynamic"
 
 async function getAgendaEvents() {
-  const baseUrl =
-    process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "http://localhost:3010"
+  const headersList = await headers()
+  const host = headersList.get("host")
+  const protocol = host?.includes("localhost") ? "http" : "https"
+  const baseUrl = host ? `${protocol}://${host}` : "http://localhost:3010"
 
-  const response = await fetch(`${baseUrl}/api/agenda`, {
-    cache: "no-store",
-  })
+  const response = await fetch(`${baseUrl}/api/agenda`, { cache: "no-store" })
 
   if (!response.ok) return []
 
@@ -65,12 +64,28 @@ export default async function SortirEventPage({
 
           <div className="agenda-detail-info-grid">
             <div>
+              <span>Type</span>
+              <strong>{event.category}</strong>
+            </div>
+            <div>
               <span>Dates</span>
               <strong>{formatAgendaDateRange(event)}</strong>
             </div>
             <div>
+              <span>Horaires</span>
+              <strong>{event.time || "À compléter"}</strong>
+            </div>
+            <div>
               <span>Lieu</span>
-              <strong>{location.isComplete ? `${event.venue} - ${event.city}` : "Adresse à compléter"}</strong>
+              <strong>{event.venue}</strong>
+            </div>
+            <div>
+              <span>Adresse</span>
+              <strong>{location.label || "Adresse à compléter"}</strong>
+            </div>
+            <div>
+              <span>Ville</span>
+              <strong>{event.city}</strong>
             </div>
             <div>
               <span>Prix</span>
@@ -81,12 +96,26 @@ export default async function SortirEventPage({
               <strong>{event.status}</strong>
             </div>
           </div>
+
+          {event.additionalInfo && event.additionalInfo.length > 0 ? (
+            <div className="agenda-detail-extra">
+              <h2>Informations complémentaires</h2>
+              <div className="agenda-detail-info-grid">
+                {event.additionalInfo.map((item) => (
+                  <div key={`${item.label}-${item.value}`}>
+                    <span>{item.label}</span>
+                    <strong>{item.value}</strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </article>
 
         <aside className="agenda-detail-side">
-          <h2>Informations</h2>
+          <h2>Réservation</h2>
           <p>{event.venue}</p>
-          <p>{location.label}</p>
+          <p>{location.label || "Adresse à compléter"}</p>
           {reservationUrl ? (
             <a href={reservationUrl} target="_blank" rel="noopener noreferrer">
               Réserver
