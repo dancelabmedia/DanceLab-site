@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import type { AgendaCategory, AgendaEvent, AgendaStatus } from "../../agenda/agenda-data"
+import { agendaEvents, type AgendaCategory, type AgendaEvent, type AgendaStatus } from "../../agenda/agenda-data"
 
 export const dynamic = "force-dynamic"
 
@@ -677,6 +677,26 @@ function sortEvents(events: AgendaEvent[]) {
   return [...events].sort((a, b) => a.startDate.localeCompare(b.startDate))
 }
 
+function getAgendaEventKey(event: AgendaEvent) {
+  return normalizeName([event.title, event.startDate, event.venue, event.city].join("|"))
+}
+
+function mergeAgendaSources(notionEvents: AgendaEvent[]) {
+  const merged = new Map<string, AgendaEvent>()
+
+  agendaEvents
+    .filter((event) => !isPastEvent(event))
+    .forEach((event) => {
+      merged.set(getAgendaEventKey(event), applyVenueFallback(event))
+    })
+
+  notionEvents.forEach((event) => {
+    merged.set(getAgendaEventKey(event), event)
+  })
+
+  return Array.from(merged.values())
+}
+
 function hasValidFranceCoordinates(latitude?: number, longitude?: number) {
   if (typeof latitude !== "number" || typeof longitude !== "number") return false
   if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return false
@@ -793,13 +813,15 @@ async function enrichEventsWithCoordinates(events: AgendaEvent[]) {
 export async function GET() {
   try {
     const notionPages = await fetchAllNotionPages()
-    const events = notionPages
+    const notionEvents = notionPages
       .map(normalizeNotionPage)
       .filter((event): event is AgendaEvent => Boolean(event))
       .filter((event) => !isPastEvent(event))
 
+    const events = mergeAgendaSources(notionEvents)
+
     return NextResponse.json({
-      source: "notion",
+      source: "notion+selection-nationale",
       events: sortEvents(await enrichEventsWithCoordinates(events)),
     })
   } catch (error) {
@@ -810,10 +832,10 @@ export async function GET() {
         : { message: error instanceof Error ? error.message : "Unknown Notion error" }
 
     return NextResponse.json({
-      source: "notion",
+      source: "selection-nationale",
       error: "notion_unavailable",
       detail,
-      events: [],
+      events: sortEvents(await enrichEventsWithCoordinates(mergeAgendaSources([]))),
     })
   }
 }
