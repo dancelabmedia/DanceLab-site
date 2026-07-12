@@ -21,6 +21,7 @@ const IconMenu = () => (
 export default function Header() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [mobileSubOpen, setMobileSubOpen] = useState<string | null>(null)
 
   const listenLinks = [
     { label: 'Tous les épisodes', href: '/ecouter' },
@@ -45,21 +46,20 @@ export default function Header() {
   ]
 
   const navGroups = [
-    { label: 'Découvrir', href: '/decouvrir', items: discoverLinks },
-    { label: 'Écouter', href: '/ecouter', items: listenLinks },
+    { label: 'Découvrir', items: discoverLinks },
+    { label: 'Écouter', items: listenLinks },
     {
       label: 'Sortir',
-      href: '/agenda',
       items: [
+        { label: 'Tous les événements', href: '/agenda' },
         { label: 'Spectacles', href: '/agenda' },
         { label: 'Festivals', href: '/agenda' },
         { label: 'Événements gratuits', href: '/agenda' },
       ],
     },
-    { label: 'Explorer', href: '/explorer', items: exploreLinks },
+    { label: 'Explorer', items: exploreLinks },
     {
       label: 'Ressources',
-      href: '/#ressources',
       items: [
         { label: 'Guides & conseils', href: '/#ressources' },
         { label: 'Partenaires', href: '/#ressources' },
@@ -75,7 +75,10 @@ export default function Header() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const closeMobileMenu = () => setMobileOpen(false)
+  const closeMobileMenu = () => {
+    setMobileOpen(false)
+    setMobileSubOpen(null)
+  }
 
   return (
     <header className={`header${scrolled ? ' scrolled' : ''}`}>
@@ -87,7 +90,9 @@ export default function Header() {
         <ul className="nav-links">
           {navGroups.map((group) => (
             <li key={group.label} className="nav-dropdown">
-              <Link href={group.href}>{group.label}</Link>
+              <button type="button" className="nav-dropdown-trigger">
+                {group.label}
+              </button>
 
               <div className="dropdown-menu">
                 {group.items.map((item) => (
@@ -138,21 +143,23 @@ export default function Header() {
 
         {navGroups.map((group) => (
           <div key={group.label} className="mobile-menu-group">
-            <Link
-              href={group.href}
+            <button
+              type="button"
               className="mobile-menu-title"
-              onClick={closeMobileMenu}
+              onClick={() => setMobileSubOpen(mobileSubOpen === group.label ? null : group.label)}
             >
               {group.label}
-            </Link>
+            </button>
 
-            <div className="mobile-submenu">
-              {group.items.map((item) => (
-                <Link key={item.label} href={item.href} onClick={closeMobileMenu}>
-                  {item.label}
-                </Link>
-              ))}
-            </div>
+            {mobileSubOpen === group.label ? (
+              <div className="mobile-submenu">
+                {group.items.map((item) => (
+                  <Link key={item.label} href={item.href} onClick={closeMobileMenu}>
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            ) : null}
           </div>
         ))}
 
