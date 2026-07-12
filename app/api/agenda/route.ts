@@ -56,6 +56,352 @@ class NotionRequestError extends Error {
 }
 
 const GEOCODE_CACHE = new Map<string, { latitude: number; longitude: number } | null>()
+type VenueFallback = {
+  venue: string
+  address: string
+  city: string
+  postalCode: string
+  latitude: number
+  longitude: number
+  officialUrl?: string
+}
+
+const VENUE_DIRECTORY: Record<string, VenueFallback> = {
+  "crazy horse": {
+    venue: "Crazy Horse",
+    address: "12 avenue George V",
+    city: "Paris",
+    postalCode: "75008",
+    latitude: 48.865833,
+    longitude: 2.301667,
+    officialUrl: "https://www.lecrazyhorseparis.com/",
+  },
+  "moulin rouge": {
+    venue: "Moulin Rouge",
+    address: "82 boulevard de Clichy",
+    city: "Paris",
+    postalCode: "75018",
+    latitude: 48.88413,
+    longitude: 2.33228,
+    officialUrl: "https://www.moulinrouge.fr/",
+  },
+  "theatre mogador": {
+    venue: "Théâtre Mogador",
+    address: "25 rue de Mogador",
+    city: "Paris",
+    postalCode: "75009",
+    latitude: 48.87519,
+    longitude: 2.33159,
+    officialUrl: "https://www.theatremogador.com/",
+  },
+  "mogador": {
+    venue: "Théâtre Mogador",
+    address: "25 rue de Mogador",
+    city: "Paris",
+    postalCode: "75009",
+    latitude: 48.87519,
+    longitude: 2.33159,
+    officialUrl: "https://www.theatremogador.com/",
+  },
+  "paradis latin": {
+    venue: "Paradis Latin",
+    address: "28 rue du Cardinal Lemoine",
+    city: "Paris",
+    postalCode: "75005",
+    latitude: 48.848055,
+    longitude: 2.352973,
+    officialUrl: "https://www.paradislatin.com/",
+  },
+  "palais garnier": {
+    venue: "Palais Garnier",
+    address: "Place de l'Opéra",
+    city: "Paris",
+    postalCode: "75009",
+    latitude: 48.87197,
+    longitude: 2.3316,
+    officialUrl: "https://www.operadeparis.fr/",
+  },
+  "opera bastille": {
+    venue: "Opéra Bastille",
+    address: "Place de la Bastille",
+    city: "Paris",
+    postalCode: "75012",
+    latitude: 48.85299,
+    longitude: 2.36992,
+    officialUrl: "https://www.operadeparis.fr/",
+  },
+  "atelier de paris cdcn": {
+    venue: "Atelier de Paris CDCN",
+    address: "2 route du Champ de Manoeuvre",
+    city: "Paris",
+    postalCode: "75012",
+    latitude: 48.83392,
+    longitude: 2.45548,
+    officialUrl: "https://www.atelierdeparis.org/",
+  },
+  "theatre de la ville": {
+    venue: "Théâtre de la Ville",
+    address: "2 place du Châtelet",
+    city: "Paris",
+    postalCode: "75004",
+    latitude: 48.8575,
+    longitude: 2.3471,
+    officialUrl: "https://www.theatredelaville-paris.com/",
+  },
+  "theatre des abbesses": {
+    venue: "Théâtre des Abbesses",
+    address: "31 rue des Abbesses",
+    city: "Paris",
+    postalCode: "75018",
+    latitude: 48.88458,
+    longitude: 2.3387,
+    officialUrl: "https://www.theatredelaville-paris.com/",
+  },
+  "chaillot": {
+    venue: "Chaillot - Théâtre national de la Danse",
+    address: "1 place du Trocadéro",
+    city: "Paris",
+    postalCode: "75116",
+    latitude: 48.86286,
+    longitude: 2.28828,
+    officialUrl: "https://www.theatre-chaillot.fr/",
+  },
+  "cnd pantin": {
+    venue: "Centre national de la danse",
+    address: "1 rue Victor Hugo",
+    city: "Pantin",
+    postalCode: "93500",
+    latitude: 48.89376,
+    longitude: 2.40398,
+    officialUrl: "https://www.cnd.fr/",
+  },
+  "centquatre": {
+    venue: "CENTQUATRE-PARIS",
+    address: "5 rue Curial",
+    city: "Paris",
+    postalCode: "75019",
+    latitude: 48.89068,
+    longitude: 2.37076,
+    officialUrl: "https://www.104.fr/",
+  },
+  "carreau du temple": {
+    venue: "Carreau du Temple",
+    address: "4 rue Eugène Spuller",
+    city: "Paris",
+    postalCode: "75003",
+    latitude: 48.86496,
+    longitude: 2.36056,
+    officialUrl: "https://www.carreaudutemple.eu/",
+  },
+  "la cigale": {
+    venue: "La Cigale",
+    address: "120 boulevard de Rochechouart",
+    city: "Paris",
+    postalCode: "75018",
+    latitude: 48.8823,
+    longitude: 2.34037,
+    officialUrl: "https://www.lacigale.fr/",
+  },
+  "theatre des champs-elysees": {
+    venue: "Théâtre des Champs-Élysées",
+    address: "15 avenue Montaigne",
+    city: "Paris",
+    postalCode: "75008",
+    latitude: 48.86572,
+    longitude: 2.30261,
+    officialUrl: "https://www.theatrechampselysees.fr/",
+  },
+  "mac creteil": {
+    venue: "MAC Créteil",
+    address: "1 place Salvador Allende",
+    city: "Créteil",
+    postalCode: "94000",
+    latitude: 48.77972,
+    longitude: 2.45495,
+    officialUrl: "https://www.maccreteil.com/",
+  },
+  "theatre de la bastille": {
+    venue: "Théâtre de la Bastille",
+    address: "76 rue de la Roquette",
+    city: "Paris",
+    postalCode: "75011",
+    latitude: 48.85508,
+    longitude: 2.37387,
+    officialUrl: "https://www.theatre-bastille.com/",
+  },
+  "palais des congres": {
+    venue: "Palais des Congrès de Paris",
+    address: "2 place de la Porte Maillot",
+    city: "Paris",
+    postalCode: "75017",
+    latitude: 48.87817,
+    longitude: 2.28328,
+    officialUrl: "https://www.viparis.com/",
+  },
+  "la briqueterie cdcn": {
+    venue: "La Briqueterie CDCN",
+    address: "17 rue Robert Degert",
+    city: "Vitry-sur-Seine",
+    postalCode: "94400",
+    latitude: 48.79382,
+    longitude: 2.39246,
+    officialUrl: "https://www.alabriqueterie.com/",
+  },
+  "casino de paris": {
+    venue: "Casino de Paris",
+    address: "16 rue de Clichy",
+    city: "Paris",
+    postalCode: "75009",
+    latitude: 48.87818,
+    longitude: 2.33023,
+    officialUrl: "https://www.casinodeparis.fr/",
+  },
+  "theatre du chatelet": {
+    venue: "Théâtre du Châtelet",
+    address: "2 rue Edouard Colonne",
+    city: "Paris",
+    postalCode: "75001",
+    latitude: 48.85778,
+    longitude: 2.34695,
+    officialUrl: "https://www.chatelet.com/",
+  },
+  "la seine musicale": {
+    venue: "La Seine Musicale",
+    address: "Île Seguin",
+    city: "Boulogne-Billancourt",
+    postalCode: "92100",
+    latitude: 48.82798,
+    longitude: 2.23051,
+    officialUrl: "https://www.laseinemusicale.com/",
+  },
+  "cinematheque francaise": {
+    venue: "Cinémathèque française",
+    address: "51 rue de Bercy",
+    city: "Paris",
+    postalCode: "75012",
+    latitude: 48.83702,
+    longitude: 2.38296,
+    officialUrl: "https://www.cinematheque.fr/",
+  },
+  "theatre du rond-point": {
+    venue: "Théâtre du Rond-Point",
+    address: "2 bis avenue Franklin D. Roosevelt",
+    city: "Paris",
+    postalCode: "75008",
+    latitude: 48.86637,
+    longitude: 2.31019,
+    officialUrl: "https://www.theatredurondpoint.fr/",
+  },
+  "grande halle de la villette": {
+    venue: "Grande Halle de la Villette",
+    address: "211 avenue Jean Jaurès",
+    city: "Paris",
+    postalCode: "75019",
+    latitude: 48.88953,
+    longitude: 2.39378,
+    officialUrl: "https://lavillette.com/",
+  },
+  "le trianon": {
+    venue: "Le Trianon",
+    address: "80 boulevard de Rochechouart",
+    city: "Paris",
+    postalCode: "75018",
+    latitude: 48.88248,
+    longitude: 2.34311,
+    officialUrl: "https://www.letrianon.fr/",
+  },
+  "folies bergere": {
+    venue: "Folies Bergère",
+    address: "32 rue Richer",
+    city: "Paris",
+    postalCode: "75009",
+    latitude: 48.87455,
+    longitude: 2.34444,
+    officialUrl: "https://www.foliesbergere.com/",
+  },
+  "accor arena": {
+    venue: "Accor Arena",
+    address: "8 boulevard de Bercy",
+    city: "Paris",
+    postalCode: "75012",
+    latitude: 48.83869,
+    longitude: 2.37861,
+    officialUrl: "https://www.accorarena.com/",
+  },
+  "palais de tokyo": {
+    venue: "Palais de Tokyo",
+    address: "13 avenue du Président Wilson",
+    city: "Paris",
+    postalCode: "75116",
+    latitude: 48.86408,
+    longitude: 2.29764,
+    officialUrl: "https://www.palaisdetokyo.com/",
+  },
+  "micadanses": {
+    venue: "Micadanses",
+    address: "15 rue Geoffroy l'Asnier",
+    city: "Paris",
+    postalCode: "75004",
+    latitude: 48.85519,
+    longitude: 2.35659,
+    officialUrl: "https://www.micadanses.com/",
+  },
+  "theatre de vanves": {
+    venue: "Théâtre de Vanves",
+    address: "12 rue Sadi Carnot",
+    city: "Vanves",
+    postalCode: "92170",
+    latitude: 48.82078,
+    longitude: 2.28948,
+    officialUrl: "https://www.theatre-vanves.fr/",
+  },
+  "theatre suresnes jean vilar": {
+    venue: "Théâtre de Suresnes Jean Vilar",
+    address: "16 place Stalingrad",
+    city: "Suresnes",
+    postalCode: "92150",
+    latitude: 48.87069,
+    longitude: 2.22971,
+    officialUrl: "https://www.theatre-suresnes.fr/",
+  },
+  "musee d'orsay": {
+    venue: "Musée d'Orsay",
+    address: "1 rue de la Légion d'Honneur",
+    city: "Paris",
+    postalCode: "75007",
+    latitude: 48.86,
+    longitude: 2.32658,
+    officialUrl: "https://www.musee-orsay.fr/",
+  },
+  "fondation cartier": {
+    venue: "Fondation Cartier pour l'art contemporain",
+    address: "261 boulevard Raspail",
+    city: "Paris",
+    postalCode: "75014",
+    latitude: 48.83773,
+    longitude: 2.33187,
+    officialUrl: "https://www.fondationcartier.com/",
+  },
+  "bibliotheque-musee de l'opera": {
+    venue: "Bibliothèque-musée de l'Opéra",
+    address: "Place de l'Opéra",
+    city: "Paris",
+    postalCode: "75009",
+    latitude: 48.87197,
+    longitude: 2.3316,
+    officialUrl: "https://www.bnf.fr/",
+  },
+  "cn costume et scene moulins": {
+    venue: "Centre national du costume et de la scène",
+    address: "Quartier Villars, route de Montilly",
+    city: "Moulins",
+    postalCode: "03000",
+    latitude: 46.56453,
+    longitude: 3.32168,
+    officialUrl: "https://www.cncs.fr/",
+  }
+}
+
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10)
@@ -204,6 +550,30 @@ function getAdditionalInfo(properties: Record<string, NotionProperty>) {
     .filter((item) => item.value && aliases.has(normalizeName(item.label)))
 }
 
+
+function getVenueFallback(title: string, venue: string) {
+  const haystack = normalizeName(`${venue} ${title}`)
+
+  return Object.entries(VENUE_DIRECTORY).find(([key]) => haystack.includes(key))?.[1]
+}
+
+function applyVenueFallback(event: AgendaEvent) {
+  const fallback = getVenueFallback(event.title, event.venue)
+
+  if (!fallback) return event
+
+  return {
+    ...event,
+    venue: event.venue === "À compléter" || event.venue === "À confirmer" ? fallback.venue : event.venue,
+    address: event.address || fallback.address,
+    city: event.city === "À compléter" ? fallback.city : event.city,
+    postalCode: event.postalCode || fallback.postalCode,
+    latitude: typeof event.latitude === "number" ? event.latitude : fallback.latitude,
+    longitude: typeof event.longitude === "number" ? event.longitude : fallback.longitude,
+    officialUrl: event.officialUrl || fallback.officialUrl || "",
+  }
+}
+
 function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
   const properties = page.properties
   const title = getText(findProperty(properties, ["title", "Titre", "Nom", "Name", "Événement", "Evenement", "Event", "Nom de l'événement", "Nom de l’événement"]))
@@ -223,7 +593,7 @@ function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
   const officialUrl = getText(findProperty(properties, ["Lien", "URL", "Lien officiel", "Site", "OfficialUrl", "Page officielle"])) || ""
   const image = getCoverUrl(page, findProperty(properties, ["Image", "Photo", "Affiche", "Visuel", "Cover"]))
 
-  return {
+  const event: AgendaEvent = {
     slug: slugify(`${title}-${startDate}`),
     title,
     description: getText(findProperty(properties, ["Description", "Résumé", "Resume", "Texte", "Notes"])) || "À compléter",
@@ -248,6 +618,8 @@ function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
     lastVerifiedAt: getText(findProperty(properties, ["Dernière vérification", "Derniere verification", "Vérifié le", "Verifie le"])) || todayIso(),
     status: normalizeStatus(getText(findProperty(properties, ["Statut", "Status", "État", "Etat"])), startDate, endDate),
   }
+
+  return applyVenueFallback(event)
 }
 
 async function notionRequest<T>(path: string, init?: RequestInit) {
