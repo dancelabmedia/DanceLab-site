@@ -82,22 +82,21 @@ export function formatAgendaDateRange(event: AgendaEvent) {
   return formatAgendaDate(event.startDate)
 }
 
+function hasValidCoordinates(latitude?: number, longitude?: number) {
+  if (typeof latitude !== "number" || typeof longitude !== "number") return false
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return false
+  if (latitude < -90 || latitude > 90) return false
+  if (longitude < -180 || longitude > 180) return false
+
+  return true
+}
+
 export function resolveAgendaEventLocation(event: AgendaEvent): ResolvedAgendaLocation {
-  if (typeof event.latitude === "number" && typeof event.longitude === "number") {
+  if (hasValidCoordinates(event.latitude, event.longitude)) {
     return {
       latitude: event.latitude,
       longitude: event.longitude,
       label: [event.address, event.postalCode, event.city].filter(Boolean).join(", "),
-      isComplete: true,
-    }
-  }
-
-  const cityCoordinates = CITY_COORDINATES[normalizeCity(event.city)]
-
-  if (cityCoordinates) {
-    return {
-      ...cityCoordinates,
-      label: [event.address || event.venue, event.postalCode, event.city].filter(Boolean).join(", "),
       isComplete: true,
     }
   }

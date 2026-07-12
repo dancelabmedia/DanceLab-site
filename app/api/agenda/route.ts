@@ -568,8 +568,8 @@ function applyVenueFallback(event: AgendaEvent) {
     address: event.address || fallback.address,
     city: event.city === "À compléter" ? fallback.city : event.city,
     postalCode: event.postalCode || fallback.postalCode,
-    latitude: typeof event.latitude === "number" ? event.latitude : fallback.latitude,
-    longitude: typeof event.longitude === "number" ? event.longitude : fallback.longitude,
+    latitude: hasValidFranceCoordinates(event.latitude, event.longitude) ? event.latitude : fallback.latitude,
+    longitude: hasValidFranceCoordinates(event.latitude, event.longitude) ? event.longitude : fallback.longitude,
     officialUrl: event.officialUrl || fallback.officialUrl || "",
   }
 }
@@ -605,8 +605,8 @@ function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
     address,
     city,
     postalCode,
-    latitude: coordinates.latitude,
-    longitude: coordinates.longitude,
+    latitude: hasValidFranceCoordinates(coordinates.latitude, coordinates.longitude) ? coordinates.latitude : undefined,
+    longitude: hasValidFranceCoordinates(coordinates.latitude, coordinates.longitude) ? coordinates.longitude : undefined,
     price: getText(findProperty(properties, ["Prix", "Tarif", "Tarifs", "Price"])) || "À compléter",
     time: getText(findProperty(properties, ["Horaires", "Horaire", "Heure", "Heures", "Time"])) || undefined,
     category: normalizeCategory(getText(findProperty(properties, ["Type", "Catégorie", "Categorie", "Category"]))),
@@ -677,13 +677,49 @@ function sortEvents(events: AgendaEvent[]) {
   return [...events].sort((a, b) => a.startDate.localeCompare(b.startDate))
 }
 
+function hasValidFranceCoordinates(latitude?: number, longitude?: number) {
+  if (typeof latitude !== "number" || typeof longitude !== "number") return false
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return false
+  if (latitude < 41 || latitude > 52) return false
+  if (longitude < -6 || longitude > 10) return false
+
+  return true
+}
+
 function getGeocodeQuery(event: AgendaEvent) {
-  if (!event.city || event.city === "À compléter") return ""
-  return [event.address, event.postalCode, event.city, "France"].filter(Boolean).join(", ")
+  if (!event.address || !event.city || event.city === "À compléter") return ""
+
+  return [event.address, event.postalCode, event.city, "France"]
+    .filter(Boolean)
+    .join(", ")
+}
+
+function isExpectedGeocodeResult(result: { address?: Record<string, string> }, event: AgendaEvent) {
+  const address = result.address || {}
+  const countryCode = address.country_code?.toLowerCase()
+  if (countryCode && countryCode !== "fr") return false
+
+  const expectedCity = event.city.toLowerCase()
+  const foundCity = [
+    address.city,
+    address.town,
+    address.village,
+    address.municipality,
+    address.county,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase()
+
+  if (expectedCity && foundCity && !foundCity.includes(expectedCity.split(" ")[0])) {
+    return false
+  }
+
+  return true
 }
 
 async function geocodeEvent(event: AgendaEvent) {
-  if (typeof event.latitude === "number" && typeof event.longitude === "number") return event
+  if (hasValidFranceCoordinates(event.latitude, event.longitude)) return event
 
   const query = getGeocodeQuery(event)
   if (!query) return event
@@ -699,6 +735,7 @@ async function geocodeEvent(event: AgendaEvent) {
       format: "json",
       limit: "1",
       countrycodes: "fr",
+      addressdetails: "1",
     })
 
     const response = await fetch(`https://nominatim.openstreetmap.org/search?${params.toString()}`, {
@@ -712,11 +749,25 @@ async function geocodeEvent(event: AgendaEvent) {
 
     if (!response.ok) throw new Error("Geocoding unavailable")
 
-    const results = (await response.json()) as Array<{ lat?: string; lon?: string }>
-    const latitude = Number(results[0]?.lat)
-    const longitude = Number(results[0]?.lon)
+    const results = (await response.json()) as Array<{
+      lat?: string
+      lon?: string
+      address?: Record<string, string>
+    }>
+    const first = results[0]
+    const latitude = Number(first?.lat)
+    const longitude = Number(first?.lon)
 
-    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    if (
+      !first ||
+      !hasValidFranceCoordinates(latitude, longitude) ||
+      !isExpectedGeocodeResult(first, event)
+    ) {
+      console.warn("[agenda:geocode] Adresse non géocodée ou incohérente", {
+        title: event.title,
+        query,
+        city: event.city,
+      })
       GEOCODE_CACHE.set(query, null)
       return event
     }
