@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { featuredAgendaEvents, formatAgendaDateRange } from "./agenda/agenda-data"
 import type { AgendaEvent } from "./agenda/agenda-data"
 import { magazineArticles } from "./decouvrir/articles-data"
@@ -51,6 +51,112 @@ const IconClock = () => (
     <polyline points="12 6 12 12 16 14" />
   </svg>
 )
+
+const PremiumSectionIcon = ({ name }: { name: string }) => {
+  const commonProps = {
+    width: 28,
+    height: 28,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.7,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  }
+
+  const icons: Record<string, React.ReactElement> = {
+    movement: (
+      <svg {...commonProps}>
+        <path d="M4 18c4-7 8-11 16-12" />
+        <path d="M7 18c4-3 7-4 12-4" />
+        <circle cx="7" cy="7" r="2" />
+      </svg>
+    ),
+    signature: (
+      <svg {...commonProps}>
+        <path d="M4 20c4-1 7-4 9-9l2-5 3 3-5 2c-5 2-8 5-9 9Z" />
+        <path d="M14 6l4 4" />
+      </svg>
+    ),
+    stage: (
+      <svg {...commonProps}>
+        <path d="M4 6h16" />
+        <path d="M6 6v12" />
+        <path d="M18 6v12" />
+        <path d="M8 18h8" />
+        <path d="M9 10h6" />
+      </svg>
+    ),
+    portrait: (
+      <svg {...commonProps}>
+        <circle cx="12" cy="8" r="3" />
+        <path d="M5 20c1.5-4 4-6 7-6s5.5 2 7 6" />
+      </svg>
+    ),
+    career: (
+      <svg {...commonProps}>
+        <path d="M6 9V6h12v3" />
+        <path d="M4 9h16v10H4z" />
+        <path d="M9 13h6" />
+      </svg>
+    ),
+    document: (
+      <svg {...commonProps}>
+        <path d="M7 3h7l3 3v15H7z" />
+        <path d="M14 3v4h4" />
+        <path d="M9 12h6" />
+        <path d="M9 16h4" />
+      </svg>
+    ),
+    status: (
+      <svg {...commonProps}>
+        <path d="M5 5h14v14H5z" />
+        <path d="M8 9h8" />
+        <path d="M8 13h6" />
+        <path d="M8 17h4" />
+      </svg>
+    ),
+    target: (
+      <svg {...commonProps}>
+        <circle cx="12" cy="12" r="8" />
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 2v3" />
+        <path d="M22 12h-3" />
+      </svg>
+    ),
+    network: (
+      <svg {...commonProps}>
+        <circle cx="7" cy="7" r="2" />
+        <circle cx="17" cy="7" r="2" />
+        <circle cx="12" cy="17" r="2" />
+        <path d="M9 8l6 0" />
+        <path d="M8 9l3 6" />
+        <path d="M16 9l-3 6" />
+      </svg>
+    ),
+    idea: (
+      <svg {...commonProps}>
+        <path d="M9 18h6" />
+        <path d="M10 22h4" />
+        <path d="M8 14c-1.5-1.2-2-2.8-2-4a6 6 0 0 1 12 0c0 1.2-.5 2.8-2 4-.8.7-1 1.4-1 2H9c0-.6-.2-1.3-1-2Z" />
+      </svg>
+    ),
+    calendar: (
+      <svg {...commonProps}>
+        <path d="M7 3v4" />
+        <path d="M17 3v4" />
+        <path d="M4 8h16" />
+        <path d="M5 5h14v16H5z" />
+        <path d="M8 12h3" />
+        <path d="M13 12h3" />
+        <path d="M8 16h3" />
+      </svg>
+    ),
+  }
+
+  return icons[name] || icons.document
+}
 
 /* =====================================================
    DONNÉES (à remplacer par vos vraies données / API)
@@ -105,20 +211,20 @@ const TEXT_ARTICLES = [
 ]
 
 const EXPLORE_ITEMS = [
-  { icon: '💃', label: 'Styles de danse', sub: 'Hip-hop, contemporain, classique, afro, waacking et plus encore', href: '/explorer/styles-de-danse', delay: '' },
-  { icon: '✍️', label: 'Chorégraphes', sub: "Les créateurs qui façonnent l'art chorégraphique d'aujourd'hui", href: '/explorer/choregraphes', delay: 'd1' },
-  { icon: '🎭', label: 'Compagnies', sub: 'De la Comédie-Française au collectif underground', href: '/explorer/compagnies', delay: 'd2' },
-  { icon: '🌟', label: 'Artistes', sub: 'Portraits, parcours et coulisses de ceux qui font la danse', href: '/explorer/artistes', delay: 'd3' },
-  { icon: '🎓', label: 'Métiers', sub: 'Danseur, chorégraphe, répétiteur, régisseur, critique…', href: '/explorer/metiers-de-la-danse', delay: 'd4' },
+  { icon: 'movement', label: 'Styles de danse', sub: 'Hip-hop, contemporain, classique, afro, waacking et plus encore', href: '/explorer/styles-de-danse', delay: '' },
+  { icon: 'signature', label: 'Chorégraphes', sub: "Les créateurs qui façonnent l'art chorégraphique d'aujourd'hui", href: '/explorer/choregraphes', delay: 'd1' },
+  { icon: 'stage', label: 'Compagnies', sub: 'De la Comédie-Française au collectif underground', href: '/explorer/compagnies', delay: 'd2' },
+  { icon: 'portrait', label: 'Artistes', sub: 'Portraits, parcours et coulisses de ceux qui font la danse', href: '/explorer/artistes', delay: 'd3' },
+  { icon: 'career', label: 'Métiers', sub: 'Danseur, chorégraphe, répétiteur, régisseur, critique…', href: '/explorer/metiers-de-la-danse', delay: 'd4' },
 ]
 
 const RESOURCES = [
-  { icon: '📄', title: 'Contrats & juridique', desc: "Modèles de contrats, droits d'auteur, fiches pratiques pour comprendre vos obligations et protéger votre travail.", delay: '' },
-  { icon: '🎭', title: 'Intermittence', desc: "Comprendre le régime, calculer ses heures, gérer l'administratif - un guide complet pour naviguer dans le système.", delay: 'd1' },
-  { icon: '🎯', title: 'Auditions & casting', desc: "Préparer son book, rédiger un CV de danseur, réussir ses auditions - nos conseils et checklists pratiques.", delay: 'd2' },
-  { icon: '📱', title: 'Communication & réseaux', desc: "Construire sa marque personnelle, maîtriser Instagram, créer un site - outils et stratégies pour exister en ligne.", delay: '' },
-  { icon: '💡', title: 'Entrepreneuriat artistique', desc: "Monter sa structure, trouver des financements, gérer la comptabilité - ressources pour les artistes entrepreneurs.", delay: 'd1' },
-  { icon: '🗓️', title: 'Organisation de carrière', desc: "Planifier sa saison, gérer ses projets, se fixer des objectifs - des outils pour prendre en main son parcours.", delay: 'd2' },
+  { icon: 'document', title: 'Contrats & juridique', desc: "Modèles de contrats, droits d'auteur, fiches pratiques pour comprendre vos obligations et protéger votre travail.", delay: '' },
+  { icon: 'status', title: 'Intermittence', desc: "Comprendre le régime, calculer ses heures, gérer l'administratif - un guide complet pour naviguer dans le système.", delay: 'd1' },
+  { icon: 'target', title: 'Auditions & casting', desc: "Préparer son book, rédiger un CV de danseur, réussir ses auditions - nos conseils et checklists pratiques.", delay: 'd2' },
+  { icon: 'network', title: 'Communication & réseaux', desc: "Construire sa marque personnelle, maîtriser Instagram, créer un site - outils et stratégies pour exister en ligne.", delay: '' },
+  { icon: 'idea', title: 'Entrepreneuriat artistique', desc: "Monter sa structure, trouver des financements, gérer la comptabilité - ressources pour les artistes entrepreneurs.", delay: 'd1' },
+  { icon: 'calendar', title: 'Organisation de carrière', desc: "Planifier sa saison, gérer ses projets, se fixer des objectifs - des outils pour prendre en main son parcours.", delay: 'd2' },
 ]
 
 const TICKER_ITEMS = ['Podcast', 'Articles', 'Agenda culturel', "Portraits d\'artistes", 'Ressources pro', 'Styles de danse', 'Festivals', 'Interviews', 'Compagnies', 'Spectacles']
@@ -837,7 +943,7 @@ export default function DanceLabPage() {
         <div className="explore-inner">
           {EXPLORE_ITEMS.map(({ icon, label, sub, href, delay }) => (
             <a key={label} href={href} className={`explore-item fu${delay ? ' ' + delay : ''}`}>
-              <div className="explore-icon">{icon}</div>
+              <div className="explore-icon"><PremiumSectionIcon name={icon} /></div>
               <div className="explore-label">{label}</div>
               <div className="explore-sub">{sub}</div>
             </a>
@@ -863,7 +969,7 @@ export default function DanceLabPage() {
           <div className="res-grid">
             {RESOURCES.map(({ icon, title, desc, delay }) => (
               <div key={title} className={`res-card fu${delay ? ' ' + delay : ''}`}>
-                <div className="res-icon">{icon}</div>
+                <div className="res-icon"><PremiumSectionIcon name={icon} /></div>
                 <h3 className="res-title">{title}</h3>
                 <p className="res-desc">{desc}</p>
                 <a href="/#ressources" className="res-link">Accéder <IconArrow /></a>
