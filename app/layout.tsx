@@ -22,6 +22,7 @@ const dmSans = DM_Sans({
 
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://dance-lab-site.vercel.app'),
   title: 'Dance Lab - Le média qui fait découvrir, comprendre et vivre la danse',
   description:
     'Dance Lab est le média de référence pour découvrir, comprendre et vivre la danse.',

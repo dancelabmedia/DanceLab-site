@@ -4,224 +4,8 @@ import { notFound } from "next/navigation";
 import { existsSync } from "node:fs";
 import path from "node:path";
 
-type Episode = {
-  image: string;
-  slug: string;
-  number: string;
-  title: string;
-  guest: string;
-  role: string;
-  quote: string;
-  excerpt: string;
-  description: string;
-  duration: string;
-  category: string;
-  spotifyEmbedUrl?: string;
-  appleUrl?: string;
-  youtubeUrl?: string;
-  chapters: { time: string; title: string }[];
-  tags: string[];
-};
+import { episodes, type Episode } from "../../../data/episodes";
 
-const EPISODES: Episode[] = [
-    {
-  image: "yasminehabib118.png",
-  slug: "118-yasmine-habib",
-  number: "118",
-  title:
-    "Ce que le milieu de la danse ne montre pas : hypocrisie, critiques et toxicité",
-  guest: "Yasmine Habib",
-  role: "Danseuse · Heels · Créatrice",
-  quote:
-    "Une conversation sans filtre autour du heels, de la transmission, des valeurs, de l'hypocrisie dans le milieu de la danse, des contrats et des droits des artistes.",
-  excerpt:
-    "Une conversation sans filtre autour du heels, de la transmission, des valeurs, de l'hypocrisie dans le milieu de la danse, des contrats et des droits des artistes.",
-  description:
-    "Dans cet épisode de Dance Lab, Yasmine Habib parle sans détour du milieu de la danse : les critiques, la toxicité, la transmission, les valeurs, mais aussi les contrats, les droits des artistes et la manière de protéger sa place tout en restant alignée avec elle-même.",
-  duration: "1 h",
-  category: "Dernier épisode",
-  spotifyEmbedUrl:
-    "https://open.spotify.com/embed/episode/2VLDcDqB2rMrIJWIGWuz0U",
-  appleUrl:
-    "https://podcasts.apple.com/us/podcast/118-ce-que-le-milieu-de-la-danse-ne-montre-pas/id1743269399?i=1000775727039",
-  youtubeUrl: "https://youtu.be/l24JCicz3aw?si=FwPgv9BxgYfBpe2R",
-  chapters: [],
-  tags: ["Heels", "Transmission", "Milieu de la danse"],
-},
-{
-    image: "tatianaseguin117.png",
-    slug: "117-tatiana-seguin",
-    number: "117",
-    title: "Tatiana Seguin : choisir l'humain avant la carrière",
-    guest: "Tatiana Seguin",
-    role: "Chorégraphe · Cie Tatiana Seguin",
-    quote: "Avant de faire un choix carriériste, je fais un choix humain",
-    excerpt:
-      "Une conversation sur la création, l'humain, le collectif et les choix qui dessinent une trajectoire artistique.",
-    description:
-      "Dans cet épisode de Dance Lab, Tatiana Seguin revient sur son parcours, sa manière de créer, son rapport au groupe et la place de l'humain dans les décisions artistiques. Un échange sensible sur la carrière, l'exigence et la fidélité à ses valeurs.",
-    duration: "À renseigner",
-    category: "Conversation",
-    spotifyEmbedUrl: "",
-    appleUrl: "",
-    youtubeUrl: "",
-    chapters: [
-      { time: "00:00", title: "Introduction" },
-      { time: "05:00", title: "Le parcours de Tatiana Seguin" },
-      { time: "15:00", title: "Créer avec et pour l'humain" },
-      { time: "30:00", title: "La compagnie, le collectif et les choix" },
-    ],
-    tags: ["Chorégraphie", "Création", "Humain"],
-  },
-  {
-    image: "julienramade116.png",
-    slug: "116-julien-ramade",
-    number: "116",
-    title: "Julien Ramade : la force d'une formation",
-    guest: "Julien Ramade",
-    role: "Danseur · Chorégraphe",
-    quote: "Il ne faut pas sous-estimer la force d’une formation.",
-    excerpt:
-      "Un épisode autour de la formation, de la rigueur et des fondations nécessaires pour construire une pratique durable.",
-    description:
-      "Julien Ramade partage sa vision du métier, l'importance de la formation et ce que l'apprentissage apporte à un danseur au fil du temps. Un échange sur la technique, la transmission et la construction d'une identité artistique.",
-    duration: "À renseigner",
-    category: "Conversation",
-    spotifyEmbedUrl: "",
-    appleUrl: "",
-    youtubeUrl: "",
-    chapters: [],
-    tags: ["Formation", "Technique", "Transmission"],
-  },
-  {
-    image: "lauramalieleclerc115.png",
-    slug: "115-laura-malie-leclerc",
-    number: "115",
-    title: "Laura Malié-Leclerc : écouter le corps du danseur",
-    guest: "Laura Malié-Leclerc",
-    role: "Kinésithérapeute du sport spécialisée dans la danse",
-    quote:
-      "La douleur c’est le premier signal du corps pour te dire qu’il y a quelque chose qui ne va pas.",
-    excerpt:
-      "Un épisode essentiel sur la douleur, la prévention, la récupération et la santé des danseurs.",
-    description:
-      "Laura Malié-Leclerc explique comment mieux comprendre les signaux du corps, prévenir les blessures et accompagner les danseurs dans une pratique plus durable. Une conversation précieuse pour tous ceux qui dansent, enseignent ou accompagnent le mouvement.",
-    duration: "À renseigner",
-    category: "Santé",
-    spotifyEmbedUrl: "",
-    appleUrl: "",
-    youtubeUrl: "",
-    chapters: [],
-    tags: ["Santé", "Prévention", "Corps"],
-  },
-  {
-    image: "roseotentick114.png",
-    slug: "114-rose-otentick",
-    number: "114",
-    title: "Être danseur.se ne suffit plus : les compétences qui font vraiment la différence",
-    guest: "Rose Otentick",
-    role: "Danseuse · Artiste interprète",
-    quote:
-      "Une réflexion sur les castings, les valeurs, les agents et la construction d'une carrière durable.",
-    excerpt:
-      "Une réflexion sur les castings, les valeurs, les agents et la construction d'une carrière durable.",
-    description:
-      "Dans cet épisode de Dance Lab, Rose Otentick aborde les compétences qui font la différence dans une carrière de danseur : les castings, les valeurs, les agents et la manière de construire une trajectoire durable.",
-    duration: "1 h",
-    category: "Carrière",
-    spotifyEmbedUrl: "",
-    appleUrl: "",
-    youtubeUrl: "",
-    chapters: [],
-    tags: ["Carrière", "Casting", "Compétences"],
-  },
-  {
-    image: "grichkarootz113.png",
-    slug: "113-grichka-rootz",
-    number: "113",
-    title: "Grichka Rootz : le krump comme langage complet",
-    guest: "Grichka Rootz",
-    role: "Danseur · Chorégraphe · Pionnier du krump en France",
-    quote:
-      "Le jiu-jitsu, pour moi c’est comme le krump dans la danse : c’est complet",
-    excerpt:
-      "Une plongée dans le krump, ses racines, son intensité et sa puissance expressive.",
-    description:
-      "Grichka Rootz revient sur son parcours, l'émergence du krump en France et la manière dont cette danse engage le corps, l'esprit et l'histoire personnelle. Un épisode sur la puissance du mouvement et la profondeur d'une culture.",
-    duration: "À renseigner",
-    category: "Culture",
-    spotifyEmbedUrl: "",
-    appleUrl: "",
-    youtubeUrl: "",
-    chapters: [],
-    tags: ["Krump", "Culture urbaine", "Expression"],
-  },
-  {
-    image: "lydielapeste112.png",
-    slug: "112-lydie-la-peste",
-    number: "112",
-    title: "La légitimité artistique : faut-il vraiment attendre qu’on nous la donne",
-    guest: "Lÿdie La PëstE",
-    role: "Artiste · Créatrice",
-    quote:
-      "Une conversation sur la création, la peur, la légitimité et le fait d'oser explorer de nouvelles voies.",
-    excerpt:
-      "Une conversation sur la création, la peur, la légitimité et le fait d'oser explorer de nouvelles voies.",
-    description:
-      "Dans cet épisode de Dance Lab, Lÿdie La PëstE parle de création, de peur, de légitimité et de la nécessité d'oser explorer de nouvelles voies artistiques sans attendre une validation extérieure.",
-    duration: "1 h",
-    category: "Création",
-    spotifyEmbedUrl: "",
-    appleUrl: "",
-    youtubeUrl: "",
-    chapters: [],
-    tags: ["Légitimité", "Création", "Parcours"],
-  },
-  {
-    image: "johannus111.png",
-    slug: "111-johan-nus",
-    number: "111",
-    title: "Penser l’artiste au-delà de la danse : légitimité, bienveillance et santé mentale",
-    guest: "Johan Nus",
-    role: "Artiste · Chorégraphe",
-    quote:
-      "Un épisode sur la responsabilité artistique, les environnements de travail et l'humain derrière l'artiste.",
-    excerpt:
-      "Un épisode sur la responsabilité artistique, les environnements de travail et l'humain derrière l'artiste.",
-    description:
-      "Dans cet épisode de Dance Lab, Johan Nus interroge la place de l'artiste au-delà de la danse : la légitimité, la bienveillance, la santé mentale, la responsabilité artistique et les environnements de travail.",
-    duration: "1 h",
-    category: "Santé mentale",
-    spotifyEmbedUrl: "",
-    appleUrl: "",
-    youtubeUrl: "",
-    chapters: [],
-    tags: ["Santé mentale", "Légitimité", "Bienveillance"],
-  },
-  {
-    image: "fredericfontan110.png",
-    slug: "110-frederic-fontan",
-    number: "110",
-    title: "Comment durer dans les métiers créatifs : Tour du monde, dépression, résilience",
-    guest: "Frédéric Fontan",
-    role: "Artiste · Créatif",
-    quote:
-      "Un témoignage sur la création, la résilience, la santé mentale et la longévité dans les métiers artistiques.",
-    excerpt:
-      "Un témoignage sur la création, la résilience, la santé mentale et la longévité dans les métiers artistiques.",
-    description:
-      "Dans cet épisode de Dance Lab, Frédéric Fontan partage un témoignage autour de la création, de la résilience, de la santé mentale et de la manière de durer dans les métiers artistiques et créatifs.",
-    duration: "1 h",
-    category: "Parcours",
-    spotifyEmbedUrl: "",
-    appleUrl: "",
-    youtubeUrl: "",
-    chapters: [],
-    tags: ["Résilience", "Création", "Longévité"],
-  },
-];
-
-const CARD_IMAGE_DIR = "/episodes";
 const HEADER_IMAGE_DIR = "/images/les-invites";
 
 function publicFileExists(publicPath: string) {
@@ -229,21 +13,22 @@ function publicFileExists(publicPath: string) {
 }
 
 function getEpisodeCardImage(episode: Episode) {
-  return `${CARD_IMAGE_DIR}/${episode.image}`;
+  return episode.image;
 }
 
 function getEpisodeHeaderImage(episode: Episode) {
-  const headerImage = `${HEADER_IMAGE_DIR}/${episode.image}`;
+  const imageName = episode.image.split("/").pop();
+  const headerImage = imageName ? `${HEADER_IMAGE_DIR}/${imageName}` : episode.image;
 
   return publicFileExists(headerImage) ? headerImage : getEpisodeCardImage(episode);
 }
 
 function getEpisodeBySlug(slug: string) {
-  return EPISODES.find((episode) => episode.slug === slug);
+  return episodes.find((episode) => episode.slug === slug);
 }
 
 function getSimilarEpisodes(currentSlug: string) {
-  return EPISODES.filter((episode) => episode.slug !== currentSlug).slice(0, 3);
+  return episodes.filter((episode) => episode.slug !== currentSlug).slice(0, 3);
 }
 
 type PageProps = {
@@ -253,7 +38,7 @@ type PageProps = {
 };
 
 export function generateStaticParams() {
-  return EPISODES.map((episode) => ({
+  return episodes.map((episode) => ({
     slug: episode.slug,
   }));
 }
@@ -271,11 +56,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const imageUrl = getEpisodeHeaderImage(episode);
 
   return {
-    title: `${episode.title} | Dance Lab`,
-    description: episode.excerpt,
+    title: episode.seoTitle,
+    description: episode.seoDescription,
     openGraph: {
-      title: `${episode.title} | Dance Lab`,
-      description: episode.excerpt,
+      title: episode.seoTitle,
+      description: episode.seoDescription,
       images: [imageUrl],
       type: "article",
     },
@@ -312,13 +97,15 @@ export default async function EpisodePage({ params }: PageProps) {
             </Link>
 
             <p className="episode-kicker">
-              Épisode {episode.number} · {episode.category}
+              Épisode {episode.number}
+              {episode.category ? ` · ${episode.category}` : ""}
             </p>
 
             <h1>{episode.title}</h1>
 
             <p className="episode-guest">
-              Avec {episode.guest}, {episode.role}
+              Avec {episode.guest}
+              {episode.role ? `, ${episode.role}` : ""}
             </p>
 
             <blockquote>“{episode.quote}”</blockquote>
@@ -327,15 +114,18 @@ export default async function EpisodePage({ params }: PageProps) {
 
             <div className="episode-meta">
               <span>{episode.duration}</span>
-              <span>{episode.tags[0]}</span>
+              <time dateTime={episode.publishedAt}>{episode.publishedAt}</time>
+              {episode.tags[0] ? <span>{episode.tags[0]}</span> : null}
             </div>
 
             <div className="episode-actions">
               {episode.spotifyEmbedUrl ? (
                 <a href={episode.spotifyEmbedUrl}>Spotify</a>
               ) : null}
-              {episode.appleUrl ? <a href={episode.appleUrl}>Apple Podcasts</a> : null}
-              {episode.youtubeUrl ? <a href={episode.youtubeUrl}>YouTube</a> : null}
+              {episode.apple ? <a href={episode.apple}>Apple Podcasts</a> : null}
+              {episode.youtube ? <a href={episode.youtube}>YouTube</a> : null}
+              {episode.deezer ? <a href={episode.deezer}>Deezer</a> : null}
+              {episode.link ? <a href={episode.link}>Tous les liens</a> : null}
             </div>
           </div>
         </section>
@@ -358,7 +148,7 @@ export default async function EpisodePage({ params }: PageProps) {
             </div>
 
             <h2>Description</h2>
-            <p>{episode.description}</p>
+            <p className="episode-description">{episode.description}</p>
 
             {episode.chapters.length > 0 ? (
               <>
@@ -403,17 +193,19 @@ export default async function EpisodePage({ params }: PageProps) {
             <div className="episode-panel">
               <h2>Invité</h2>
               <p className="episode-panel-name">{episode.guest}</p>
-              <p>{episode.role}</p>
+              {episode.role ? <p>{episode.role}</p> : null}
             </div>
 
-            <div className="episode-panel">
-              <h2>Tags</h2>
-              <div className="episode-tags">
-                {episode.tags.map((tag) => (
-                  <span key={tag}>{tag}</span>
-                ))}
+            {episode.tags.length > 0 ? (
+              <div className="episode-panel">
+                <h2>Tags</h2>
+                <div className="episode-tags">
+                  {episode.tags.map((tag) => (
+                    <span key={tag}>{tag}</span>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : null}
           </aside>
         </section>
 
@@ -533,6 +325,7 @@ export default async function EpisodePage({ params }: PageProps) {
         }
 
         .episode-meta span,
+        .episode-meta time,
         .episode-actions a,
         .episode-share a {
           border: 1px solid currentColor;
@@ -566,6 +359,10 @@ export default async function EpisodePage({ params }: PageProps) {
           max-width: 68ch;
           font-size: 1.1rem;
           line-height: 1.9;
+        }
+
+        .episode-description {
+          white-space: pre-line;
         }
 
         .episode-player {
