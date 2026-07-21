@@ -58,7 +58,7 @@ export default function EcouterPage() {
                   </h3>
 
                   <p>
-                    {episode.description}
+                    {episode.excerpt}
                   </p>
 
                   <span className="btn btn-primary">

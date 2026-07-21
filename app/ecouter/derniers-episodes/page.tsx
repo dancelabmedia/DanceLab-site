@@ -103,7 +103,7 @@ export default function DerniersEpisodesPage() {
 
 
                   <p>
-                    {episode.description}
+                    {episode.excerpt}
                   </p>
 
 

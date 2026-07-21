@@ -673,7 +673,7 @@ export default function DanceLabPage() {
                 Avec <strong>{latestEpisode.guest}</strong>
               </p>
 
-              <p className="ep-desc">{latestEpisode.description}</p>
+              <p className="ep-desc">{latestEpisode.excerpt}</p>
 
               {/* Plateformes */}
               <div className="platforms">
