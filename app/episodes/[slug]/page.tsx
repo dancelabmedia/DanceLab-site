@@ -4,7 +4,9 @@ import { notFound } from "next/navigation";
 import { existsSync } from "node:fs";
 import path from "node:path";
 
+import EpisodeShare from "../../../components/EpisodeShare";
 import { episodes, type Episode } from "../../../data/episodes";
+import { SITE_URL } from "../../../data/site";
 
 const HEADER_IMAGE_DIR = "/images/les-invites";
 
@@ -25,6 +27,12 @@ function getEpisodeHeaderImage(episode: Episode) {
 
 function getEpisodeBySlug(slug: string) {
   return episodes.find((episode) => episode.slug === slug);
+}
+
+function formatEpisodeDate(date: string) {
+  const [year, month, day] = date.split("-");
+
+  return year && month && day ? `${day}.${month}.${year}` : date;
 }
 
 function getSimilarEpisodes(currentSlug: string) {
@@ -53,16 +61,32 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  const imageUrl = getEpisodeHeaderImage(episode);
+  const episodeUrl = new URL(`/episodes/${episode.slug}`, SITE_URL).toString();
+  const imageUrl = new URL(getEpisodeHeaderImage(episode), SITE_URL).toString();
 
   return {
     title: episode.seoTitle,
     description: episode.seoDescription,
+    alternates: {
+      canonical: episodeUrl,
+    },
     openGraph: {
       title: episode.seoTitle,
       description: episode.seoDescription,
-      images: [imageUrl],
+      url: episodeUrl,
+      images: [
+        {
+          url: imageUrl,
+          alt: `${episode.title} — ${episode.guest}`,
+        },
+      ],
       type: "article",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: episode.seoTitle,
+      description: episode.seoDescription,
+      images: [imageUrl],
     },
   };
 }
@@ -76,7 +100,7 @@ export default async function EpisodePage({ params }: PageProps) {
   }
 
   const similarEpisodes = getSimilarEpisodes(episode.slug);
-  const episodeUrl = `https://dancelab.fr/episodes/${episode.slug}`;
+  const episodeUrl = new URL(`/episodes/${episode.slug}`, SITE_URL).toString();
   const headerImage = getEpisodeHeaderImage(episode);
 
   return (
@@ -110,11 +134,11 @@ export default async function EpisodePage({ params }: PageProps) {
 
             <blockquote>“{episode.quote}”</blockquote>
 
-            <p className="episode-excerpt">{episode.excerpt}</p>
-
             <div className="episode-meta">
               <span>{episode.duration}</span>
-              <time dateTime={episode.publishedAt}>{episode.publishedAt}</time>
+              <time dateTime={episode.publishedAt}>
+                {formatEpisodeDate(episode.publishedAt)}
+              </time>
               {episode.tags[0] ? <span>{episode.tags[0]}</span> : null}
             </div>
 
@@ -168,26 +192,7 @@ export default async function EpisodePage({ params }: PageProps) {
           <aside className="episode-sidebar">
             <div className="episode-panel">
               <h2>Partager</h2>
-              <div className="episode-share">
-                <a
-                  href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-                    episodeUrl
-                  )}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  LinkedIn
-                </a>
-                <a
-                  href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(
-                    episodeUrl
-                  )}&text=${encodeURIComponent(episode.title)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  X
-                </a>
-              </div>
+              <EpisodeShare title={episode.title} url={episodeUrl} />
             </div>
 
             <div className="episode-panel">
@@ -307,7 +312,7 @@ export default async function EpisodePage({ params }: PageProps) {
           max-width: 820px;
           margin: 34px 0;
           padding-left: 26px;
-          border-left: 3px solid #d8c299;
+          border-left: 3px solid var(--color-primary-light);
           font-family: var(--font-display);
           font-size: 2.4rem;
           font-weight: 500;
@@ -326,8 +331,7 @@ export default async function EpisodePage({ params }: PageProps) {
 
         .episode-meta span,
         .episode-meta time,
-        .episode-actions a,
-        .episode-share a {
+        .episode-actions a {
           border: 1px solid currentColor;
           border-radius: 999px;
           padding: 10px 14px;
@@ -428,6 +432,92 @@ export default async function EpisodePage({ params }: PageProps) {
           gap: 10px;
         }
 
+        .episode-share {
+          position: relative;
+          flex-wrap: nowrap;
+          gap: 9px;
+        }
+
+        .episode-share-button {
+          display: grid;
+          width: 44px;
+          height: 44px;
+          flex: 0 0 44px;
+          place-items: center;
+          border: 1px solid currentColor;
+          border-radius: 50%;
+          background: transparent;
+          color: inherit;
+          cursor: pointer;
+          transition: background-color 180ms ease, border-color 180ms ease,
+            color 180ms ease, transform 180ms ease;
+        }
+
+        .episode-share-button:hover,
+        .episode-share-button:focus-visible {
+          border-color: var(--color-primary-light);
+          background: var(--color-primary-light);
+          color: #fff;
+          transform: translateY(-1px);
+        }
+
+        .episode-share-button:focus-visible {
+          outline: 2px solid currentColor;
+          outline-offset: 3px;
+        }
+
+        .episode-share-button svg {
+          width: 19px;
+          height: 19px;
+          fill: none;
+          stroke: currentColor;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+          stroke-width: 1.8;
+        }
+
+        .episode-share-menu {
+          position: absolute;
+          z-index: 5;
+          top: calc(100% + 10px);
+          right: 0;
+          display: grid;
+          width: 190px;
+          overflow: hidden;
+          border: 1px solid rgba(0, 0, 0, 0.14);
+          border-radius: 8px;
+          background: #fff;
+          box-shadow: 0 14px 32px rgba(17, 17, 17, 0.14);
+        }
+
+        .episode-share-menu a,
+        .episode-share-menu button {
+          width: 100%;
+          border: 0;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+          border-radius: 0;
+          padding: 11px 14px;
+          background: transparent;
+          color: inherit;
+          font: inherit;
+          text-align: left;
+          text-decoration: none;
+          cursor: pointer;
+        }
+
+        .episode-share-menu a:last-child,
+        .episode-share-menu button:last-child {
+          border-bottom: 0;
+        }
+
+        .episode-share-menu a:hover,
+        .episode-share-menu a:focus-visible,
+        .episode-share-menu button:hover,
+        .episode-share-menu button:focus-visible {
+          background: rgba(193, 208, 223, 0.28);
+          outline: none;
+        }
+
         .episode-tags span {
           border-radius: 999px;
           background: #ece6dc;
@@ -517,6 +607,16 @@ export default async function EpisodePage({ params }: PageProps) {
         }
 
         @media (max-width: 560px) {
+          .episode-share {
+            gap: 6px;
+          }
+
+          .episode-share-button {
+            width: 40px;
+            height: 40px;
+            flex-basis: 40px;
+          }
+
           .episode-hero h1 {
             font-size: 3rem;
             line-height: 1;

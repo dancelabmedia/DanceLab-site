@@ -1,10 +1,9 @@
-'use client'
-
 import Header from './Header'
 import Footer from './Footer'
 import ScrollManager from './ScrollManager'
 import BackToTop from './BackToTop'
 import ContentProtection from './ContentProtection'
+import { searchIndex } from '../data/search-index'
 
 export default function SiteLayout({
   children,
@@ -15,7 +14,7 @@ export default function SiteLayout({
     <>
       <ScrollManager />
       <ContentProtection />
-      <Header />
+      <Header searchItems={searchIndex} />
       {children}
       <Footer />
       <BackToTop />

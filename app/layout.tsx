@@ -3,6 +3,7 @@ import { Cormorant_Garamond, DM_Sans } from 'next/font/google'
 import 'leaflet/dist/leaflet.css'
 import './globals.css'
 import SiteLayout from '../components/SiteLayout'
+import { SITE_URL } from '../data/site'
 
 
 const displayFont = Cormorant_Garamond({
@@ -22,7 +23,7 @@ const dmSans = DM_Sans({
 
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://dance-lab-site.vercel.app'),
+  metadataBase: new URL(SITE_URL),
   title: 'Dance Lab - Le média qui fait découvrir, comprendre et vivre la danse',
   description:
     'Dance Lab est le média de référence pour découvrir, comprendre et vivre la danse.',

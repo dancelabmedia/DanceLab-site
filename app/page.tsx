@@ -26,12 +26,6 @@ const IconArrow = () => (
     <path d="M5 12h14M12 5l7 7-7 7" />
   </svg>
 )
-const IconSearch = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-    <circle cx="11" cy="11" r="8" />
-    <path d="m21 21-4.35-4.35" />
-  </svg>
-)
 const IconMenu = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
     <line x1="3" y1="6" x2="21" y2="6" />
@@ -252,7 +246,6 @@ function getAgendaHomeDateParts(event: AgendaEvent) {
    COMPOSANT PRINCIPAL
 ===================================================== */
 export default function DanceLabPage() {
-  const [searchOpen, setSearchOpen]   = useState(false)
   const [scrolled, setScrolled]       = useState(false)
   const [playing, setPlaying]         = useState<Record<string, boolean>>({})
   const [progress, setProgress]       = useState(33)
@@ -295,22 +288,6 @@ export default function DanceLabPage() {
     document.querySelectorAll('.fu').forEach((el) => obs.observe(el))
     return () => obs.disconnect()
   }, [])
-
-  /* Keyboard shortcuts (Échap / ⌘K) */
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setSearchOpen(false)
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setSearchOpen(true) }
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [])
-
-  /* Body scroll lock quand overlay ouvert */
-  useEffect(() => {
-    document.body.style.overflow = searchOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
-  }, [searchOpen])
 
   useEffect(() => {
     return () => {
@@ -475,34 +452,6 @@ export default function DanceLabPage() {
 
   return (
       <main>
-      {/* ========================================
-          SEARCH OVERLAY
-      ======================================== */}
-      <div
-        className={`search-overlay${searchOpen ? ' open' : ''}`}
-        role="dialog"
-        aria-label="Recherche"
-        onClick={(e) => { if (e.target === e.currentTarget) setSearchOpen(false) }}
-      >
-        <div className="search-box">
-          <div className="search-row">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-            </svg>
-            <input className="search-input" type="text" placeholder="Rechercher un épisode, un artiste, un style…" />
-            <button className="search-close-btn" onClick={() => setSearchOpen(false)} aria-label="Fermer">✕</button>
-          </div>
-          <p style={{ fontSize: '11px', letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginBottom: '14px' }}>
-            Suggestions populaires
-          </p>
-          <div className="search-chips">
-            {['Waacking', 'Breakdance JO', 'Festivals 2026', 'Intermittence', 'Chorégraphes', 'Battle Paris', 'Auditions', 'Compagnies', 'Danse contemporaine'].map((chip) => (
-              <span key={chip} className="s-chip">{chip}</span>
-            ))}
-          </div>
-        </div>
-      </div>
-
       {/* ========================================
           HERO
       ======================================== */}
