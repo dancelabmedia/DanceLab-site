@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { FormEvent, KeyboardEvent, MouseEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { searchContent, type SearchItem } from '../data/search'
 
@@ -36,6 +36,7 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
   const [activeResult, setActiveResult] = useState(-1)
   const searchInputRef = useRef<HTMLInputElement | null>(null)
   const searchBoxRef = useRef<HTMLDivElement | null>(null)
+  const newsletterScrollTimersRef = useRef<number[]>([])
 
   const allSuggestions = useMemo(
     () => searchContent(searchItems, debouncedQuery, searchItems.length),
@@ -88,23 +89,22 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
   const listenLinks = [
     { label: 'Tous les épisodes', href: '/ecouter' },
     { label: 'Incontournables', href: '/ecouter/incontournables' },
-    { label: 'Playlists thématiques', href: '/ecouter/playlists-thematiques' },
+    { label: 'Thématiques', href: '/ecouter/playlists-thematiques' },
   ]
 
   const discoverLinks = [
-    { label: 'Articles culture', href: '/decouvrir/articles-culture' },
-    { label: 'Histoire des styles', href: '/decouvrir/histoire-des-styles' },
+    { label: 'Articles', href: '/decouvrir/articles-culture' },
+    { label: 'Portraits', href: '/decouvrir/artistes-a-suivre' },
     { label: 'Décryptages', href: '/decouvrir/decryptages' },
     { label: 'Tendances', href: '/decouvrir/tendances' },
-    { label: 'Artistes à suivre', href: '/decouvrir/artistes-a-suivre' },
   ]
 
   const exploreLinks = [
-    { label: 'Styles de danse', href: '/explorer/styles-de-danse' },
+    { label: 'Styles', href: '/explorer/styles-de-danse' },
+    { label: 'Artistes', href: '/explorer/artistes' },
     { label: 'Chorégraphes', href: '/explorer/choregraphes' },
     { label: 'Compagnies', href: '/explorer/compagnies' },
-    { label: 'Artistes', href: '/explorer/artistes' },
-    { label: 'Métiers de la danse', href: '/explorer/metiers-de-la-danse' },
+    { label: 'Métiers', href: '/explorer/metiers-de-la-danse' },
   ]
 
   const navGroups = [
@@ -113,18 +113,20 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
     {
       label: 'Sortir',
       items: [
-        { label: 'Tous les événements', href: '/agenda' },
+        { label: 'Agenda', href: '/agenda' },
         { label: 'Spectacles', href: '/agenda' },
         { label: 'Festivals', href: '/agenda' },
-        { label: 'Événements gratuits', href: '/agenda' },
+        { label: 'Gratuit', href: '/agenda' },
       ],
     },
     { label: 'Explorer', items: exploreLinks },
     {
-      label: 'Ressources',
+      label: 'Apprendre',
       items: [
-        { label: 'Guides & conseils', href: '/#ressources' },
-        { label: 'Partenaires', href: '/#ressources' },
+        { label: 'Guides', href: '/apprendre/guides' },
+        { label: 'Conseils', href: '/apprendre/conseils' },
+        { label: 'Formations', href: '/apprendre/formations' },
+        { label: 'Outils', href: '/apprendre/outils' },
       ],
     },
   ]
@@ -172,12 +174,27 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
   }, [searchOpen])
 
   useEffect(() => {
+    if (!mobileOpen) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [mobileOpen])
+
+  useEffect(() => {
     setSearchOpen(false)
   }, [pathname])
 
   useEffect(() => {
     setActiveResult(-1)
   }, [debouncedQuery])
+
+  useEffect(() => () => {
+    newsletterScrollTimersRef.current.forEach((timer) => window.clearTimeout(timer))
+  }, [])
 
   const closeMobileMenu = () => {
     setMobileOpen(false)
@@ -187,6 +204,49 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
   const openSearch = () => {
     closeMobileMenu()
     setSearchOpen(true)
+  }
+
+  const handleNewsletterClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    closeMobileMenu()
+
+    if (pathname !== '/') return
+
+    const newsletter = document.getElementById('newsletter')
+    if (!newsletter) return
+
+    event.preventDefault()
+
+    if (window.location.hash !== '#newsletter') {
+      window.history.pushState(null, '', '#newsletter')
+    }
+
+    newsletterScrollTimersRef.current.forEach((timer) => window.clearTimeout(timer))
+    newsletterScrollTimersRef.current = []
+
+    const alignNewsletter = () => {
+      const header = document.querySelector<HTMLElement>('.header')
+      if (!header) return
+
+      const headerHeight = header.getBoundingClientRect().height
+      const targetTop = window.scrollY + newsletter.getBoundingClientRect().top - headerHeight
+
+      window.scrollTo({
+        top: Math.max(0, targetTop),
+        behavior: 'smooth',
+      })
+    }
+
+    window.requestAnimationFrame(alignNewsletter)
+
+    for (const delay of [700, 1600]) {
+      newsletterScrollTimersRef.current.push(window.setTimeout(() => {
+        const header = document.querySelector<HTMLElement>('.header')
+        if (!header) return
+
+        const offset = newsletter.getBoundingClientRect().top - header.getBoundingClientRect().bottom
+        if (Math.abs(offset) > 1) alignNewsletter()
+      }, delay))
+    }
   }
 
   const closeSearch = () => {
@@ -298,6 +358,7 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
             href="/#newsletter"
             className="btn btn-primary"
             style={{ padding: '10px 20px', fontSize: '13px' }}
+            onClick={handleNewsletterClick}
           >
             Newsletter
           </Link>
@@ -312,41 +373,44 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
         </div>
       </nav>
 
-      <nav className={`mobile-nav${mobileOpen ? ' open' : ''}`}>
-        <button
-          className="mobile-nav-close"
-          onClick={closeMobileMenu}
-          aria-label="Fermer"
-        >
-          ✕
-        </button>
+      {mobileOpen ? createPortal(
+        <nav className="mobile-nav open" aria-label="Menu principal mobile">
+          <button
+            className="mobile-nav-close"
+            onClick={closeMobileMenu}
+            aria-label="Fermer"
+          >
+            ✕
+          </button>
 
-        {navGroups.map((group) => (
-          <div key={group.label} className="mobile-menu-group">
-            <button
-              type="button"
-              className="mobile-menu-title"
-              onClick={() => setMobileSubOpen(mobileSubOpen === group.label ? null : group.label)}
-            >
-              {group.label}
-            </button>
+          {navGroups.map((group) => (
+            <div key={group.label} className="mobile-menu-group">
+              <button
+                type="button"
+                className="mobile-menu-title"
+                onClick={() => setMobileSubOpen(mobileSubOpen === group.label ? null : group.label)}
+              >
+                {group.label}
+              </button>
 
-            {mobileSubOpen === group.label ? (
-              <div className="mobile-submenu">
-                {group.items.map((item) => (
-                  <Link key={item.label} href={item.href} onClick={closeMobileMenu}>
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-            ) : null}
-          </div>
-        ))}
+              {mobileSubOpen === group.label ? (
+                <div className="mobile-submenu">
+                  {group.items.map((item) => (
+                    <Link key={item.label} href={item.href} onClick={closeMobileMenu}>
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          ))}
 
-        <Link href="/a-propos" className="mobile-menu-title" onClick={closeMobileMenu}>
-          À propos
-        </Link>
-      </nav>
+          <Link href="/a-propos" className="mobile-menu-title" onClick={closeMobileMenu}>
+            À propos
+          </Link>
+        </nav>,
+        document.body
+      ) : null}
 
       {searchOpen ? createPortal(
         <div

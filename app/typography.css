@@ -1,0 +1,206 @@
+/* ==================================
+   SYSTÈME TYPOGRAPHIQUE DANCE LAB
+
+   Source de vérité :
+   --font-display   → Aileron
+   --font-editorial → Hanken Grotesk (alternative libre à Hagrid Text)
+   --font-body      → DM Sans
+================================== */
+
+body,
+p,
+li,
+dt,
+dd,
+small,
+figcaption,
+a,
+button,
+input,
+textarea,
+select,
+label {
+  font-family: var(--font-body) !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+[role="heading"],
+.hero-title,
+.nl-title,
+.ep-title,
+.section-title,
+.ep-card-title,
+.guest-name,
+.art-title,
+.txt-card h3,
+.magazine-article-link strong,
+.agenda-home-placeholder strong,
+.ag-day,
+.ag-title,
+.agenda-image-placeholder strong,
+.agenda-leaflet-popup strong,
+.explore-label,
+.res-title,
+.search-suggestion-placeholder,
+.search-suggestion-copy strong,
+.search-result-placeholder,
+.search-result-copy strong,
+.discover-stack-item strong,
+.explorer-mini-index strong,
+.template-guest-line strong,
+.episode-similar-grid strong {
+  font-family: var(--font-display) !important;
+  text-wrap: balance;
+}
+
+h1,
+.hero-title,
+.nl-title,
+.about-text h1,
+.episodes-header h1,
+.search-results-hero h1,
+.template-hero-copy h1 {
+  font-weight: 800 !important;
+  letter-spacing: -0.025em;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.14),
+    0 10px 30px rgba(35, 48, 51, 0.14);
+}
+
+h2 {
+  font-weight: 700 !important;
+}
+
+h3,
+h4,
+h5,
+h6,
+[role="heading"],
+.ep-card-title,
+.guest-name,
+.art-title,
+.ag-title,
+.res-title,
+.magazine-article-link strong,
+.search-suggestion-copy strong,
+.search-result-copy strong,
+.discover-stack-item strong,
+.explorer-mini-index strong,
+.template-guest-line strong,
+.episode-similar-grid strong {
+  font-weight: 600 !important;
+}
+
+.ep-title {
+  font-weight: 700 !important;
+  letter-spacing: -0.018em;
+}
+
+.episode-description,
+.episode-description-paragraph,
+.episode-description-list li,
+.episode-description-emphasis,
+.article-content p,
+.article-content li {
+  font-family: var(--font-body) !important;
+}
+
+blockquote,
+blockquote p,
+q,
+cite,
+.section-sub,
+.guest-quote,
+.hero-eyebrow-text,
+.about-editorial-mark span,
+.article-content blockquote p,
+.explorer-quote-card blockquote,
+.template-quote,
+.template-quote p,
+.episode-description-lead,
+.episode-description-callout,
+.episode-description-quote,
+.episode-description-inline-quote {
+  font-family: var(--font-editorial) !important;
+}
+
+.episode-description-lead,
+.episode-description-callout {
+  font-weight: 600;
+}
+
+blockquote,
+.guest-quote,
+.episode-description-quote,
+.episode-description-inline-quote,
+.article-content blockquote p,
+.explorer-quote-card blockquote,
+.template-quote p {
+  font-style: italic;
+}
+
+.btn-primary,
+.btn-outline-w,
+.see-all,
+.footer-newsletter-link {
+  font-family: var(--font-display) !important;
+  font-weight: 600;
+}
+
+.nav-links a,
+.nav-dropdown-trigger,
+.dropdown-menu a,
+.mobile-nav a,
+.mobile-menu-title,
+.mobile-submenu a,
+.search-overlay .search-input,
+.search-submit-btn,
+.search-close-btn,
+.search-all-results,
+.episode-share-button,
+.social-btn,
+.foot-links a {
+  font-family: var(--font-body) !important;
+}
+
+.not-found-page {
+  min-height: calc(100dvh - var(--nav-h));
+  display: grid;
+  place-items: center;
+  padding: 120px 24px 72px;
+  text-align: center;
+  background: var(--color-background);
+  color: var(--color-text-dark);
+}
+
+.not-found-content {
+  max-width: 720px;
+}
+
+.not-found-code {
+  margin-bottom: 18px;
+  color: var(--color-primary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.not-found-content h1 {
+  margin-bottom: 18px;
+  font-size: clamp(3rem, 10vw, 7rem);
+  line-height: 0.95;
+}
+
+.not-found-content p {
+  max-width: 560px;
+  margin: 0 auto 32px;
+  color: var(--color-text-muted);
+  font-size: clamp(1rem, 2vw, 1.16rem);
+  line-height: 1.7;
+}

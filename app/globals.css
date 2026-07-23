@@ -5,6 +5,10 @@
 
   /* ===== IDENTITÉ DANCE LAB ===== */
 
+  --font-display: 'Aileron', sans-serif;
+  --font-editorial: 'Hanken Grotesk Variable', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+
   --color-primary: #5B7377;
   --color-primary-dark: #425659;
   --color-primary-light: #C1D0DF;
@@ -70,8 +74,15 @@ body {
 
 h1,
 h2,
-h3 {
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-display);
+}
+
+blockquote {
+  font-family: var(--font-editorial);
 }
 
 img {
@@ -430,13 +441,24 @@ button {
   display: none;
   position: fixed;
   inset: 0;
-  z-index: 890;
+  z-index: 10000;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  box-sizing: border-box;
   background: var(--color-primary);
   flex-direction: column;
   justify-content: flex-start;
-  padding: 96px 48px 48px;
+  padding: 96px 48px calc(48px + env(safe-area-inset-bottom));
   gap: 28px;
+  overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  isolation: isolate;
 }
 .mobile-nav.open { display: flex; }
 .mobile-nav a {
@@ -448,8 +470,10 @@ button {
 }
 .mobile-nav a:hover { color: #fff; }
 .mobile-nav-close {
-  position: absolute;
-  top: 24px; right: 32px;
+  position: fixed;
+  top: max(24px, env(safe-area-inset-top));
+  right: max(32px, env(safe-area-inset-right));
+  z-index: 1;
   background: none;
   border: none;
   color: rgba(255,255,255,.5);
@@ -2315,7 +2339,13 @@ button {
 /* ===========================
    NEWSLETTER
 =========================== */
-.newsletter { background: var(--color-primary-dark); position: relative; overflow: hidden; padding: 96px 0; }
+.newsletter {
+  background: var(--color-primary-dark);
+  position: relative;
+  overflow: hidden;
+  padding: 96px 0;
+  scroll-margin-top: var(--nav-h);
+}
 .newsletter-watermark {
   position: absolute;
   top: 50%;

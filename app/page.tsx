@@ -5,6 +5,7 @@ import { featuredAgendaEvents, formatAgendaDateRange } from "./agenda/agenda-dat
 import type { AgendaEvent } from "./agenda/agenda-data"
 import { magazineArticles } from "./decouvrir/articles-data"
 import { episodes } from "../data/episodes"
+import { featuredEpisodes } from "../data/featured-episodes"
 import Link from "next/link"
 
 /* =====================================================
@@ -13,12 +14,6 @@ import Link from "next/link"
 const IconPlay = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
     <polygon points="5 3 19 12 5 21 5 3" />
-  </svg>
-)
-const IconPause = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-    <rect x="6" y="4" width="4" height="16" />
-    <rect x="14" y="4" width="4" height="16" />
   </svg>
 )
 const IconArrow = () => (
@@ -152,45 +147,6 @@ const PremiumSectionIcon = ({ name }: { name: string }) => {
   return icons[name] || icons.document
 }
 
-/* =====================================================
-   DONNÉES (à remplacer par vos vraies données / API)
-===================================================== */
-const FEATURED_EPISODES = [
-  {
-    id: 'ep72',
-    image: 'dancelab_ep72',
-    tag: 'Carrière',
-    ep: '72',
-    title: 'Construire sa carrière de danseur indépendant en 2026',
-    excerpt: 'Les clés pour naviguer entre cachets, contrats et liberté créatrice selon Julien Moreau.',
-    guest: 'Julien Moreau',
-    duration: '1h 04min',
-    delay: '',
-  },
-  {
-    id: 'ep65',
-    image: 'dancelab_ep65',
-    tag: 'Santé mentale',
-    ep: '65',
-    title: 'Prendre soin de soi : santé mentale et danse professionnelle',
-    excerpt: "Comment les danseurs vivent la pression et le doute - avec Marie Lecomte, psychologue du sport.",
-    guest: 'Marie Lecomte',
-    duration: '52min',
-    delay: 'd1',
-  },
-  {
-    id: 'ep58',
-    image: 'dancelab_ep58',
-    tag: 'Entrepreneuriat',
-    ep: '58',
-    title: "Monter sa compagnie de danse : de l'idée à la réalité",
-    excerpt: "Toutes les étapes, les erreurs à éviter et les ressources indispensables avec Thomas Clément.",
-    guest: 'Thomas Clément',
-    duration: '1h 18min',
-    delay: 'd2',
-  },
-]
-
 const GUESTS = [
   { image: 'yasminehabib118.png', slug: '118-yasmine-habib', name: 'Yasmine Habib', role: 'Danseuse · Chorégraphe · Professeure de danse', ep: '118', quote: "J’ai pas fait l’hypocrite pour arriver là où j’en suis.", delay: '' },
   { image: 'tatianaseguin117.png', slug: '117-tatiana-seguin', name: 'Tatiana Seguin', role: 'Chorégraphe · Cie Tatiana Seguin', ep: '117', quote: "Avant de faire un choix carriériste, je fais un choix humain", delay: 'd1' },
@@ -247,7 +203,6 @@ function getAgendaHomeDateParts(event: AgendaEvent) {
 ===================================================== */
 export default function DanceLabPage() {
   const [scrolled, setScrolled]       = useState(false)
-  const [playing, setPlaying]         = useState<Record<string, boolean>>({})
   const [progress, setProgress]       = useState(33)
   const [newsletterStatus, setNewsletterStatus] = useState<
     'idle' | 'loading' | 'success' | 'invalid' | 'error'
@@ -350,9 +305,6 @@ export default function DanceLabPage() {
       cancelled = true
     }
   }, [])
-
-  const togglePlay = (id: string) =>
-    setPlaying((p) => ({ ...p, [id]: !p[id] }))
 
   const startGuestDrag = (e: React.PointerEvent<HTMLDivElement>) => {
     const track = guestTrackRef.current
@@ -681,25 +633,33 @@ export default function DanceLabPage() {
             <a href="/ecouter" className="see-all">Tous les épisodes <IconArrow /></a>
           </div>
           <div className="ep-cards">
-            {FEATURED_EPISODES.map(({ id, image, tag, ep, title, excerpt, guest, duration, delay }) => (
-              <div key={id} className={`ep-card fu${delay ? ' ' + delay : ''}`}>
+            {featuredEpisodes.map((episode, index) => (
+              <Link
+                key={episode.slug}
+                href={`/episodes/${episode.slug}`}
+                className={`ep-card fu${index > 0 ? ` d${index}` : ''}`}
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`https://picsum.photos/image/${image}/640/360`} alt={title} loading="lazy" />
+                <img
+                  src={episode.image}
+                  alt={`${episode.title}, avec ${episode.guest}`}
+                  loading="lazy"
+                />
                 <div className="ep-card-body">
                   <div className="ep-card-tags">
-                    <span className="tag tag-gray">{tag}</span>
-                    <span className="tag tag-gray">Ép. {ep}</span>
+                    <span className="tag tag-gray">{episode.category || 'Podcast'}</span>
+                    <span className="tag tag-gray">Ép. {episode.number}</span>
                   </div>
-                  <h3 className="ep-card-title">{title}</h3>
-                  <p className="ep-card-excerpt">{excerpt}</p>
+                  <h3 className="ep-card-title">{episode.title}</h3>
+                  <p className="ep-card-excerpt">{episode.excerpt}</p>
                   <div className="ep-card-foot">
-                    <span className="ep-card-guest">{guest} · {duration}</span>
-                    <button className="ep-play-sm" onClick={() => togglePlay(id)} aria-label="Lire">
-                      {playing[id] ? <IconPause /> : <IconPlay />}
-                    </button>
+                    <span className="ep-card-guest">{episode.guest} · {episode.duration}</span>
+                    <span className="ep-play-sm" aria-hidden="true">
+                      <IconPlay />
+                    </span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

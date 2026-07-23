@@ -35,7 +35,7 @@ export default function Footer() {
     { label: 'Écouter', href: '/ecouter' },
     { label: 'Sortir', href: '/agenda' },
     { label: 'Explorer', href: '/explorer' },
-    { label: 'Ressources', href: '/#ressources' },
+    { label: 'Apprendre', href: '/apprendre' },
     { label: 'À propos', href: '/a-propos' },
   ]
 

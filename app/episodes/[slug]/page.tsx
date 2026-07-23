@@ -35,6 +35,167 @@ function formatEpisodeDate(date: string) {
   return year && month && day ? `${day}.${month}.${year}` : date;
 }
 
+function splitContinuousDescription(text: string) {
+  const sentences = text
+    .split(/(?<=[.!?…])\s+(?=[A-ZÀ-ÖØ-Þ0-9«“"])/u)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+
+  if (sentences.length <= 1) {
+    return [text];
+  }
+
+  const paragraphs: string[] = [];
+  let currentParagraph = "";
+
+  for (const sentence of sentences) {
+    const nextParagraph = currentParagraph
+      ? `${currentParagraph} ${sentence}`
+      : sentence;
+
+    if (currentParagraph && nextParagraph.length > 420) {
+      paragraphs.push(currentParagraph);
+      currentParagraph = sentence;
+    } else {
+      currentParagraph = nextParagraph;
+    }
+  }
+
+  if (currentParagraph) {
+    paragraphs.push(currentParagraph);
+  }
+
+  return paragraphs;
+}
+
+function getEpisodeDescriptionParagraphs(description: string) {
+  const normalizedDescription = description
+    .replace(/\r\n?/g, "\n")
+    .replace(/[\u2028\u2029]/g, "\n")
+    .trim();
+
+  if (!normalizedDescription) {
+    return [];
+  }
+
+  return normalizedDescription.split(/\n{2,}/).flatMap((block) => {
+    const lines = block
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    if (lines.length > 1) {
+      return lines;
+    }
+
+    return splitContinuousDescription(lines[0]);
+  });
+}
+
+type EpisodeDescriptionBlock =
+  | {
+      type: "paragraph" | "callout" | "quote";
+      text: string;
+    }
+  | {
+      type: "list";
+      items: string[];
+    };
+
+const descriptionListPattern = /^[➜➔→•]/u;
+const descriptionSeparatorPattern = /^(?:[-─—_]\s*){3,}$/u;
+const descriptionCalloutPattern =
+  /^(?:à retenir|en résumé|pour résumer|la vérité|le plus important|ce que je retiens|son message est simple|conclusion)\b/iu;
+const descriptionQuotePattern = /^(?:“[\s\S]+”|«[\s\S]+»|"[\s\S]+")$/u;
+const inlineQuotePattern = /^(?:“[\s\S]+”|«[\s\S]+»|"[\s\S]+")$/u;
+
+function getEpisodeDescriptionBlocks(paragraphs: string[]) {
+  const blocks: EpisodeDescriptionBlock[] = [];
+  let index = 0;
+
+  while (index < paragraphs.length) {
+    const paragraph = paragraphs[index];
+
+    if (descriptionSeparatorPattern.test(paragraph.trim())) {
+      index += 1;
+      continue;
+    }
+
+    if (descriptionListPattern.test(paragraph)) {
+      const items: string[] = [];
+
+      while (
+        index < paragraphs.length &&
+        descriptionListPattern.test(paragraphs[index])
+      ) {
+        items.push(paragraphs[index]);
+        index += 1;
+      }
+
+      blocks.push({ type: "list", items });
+      continue;
+    }
+
+    const isBracketedCallout =
+      paragraph.startsWith("[") && paragraph.endsWith("]");
+
+    if (descriptionQuotePattern.test(paragraph)) {
+      blocks.push({ type: "quote", text: paragraph });
+    } else if (
+      isBracketedCallout ||
+      descriptionCalloutPattern.test(paragraph)
+    ) {
+      blocks.push({ type: "callout", text: paragraph });
+    } else {
+      blocks.push({ type: "paragraph", text: paragraph });
+    }
+
+    index += 1;
+  }
+
+  return blocks;
+}
+
+function renderInlineEditorialText(text: string) {
+  const renderQuotedSegments = (value: string, keyPrefix: string) =>
+    value
+      .split(/(“[^”]+”|«[^»]+»|"[^"]+")/gu)
+      .filter((segment) => segment.length > 0)
+      .map((segment, index) =>
+        inlineQuotePattern.test(segment) ? (
+          <span
+            key={`${keyPrefix}-quote-${index}`}
+            className="episode-description-inline-quote"
+          >
+            {segment}
+          </span>
+        ) : (
+          segment
+        ),
+      );
+
+  const colonIndex = text.indexOf(":");
+  const characterAfterColon = text.charAt(colonIndex + 1);
+  const hasEditorialPrefix =
+    colonIndex >= 2 &&
+    colonIndex <= 72 &&
+    !text.slice(0, colonIndex).includes(".") &&
+    !/[)(DPp]/u.test(characterAfterColon);
+
+  if (!hasEditorialPrefix) {
+    return renderQuotedSegments(text, "text");
+  }
+
+  return (
+    <>
+      <strong className="episode-description-emphasis">
+        {renderQuotedSegments(text.slice(0, colonIndex + 1), "prefix")}
+      </strong>
+      {renderQuotedSegments(text.slice(colonIndex + 1), "content")}
+    </>
+  );
+}
+
 function getSimilarEpisodes(currentSlug: string) {
   return episodes.filter((episode) => episode.slug !== currentSlug).slice(0, 3);
 }
@@ -102,6 +263,8 @@ export default async function EpisodePage({ params }: PageProps) {
   const similarEpisodes = getSimilarEpisodes(episode.slug);
   const episodeUrl = new URL(`/episodes/${episode.slug}`, SITE_URL).toString();
   const headerImage = getEpisodeHeaderImage(episode);
+  const descriptionParagraphs = getEpisodeDescriptionParagraphs(episode.description);
+  const descriptionBlocks = getEpisodeDescriptionBlocks(descriptionParagraphs);
 
   return (
     <>
@@ -172,7 +335,63 @@ export default async function EpisodePage({ params }: PageProps) {
             </div>
 
             <h2>Description</h2>
-            <p className="episode-description">{episode.description}</p>
+            <div className="episode-description">
+              {descriptionBlocks.map((block, blockIndex) => {
+                if (block.type === "list") {
+                  return (
+                    <ul
+                      key={`${episode.slug}-description-${blockIndex}`}
+                      className="episode-description-block episode-description-list"
+                    >
+                      {block.items.map((item, itemIndex) => (
+                        <li
+                          key={`${episode.slug}-description-${blockIndex}-${itemIndex}`}
+                          data-description-text
+                        >
+                          <span className="episode-description-list-marker">
+                            {item.slice(0, 1)}
+                          </span>
+                          <span>{renderInlineEditorialText(item.slice(1))}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  );
+                }
+
+                const className = [
+                  "episode-description-block",
+                  `episode-description-${block.type}`,
+                  blockIndex === 0 ? "episode-description-lead" : "",
+                  blockIndex === descriptionBlocks.length - 1
+                    ? "episode-description-closing"
+                    : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ");
+
+                if (block.type === "quote") {
+                  return (
+                    <blockquote
+                      key={`${episode.slug}-description-${blockIndex}`}
+                      className={className}
+                      data-description-text
+                    >
+                      {renderInlineEditorialText(block.text)}
+                    </blockquote>
+                  );
+                }
+
+                return (
+                  <p
+                    key={`${episode.slug}-description-${blockIndex}`}
+                    className={className}
+                    data-description-text
+                  >
+                    {renderInlineEditorialText(block.text)}
+                  </p>
+                );
+              })}
+            </div>
 
             {episode.chapters.length > 0 ? (
               <>
@@ -366,7 +585,94 @@ export default async function EpisodePage({ params }: PageProps) {
         }
 
         .episode-description {
-          white-space: pre-line;
+          display: flex;
+          flex-direction: column;
+          gap: 1.25rem;
+          max-width: 64ch;
+        }
+
+        .episode-description-block {
+          position: relative;
+          max-width: none;
+          margin: 0;
+          line-height: 1.88;
+        }
+
+        .episode-description-lead {
+          color: inherit;
+          font-family: var(--font-display);
+          font-size: clamp(1.38rem, 2.25vw, 1.78rem) !important;
+          font-weight: 600;
+          line-height: 1.48 !important;
+        }
+
+        .episode-description-emphasis {
+          color: inherit;
+          font-weight: 700;
+        }
+
+        .episode-description-inline-quote {
+          color: inherit;
+          font-style: italic;
+          font-weight: 600;
+        }
+
+        .episode-description-callout {
+          padding: 24px 26px;
+          border-left: 3px solid var(--color-primary-light);
+          border-radius: 0 8px 8px 0;
+          background:
+            linear-gradient(135deg, rgba(193, 208, 223, 0.2), rgba(255, 255, 255, 0.74));
+          color: var(--color-primary-dark);
+          font-size: 1.08rem;
+          font-weight: 600;
+        }
+
+        .episode-description-quote {
+          padding: 28px 0 28px 28px;
+          border-left: 3px solid var(--color-primary-light);
+          color: var(--color-primary-dark);
+          font-family: var(--font-display);
+          font-size: clamp(1.45rem, 2.8vw, 2.15rem);
+          font-style: italic;
+          font-weight: 500;
+          line-height: 1.38;
+        }
+
+        .episode-description-list {
+          display: grid;
+          gap: 13px;
+          padding: 24px 26px;
+          border: 1px solid rgba(35, 48, 51, 0.12);
+          border-radius: 8px;
+          background: rgba(193, 208, 223, 0.13);
+          list-style: none;
+        }
+
+        .episode-description-list li {
+          display: grid;
+          grid-template-columns: 24px minmax(0, 1fr);
+          gap: 10px;
+          align-items: start;
+          color: inherit;
+          font-size: 1.04rem;
+          line-height: 1.72;
+        }
+
+        .episode-description-list-marker {
+          color: var(--color-primary-light);
+          font-weight: 700;
+        }
+
+        .episode-description-list + .episode-description-paragraph,
+        .episode-description-callout + .episode-description-paragraph,
+        .episode-description-quote + .episode-description-paragraph {
+          padding-top: 1.35rem;
+        }
+
+        .episode-description-closing {
+          color: inherit;
+          font-weight: 600;
         }
 
         .episode-player {
@@ -544,15 +850,17 @@ export default async function EpisodePage({ params }: PageProps) {
           flex-direction: column;
           justify-content: flex-end;
           gap: 8px;
+          border: 1px solid rgba(255, 255, 255, 0.12);
           border-radius: 8px;
           padding: 20px;
-          background: #151515;
-          color: white;
+          background: var(--color-primary-dark);
+          box-shadow: 0 14px 34px rgba(35, 48, 51, 0.12);
+          color: #fff;
           text-decoration: none;
         }
 
         .episode-similar-grid span {
-          color: #d8c299;
+          color: var(--color-primary-light);
           font-size: 0.74rem;
           font-weight: 700;
           text-transform: uppercase;
@@ -607,6 +915,19 @@ export default async function EpisodePage({ params }: PageProps) {
         }
 
         @media (max-width: 560px) {
+          .episode-description {
+            gap: 1.05rem;
+          }
+
+          .episode-description-callout,
+          .episode-description-list {
+            padding: 20px;
+          }
+
+          .episode-description-quote {
+            padding: 22px 0 22px 20px;
+          }
+
           .episode-share {
             gap: 6px;
           }
