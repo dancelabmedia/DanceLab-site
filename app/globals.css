@@ -983,23 +983,54 @@ button {
       0
     );
   transition: transform .18s ease-out;
-  opacity: 1;
+  opacity: 0.92;
   pointer-events: none;
-  mix-blend-mode: screen;
+  mix-blend-mode: normal;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: clamp(28px, 3vw, 48px);
+  box-shadow:
+    0 32px 90px rgba(0, 0, 0, 0.34),
+    0 0 0 1px rgba(193, 208, 223, 0.18);
 }
 .hero-signature::before,
 .hero-signature::after {
   content: "";
   position: absolute;
-  border-radius: 50%;
-  inset: 12%;
-  border: 1px solid rgba(193, 208, 223, 0.16);
-  transform: rotate(-18deg);
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+  transform: none;
+}
+.hero-signature::before {
+  background:
+    linear-gradient(
+      0deg,
+      rgba(5, 5, 5, 0.94) 0%,
+      rgba(5, 5, 5, 0.68) 18%,
+      rgba(5, 5, 5, 0.16) 38%,
+      transparent 52%
+    ),
+    linear-gradient(
+    90deg,
+    rgba(5, 5, 5, 0.82) 0%,
+    rgba(5, 5, 5, 0.48) 24%,
+    rgba(5, 5, 5, 0.08) 58%,
+    transparent 100%
+  );
 }
 .hero-signature::after {
-  inset: 24%;
-  border-color: rgba(255, 255, 255, 0.09);
-  transform: rotate(24deg);
+  border: 1px solid rgba(193, 208, 223, 0.2);
+  box-shadow: inset 0 0 46px rgba(5, 5, 5, 0.16);
+}
+.hero-signature-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(0.88) contrast(1.04) brightness(0.82);
 }
 .hero-orbit,
 .hero-halo {
@@ -1419,22 +1450,46 @@ button {
   width: 100%;
   aspect-ratio: 3/4;
   object-fit: cover;
-  transition: transform .55s ease;
+  transition:
+    transform .48s cubic-bezier(.22, .61, .36, 1),
+    filter .42s ease;
+  will-change: transform, filter;
   pointer-events: none;
 }
-.guest-card:hover .guest-img-wrap img { transform: scale(1.05); }
+
 .guest-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,.78) 0%, transparent 55%);
+  z-index: 1;
+  background: linear-gradient(
+    180deg,
+    rgba(4, 10, 18, .16) 0%,
+    rgba(4, 10, 18, .34) 48%,
+    rgba(4, 10, 18, .74) 100%
+  );
   opacity: 0;
-  transition: opacity .3s;
+  transition: opacity .42s ease;
   display: flex;
   align-items: flex-end;
   padding: clamp(18px, 2.2vw, 26px) clamp(16px, 2vw, 22px);
 }
-.guest-card:hover .guest-overlay { opacity: 1; }
+
+.guest-card:hover .guest-img-wrap img,
+.guest-card:focus-visible .guest-img-wrap img,
+.guest-card:focus-within .guest-img-wrap img {
+  transform: scale(1.05);
+  filter: brightness(.76);
+}
+
+.guest-card:hover .guest-overlay,
+.guest-card:focus-visible .guest-overlay,
+.guest-card:focus-within .guest-overlay {
+  opacity: 1;
+}
+
 .guest-quote {
+  position: relative;
+  z-index: 2;
   width: 100%;
   max-width: 100%;
   font-family: var(--font-display);
@@ -1442,6 +1497,7 @@ button {
   font-size: clamp(15px, 1.35vw, 19px);
   color: #fff;
   line-height: 1.28;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, .48);
   overflow-wrap: anywhere;
   text-wrap: balance;
 }
@@ -2551,6 +2607,7 @@ button {
     top: 39%;
     right: -42vw;
     width: 118vw;
+    aspect-ratio: 1.28;
     opacity: 0.46;
     transform: translate3d(0, -50%, 0);
   }
@@ -2654,7 +2711,7 @@ button {
   }
 
   .hero-signature {
-    top: 34%;
+    top: 30%;
     right: -58vw;
     width: 142vw;
     opacity: 0.38;
@@ -6150,5 +6207,204 @@ p,
 
   .template-panel {
     padding: 18px;
+  }
+}
+
+/* ========================================
+   HERO — IMAGE D'IDENTITE COMPACTE
+======================================== */
+.hero-stage {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: clamp(190px, 19vw, 250px) minmax(0, 860px);
+  align-items: center;
+  gap: clamp(48px, 6vw, 90px);
+  width: min(100%, 1360px);
+  margin: 0 auto;
+  padding:
+    clamp(94px, 10vh, 110px)
+    clamp(32px, 4vw, 64px)
+    clamp(56px, 7vh, 80px);
+}
+
+.hero-stage .hero-signature {
+  position: relative;
+  top: auto;
+  right: auto;
+  width: 100%;
+  aspect-ratio: 1;
+  justify-self: start;
+  transform: translate3d(
+    calc(var(--hero-parallax-x) * 8px),
+    calc(var(--hero-parallax-y) * 8px),
+    0
+  );
+  opacity: 1;
+  border-radius: 6px;
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.28),
+    0 0 0 1px rgba(193, 208, 223, 0.2);
+}
+
+.hero-stage .hero-signature::before {
+  background: linear-gradient(
+    180deg,
+    transparent 68%,
+    rgba(5, 5, 5, 0.28) 100%
+  );
+}
+
+.hero-stage .hero-signature-photo {
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(0.92) contrast(1.03) brightness(0.92);
+}
+
+.hero-stage .hero-content {
+  width: 100%;
+  max-width: 860px;
+  padding: 0;
+}
+
+.hero-stage .hero-eyebrow {
+  margin-bottom: 18px;
+}
+
+.hero-stage .hero-title {
+  margin-bottom: 22px;
+}
+
+.hero-stage .hero-desc {
+  margin-bottom: 28px;
+}
+
+@media (max-width: 980px) {
+  .hero-stage {
+    grid-template-columns: clamp(140px, 18vw, 176px) minmax(0, 1fr);
+    gap: clamp(28px, 4vw, 40px);
+    padding: 96px 32px 64px;
+  }
+
+  .hero-stage .hero-content {
+    max-width: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-stage {
+    grid-template-columns: 1fr;
+    align-content: center;
+    gap: 18px;
+    padding: 78px 24px 58px;
+  }
+
+  .hero-stage .hero-signature {
+    width: clamp(96px, 28vw, 116px);
+  }
+
+  .hero-stage .hero-content {
+    width: 100%;
+    padding: 0;
+  }
+
+  .hero-stage .hero-eyebrow {
+    margin-bottom: 16px;
+  }
+
+  .hero-stage .hero-title {
+    margin-bottom: 18px;
+  }
+
+  .hero-stage .hero-desc {
+    margin-bottom: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-stage .hero-signature {
+    transform: none;
+  }
+}
+
+/* Image d'identité à droite, alignée avec le titre du Hero */
+@media (min-width: 981px) {
+  .hero-stage {
+    grid-template-columns: minmax(0, 860px) clamp(190px, 19vw, 250px);
+  }
+
+  .hero-stage .hero-content {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .hero-stage .hero-signature {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+    justify-self: end;
+    margin-top: 32px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 980px) {
+  .hero-stage {
+    grid-template-columns: minmax(0, 1fr) clamp(140px, 18vw, 176px);
+  }
+
+  .hero-stage .hero-content {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .hero-stage .hero-signature {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+    justify-self: end;
+    margin-top: 32px;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-stage .hero-signature {
+    align-self: auto;
+    justify-self: end;
+    margin-top: 0;
+  }
+}
+
+/* Crédit photo — page À propos uniquement */
+.about-hero-image {
+  position: relative;
+}
+
+.about-photo-credit {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  z-index: 2;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+
+.about-hero-image:hover .about-photo-credit,
+.about-story-image:hover .about-photo-credit,
+.about-image:hover .about-photo-credit,
+.about-closing-image:hover .about-photo-credit {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-photo-credit {
+    transition: none;
   }
 }

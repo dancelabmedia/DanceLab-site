@@ -29,6 +29,7 @@ export default function AProposPage() {
               src="/images/maiwenn-about.jpg"
               alt="Maïwenn Bramoullé, fondatrice de Dance Lab"
             />
+            <span className="about-photo-credit" aria-hidden="true">© Blandine Abad</span>
           </div>
 
         </div>
@@ -112,6 +113,7 @@ export default function AProposPage() {
               src="/images/maiwenn-1.JPG"
               alt="Maïwenn Bramoullé, interprète et créatrice"
             />
+            <span className="about-photo-credit" aria-hidden="true">© Blandine Abad</span>
           </div>
 
         </div>
@@ -129,6 +131,7 @@ export default function AProposPage() {
               src="/images/maiwenn-danse.jpg"
               alt="Maïwenn Bramoullé en danse"
             />
+            <span className="about-photo-credit" aria-hidden="true">© Blandine Abad</span>
           </div>
 
 
@@ -270,6 +273,7 @@ export default function AProposPage() {
               src="/images/maiwenn-2.jpg"
               alt="Maïwenn Bramoullé travaillant sur Dance Lab"
             />
+            <span className="about-photo-credit" aria-hidden="true">© Blandine Abad</span>
           </div>
 
         </div>

@@ -1,7 +1,35 @@
+'use client'
+
 import { episodes } from "../../data/episodes"
 import Link from "next/link"
+import { useState } from "react"
+
+const EPISODES_PAGE_SIZE = 12
+
+function getGuestCardImage(episode: (typeof episodes)[number]) {
+  const episodeImageName = episode.image
+    .split("/")
+    .pop()
+    ?.replace(/\.png\.png$/i, ".png")
+  const sourceImageName = episode.sourceImage
+    .split("/")
+    .pop()
+    ?.replace(/\.png\.png$/i, ".png")
+  const optimizedImageName =
+    episodeImageName && episodeImageName !== "logo.png"
+      ? episodeImageName
+      : sourceImageName
+
+  return optimizedImageName
+    ? `/images/les-invites/${optimizedImageName}`
+    : episode.image
+}
 
 export default function EcouterPage() {
+  const [visibleCount, setVisibleCount] = useState(EPISODES_PAGE_SIZE)
+  const allEpisodesVisible = visibleCount >= episodes.length
+  const visibleEpisodes = episodes.slice(0, visibleCount)
+
   return (
     <main id="episodes" className="episodes-page">
 
@@ -30,7 +58,7 @@ export default function EcouterPage() {
 
           <div className="episodes-grid">
 
-            {episodes.map((episode) => (
+            {visibleEpisodes.map((episode) => (
               <Link
                 key={episode.number}
                 href={`/episodes/${episode.slug}`}
@@ -38,9 +66,19 @@ export default function EcouterPage() {
               >
 
                 <img
-                  src={episode.image}
+                  src={getGuestCardImage(episode)}
                   alt={episode.guest}
                   className="episode-image"
+                  onError={(event) => {
+                    const fallbackImage = episode.image || episode.sourceImage
+
+                    if (
+                      fallbackImage &&
+                      !event.currentTarget.src.endsWith(fallbackImage)
+                    ) {
+                      event.currentTarget.src = fallbackImage
+                    }
+                  }}
                 />
 
                 <div className="episode-content">
@@ -71,6 +109,25 @@ export default function EcouterPage() {
             ))}
 
           </div>
+
+          {episodes.length > EPISODES_PAGE_SIZE && (
+            <div className="episodes-load-more">
+              <button
+                type="button"
+                className="btn btn-primary episodes-more-button"
+                aria-expanded={allEpisodesVisible}
+                onClick={() =>
+                  setVisibleCount((currentCount) =>
+                    allEpisodesVisible
+                      ? EPISODES_PAGE_SIZE
+                      : Math.min(currentCount + EPISODES_PAGE_SIZE, episodes.length)
+                  )
+                }
+              >
+                {allEpisodesVisible ? "Voir moins" : "Voir plus"}
+              </button>
+            </div>
+          )}
 
         </div>
       </section>

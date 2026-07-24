@@ -1,0 +1,124 @@
+/* ========================================
+   DANCE LAB — SYSTÈME GLOBAL DES TITRES
+
+   Source de vérité unique pour toutes les
+   pages et tous les futurs composants.
+======================================== */
+
+:root {
+  --heading-h1-size: clamp(2rem, 3.5vw, 3.25rem);
+  --heading-h2-size: clamp(1.4rem, 2vw, 2rem);
+  --heading-h3-size: clamp(0.94rem, 1.2vw, 1.02rem);
+  --heading-h2-compact-size: clamp(1rem, 1.35vw, 1.16rem);
+  --heading-h3-compact-size: clamp(0.86rem, 0.96vw, 0.94rem);
+
+  --heading-h1-leading: 0.83;
+  --heading-h2-leading: 0.9;
+  --heading-h3-leading: 1.03;
+
+  --heading-h1-space-after: clamp(10px, 1vw, 13px);
+  --heading-h2-space-after: clamp(8px, 0.8vw, 10px);
+  --heading-h3-space-after: clamp(5px, 0.5vw, 7px);
+}
+
+h1,
+[role="heading"][aria-level="1"] {
+  margin-top: 0 !important;
+  margin-bottom: var(--heading-h1-space-after) !important;
+  font-size: var(--heading-h1-size) !important;
+  line-height: var(--heading-h1-leading) !important;
+}
+
+h2,
+[role="heading"][aria-level="2"] {
+  margin-top: 0 !important;
+  margin-bottom: var(--heading-h2-space-after) !important;
+  font-size: var(--heading-h2-size) !important;
+  line-height: var(--heading-h2-leading) !important;
+}
+
+h3,
+[role="heading"][aria-level="3"] {
+  margin-top: 0 !important;
+  margin-bottom: var(--heading-h3-space-after) !important;
+  font-size: var(--heading-h3-size) !important;
+  line-height: var(--heading-h3-leading) !important;
+}
+
+/* Titres secondaires intégrés à des composants compacts */
+.ep-title,
+.episode-content h2,
+.episode-main h2,
+.episode-panel h2,
+.episode-similar h2,
+.article-panel h2,
+.agenda-detail-main h2,
+.agenda-detail-side h2,
+.template-card h2,
+.search-results-heading h2 {
+  font-size: var(--heading-h2-compact-size) !important;
+  line-height: 1.02 !important;
+}
+
+/* Titres de cartes rendus avec un élément non sémantique */
+.magazine-article-link strong,
+.agenda-home-placeholder strong,
+.agenda-image-placeholder strong,
+.search-suggestion-copy strong,
+.search-result-copy strong,
+.discover-stack-item strong,
+.explorer-mini-index strong,
+.template-guest-line strong,
+.episode-similar-grid strong {
+  margin-top: 0 !important;
+  margin-bottom: var(--heading-h3-space-after) !important;
+  font-size: var(--heading-h3-size) !important;
+  line-height: var(--heading-h3-leading) !important;
+}
+
+/* Libellés de catégories utilisant des balises de titre */
+.search-suggestion-group h2,
+.search-results-group h3 {
+  margin: 0 !important;
+  font-size: 0.68rem !important;
+  line-height: 1.15 !important;
+}
+
+.mobile-menu-title {
+  margin: 0 !important;
+  font-size: var(--heading-h3-size) !important;
+  line-height: var(--heading-h3-leading) !important;
+}
+
+.foot-col-title {
+  margin-top: 0 !important;
+  margin-bottom: 14px !important;
+  font-size: 0.68rem !important;
+  line-height: 1.15 !important;
+}
+
+@media (max-width: 900px) {
+  :root {
+    --heading-h1-size: clamp(1.8rem, 5.6vw, 2.65rem);
+    --heading-h2-size: clamp(1.3rem, 3.5vw, 1.85rem);
+    --heading-h3-size: clamp(0.94rem, 2.2vw, 1.02rem);
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --heading-h1-size: clamp(1.65rem, 7vw, 1.85rem);
+    --heading-h2-size: clamp(1.25rem, 5.4vw, 1.48rem);
+    --heading-h3-size: clamp(0.92rem, 4vw, 0.98rem);
+    --heading-h2-compact-size: clamp(0.96rem, 4.3vw, 1.08rem);
+    --heading-h3-compact-size: clamp(0.84rem, 3.5vw, 0.9rem);
+
+    --heading-h1-leading: 0.86;
+    --heading-h2-leading: 0.92;
+    --heading-h3-leading: 1.04;
+
+    --heading-h1-space-after: 10px;
+    --heading-h2-space-after: 8px;
+    --heading-h3-space-after: 5px;
+  }
+}

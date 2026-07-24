@@ -5,7 +5,6 @@ import { featuredAgendaEvents, formatAgendaDateRange } from "./agenda/agenda-dat
 import type { AgendaEvent } from "./agenda/agenda-data"
 import { magazineArticles } from "./decouvrir/articles-data"
 import { episodes } from "../data/episodes"
-import { featuredEpisodes } from "../data/featured-episodes"
 import Link from "next/link"
 
 /* =====================================================
@@ -147,13 +146,73 @@ const PremiumSectionIcon = ({ name }: { name: string }) => {
   return icons[name] || icons.document
 }
 
-const GUESTS = [
-  { image: 'yasminehabib118.png', slug: '118-yasmine-habib', name: 'Yasmine Habib', role: 'Danseuse · Chorégraphe · Professeure de danse', ep: '118', quote: "J’ai pas fait l’hypocrite pour arriver là où j’en suis.", delay: '' },
-  { image: 'tatianaseguin117.png', slug: '117-tatiana-seguin', name: 'Tatiana Seguin', role: 'Chorégraphe · Cie Tatiana Seguin', ep: '117', quote: "Avant de faire un choix carriériste, je fais un choix humain", delay: 'd1' },
-  { image: 'julienramade116.png', slug: '116-julien-ramade', name: 'Julien Ramade', role: 'Danseur · Chorégraphe', ep: '116', quote: "Il ne faut pas sous-estimer la force d’une formation.", delay: 'd2' },
-  { image: 'lauramalieleclerc115.png', slug: '115-laura-malie-leclerc', name: 'Laura Malié-Leclerc', role: "Kinésithérapeute du sport spécialisée dans la danse", ep: '115', quote: "La douleur c’est le premier signal du corps pour te dire qu’il y a quelque chose qui ne va pas.", delay: 'd3' },
-  { image: 'grichkarootz113.png', slug: '113-grichka-rootz', name: 'Grichka Rootz', role: 'Danseur · Chorégraphe · Pionnier du krump en France.', ep: '113', quote: "Le jiu-jitsu, pour moi c’est comme le krump dans la danse : c’est complet", delay: 'd3' },
-]
+const GUEST_CARD_COUNT = 5
+const GUEST_CARD_DELAYS = ['', 'd1', 'd2', 'd3', 'd3'] as const
+const GUEST_SELECTION_STORAGE_KEY = 'dance-lab-home-guest-selection'
+
+const GUEST_POOL = episodes.filter((episode, index, allEpisodes) => {
+  if (!episode.slug || !episode.guest || !episode.image || !episode.quote) {
+    return false
+  }
+
+  const normalizedGuest = episode.guest.trim().toLocaleLowerCase('fr')
+
+  return allEpisodes.findIndex(
+    (candidate) =>
+      candidate.guest.trim().toLocaleLowerCase('fr') === normalizedGuest
+  ) === index
+})
+
+const INITIAL_GUEST_SELECTION = GUEST_POOL.slice(0, GUEST_CARD_COUNT)
+
+function shuffleGuests<T>(items: T[]): T[] {
+  const shuffled = [...items]
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1))
+    ;[shuffled[index], shuffled[randomIndex]] = [
+      shuffled[randomIndex],
+      shuffled[index],
+    ]
+  }
+
+  return shuffled
+}
+
+function createGuestSelection(previousSlugs: string[]) {
+  const previousSelection = new Set(previousSlugs)
+  const freshCandidates = shuffleGuests(
+    GUEST_POOL.filter((episode) => !previousSelection.has(episode.slug))
+  )
+  const freshSlugs = new Set(freshCandidates.map((episode) => episode.slug))
+  const remainingCandidates = shuffleGuests(
+    GUEST_POOL.filter((episode) => !freshSlugs.has(episode.slug))
+  )
+
+  return [...freshCandidates, ...remainingCandidates].slice(
+    0,
+    GUEST_CARD_COUNT
+  )
+}
+
+function getHomeGuestImage(episode: (typeof episodes)[number]) {
+  const episodeImageName = episode.image
+    .split('/')
+    .pop()
+    ?.replace(/\.png\.png$/i, '.png')
+  const sourceImageName = episode.sourceImage
+    .split('/')
+    .pop()
+    ?.replace(/\.png\.png$/i, '.png')
+  const optimizedImageName =
+    episodeImageName && episodeImageName !== 'logo.png'
+      ? episodeImageName
+      : sourceImageName
+
+  return optimizedImageName
+    ? `/images/les-invites/${optimizedImageName}`
+    : episode.image
+}
 
 const TEXT_ARTICLES = [
   { tag: 'Guide', title: 'Comment assister à un battle de danse pour la première fois ?', meta: 'Guide complet du débutant · 5 min de lecture', delay: 'd1' },
@@ -208,6 +267,9 @@ export default function DanceLabPage() {
     'idle' | 'loading' | 'success' | 'invalid' | 'error'
   >('idle')
   const [homeAgendaEvents, setHomeAgendaEvents] = useState<AgendaEvent[]>(featuredAgendaEvents)
+  const [guestSelection, setGuestSelection] = useState(
+    INITIAL_GUEST_SELECTION
+  )
   const guestTrackRef = useRef<HTMLDivElement | null>(null)
   const newsletterInputRef = useRef<HTMLInputElement | null>(null)
   const newsletterSubmittedRef = useRef(false)
@@ -218,6 +280,37 @@ export default function DanceLabPage() {
     startX: 0,
     scrollLeft: 0,
   })
+
+  useEffect(() => {
+    let previousSlugs: string[] = []
+
+    try {
+      const storedSelection = window.sessionStorage.getItem(
+        GUEST_SELECTION_STORAGE_KEY
+      )
+      const parsedSelection = storedSelection
+        ? JSON.parse(storedSelection)
+        : []
+
+      if (Array.isArray(parsedSelection)) {
+        previousSlugs = parsedSelection.filter(
+          (slug: unknown): slug is string => typeof slug === 'string'
+        )
+      }
+    } catch {
+      previousSlugs = []
+    }
+
+    const nextSelection = createGuestSelection(previousSlugs)
+    setGuestSelection(nextSelection)
+
+    try {
+      window.sessionStorage.setItem(
+        GUEST_SELECTION_STORAGE_KEY,
+        JSON.stringify(nextSelection.map((episode) => episode.slug))
+      )
+    } catch {}
+  }, [])
 
   /* Scroll → header opacity */
   useEffect(() => {
@@ -242,7 +335,7 @@ export default function DanceLabPage() {
     )
     document.querySelectorAll('.fu').forEach((el) => obs.observe(el))
     return () => obs.disconnect()
-  }, [])
+  }, [guestSelection])
 
   useEffect(() => {
     return () => {
@@ -415,69 +508,20 @@ export default function DanceLabPage() {
       >
         <div className="hero-line" />
         <div className="hero-bg" />
-        <div className="hero-signature" aria-hidden="true">
-          <div className="hero-orbit hero-orbit-a" />
-          <div className="hero-orbit hero-orbit-b" />
-          <div className="hero-halo hero-halo-a" />
-          <div className="hero-halo hero-halo-b" />
-
-          <svg className="hero-motion-art" viewBox="0 0 920 920" role="img">
-            <defs>
-              <linearGradient id="danceTrace" x1="114" y1="790" x2="810" y2="116" gradientUnits="userSpaceOnUse">
-                <stop offset="0" stopColor="#5B7377" stopOpacity="0.18" />
-                <stop offset="0.42" stopColor="#C1D0DF" stopOpacity="0.92" />
-                <stop offset="1" stopColor="#FFFFFF" stopOpacity="0.46" />
-              </linearGradient>
-              <linearGradient id="danceTraceSoft" x1="188" y1="210" x2="734" y2="732" gradientUnits="userSpaceOnUse">
-                <stop offset="0" stopColor="#FFFFFF" stopOpacity="0.1" />
-                <stop offset="0.52" stopColor="#C1D0DF" stopOpacity="0.55" />
-                <stop offset="1" stopColor="#5B7377" stopOpacity="0.08" />
-              </linearGradient>
-              <radialGradient id="pulseCore" cx="50%" cy="50%" r="50%">
-                <stop offset="0" stopColor="#FFFFFF" stopOpacity="0.96" />
-                <stop offset="0.42" stopColor="#C1D0DF" stopOpacity="0.64" />
-                <stop offset="1" stopColor="#5B7377" stopOpacity="0" />
-              </radialGradient>
-              <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
-                <feGaussianBlur stdDeviation="10" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-
-            <g className="hero-gridlines">
-              <path d="M92 706 C252 578 358 494 456 334 C534 206 638 130 806 92" />
-              <path d="M112 780 C278 616 406 608 526 448 C630 310 688 248 810 196" />
-              <path d="M170 180 C304 236 344 344 452 456 C558 566 668 630 790 748" />
-            </g>
-
-            <g className="hero-ribbons">
-              <path className="hero-ribbon hero-ribbon-main" d="M126 718 C230 548 368 612 442 434 C526 232 692 210 798 92" />
-              <path className="hero-ribbon hero-ribbon-secondary" d="M118 508 C268 384 322 230 486 252 C644 272 658 502 810 610" />
-              <path className="hero-ribbon hero-ribbon-third" d="M258 790 C318 612 494 630 544 456 C594 282 724 252 808 314" />
-            </g>
-
-            <g className="hero-core" filter="url(#softGlow)">
-              <circle cx="500" cy="438" r="118" fill="url(#pulseCore)" />
-              <circle cx="500" cy="438" r="12" fill="#F6F8F9" />
-              <circle cx="500" cy="438" r="48" fill="none" stroke="#C1D0DF" strokeOpacity="0.42" strokeWidth="1.5" />
-            </g>
-
-            <g className="hero-particles">
-              <circle cx="238" cy="650" r="3.5" />
-              <circle cx="310" cy="372" r="2.5" />
-              <circle cx="412" cy="212" r="4" />
-              <circle cx="614" cy="256" r="3" />
-              <circle cx="742" cy="424" r="4.5" />
-              <circle cx="646" cy="688" r="2.8" />
-              <circle cx="468" cy="748" r="3.4" />
-              <circle cx="778" cy="178" r="2.4" />
-            </g>
-          </svg>
-        </div>
         <div className="hero-overlay" />
+        <div className="hero-stage">
+        <div className="hero-signature">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            className="hero-signature-photo"
+            src="/episodes/dancelab.png"
+            alt="Dance Lab, le média de la danse, par Maïwenn Bramoullé"
+            width="1080"
+            height="1080"
+            loading="eager"
+            fetchPriority="high"
+          />
+        </div>
         <div className="hero-content">
           <div className="hero-eyebrow">
             <div className="hero-dot" />
@@ -485,9 +529,10 @@ export default function DanceLabPage() {
           </div>
 
           <h1 className="hero-title">
-            Le <span className="hero-rank" aria-label="premier"><span className="hero-rank-number">1</span><span className="hero-rank-suffix">er</span></span> média qui fait<br />
-            <em>découvrir, comprendre</em><br />
-            et vivre la danse.
+            <span className="hero-title-line">
+              Le <span className="hero-rank" aria-label="premier"><span className="hero-rank-number">1</span><span className="hero-rank-suffix">er</span></span> média qui fait <em>découvrir,</em>
+            </span>{" "}
+            <span className="hero-title-line"><em>comprendre</em> et vivre la danse.</span>
           </h1>
 
           <p className="hero-desc">
@@ -510,6 +555,7 @@ export default function DanceLabPage() {
               Découvrir l&apos;univers Dance Lab <IconArrow />
             </a>
           </div>
+        </div>
         </div>
 
         <div className="hero-scroll" aria-hidden="true">
@@ -620,52 +666,6 @@ export default function DanceLabPage() {
       </section>
 
       {/* ========================================
-          ÉPISODES INCONTOURNABLES
-      ======================================== */}
-      <section className="section section--gray" id="incontournables">
-        <div className="container">
-          <div className="section-header">
-            <div className="sh-left">
-              <span className="section-label">À écouter absolument</span>
-              <h2 className="section-title">Épisodes incontournables</h2>
-              <p className="section-sub">Nos épisodes les plus marquants.</p>
-            </div>
-            <a href="/ecouter" className="see-all">Tous les épisodes <IconArrow /></a>
-          </div>
-          <div className="ep-cards">
-            {featuredEpisodes.map((episode, index) => (
-              <Link
-                key={episode.slug}
-                href={`/episodes/${episode.slug}`}
-                className={`ep-card fu${index > 0 ? ` d${index}` : ''}`}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={episode.image}
-                  alt={`${episode.title}, avec ${episode.guest}`}
-                  loading="lazy"
-                />
-                <div className="ep-card-body">
-                  <div className="ep-card-tags">
-                    <span className="tag tag-gray">{episode.category || 'Podcast'}</span>
-                    <span className="tag tag-gray">Ép. {episode.number}</span>
-                  </div>
-                  <h3 className="ep-card-title">{episode.title}</h3>
-                  <p className="ep-card-excerpt">{episode.excerpt}</p>
-                  <div className="ep-card-foot">
-                    <span className="ep-card-guest">{episode.guest} · {episode.duration}</span>
-                    <span className="ep-play-sm" aria-hidden="true">
-                      <IconPlay />
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================
           INVITÉS
       ======================================== */}
       <section className="section" id="interviews">
@@ -687,19 +687,44 @@ export default function DanceLabPage() {
             onPointerCancel={endGuestDrag}
             onClickCapture={stopGuestClickAfterDrag}
           >
-            {GUESTS.map(({ image, slug, name, role, quote, delay }) => (
-              <Link href={`/episodes/${slug}`} key={slug} className={`guest-card fu${delay ? ' ' + delay : ''}`}>
-                <div className="guest-img-wrap">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={`/images/les-invites/${image}`} alt={name} loading="lazy" />
-                  <div className="guest-overlay">
-                    <p className="guest-quote">&ldquo;{quote}&rdquo;</p>
+            {guestSelection.map((episode, index) => {
+              const delay = GUEST_CARD_DELAYS[index] ?? ''
+              const guestMeta =
+                episode.role || `Épisode ${episode.number} · ${episode.duration}`
+              const guestImage = getHomeGuestImage(episode)
+
+              return (
+                <Link
+                  href={`/episodes/${episode.slug}`}
+                  key={episode.slug}
+                  className={`guest-card fu${delay ? ' ' + delay : ''}`}
+                >
+                  <div className="guest-img-wrap">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={guestImage}
+                      alt={`${episode.guest}, invité(e) de l'épisode ${episode.number}`}
+                      loading="lazy"
+                      onError={(event) => {
+                        if (event.currentTarget.dataset.fallbackApplied) {
+                          return
+                        }
+
+                        event.currentTarget.dataset.fallbackApplied = 'true'
+                        event.currentTarget.src = episode.image
+                      }}
+                    />
+                    <div className="guest-overlay">
+                      <p className="guest-quote">
+                        &ldquo;{episode.quote}&rdquo;
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <h3 className="guest-name">{name}</h3>
-                <p className="guest-role">{role}</p>
-              </Link>
-            ))}
+                  <h3 className="guest-name">{episode.guest}</h3>
+                  <p className="guest-role">{guestMeta}</p>
+                </Link>
+              )
+            })}
           </div>
         </div>
       </section>
