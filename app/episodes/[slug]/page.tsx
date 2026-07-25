@@ -196,8 +196,91 @@ function renderInlineEditorialText(text: string) {
   );
 }
 
-function getSimilarEpisodes(currentSlug: string) {
-  return episodes.filter((episode) => episode.slug !== currentSlug).slice(0, 3);
+// ─── Similarity algorithm ──────────────────────────────────────────────────
+// Tags are empty in the data, so we derive themes from free text fields.
+// Each cluster is [themeKey, keywords[]]. A keyword match anywhere in the
+// combined episode text scores one point for that theme.
+const THEME_CLUSTERS: [string, string[]][] = [
+  ['heels',         ['heels', 'talons', 'féminité', 'féminin', 'sensualité', 'sensuel']],
+  ['transmission',  ['transmission', 'transmet', 'enseign', 'pédagogie', 'cours de danse', 'professeur', 'apprendre', 'formation']],
+  ['sante_mentale', ['santé mentale', 'burn-out', 'burnout', 'dépression', 'anxiété', 'bien-être', 'résilience', 'reconstruction']],
+  ['harcelement',   ['harcèlement', 'toxicité', 'toxique', 'manipulation', 'hypocrisie', 'bully', 'violenc']],
+  ['blessures',     ['blessure', 'kiné', 'kinésithérapeute', 'blesser', 'récupération', 'échauffement', 'prévention', 'blessé']],
+  ['corps',         ['corps', 'physique', 'athlète', 'préparation physique', 'anatomie', 'proprioception']],
+  ['carriere',      ['carrière', 'contrat', 'droits', 'agent', 'casting', 'intermittence', 'vivre de la danse', 'gagner sa vie', 'précarité']],
+  ['maternite',     ['maternité', 'mère', 'grossesse', 'maternel', 'enfant']],
+  ['krump',         ['krump', 'krumper', 'krumping']],
+  ['hip_hop',       ['hip-hop', 'hip hop', 'battle', 'breakdance', 'breaking', 'b-boy', 'b-girl', 'popping', 'locking', 'urbain']],
+  ['waacking',      ['waacking', 'waack', 'punking']],
+  ['contemporain',  ['contemporain', 'danse contemporaine', 'ballet contemporain']],
+  ['entrepreneuriat',['entreprise', 'créer une école', 'école de danse', 'lancer', 'studio', 'structure', 'projet entrepreneurial']],
+  ['argent',        ['argent', 'salaire', 'revenu', 'financement', 'économi', 'pauvreté', 'richesse']],
+  ['reseaux',       ['réseaux sociaux', 'instagram', 'tiktok', 'youtube', 'contenu', 'communauté', 'audience', 'visibilité']],
+  ['identite',      ['identité', 'légitimité', 'confiance en soi', 'valeur', 'qui suis-je', 'se définir']],
+  ['musicalite',    ['musicalité', 'groove', 'rythme', 'ressentir la musique', 'écoute musicale']],
+  ['scene',         ['scène', 'spectacle', 'plateau', 'représentation', 'performance scénique']],
+  ['international', ['international', 'tour du monde', 'pays', 'étranger', 'tournée internationale']],
+  ['choreo',        ['chorégraphe', 'chorégraphie', 'composition', 'écriture chorégraphique']],
+  ['jazz',          ['jazz', 'jazz funk', 'comédie musicale']],
+  ['afro',          ['afro', 'afrodance', 'afrobeats']],
+  ['classique',     ['classique', 'ballet', 'danse classique']],
+  ['longevite',     ['longévité', 'durer', 'reconversion', 'vieillir en danse', 'fin de carrière']],
+  ['creation',      ['création', 'créativité', 'processus créatif', 'expérimentation']],
+  ['droits',        ['droits des artistes', 'statut d\'artiste', 'protection sociale', 'syndicat']],
+  ['confiance',     ['confiance en soi', 'doute', 'estime de soi', 'imposture', 'syndrome de l\'imposteur']],
+  ['inclusion',     ['inclusion', 'diversité', 'représentation', 'minorité', 'discrimination']],
+]
+
+function getEpisodeThemes(episode: Episode): Set<string> {
+  const text = [
+    episode.title,
+    episode.excerpt,
+    episode.description,
+    episode.seoDescription,
+    episode.role,
+    episode.category,
+    ...(episode.tags ?? []),
+  ].join(' ').toLowerCase()
+
+  const themes = new Set<string>()
+  for (const [theme, keywords] of THEME_CLUSTERS) {
+    if (keywords.some((kw) => text.includes(kw.toLowerCase()))) {
+      themes.add(theme)
+    }
+  }
+  return themes
+}
+
+function getSimilarEpisodes(currentSlug: string): Episode[] {
+  const current = episodes.find((ep) => ep.slug === currentSlug)
+  if (!current) return []
+
+  const currentThemes = getEpisodeThemes(current)
+
+  const scored = episodes
+    .filter((ep) => ep.slug !== currentSlug)
+    .map((ep) => {
+      const epThemes = getEpisodeThemes(ep)
+      let score = 0
+      for (const theme of currentThemes) {
+        if (epThemes.has(theme)) score++
+      }
+      return { episode: ep, score }
+    })
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score || b.episode.number - a.episode.number)
+
+  const result = scored.slice(0, 3).map(({ episode }) => episode)
+
+  // Fallback: fill with recent episodes if not enough thematic matches
+  if (result.length < 3) {
+    const extra = episodes
+      .filter((ep) => ep.slug !== currentSlug && !result.some((r) => r.slug === ep.slug))
+      .slice(0, 3 - result.length)
+    result.push(...extra)
+  }
+
+  return result
 }
 
 type PageProps = {
@@ -334,7 +417,6 @@ export default async function EpisodePage({ params }: PageProps) {
               )}
             </div>
 
-            <h2>Description</h2>
             <div className="episode-description">
               {descriptionBlocks.map((block, blockIndex) => {
                 if (block.type === "list") {
@@ -414,12 +496,6 @@ export default async function EpisodePage({ params }: PageProps) {
               <EpisodeShare title={episode.title} url={episodeUrl} />
             </div>
 
-            <div className="episode-panel">
-              <h2>Invité</h2>
-              <p className="episode-panel-name">{episode.guest}</p>
-              {episode.role ? <p>{episode.role}</p> : null}
-            </div>
-
             {episode.tags.length > 0 ? (
               <div className="episode-panel">
                 <h2>Tags</h2>
@@ -451,7 +527,7 @@ export default async function EpisodePage({ params }: PageProps) {
 
       <style>{`
         .episode-page {
-          background: #fbfaf7;
+          background: var(--color-background);
           color: #151515;
           min-height: 100vh;
         }
@@ -559,12 +635,14 @@ export default async function EpisodePage({ params }: PageProps) {
         }
 
         .episode-body {
-          width: min(1120px, calc(100% - 40px));
+          width: min(860px, calc(100% - 48px));
           margin: 0 auto;
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) 330px;
-          gap: 56px;
+          display: block;
           padding: 88px 0;
+        }
+
+        .episode-main {
+          width: 100%;
         }
 
         .episode-main h2,
@@ -579,31 +657,32 @@ export default async function EpisodePage({ params }: PageProps) {
         }
 
         .episode-main p {
-          max-width: 68ch;
+          max-width: none;
           font-size: 1.1rem;
-          line-height: 1.9;
+          line-height: 1.68;
         }
 
         .episode-description {
           display: flex;
           flex-direction: column;
-          gap: 1.25rem;
-          max-width: 64ch;
+          gap: 0.8rem;
+          width: 100%;
+          max-width: none;
         }
 
         .episode-description-block {
           position: relative;
           max-width: none;
           margin: 0;
-          line-height: 1.88;
+          line-height: 1.68;
         }
 
         .episode-description-lead {
           color: inherit;
           font-family: var(--font-display);
-          font-size: clamp(1.38rem, 2.25vw, 1.78rem) !important;
-          font-weight: 600;
-          line-height: 1.48 !important;
+          font-size: clamp(1.14rem, 1.4vw, 1.24rem) !important;
+          font-weight: 700;
+          line-height: 1.52 !important;
         }
 
         .episode-description-emphasis {
@@ -618,7 +697,7 @@ export default async function EpisodePage({ params }: PageProps) {
         }
 
         .episode-description-callout {
-          padding: 24px 26px;
+          padding: 20px 24px;
           border-left: 3px solid var(--color-primary-light);
           border-radius: 0 8px 8px 0;
           background:
@@ -629,20 +708,20 @@ export default async function EpisodePage({ params }: PageProps) {
         }
 
         .episode-description-quote {
-          padding: 28px 0 28px 28px;
+          padding: 18px 0 18px 24px;
           border-left: 3px solid var(--color-primary-light);
           color: var(--color-primary-dark);
           font-family: var(--font-display);
           font-size: clamp(1.45rem, 2.8vw, 2.15rem);
           font-style: italic;
           font-weight: 500;
-          line-height: 1.38;
+          line-height: 1.3;
         }
 
         .episode-description-list {
           display: grid;
-          gap: 13px;
-          padding: 24px 26px;
+          gap: 8px;
+          padding: 20px 24px;
           border: 1px solid rgba(35, 48, 51, 0.12);
           border-radius: 8px;
           background: rgba(193, 208, 223, 0.13);
@@ -656,7 +735,7 @@ export default async function EpisodePage({ params }: PageProps) {
           align-items: start;
           color: inherit;
           font-size: 1.04rem;
-          line-height: 1.72;
+          line-height: 1.6;
         }
 
         .episode-description-list-marker {
@@ -667,7 +746,7 @@ export default async function EpisodePage({ params }: PageProps) {
         .episode-description-list + .episode-description-paragraph,
         .episode-description-callout + .episode-description-paragraph,
         .episode-description-quote + .episode-description-paragraph {
-          padding-top: 1.35rem;
+          padding-top: 0.35rem;
         }
 
         .episode-description-closing {
@@ -714,8 +793,11 @@ export default async function EpisodePage({ params }: PageProps) {
 
         .episode-sidebar {
           display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
           align-content: start;
           gap: 18px;
+          width: 100%;
+          margin-top: 48px;
         }
 
         .episode-panel {
@@ -846,13 +928,12 @@ export default async function EpisodePage({ params }: PageProps) {
 
         .episode-similar-grid a {
           min-height: 180px;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end;
-          gap: 8px;
+          display: grid;
+          grid-template-rows: auto 1fr auto;
+          gap: 10px;
           border: 1px solid rgba(255, 255, 255, 0.12);
           border-radius: 8px;
-          padding: 20px;
+          padding: 22px;
           background: var(--color-primary-dark);
           box-shadow: 0 14px 34px rgba(35, 48, 51, 0.12);
           color: #fff;
@@ -865,17 +946,28 @@ export default async function EpisodePage({ params }: PageProps) {
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0;
+          align-self: start;
         }
 
         .episode-similar-grid strong {
           font-family: var(--font-display);
-          font-size: 1.35rem;
+          font-size: 1.25rem;
           font-weight: 600;
-          line-height: 1.12;
+          line-height: 1.18;
+          align-self: start;
+          display: -webkit-box;
+          -webkit-line-clamp: 4;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
 
         .episode-similar-grid p {
           margin: 0;
+          align-self: end;
+          font-size: 0.9rem;
+          opacity: 0.72;
+          padding-top: 4px;
+          border-top: 1px solid rgba(255, 255, 255, 0.12);
         }
 
         @media (max-width: 820px) {
@@ -904,8 +996,6 @@ export default async function EpisodePage({ params }: PageProps) {
           }
 
           .episode-body {
-            grid-template-columns: 1fr;
-            gap: 28px;
             padding: 60px 0;
           }
 
@@ -916,7 +1006,7 @@ export default async function EpisodePage({ params }: PageProps) {
 
         @media (max-width: 560px) {
           .episode-description {
-            gap: 1.05rem;
+            gap: 0.7rem;
           }
 
           .episode-description-callout,
@@ -925,7 +1015,7 @@ export default async function EpisodePage({ params }: PageProps) {
           }
 
           .episode-description-quote {
-            padding: 22px 0 22px 20px;
+            padding: 16px 0 16px 18px;
           }
 
           .episode-share {

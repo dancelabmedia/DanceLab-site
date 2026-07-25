@@ -42,8 +42,8 @@ export default async function SortirEventPage({
         {event.image ? <img src={event.image} alt={event.title} /> : null}
         <div className="agenda-detail-hero-shade" />
         <div className="container agenda-detail-hero-content">
-          <Link href="/agenda" className="agenda-detail-back">
-            Retour à l'agenda
+          <Link href="/sortir" className="agenda-detail-back">
+            Retour aux sorties
           </Link>
           <span className="section-label">{event.category}</span>
           <h1>{event.title}</h1>

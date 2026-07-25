@@ -86,12 +86,6 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
   )
   const hasMoreSuggestions = allSuggestions.length > suggestions.length
 
-  const listenLinks = [
-    { label: 'Tous les épisodes', href: '/ecouter' },
-    { label: 'Incontournables', href: '/ecouter/incontournables' },
-    { label: 'Thématiques', href: '/ecouter/playlists-thematiques' },
-  ]
-
   const discoverLinks = [
     { label: 'Articles', href: '/decouvrir/articles-culture' },
     { label: 'Portraits', href: '/decouvrir/artistes-a-suivre' },
@@ -108,17 +102,9 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
   ]
 
   const navGroups = [
-    { label: 'Découvrir', items: discoverLinks },
-    { label: 'Écouter', items: listenLinks },
-    {
-      label: 'Sortir',
-      items: [
-        { label: 'Agenda', href: '/agenda' },
-        { label: 'Spectacles', href: '/agenda' },
-        { label: 'Festivals', href: '/agenda' },
-        { label: 'Gratuit', href: '/agenda' },
-      ],
-    },
+    { label: 'Découvrir', directHref: '/decouvrir' },
+    { label: 'Écouter', directHref: '/ecouter' },
+    { label: 'Sortir', directHref: '/sortir' },
     { label: 'Explorer', items: exploreLinks },
     {
       label: 'Apprendre',
@@ -323,18 +309,27 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
 
         <ul className="nav-links">
           {navGroups.map((group) => (
-            <li key={group.label} className="nav-dropdown">
-              <button type="button" className="nav-dropdown-trigger">
-                {group.label}
-              </button>
+            <li
+              key={group.label}
+              className={'directHref' in group ? undefined : 'nav-dropdown'}
+            >
+              {'directHref' in group ? (
+                <Link href={group.directHref}>{group.label}</Link>
+              ) : (
+                <>
+                  <button type="button" className="nav-dropdown-trigger">
+                    {group.label}
+                  </button>
 
-              <div className="dropdown-menu">
-                {group.items.map((item) => (
-                  <Link key={item.label} href={item.href}>
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
+                  <div className="dropdown-menu">
+                    {group.items.map((item) => (
+                      <Link key={item.label} href={item.href}>
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                </>
+              )}
             </li>
           ))}
 
@@ -383,27 +378,38 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
             ✕
           </button>
 
-          {navGroups.map((group) => (
-            <div key={group.label} className="mobile-menu-group">
-              <button
-                type="button"
+          {navGroups.map((group) =>
+            'directHref' in group ? (
+              <Link
+                key={group.label}
+                href={group.directHref}
                 className="mobile-menu-title"
-                onClick={() => setMobileSubOpen(mobileSubOpen === group.label ? null : group.label)}
+                onClick={closeMobileMenu}
               >
                 {group.label}
-              </button>
+              </Link>
+            ) : (
+              <div key={group.label} className="mobile-menu-group">
+                <button
+                  type="button"
+                  className="mobile-menu-title"
+                  onClick={() => setMobileSubOpen(mobileSubOpen === group.label ? null : group.label)}
+                >
+                  {group.label}
+                </button>
 
-              {mobileSubOpen === group.label ? (
-                <div className="mobile-submenu">
-                  {group.items.map((item) => (
-                    <Link key={item.label} href={item.href} onClick={closeMobileMenu}>
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          ))}
+                {mobileSubOpen === group.label ? (
+                  <div className="mobile-submenu">
+                    {group.items.map((item) => (
+                      <Link key={item.label} href={item.href} onClick={closeMobileMenu}>
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            )
+          )}
 
           <Link href="/a-propos" className="mobile-menu-title" onClick={closeMobileMenu}>
             À propos

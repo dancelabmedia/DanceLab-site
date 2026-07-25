@@ -1,3 +1,10 @@
+export type EpisodeLink = {
+  name: string
+  slug: string
+  number: string
+  image: string
+}
+
 export type MagazineArticle = {
   slug: string
   category: string
@@ -9,6 +16,7 @@ export type MagazineArticle = {
   episodeNumber: string
   guest: string
   image: string
+  imageCredit?: string
   readTime: string
   tags: string[]
   quote?: string
@@ -20,6 +28,7 @@ export type MagazineArticle = {
     title: string
     items: string[]
   }
+  episodeLinks?: EpisodeLink[]
   conclusion: string
 }
 
@@ -27,7 +36,7 @@ export const magazineArticles: MagazineArticle[] = [
   {
     slug: "pourquoi-le-breakdance-est-devenu-olympique",
     category: "Décryptage",
-    title: "Pourquoi le breakdance est devenu une discipline olympique",
+    title: "Pourquoi le break est devenu une discipline olympique et ce que ça change pour la culture hip-hop ?",
     chapo:
       "Entré au programme des Jeux de Paris 2024, le breaking a déplacé une culture née dans la rue vers l'une des scènes sportives les plus regardées au monde. Une consécration, mais aussi un débat sur ce que l'institution fait aux danses issues des cultures populaires.",
     meta: "18.06.26 · 8 min de lecture",
@@ -35,7 +44,8 @@ export const magazineArticles: MagazineArticle[] = [
     episodeSlug: "113-grichka-rootz",
     episodeNumber: "113",
     guest: "Grichka Rootz",
-    image: "/images/breakdance.jpg",
+    image: "/images/danydann.jpg",
+    imageCredit: "Danseur : Dany Dann · © Valroff Laurene",
     readTime: "8 min",
     tags: ["Breaking", "Olympisme", "Culture hip-hop"],
     sections: [
@@ -76,13 +86,39 @@ export const magazineArticles: MagazineArticle[] = [
         "Elle n'est pas inscrite au programme des Jeux de Los Angeles 2028."
       ],
     },
+    episodeLinks: [
+      {
+        name: "Arnaud Deprez",
+        slug: "51-arnaud-deprez",
+        number: "51",
+        image: "/episodes/arnauddeprez51.png",
+      },
+      {
+        name: "Yaman Okur",
+        slug: "71-yaman-okur",
+        number: "71",
+        image: "/episodes/yamanokur71.png",
+      },
+      {
+        name: "Kanti",
+        slug: "100-kanti",
+        number: "100",
+        image: "/episodes/kanti100.png",
+      },
+      {
+        name: "Mounir Rodin",
+        slug: "106-mounir-amhiln",
+        number: "106",
+        image: "/episodes/mouniramhiln106.png",
+      },
+    ],
     conclusion:
       "Le passage du breaking par les Jeux olympiques n'épuise pas son histoire. Il en ouvre plutôt un chapitre : celui d'une culture populaire devenue visible à l'échelle mondiale, tout en continuant de vivre dans les cercles, les studios, les battles et les corps de celles et ceux qui la portent.",
   },
   {
     slug: "comprendre-le-waacking-histoire-culture-influences",
     category: "Culture",
-    title: "Comprendre le Waacking : histoire, culture et influences",
+    title: "Comprendre le waacking",
     chapo:
       "Né dans les clubs de Los Angeles dans les années 1970, le waacking est bien plus qu'un vocabulaire de bras. C'est une danse d'expression, de théâtralité, de musique et d'affirmation, traversée par l'histoire des communautés LGBTQ+ et par l'imaginaire du disco.",
     meta: "25.06.26 · 7 min de lecture",
@@ -90,7 +126,8 @@ export const magazineArticles: MagazineArticle[] = [
     episodeSlug: "118-yasmine-habib",
     episodeNumber: "118",
     guest: "Yasmine Habib",
-    image: "https://picsum.photos/seed/dancelab-waacking/1200/1500",
+    image: "/images/sofiastanic.jpg",
+    imageCredit: "Danseuse : Sofia Stanić · © Anna Jot",
     readTime: "7 min",
     tags: ["Waacking", "Disco", "Culture club"],
     sections: [
@@ -131,6 +168,20 @@ export const magazineArticles: MagazineArticle[] = [
         "Le lien entre technique, attitude et histoire culturelle."
       ],
     },
+    episodeLinks: [
+      {
+        name: "Annabelle Da Fonte",
+        slug: "5-annabelle-da-fonte",
+        number: "5",
+        image: "/episodes/annabelledafonte5.png",
+      },
+      {
+        name: "Sofia",
+        slug: "98-sofia",
+        number: "98",
+        image: "/episodes/sofia98.png",
+      },
+    ],
     conclusion:
       "Le waacking est une danse de liberté parce qu'il ne sépare pas le style de l'histoire. Il donne au corps une puissance narrative : celle de se montrer, de se transformer et de prendre l'espace avec précision, intensité et panache.",
   },
@@ -145,7 +196,8 @@ export const magazineArticles: MagazineArticle[] = [
     episodeSlug: "117-tatiana-seguin",
     episodeNumber: "117",
     guest: "Tatiana Seguin",
-    image: "https://picsum.photos/seed/dancelab-festival/1200/1500",
+    image: "/images/festivalavignon.jpg",
+    imageCredit: "Festival d'Avignon · © Christophe Raynaud de Lage",
     readTime: "6 min",
     tags: ["Festivals", "Agenda", "Spectacle vivant"],
     sections: [
@@ -186,6 +238,20 @@ export const magazineArticles: MagazineArticle[] = [
         "Prévoir des formats différents : grande scène, extérieur, performance, rencontre."
       ],
     },
+    episodeLinks: [
+      {
+        name: "Tatiana Seguin",
+        slug: "117-tatiana-seguin",
+        number: "117",
+        image: "/episodes/tatianaseguin117.png",
+      },
+      {
+        name: "Antoine Nya",
+        slug: "20-antoine-nya",
+        number: "20",
+        image: "/episodes/antoinenya20.png",
+      },
+    ],
     conclusion:
       "Un festival réussi ne se résume pas à une accumulation de spectacles. C'est une manière de traverser la danse dans un temps concentré, de comparer les écritures, de rencontrer une scène et de comprendre ce que le spectacle vivant raconte d'une époque.",
   },
@@ -236,6 +302,14 @@ export const magazineArticles: MagazineArticle[] = [
         "Le danseur gagne à être accompagné comme un athlète."
       ],
     },
+    episodeLinks: [
+      {
+        name: "Laura Malié-Leclerc",
+        slug: "115-laura-malie-leclerc",
+        number: "115",
+        image: "/episodes/lauramalieleclerc115.png",
+      },
+    ],
     conclusion:
       "Cet épisode rappelle une idée simple mais encore trop peu installée : durer dans la danse demande autant de soin que de talent. Le corps n'est pas un outil à épuiser, c'est le lieu même de la pratique.",
   },
@@ -284,6 +358,20 @@ export const magazineArticles: MagazineArticle[] = [
         "Les outils concrets pour durer sans s'épuiser."
       ],
     },
+    episodeLinks: [
+      {
+        name: "Johan Nus",
+        slug: "111-johan-nus",
+        number: "111",
+        image: "/episodes/johannus111.png",
+      },
+      {
+        name: "Frédéric Fontan",
+        slug: "110-frederic-fontan",
+        number: "110",
+        image: "/episodes/fredericfontan110.png",
+      },
+    ],
     conclusion:
       "Penser l'artiste au-delà de la danse, c'est redonner de l'épaisseur à des parcours souvent résumés à leur visibilité. C'est aussi une manière plus juste, plus adulte et plus durable de parler de performance.",
   },
@@ -334,6 +422,32 @@ export const magazineArticles: MagazineArticle[] = [
         "Des choix professionnels qui restent humains."
       ],
     },
+    episodeLinks: [
+      {
+        name: "Yasmine Habib",
+        slug: "118-yasmine-habib",
+        number: "118",
+        image: "/episodes/yasminehabib118.png",
+      },
+      {
+        name: "Tatiana Seguin",
+        slug: "117-tatiana-seguin",
+        number: "117",
+        image: "/episodes/tatianaseguin117.png",
+      },
+      {
+        name: "Julien Ramade",
+        slug: "116-julien-ramade",
+        number: "116",
+        image: "/episodes/julienramade116.png",
+      },
+      {
+        name: "Rose Otentick",
+        slug: "114-rose-otentick",
+        number: "114",
+        image: "/episodes/roseotentick114.png",
+      },
+    ],
     conclusion:
       "La carrière d'un danseur ne se joue pas seulement dans le studio. Elle se construit dans une somme de décisions : comment apprendre, avec qui travailler, quoi accepter, quand dire non et comment rester aligné sans s'isoler.",
   },

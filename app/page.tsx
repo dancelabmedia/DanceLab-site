@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { featuredAgendaEvents, formatAgendaDateRange } from "./agenda/agenda-data"
 import type { AgendaEvent } from "./agenda/agenda-data"
-import { magazineArticles } from "./decouvrir/articles-data"
 import { episodes } from "../data/episodes"
 import Link from "next/link"
 
@@ -213,11 +212,6 @@ function getHomeGuestImage(episode: (typeof episodes)[number]) {
     ? `/images/les-invites/${optimizedImageName}`
     : episode.image
 }
-
-const TEXT_ARTICLES = [
-  { tag: 'Guide', title: 'Comment assister à un battle de danse pour la première fois ?', meta: 'Guide complet du débutant · 5 min de lecture', delay: 'd1' },
-  { tag: 'Portrait', title: "Les chorégraphes qui façonnent la danse contemporaine aujourd'hui", meta: 'Panorama 2026 · 7 min de lecture', delay: 'd2' },
-]
 
 const EXPLORE_ITEMS = [
   { icon: 'movement', label: 'Styles de danse', sub: 'Hip-hop, contemporain, classique, afro, waacking et plus encore', href: '/explorer/styles-de-danse', delay: '' },
@@ -542,12 +536,7 @@ export default function DanceLabPage() {
           </p>
 
           <div className="hero-btns">
-            <a 
-              href={latestEpisode.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-primary"
-            >
+            <a href="/ecouter" className="btn btn-primary">
               <IconPlay /> Écouter le podcast
             </a>
 
@@ -747,11 +736,12 @@ export default function DanceLabPage() {
             <div className="mag-main fu">
             <a href="/decouvrir/articles/pourquoi-le-breakdance-est-devenu-olympique" className="art-card art-card-big">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://picsum.photos/image/mag_break/900/540" alt="Breakdance olympique" loading="lazy" />
+              <img src="/images/danydann.jpg" alt="Breakdance olympique — Dany Dann" loading="lazy" />
+              <span className="about-photo-credit" aria-hidden="true">Danseur : Dany Dann · © Valroff Laurene</span>
               <div className="art-overlay">
                 <p className="art-cat">Décryptage</p>
                 <h3 className="art-title">
-                  Pourquoi le breakdance est devenu une discipline olympique - et ce que ça change pour la danse urbaine
+                  Pourquoi le break est devenu une discipline olympique et ce que ça change pour la culture hip-hop ?
                 </h3>
                 <p className="art-meta">07.07.26 · 8 min de lecture</p>
               </div>
@@ -759,16 +749,18 @@ export default function DanceLabPage() {
             <div className="mag-side">
               <a href="/decouvrir/articles/comprendre-le-waacking-histoire-culture-influences" className="art-card art-card-sm">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="https://picsum.photos/image/mag_waacking/600/380" alt="Waacking" loading="lazy" />
+                <img src="/images/sofiastanic.jpg" alt="Waacking — Sofia Stanić" loading="lazy" />
+                <span className="about-photo-credit" aria-hidden="true">Danseuse : Sofia Stanić · © Anna Jot</span>
                 <div className="art-overlay">
                   <p className="art-cat">Culture</p>
-                  <h3 className="art-title">Comprendre le waacking : origines, codes et artistes incontournables</h3>
+                  <h3 className="art-title">Comprendre le waacking</h3>
                   <p className="art-meta">05.07.26 · 5 min</p>
                 </div>
               </a>
               <a href="/decouvrir/articles/festivals-danse-incontournables-ete" className="art-card art-card-sm">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="https://picsum.photos/image/mag_festival/600/380" alt="Festivals" loading="lazy" />
+                <img src="/images/festivalavignon.jpg" alt="Festival d'Avignon" loading="lazy" />
+                <span className="about-photo-credit" aria-hidden="true">Festival d'Avignon · © Christophe Raynaud de Lage</span>
                 <div className="art-overlay">
                   <p className="art-cat">Agenda</p>
                   <h3 className="art-title">Les festivals de danse incontournables en France cet été</h3>
@@ -778,34 +770,6 @@ export default function DanceLabPage() {
             </div>
           </div>
 
-          {/* Cartes texte */}
-          <div className="text-cards" style={{ marginTop: '20px' }}>
-            {TEXT_ARTICLES.map(({ tag, title, meta, delay }) => (
-              <a
-                key={title}
-                href={tag === 'Portrait' ? '/decouvrir/artistes-a-suivre' : '/decouvrir/articles-culture'}
-                className={`txt-card fu${delay ? ' ' + delay : ''}`}
-              >
-                <span className="tag tag-gray">{tag}</span>
-                <h3>{title}</h3>
-                <p>{meta}</p>
-              </a>
-            ))}
-          </div>
-
-          <div className="magazine-article-strip">
-            {magazineArticles.map((article) => (
-              <Link
-                key={article.slug}
-                href={`/decouvrir/articles/${article.slug}`}
-                className="magazine-article-link"
-              >
-                <span>{article.category}</span>
-                <strong>{article.title}</strong>
-                <small>{article.meta}</small>
-              </Link>
-            ))}
-          </div>
         </div>
       </section>
 

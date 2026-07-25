@@ -1,5 +1,5 @@
 .episode-page {
-  background: #fbfaf7;
+  background: var(--color-background);
   color: #151515;
 }
 

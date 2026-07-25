@@ -45,13 +45,13 @@ export const featuredDiscoverArticles = [
   {
     category: "Décryptage",
     title:
-      "Pourquoi le breakdance est devenu une discipline olympique - et ce que ça change pour la danse urbaine",
+      "Pourquoi le break est devenu une discipline olympique et ce que ça change pour la culture hip-hop ?",
     meta: "18.06.26 · 8 min de lecture",
     href: "/decouvrir/articles/pourquoi-le-breakdance-est-devenu-olympique",
   },
   {
     category: "Culture",
-    title: "Comprendre le waacking : origines, codes et artistes incontournables",
+    title: "Comprendre le waacking",
     meta: "25.06.26 · 7 min de lecture",
     href: "/decouvrir/articles/comprendre-le-waacking-histoire-culture-influences",
   },

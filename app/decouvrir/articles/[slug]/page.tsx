@@ -52,7 +52,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       <section className="article-hero">
         <div className="container article-hero-grid">
           <div className="article-hero-copy">
-            <Link href="/decouvrir/articles-culture" className="article-back">
+            <Link href="/decouvrir" className="article-back">
               Retour au magazine
             </Link>
             <span className="section-label">{article.category}</span>
@@ -64,8 +64,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               <span>{article.readTime}</span>
             </div>
           </div>
+
           <div className="article-hero-image">
             <img src={article.image} alt={article.guest} />
+            {article.imageCredit && (
+              <span className="about-photo-credit" aria-hidden="true">
+                {article.imageCredit}
+              </span>
+            )}
           </div>
         </div>
       </section>
@@ -94,12 +100,38 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </article>
 
           <aside className="article-sidebar">
-            <div className="article-panel">
-              <span>Épisode source</span>
-              <h2>{article.guest}</h2>
-              <p>Article construit à partir de l'épisode {article.episodeNumber} de Dance Lab.</p>
-              <Link href={`/episodes/${article.episodeSlug}`}>Écouter l'épisode</Link>
-            </div>
+
+            {/* Encart épisodes personnalisé OU encart source par défaut */}
+            {article.episodeLinks ? (
+              <div className="article-panel article-panel--episodes">
+                <span>Épisodes à écouter pour aller plus loin</span>
+                <ul className="article-episode-links">
+                  {article.episodeLinks.map((ep) => (
+                    <li key={ep.slug}>
+                      <Link href={`/episodes/${ep.slug}`} className="article-episode-item">
+                        <div className="article-episode-img">
+                          <img src={ep.image} alt={ep.name} />
+                        </div>
+                        <div className="article-episode-info">
+                          <small>Épisode {ep.number}</small>
+                          <strong>{ep.name}</strong>
+                        </div>
+                        <svg className="article-episode-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <div className="article-panel">
+                <span>Épisode source</span>
+                <h2>{article.guest}</h2>
+                <p>Article construit à partir de l'épisode {article.episodeNumber} de Dance Lab.</p>
+                <Link href={`/episodes/${article.episodeSlug}`}>Écouter l'épisode</Link>
+              </div>
+            )}
 
             {article.aside ? (
               <div className="article-panel">
