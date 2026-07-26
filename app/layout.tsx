@@ -22,6 +22,8 @@ import './typography.css'
 import './heading-system.css'
 import './density-pass.css'
 import SiteLayout from '../components/SiteLayout'
+import DevLockButton from '../components/DevLockButton'
+import NewsletterModal from '../components/NewsletterModal'
 import { SITE_URL } from '../data/site'
 
 
@@ -79,6 +81,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SiteLayout>
           {children}
         </SiteLayout>
+        <NewsletterModal />
+        <DevLockButton />
       </body>
     </html>
   )
