@@ -37,7 +37,7 @@ function formatEpisodeDate(date: string) {
 
 function splitContinuousDescription(text: string) {
   const sentences = text
-    .split(/(?<=[.!?…])\s+(?=[A-ZÀ-ÖØ-Þ0-9«“"])/u)
+    .split(/(?<=[.!?…])\s+(?=[A-ZÀ-ÖØ-Þ0-9«""])/u)
     .map((sentence) => sentence.trim())
     .filter(Boolean);
 
@@ -106,8 +106,8 @@ const descriptionListPattern = /^[➜➔→•]/u;
 const descriptionSeparatorPattern = /^(?:[-─—_]\s*){3,}$/u;
 const descriptionCalloutPattern =
   /^(?:à retenir|en résumé|pour résumer|la vérité|le plus important|ce que je retiens|son message est simple|conclusion)\b/iu;
-const descriptionQuotePattern = /^(?:“[\s\S]+”|«[\s\S]+»|"[\s\S]+")$/u;
-const inlineQuotePattern = /^(?:“[\s\S]+”|«[\s\S]+»|"[\s\S]+")$/u;
+const descriptionQuotePattern = /^(?:"[\s\S]+"|«[\s\S]+»|"[\s\S]+")$/u;
+const inlineQuotePattern = /^(?:"[\s\S]+"|«[\s\S]+»|"[\s\S]+")$/u;
 
 function getEpisodeDescriptionBlocks(paragraphs: string[]) {
   const blocks: EpisodeDescriptionBlock[] = [];
@@ -159,7 +159,7 @@ function getEpisodeDescriptionBlocks(paragraphs: string[]) {
 function renderInlineEditorialText(text: string) {
   const renderQuotedSegments = (value: string, keyPrefix: string) =>
     value
-      .split(/(“[^”]+”|«[^»]+»|"[^"]+")/gu)
+      .split(/("[^"]+"|«[^»]+»|"[^"]+")/gu)
       .filter((segment) => segment.length > 0)
       .map((segment, index) =>
         inlineQuotePattern.test(segment) ? (
@@ -335,6 +335,37 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+const THEME_DISPLAY: Record<string, string> = {
+  heels:          'Danse heels',
+  transmission:   'Transmission & pédagogie',
+  sante_mentale:  'Santé mentale',
+  harcelement:    'Harcèlement',
+  blessures:      'Blessures & prévention',
+  corps:          'Corps & physique',
+  carriere:       'Carrière artistique',
+  maternite:      'Maternité',
+  krump:          'Krump',
+  hip_hop:        'Hip-hop & battle',
+  waacking:       'Waacking',
+  contemporain:   'Danse contemporaine',
+  entrepreneuriat:'Entrepreneuriat',
+  argent:         'Argent & revenus',
+  reseaux:        'Réseaux sociaux',
+  identite:       'Identité & légitimité',
+  musicalite:     'Musicalité',
+  scene:          'Scène & performance',
+  international:  'International',
+  choreo:         'Chorégraphie',
+  jazz:           'Jazz & comédie musicale',
+  afro:           'Afro dance',
+  classique:      'Ballet classique',
+  longevite:      'Longévité & reconversion',
+  creation:       'Processus créatif',
+  droits:         'Droits des artistes',
+  confiance:      'Confiance en soi',
+  inclusion:      'Inclusion & diversité',
+}
+
 export default async function EpisodePage({ params }: PageProps) {
   const { slug } = await params;
   const episode = getEpisodeBySlug(slug);
@@ -349,49 +380,41 @@ export default async function EpisodePage({ params }: PageProps) {
   const descriptionParagraphs = getEpisodeDescriptionParagraphs(episode.description);
   const descriptionBlocks = getEpisodeDescriptionBlocks(descriptionParagraphs);
 
+  // Points abordés — union des tags éditoriaux et des thèmes détectés
+  const matchedThemes = getEpisodeThemes(episode);
+  const themeLabels = [...matchedThemes].map((t) => THEME_DISPLAY[t]).filter(Boolean);
+  const topicsList = [...new Set([...episode.tags, ...themeLabels])].slice(0, 10);
+
   return (
     <>
-      <main className="episode-page">
-        <section className="episode-hero">
+      <main className="ep-page">
+
+        {/* ══════════════════════════════════════
+            HERO — éditorial, 72 vh
+        ══════════════════════════════════════ */}
+        <section className="ep-hero">
           <img
-            className="episode-hero-image"
+            className="ep-hero-img"
             src={headerImage}
             alt={episode.guest}
           />
-
-          <div className="episode-hero-shade" />
-
-          <div className="episode-hero-content">
-            <Link className="episode-back" href="/">
-              ← Retour à l'accueil
-            </Link>
-
-            <p className="episode-kicker">
-              Épisode {episode.number}
-              {episode.category ? ` · ${episode.category}` : ""}
+          <div className="ep-hero-shade" />
+          <div className="ep-hero-content">
+            <Link className="ep-back" href="/">← Retour à l&apos;accueil</Link>
+            <p className="ep-kicker">
+              Épisode {episode.number}{episode.category ? ` · ${episode.category}` : ""}
             </p>
-
             <h1>{episode.title}</h1>
-
-            <p className="episode-guest">
-              Avec {episode.guest}
-              {episode.role ? `, ${episode.role}` : ""}
+            <p className="ep-guest">
+              Avec {episode.guest}{episode.role ? `, ${episode.role}` : ""}
             </p>
-
-            <blockquote>“{episode.quote}”</blockquote>
-
-            <div className="episode-meta">
+            <div className="ep-meta">
               <span>{episode.duration}</span>
-              <time dateTime={episode.publishedAt}>
-                {formatEpisodeDate(episode.publishedAt)}
-              </time>
+              <time dateTime={episode.publishedAt}>{formatEpisodeDate(episode.publishedAt)}</time>
               {episode.tags[0] ? <span>{episode.tags[0]}</span> : null}
             </div>
-
-            <div className="episode-actions">
-              {episode.spotifyEmbedUrl ? (
-                <a href={episode.spotifyEmbedUrl}>Spotify</a>
-              ) : null}
+            <div className="ep-actions">
+              {episode.spotifyEmbedUrl ? <a href={episode.spotifyEmbedUrl}>Spotify</a> : null}
               {episode.apple ? <a href={episode.apple}>Apple Podcasts</a> : null}
               {episode.youtube ? <a href={episode.youtube}>YouTube</a> : null}
               {episode.deezer ? <a href={episode.deezer}>Deezer</a> : null}
@@ -400,437 +423,644 @@ export default async function EpisodePage({ params }: PageProps) {
           </div>
         </section>
 
-        <section className="episode-body">
-          <article className="episode-main">
-            <div className="episode-player">
-              {episode.spotifyEmbedUrl ? (
-                <iframe
-                  title={`Lecteur Spotify - ${episode.title}`}
-                  src={episode.spotifyEmbedUrl}
-                  width="100%"
-                  height="152"
-                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                  loading="lazy"
-                />
-              ) : (
-                <p>Le lecteur arrive bientôt.</p>
-              )}
-            </div>
+        {/* ══════════════════════════════════════
+            CORPS — grille 2 colonnes
+            Col gauche : 4 sections empilées
+            Col droite : sidebar sticky
+        ══════════════════════════════════════ */}
+        <section className="ep-body">
+          <div className="ep-body-inner">
 
-            <div className="episode-description">
-              {descriptionBlocks.map((block, blockIndex) => {
-                if (block.type === "list") {
-                  return (
-                    <ul
-                      key={`${episode.slug}-description-${blockIndex}`}
-                      className="episode-description-block episode-description-list"
-                    >
-                      {block.items.map((item, itemIndex) => (
-                        <li
-                          key={`${episode.slug}-description-${blockIndex}-${itemIndex}`}
-                          data-description-text
+            {/* ────────────────────────────────────
+                COLONNE PRINCIPALE
+            ──────────────────────────────────── */}
+            <div className="ep-main">
+
+              {/* ── ROW 1 : Citation + intro ── */}
+              <div className="ep-intro-block">
+                {episode.quote ? (
+                  <blockquote className="ep-quote">
+                    <span className="ep-quote-mark" aria-hidden="true">"</span>
+                    {episode.quote}
+                  </blockquote>
+                ) : null}
+                <p className="ep-eyebrow">À propos de cet épisode</p>
+                {episode.excerpt ? (
+                  <p className="ep-intro-excerpt">{episode.excerpt}</p>
+                ) : null}
+              </div>
+
+              {/* ── ROW 2 : Points abordés — pills ── */}
+              {topicsList.length > 0 ? (
+                <div className="ep-pills-section">
+                  <p className="ep-pills-label">Points abordés</p>
+                  <div className="ep-pills">
+                    {topicsList.map((topic) => (
+                      <span key={topic} className="ep-pill">{topic}</span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {/* ── ROW 3 : Lecteur Spotify ── */}
+              {episode.spotifyEmbedUrl ? (
+                <div className="ep-player-block">
+                  <p className="ep-eyebrow">Écouter l&apos;épisode</p>
+                  <iframe
+                    title={`Lecteur Spotify — ${episode.title}`}
+                    src={episode.spotifyEmbedUrl}
+                    width="100%"
+                    height="152"
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                    className="ep-player-iframe"
+                  />
+                </div>
+              ) : null}
+
+              {/* ── ROW 4 : Article éditorial complet ── */}
+              <article className="ep-article">
+                <div className="ep-description">
+                  {descriptionBlocks.map((block, blockIndex) => {
+                    if (block.type === "list") {
+                      return (
+                        <ul
+                          key={`${episode.slug}-description-${blockIndex}`}
+                          className="ep-desc-block ep-desc-list"
                         >
-                          <span className="episode-description-list-marker">
-                            {item.slice(0, 1)}
-                          </span>
-                          <span>{renderInlineEditorialText(item.slice(1))}</span>
+                          {block.items.map((item, itemIndex) => (
+                            <li key={`${episode.slug}-description-${blockIndex}-${itemIndex}`}>
+                              <span className="ep-desc-list-marker">{item.slice(0, 1)}</span>
+                              <span>{renderInlineEditorialText(item.slice(1))}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      );
+                    }
+
+                    const blockClass = [
+                      "ep-desc-block",
+                      `ep-desc-${block.type}`,
+                      blockIndex === 0 ? "ep-desc-lead" : "",
+                      blockIndex === descriptionBlocks.length - 1 ? "ep-desc-closing" : "",
+                    ].filter(Boolean).join(" ");
+
+                    if (block.type === "quote") {
+                      return (
+                        <blockquote
+                          key={`${episode.slug}-description-${blockIndex}`}
+                          className={blockClass}
+                        >
+                          {renderInlineEditorialText(block.text)}
+                        </blockquote>
+                      );
+                    }
+
+                    return (
+                      <p
+                        key={`${episode.slug}-description-${blockIndex}`}
+                        className={blockClass}
+                      >
+                        {renderInlineEditorialText(block.text)}
+                      </p>
+                    );
+                  })}
+                </div>
+
+                {episode.chapters.length > 0 ? (
+                  <div className="ep-chapters">
+                    <h2 className="ep-section-h2">Chapitres</h2>
+                    <ol className="ep-chapters-list">
+                      {episode.chapters.map((chapter) => (
+                        <li key={`${chapter.time}-${chapter.title}`}>
+                          <span>{chapter.time}</span>
+                          <strong>{chapter.title}</strong>
                         </li>
                       ))}
-                    </ul>
-                  );
-                }
+                    </ol>
+                  </div>
+                ) : null}
+              </article>
 
-                const className = [
-                  "episode-description-block",
-                  `episode-description-${block.type}`,
-                  blockIndex === 0 ? "episode-description-lead" : "",
-                  blockIndex === descriptionBlocks.length - 1
-                    ? "episode-description-closing"
-                    : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ");
-
-                if (block.type === "quote") {
-                  return (
-                    <blockquote
-                      key={`${episode.slug}-description-${blockIndex}`}
-                      className={className}
-                      data-description-text
-                    >
-                      {renderInlineEditorialText(block.text)}
-                    </blockquote>
-                  );
-                }
-
-                return (
-                  <p
-                    key={`${episode.slug}-description-${blockIndex}`}
-                    className={className}
-                    data-description-text
-                  >
-                    {renderInlineEditorialText(block.text)}
-                  </p>
-                );
-              })}
             </div>
 
-            {episode.chapters.length > 0 ? (
-              <>
-                <h2>Chapitres</h2>
-                <ol className="episode-chapters">
-                  {episode.chapters.map((chapter) => (
-                    <li key={`${chapter.time}-${chapter.title}`}>
-                      <span>{chapter.time}</span>
-                      <strong>{chapter.title}</strong>
-                    </li>
-                  ))}
-                </ol>
-              </>
-            ) : null}
-          </article>
+            {/* ────────────────────────────────────
+                SIDEBAR STICKY
+            ──────────────────────────────────── */}
+            <aside className="ep-sidebar-col">
+              <div className="ep-sidebar-card">
 
-          <aside className="episode-sidebar">
-            <div className="episode-panel">
-              <h2>Partager</h2>
-              <EpisodeShare title={episode.title} url={episodeUrl} />
-            </div>
-
-            {episode.tags.length > 0 ? (
-              <div className="episode-panel">
-                <h2>Tags</h2>
-                <div className="episode-tags">
-                  {episode.tags.map((tag) => (
-                    <span key={tag}>{tag}</span>
-                  ))}
+                <div className="ep-sidebar-section">
+                  <h3 className="ep-sidebar-h3">Partager</h3>
+                  <EpisodeShare title={episode.title} url={episodeUrl} />
                 </div>
+
+                {similarEpisodes.length > 0 ? (
+                  <div className="ep-sidebar-section">
+                    <h3 className="ep-sidebar-h3">Épisodes similaires</h3>
+                    <div className="ep-sidebar-similar">
+                      {similarEpisodes.map((item) => (
+                        <Link key={item.slug} href={`/episodes/${item.slug}`} className="ep-sidebar-ep">
+                          <img src={item.image} alt={item.guest} className="ep-sidebar-ep-img" />
+                          <div className="ep-sidebar-ep-body">
+                            <span>Épisode {item.number}</span>
+                            <strong>{item.title}</strong>
+                            <p className="ep-sidebar-ep-guest">{item.guest}</p>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
               </div>
-            ) : null}
-          </aside>
+            </aside>
+
+          </div>
         </section>
 
-        {similarEpisodes.length > 0 ? (
-          <section className="episode-similar">
-            <h2>Épisodes similaires</h2>
-            <div className="episode-similar-grid">
-              {similarEpisodes.map((item) => (
-                <Link key={item.slug} href={`/episodes/${item.slug}`}>
-                  <span>Épisode {item.number}</span>
-                  <strong>{item.title}</strong>
-                  <p>{item.guest}</p>
-                </Link>
-              ))}
-            </div>
-          </section>
-        ) : null}
       </main>
 
+
       <style>{`
-        .episode-page {
+        /* ══════════════════════════════════════
+           PAGE EPISODE — design premium
+        ══════════════════════════════════════ */
+
+        .ep-page {
           background: var(--color-background);
           color: #151515;
           min-height: 100vh;
         }
 
-        .episode-hero {
+        /* ─ Animation page body ─ */
+        @keyframes epFadeUp {
+          from { opacity: 0; transform: translateY(14px); }
+          to   { opacity: 1; transform: translateY(0);   }
+        }
+        .ep-body { animation: epFadeUp 550ms ease-out 60ms both; }
+
+        /* ─ Eyebrow label ─ */
+        .ep-eyebrow {
+          font-family: var(--font-body);
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: .22em;
+          text-transform: uppercase;
+          color: var(--color-primary);
+          margin: 0 0 20px;
+        }
+        .ep-eyebrow--center { text-align: center; }
+
+        /* ─ Section h2 ─ */
+        .ep-section-h2 {
+          font-family: var(--font-display);
+          font-size: clamp(1.5rem, 2.2vw, 2rem);
+          font-weight: 600;
+          line-height: 1.12;
+          color: #111;
+          margin: 0 0 28px;
+        }
+
+        /* ══════════════════════════════════════
+           HERO
+        ══════════════════════════════════════ */
+        .ep-hero {
           position: relative;
-          min-height: 92vh;
+          min-height: 73vh;
           display: flex;
           align-items: flex-end;
           overflow: hidden;
           isolation: isolate;
         }
 
-        .episode-hero-image {
+        .ep-hero-img {
           position: absolute;
           inset: 0;
           width: 100%;
           height: 100%;
           object-fit: cover;
-          object-position: center 28%;
+          /* portrait décalé vers la droite — zone de texte libre à gauche */
+          object-position: 72% center;
           z-index: -2;
         }
 
-        .episode-hero-shade {
+        .ep-hero-shade {
           position: absolute;
           inset: 0;
           z-index: -1;
           background:
-            linear-gradient(90deg, rgba(0, 0, 0, 0.84), rgba(0, 0, 0, 0.2) 58%, rgba(0, 0, 0, 0.34)),
-            linear-gradient(0deg, rgba(0, 0, 0, 0.8), transparent 54%);
+            /* dégradé horizontal : zone sombre à gauche, face préservée à droite */
+            linear-gradient(90deg,
+              rgba(0,0,0,.92) 0%,
+              rgba(0,0,0,.80) 24%,
+              rgba(0,0,0,.50) 42%,
+              rgba(0,0,0,.14) 58%,
+              rgba(0,0,0,.00) 70%
+            ),
+            /* dégradé bas → haut pour protéger les métadonnées */
+            linear-gradient(0deg,
+              rgba(0,0,0,.70) 0%,
+              rgba(0,0,0,.18) 36%,
+              transparent 58%
+            );
         }
 
-        .episode-hero-content {
-          width: min(1120px, calc(100% - 40px));
+        .ep-hero-content {
+          width: min(1120px, calc(100% - 48px));
           margin: 0 auto;
-          padding: 90px 0 68px;
+          padding: 64px 0 56px;
           color: white;
         }
 
-        .episode-back {
+        .ep-back {
           display: inline-flex;
-          margin-bottom: 34px;
-          color: white;
+          align-items: center;
+          gap: 6px;
+          margin-bottom: 28px;
+          color: rgba(255,255,255,.80);
           text-decoration: none;
-          opacity: 0.9;
+          font-size: 0.82rem;
+          font-weight: 600;
+          letter-spacing: .04em;
+          transition: color 200ms ease;
         }
+        .ep-back:hover { color: #fff; }
 
-        .episode-kicker,
-        .episode-meta {
+        .ep-kicker {
           font-family: var(--font-body);
-          font-size: 0.74rem;
+          font-size: 0.72rem;
           font-weight: 700;
           text-transform: uppercase;
-          letter-spacing: 0;
-          line-height: 1.2;
+          letter-spacing: .14em;
+          color: var(--color-primary-light);
+          margin: 0 0 14px;
         }
 
-        .episode-hero h1 {
-          max-width: 980px;
-          margin: 18px 0;
+        .ep-hero-content h1 {
+          /* largeur max ~52% — le titre ne chevauche pas le portrait */
+          max-width: clamp(320px, 52%, 620px);
+          margin: 0 0 16px;
           font-family: var(--font-display);
-          font-size: 6.8rem;
+          font-size: clamp(2.6rem, 4.8vw, 5.4rem);
           font-weight: 600;
-          line-height: 0.92;
-          letter-spacing: 0;
+          line-height: 1.0;
+          letter-spacing: -0.02em;
           text-wrap: balance;
+          color: #fff;
         }
 
-        .episode-guest,
-        .episode-excerpt {
-          max-width: 760px;
-          font-size: 1.18rem;
-          line-height: 1.78;
+        .ep-guest {
+          max-width: clamp(280px, 46%, 540px);
+          font-size: 1.05rem;
+          line-height: 1.65;
+          color: rgba(255,255,255,.82);
+          margin: 0 0 20px;
         }
 
-        .episode-hero blockquote {
-          max-width: 820px;
-          margin: 34px 0;
-          padding-left: 26px;
-          border-left: 3px solid var(--color-primary-light);
-          font-family: var(--font-display);
-          font-size: 2.4rem;
-          font-weight: 500;
-          line-height: 1.16;
-          font-style: italic;
-          text-wrap: balance;
-        }
-
-        .episode-meta,
-        .episode-actions {
+        .ep-meta,
+        .ep-actions {
           display: flex;
           flex-wrap: wrap;
-          gap: 12px;
-          margin-top: 24px;
+          gap: 10px;
+          margin-top: 18px;
         }
 
-        .episode-meta span,
-        .episode-meta time,
-        .episode-actions a {
-          border: 1px solid currentColor;
+        .ep-meta span,
+        .ep-meta time,
+        .ep-actions a {
+          border: 1px solid rgba(255,255,255,.38);
           border-radius: 999px;
-          padding: 10px 14px;
-          color: inherit;
+          padding: 8px 14px;
+          color: rgba(255,255,255,.90);
           text-decoration: none;
-        }
-
-        .episode-body {
-          width: min(860px, calc(100% - 48px));
-          margin: 0 auto;
-          display: block;
-          padding: 88px 0;
-        }
-
-        .episode-main {
-          width: 100%;
-        }
-
-        .episode-main h2,
-        .episode-panel h2,
-        .episode-similar h2 {
-          margin: 0 0 22px;
-          font-family: var(--font-display);
-          font-size: 1.85rem;
+          font-size: 0.78rem;
           font-weight: 600;
-          line-height: 1.1;
-          letter-spacing: 0;
+          letter-spacing: .03em;
+          transition: border-color 200ms, background 200ms, color 200ms;
+        }
+        .ep-actions a:hover {
+          border-color: var(--color-primary-light);
+          background: var(--color-primary-light);
+          color: #fff;
         }
 
-        .episode-main p {
-          max-width: none;
-          font-size: 1.1rem;
-          line-height: 1.68;
+        /* ══════════════════════════════════════
+           CORPS — 2 colonnes
+        ══════════════════════════════════════ */
+        .ep-body {
+          background: var(--color-background);
+          padding: 64px 0 88px;
         }
 
-        .episode-description {
+        .ep-body-inner {
+          width: min(1160px, calc(100% - 48px));
+          margin: 0 auto;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) 300px;
+          gap: 0 52px;
+          align-items: start;
+        }
+
+        /* ─ Colonne principale — 4 sections empilées ─ */
+        .ep-main {
+          min-width: 0;
           display: flex;
           flex-direction: column;
-          gap: 0.8rem;
-          width: 100%;
-          max-width: none;
+          gap: 48px;
         }
 
-        .episode-description-block {
-          position: relative;
-          max-width: none;
+        /* ── ROW 1 : Intro block ── */
+        .ep-intro-block {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+
+        /* Citation dans l'intro */
+        .ep-quote {
+          padding: 4px 0 4px 20px;
+          border-left: 2px solid var(--color-primary-light);
+          font-family: var(--font-display);
+          font-size: clamp(1.1rem, 1.5vw, 1.28rem);
+          font-style: italic;
+          font-weight: 500;
+          line-height: 1.54;
+          color: var(--color-primary-dark);
           margin: 0;
+        }
+
+        .ep-quote-mark {
+          font-family: Georgia, serif;
+          font-size: 1.3em;
+          line-height: 0;
+          color: var(--color-primary-light);
+          font-style: normal;
+          vertical-align: -0.18em;
+          user-select: none;
+          margin-right: 2px;
+        }
+
+        /* Extrait court sous l'eyebrow */
+        .ep-intro-excerpt {
+          font-size: clamp(1rem, 1.15vw, 1.08rem);
+          line-height: 1.78;
+          color: #333;
+          margin: 0;
+          max-width: 64ch;
+        }
+
+        /* ── ROW 2 : Pills / tags ── */
+        .ep-pills-section {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          padding-top: 4px;
+          border-top: 1px solid rgba(0,0,0,.07);
+        }
+
+        .ep-pills-label {
+          font-family: var(--font-body);
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: .22em;
+          text-transform: uppercase;
+          color: var(--color-primary);
+          margin: 0;
+        }
+
+        .ep-pills {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        .ep-pill {
+          display: inline-flex;
+          align-items: center;
+          padding: 5px 14px;
+          border-radius: 999px;
+          border: 1px solid rgba(91,115,119,.22);
+          background: rgba(193,208,223,.14);
+          color: var(--color-primary-dark);
+          font-size: 0.82rem;
+          font-weight: 500;
+          line-height: 1.2;
+          white-space: nowrap;
+          transition: background 180ms, border-color 180ms;
+        }
+        .ep-pill:hover {
+          background: rgba(193,208,223,.32);
+          border-color: rgba(91,115,119,.40);
+        }
+
+        /* ── ROW 3 : Lecteur Spotify ── */
+        .ep-player-block {
+          padding-top: 4px;
+          border-top: 1px solid rgba(0,0,0,.07);
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+
+        .ep-player-iframe {
+          display: block;
+          border: 0;
+          border-radius: 12px;
+          box-shadow: 0 4px 20px rgba(0,0,0,.08);
+          width: 100%;
+        }
+
+        /* ── ROW 4 : Article éditorial ── */
+        .ep-article {
+          display: flex;
+          flex-direction: column;
+          gap: 0;
+          padding-top: 4px;
+          border-top: 1px solid rgba(0,0,0,.07);
+        }
+
+        /* ─ Description magazine ─ */
+        .ep-description {
+          display: flex;
+          flex-direction: column;
+          gap: 1.6rem;
+        }
+
+        .ep-desc-block {
+          position: relative;
+          margin: 0;
+          line-height: 1.85;
+          font-size: clamp(1rem, 1.05vw, 1.06rem);
+          color: #1e1e1e;
+        }
+
+        .ep-desc-lead {
+          font-family: var(--font-display);
+          font-size: clamp(1.14rem, 1.38vw, 1.24rem) !important;
+          font-weight: 600;
+          line-height: 1.58 !important;
+          color: #111;
+          padding-bottom: 4px;
+          border-bottom: 1px solid rgba(0,0,0,.07);
+        }
+
+        .ep-desc-emphasis {
+          font-weight: 700;
+          color: inherit;
+        }
+
+        .ep-desc-inline-quote {
+          font-style: italic;
+          font-weight: 600;
+          color: inherit;
+        }
+
+        /* Citation dans le texte — discrète, pas de fond */
+        .ep-desc-quote {
+          padding: 6px 0 6px 20px;
+          border-left: 2px solid var(--color-primary-light);
+          color: var(--color-primary-dark);
+          font-family: var(--font-display);
+          font-size: clamp(1.08rem, 1.4vw, 1.26rem);
+          font-style: italic;
+          font-weight: 500;
+          line-height: 1.52;
+          margin: 4px 0;
+          background: none;
+        }
+
+        /* Callout — trait gauche discret, pas de fond coloré */
+        .ep-desc-callout {
+          padding: 2px 0 2px 20px;
+          border-left: 2px solid var(--color-primary-light);
+          background: none;
+          color: var(--color-primary-dark);
+          font-size: 1.04rem;
+          font-weight: 600;
           line-height: 1.68;
         }
 
-        .episode-description-lead {
-          color: inherit;
-          font-family: var(--font-display);
-          font-size: clamp(1.14rem, 1.4vw, 1.24rem) !important;
-          font-weight: 700;
-          line-height: 1.52 !important;
-        }
-
-        .episode-description-emphasis {
-          color: inherit;
-          font-weight: 700;
-        }
-
-        .episode-description-inline-quote {
-          color: inherit;
-          font-style: italic;
-          font-weight: 600;
-        }
-
-        .episode-description-callout {
-          padding: 20px 24px;
-          border-left: 3px solid var(--color-primary-light);
-          border-radius: 0 8px 8px 0;
-          background:
-            linear-gradient(135deg, rgba(193, 208, 223, 0.2), rgba(255, 255, 255, 0.74));
-          color: var(--color-primary-dark);
-          font-size: 1.08rem;
-          font-weight: 600;
-        }
-
-        .episode-description-quote {
-          padding: 18px 0 18px 24px;
-          border-left: 3px solid var(--color-primary-light);
-          color: var(--color-primary-dark);
-          font-family: var(--font-display);
-          font-size: clamp(1.45rem, 2.8vw, 2.15rem);
-          font-style: italic;
-          font-weight: 500;
-          line-height: 1.3;
-        }
-
-        .episode-description-list {
-          display: grid;
-          gap: 8px;
-          padding: 20px 24px;
-          border: 1px solid rgba(35, 48, 51, 0.12);
-          border-radius: 8px;
-          background: rgba(193, 208, 223, 0.13);
+        /* Liste éditoriale — fond blanc, marqueur bleu discret */
+        .ep-desc-list {
+          display: flex;
+          flex-direction: column;
+          gap: 0;
           list-style: none;
+          padding: 0;
+          margin: 4px 0;
+          border-left: 2px solid var(--color-primary-light);
+          padding-left: 20px;
         }
 
-        .episode-description-list li {
+        .ep-desc-list li {
           display: grid;
-          grid-template-columns: 24px minmax(0, 1fr);
-          gap: 10px;
-          align-items: start;
-          color: inherit;
-          font-size: 1.04rem;
-          line-height: 1.6;
+          grid-template-columns: 18px 1fr;
+          gap: 8px;
+          align-items: baseline;
+          font-size: 1.01rem;
+          line-height: 1.72;
+          color: #1e1e1e;
+          padding: 3px 0;
         }
 
-        .episode-description-list-marker {
+        .ep-desc-list-marker {
           color: var(--color-primary-light);
           font-weight: 700;
+          font-size: 1.05em;
         }
 
-        .episode-description-list + .episode-description-paragraph,
-        .episode-description-callout + .episode-description-paragraph,
-        .episode-description-quote + .episode-description-paragraph {
-          padding-top: 0.35rem;
-        }
-
-        .episode-description-closing {
-          color: inherit;
+        .ep-desc-closing {
           font-weight: 600;
+          color: inherit;
         }
 
-        .episode-player {
-          margin-bottom: 44px;
+        .ep-desc-list + .ep-desc-paragraph,
+        .ep-desc-callout + .ep-desc-paragraph,
+        .ep-desc-quote + .ep-desc-paragraph {
+          padding-top: 0.3rem;
         }
 
-        .episode-player iframe {
-          display: block;
-          border: 0;
-          border-radius: 8px;
+        /* ─ Chapitres ─ */
+        .ep-chapters {
+          padding-top: 32px;
+          border-top: 1px solid rgba(0,0,0,.08);
         }
 
-        .episode-chapters {
+        .ep-chapters-list {
           display: grid;
-          gap: 12px;
+          gap: 0;
           padding: 0;
           list-style: none;
         }
 
-        .episode-chapters li {
+        .ep-chapters-list li {
           display: grid;
-          grid-template-columns: 74px minmax(0, 1fr);
+          grid-template-columns: 72px 1fr;
           gap: 16px;
-          padding: 18px 0;
-          border-top: 1px solid rgba(0, 0, 0, 0.16);
+          padding: 16px 0;
+          border-top: 1px solid rgba(0,0,0,.08);
+          align-items: start;
         }
 
-        .episode-chapters span {
+        .ep-chapters-list li span {
           color: #755f3e;
-          font-size: 0.92rem;
+          font-size: 0.88rem;
           font-weight: 700;
           line-height: 1.4;
+          padding-top: 2px;
         }
 
-        .episode-chapters strong {
-          font-size: 1.02rem;
-          line-height: 1.45;
+        .ep-chapters-list li strong {
+          font-size: 0.98rem;
+          font-weight: 600;
+          line-height: 1.48;
         }
 
-        .episode-sidebar {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          align-content: start;
-          gap: 18px;
-          width: 100%;
-          margin-top: 48px;
+        /* ─ Col 3 : Sidebar ─ */
+        .ep-sidebar-col {
+          position: sticky;
+          top: calc(var(--nav-h, 64px) + 24px);
+          align-self: start;
         }
 
-        .episode-panel {
-          border: 1px solid rgba(0, 0, 0, 0.14);
-          border-radius: 8px;
-          padding: 24px;
+        .ep-sidebar-card {
+          border: 1px solid rgba(0,0,0,.09);
+          border-radius: 14px;
           background: white;
+          box-shadow: 0 4px 28px rgba(0,0,0,.06);
+          overflow: hidden;
         }
 
-        .episode-panel-name {
-          font-size: 1.04rem;
+        .ep-sidebar-section {
+          padding: 20px 22px;
+          border-bottom: 1px solid rgba(0,0,0,.07);
+        }
+        .ep-sidebar-section:last-child { border-bottom: 0; }
+
+        .ep-sidebar-h3 {
+          font-family: var(--font-body);
+          font-size: 10px;
           font-weight: 700;
-          line-height: 1.4;
+          letter-spacing: .20em;
+          text-transform: uppercase;
+          color: var(--color-primary);
+          margin: 0 0 14px;
         }
 
+        /* Share buttons — gardés compatibles avec EpisodeShare */
         .episode-share,
-        .episode-tags {
+        .ep-tags {
           display: flex;
           flex-wrap: wrap;
-          gap: 10px;
+          gap: 8px;
         }
-
-        .episode-share {
-          position: relative;
-          flex-wrap: nowrap;
-          gap: 9px;
-        }
+        .episode-share { flex-wrap: nowrap; gap: 7px; position: relative; }
 
         .episode-share-button {
           display: grid;
-          width: 44px;
-          height: 44px;
-          flex: 0 0 44px;
+          width: 40px; height: 40px;
+          flex: 0 0 40px;
           place-items: center;
           border: 1px solid currentColor;
           border-radius: 50%;
@@ -840,7 +1070,6 @@ export default async function EpisodePage({ params }: PageProps) {
           transition: background-color 180ms ease, border-color 180ms ease,
             color 180ms ease, transform 180ms ease;
         }
-
         .episode-share-button:hover,
         .episode-share-button:focus-visible {
           border-color: var(--color-primary-light);
@@ -848,203 +1077,142 @@ export default async function EpisodePage({ params }: PageProps) {
           color: #fff;
           transform: translateY(-1px);
         }
-
-        .episode-share-button:focus-visible {
-          outline: 2px solid currentColor;
-          outline-offset: 3px;
-        }
-
+        .episode-share-button:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
         .episode-share-button svg {
-          width: 19px;
-          height: 19px;
-          fill: none;
-          stroke: currentColor;
-          stroke-linecap: round;
-          stroke-linejoin: round;
-          stroke-width: 1.8;
+          width: 17px; height: 17px;
+          fill: none; stroke: currentColor;
+          stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8;
         }
-
         .episode-share-menu {
-          position: absolute;
-          z-index: 5;
-          top: calc(100% + 10px);
-          right: 0;
-          display: grid;
+          position: absolute; z-index: 10;
+          top: calc(100% + 8px); right: 0;
           width: 190px;
-          overflow: hidden;
-          border: 1px solid rgba(0, 0, 0, 0.14);
-          border-radius: 8px;
+          border: 1px solid rgba(0,0,0,.12);
+          border-radius: 10px;
           background: #fff;
-          box-shadow: 0 14px 32px rgba(17, 17, 17, 0.14);
+          box-shadow: 0 12px 32px rgba(17,17,17,.14);
+          overflow: hidden;
         }
-
         .episode-share-menu a,
         .episode-share-menu button {
-          width: 100%;
-          border: 0;
-          border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-          border-radius: 0;
-          padding: 11px 14px;
-          background: transparent;
-          color: inherit;
-          font: inherit;
-          text-align: left;
-          text-decoration: none;
-          cursor: pointer;
+          display: block; width: 100%;
+          border: 0; border-bottom: 1px solid rgba(0,0,0,.07);
+          border-radius: 0; padding: 11px 14px;
+          background: transparent; color: inherit;
+          font: inherit; text-align: left;
+          text-decoration: none; cursor: pointer;
         }
-
         .episode-share-menu a:last-child,
-        .episode-share-menu button:last-child {
-          border-bottom: 0;
-        }
-
+        .episode-share-menu button:last-child { border-bottom: 0; }
         .episode-share-menu a:hover,
-        .episode-share-menu a:focus-visible,
-        .episode-share-menu button:hover,
-        .episode-share-menu button:focus-visible {
-          background: rgba(193, 208, 223, 0.28);
-          outline: none;
-        }
+        .episode-share-menu button:hover { background: rgba(193,208,223,.25); }
 
-        .episode-tags span {
+        /* Tags */
+        .ep-tags span {
           border-radius: 999px;
-          background: #ece6dc;
-          padding: 9px 12px;
-          font-size: 0.86rem;
+          background: rgba(193,208,223,.22);
+          padding: 6px 11px;
+          font-size: 0.80rem;
+          color: var(--color-primary-dark);
+          font-weight: 500;
           line-height: 1.2;
         }
 
-        .episode-similar {
-          width: min(1120px, calc(100% - 40px));
-          margin: 0 auto;
-          padding: 0 0 80px;
+        /* Similar compacts dans la sidebar */
+        .ep-sidebar-similar {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
         }
 
-        .episode-similar-grid {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 18px;
-        }
-
-        .episode-similar-grid a {
-          min-height: 180px;
-          display: grid;
-          grid-template-rows: auto 1fr auto;
-          gap: 10px;
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          border-radius: 8px;
-          padding: 22px;
-          background: var(--color-primary-dark);
-          box-shadow: 0 14px 34px rgba(35, 48, 51, 0.12);
-          color: #fff;
+        .ep-sidebar-ep {
+          display: flex;
+          gap: 11px;
+          align-items: center;
           text-decoration: none;
+          color: inherit;
+          padding: 8px;
+          border-radius: 8px;
+          transition: background 200ms;
+        }
+        .ep-sidebar-ep:hover { background: rgba(193,208,223,.15); }
+
+        .ep-sidebar-ep-img {
+          width: 46px; height: 46px;
+          border-radius: 6px;
+          object-fit: cover;
+          object-position: center top;
+          flex-shrink: 0;
         }
 
-        .episode-similar-grid span {
-          color: var(--color-primary-light);
-          font-size: 0.74rem;
+        .ep-sidebar-ep-body {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          min-width: 0;
+        }
+
+        .ep-sidebar-ep-body span {
+          font-size: 0.68rem;
           font-weight: 700;
           text-transform: uppercase;
-          letter-spacing: 0;
-          align-self: start;
+          letter-spacing: .10em;
+          color: var(--color-primary);
         }
 
-        .episode-similar-grid strong {
-          font-family: var(--font-display);
-          font-size: 1.25rem;
+        .ep-sidebar-ep-body strong {
+          font-size: 0.84rem;
           font-weight: 600;
-          line-height: 1.18;
-          align-self: start;
+          line-height: 1.25;
+          color: #111;
           display: -webkit-box;
-          -webkit-line-clamp: 4;
+          -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
         }
 
-        .episode-similar-grid p {
-          margin: 0;
-          align-self: end;
-          font-size: 0.9rem;
-          opacity: 0.72;
-          padding-top: 4px;
-          border-top: 1px solid rgba(255, 255, 255, 0.12);
+        /* ── Épisodes similaires dans la sidebar — guest ── */
+        .ep-sidebar-ep-guest {
+          font-size: 0.78rem;
+          color: #888;
+          margin: 2px 0 0;
+          line-height: 1.3;
         }
 
-        @media (max-width: 820px) {
-          .episode-hero {
-            min-height: 86vh;
+        /* ══════════════════════════════════════
+           RESPONSIVE
+        ══════════════════════════════════════ */
+        @media (max-width: 960px) {
+          .ep-body-inner {
+            grid-template-columns: minmax(0, 1fr) 272px;
+            gap: 0 36px;
           }
+        }
 
-          .episode-hero-content {
-            padding-bottom: 44px;
-          }
+        @media (max-width: 720px) {
+          .ep-hero-content h1 { font-size: clamp(2.4rem, 7vw, 3.8rem); }
 
-          .episode-hero h1 {
-            font-size: 4.2rem;
-            line-height: 0.96;
-          }
-
-          .episode-guest,
-          .episode-excerpt {
-            font-size: 1.04rem;
-            line-height: 1.72;
-          }
-
-          .episode-hero blockquote {
-            font-size: 1.9rem;
-            line-height: 1.18;
-          }
-
-          .episode-body {
-            padding: 60px 0;
-          }
-
-          .episode-similar-grid {
+          .ep-body { padding: 48px 0 64px; }
+          .ep-body-inner {
             grid-template-columns: 1fr;
+            gap: 48px;
           }
+          .ep-sidebar-col { position: static; }
+          .ep-topics-grid { grid-template-columns: 1fr; }
+          .ep-desc-quote { font-size: 1.28rem; }
         }
 
-        @media (max-width: 560px) {
-          .episode-description {
-            gap: 0.7rem;
-          }
-
-          .episode-description-callout,
-          .episode-description-list {
-            padding: 20px;
-          }
-
-          .episode-description-quote {
-            padding: 16px 0 16px 18px;
-          }
-
-          .episode-share {
-            gap: 6px;
-          }
-
-          .episode-share-button {
-            width: 40px;
-            height: 40px;
-            flex-basis: 40px;
-          }
-
-          .episode-hero h1 {
-            font-size: 3rem;
-            line-height: 1;
-          }
-
-          .episode-hero blockquote {
-            font-size: 1.45rem;
-            padding-left: 18px;
-          }
-
-          .episode-main h2,
-          .episode-panel h2,
-          .episode-similar h2 {
-            font-size: 1.45rem;
-          }
+        @media (max-width: 480px) {
+          .ep-hero { min-height: 80vh; }
+          .ep-hero-content h1 { font-size: 2.2rem; line-height: 1.02; }
+          .ep-guest { font-size: 0.95rem; }
+          .ep-body { padding: 40px 0 56px; }
+          .ep-main { gap: 28px; }
+          .ep-sidebar-card { border-radius: 10px; }
+          .ep-player-inline { padding: 18px 18px 22px; }
         }
       `}</style>
     </>
   );
 }
+
