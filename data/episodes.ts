@@ -29,7 +29,7 @@ export const episodes: Episode[] = [
   {
     "number": 121,
     "slug": "121-laetitia-simon",
-    "title": "Féminité, sensualité et sexualisation dans la danse : ce qu'on projette sur les danseuses",
+    "title": "Pourquoi les danseuses sont-elles s*xualisées ?",
     "guest": "Laëtitia Simon",
     "role": "",
     "publishedAt": "2026-07-28",
@@ -49,13 +49,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Féminité, sensualité et sexualisation dans la danse : ce qu'on projette sur les danseuses | Dance Lab",
+    "seoTitle": "Pourquoi les danseuses sont-elles s*xualisées ? | Dance Lab",
     "seoDescription": "Une conversation sur la féminité, la sensualité et la sexualisation dans la danse — et pourquoi on n'est pas responsable de ce que les autres projettent sur nous."
   },
   {
     "number": 120,
     "slug": "120-duy-laurent-tran",
-    "title": "Photographier la danse : l'invisible du métier, l'IA et monter une entreprise",
+    "title": "Photographie et IA : faut-il avoir peur de l'avenir de la danse ?",
     "guest": "Duy-Laurent Tran",
     "role": "Photographe de danse",
     "publishedAt": "2026-07-21",
@@ -75,13 +75,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Photographier la danse : l'invisible du métier, l'IA et monter une entreprise | Dance Lab",
+    "seoTitle": "Photographie et IA : faut-il avoir peur de l'avenir de la danse ? | Dance Lab",
     "seoDescription": "Duy-Laurent Tran est photographe de danse : il raconte l'invisible derrière chaque image, l'impact de l'IA et les leçons d'un entrepreneur."
   },
   {
     "number": 119,
     "slug": "119-charlotte-baret",
-    "title": "Quand une danseuse quitte le milieu : toxicité, transmission et reconstruire sa vie",
+    "title": "Pourquoi elle a quitté le monde de la danse : toxicité, jalousie et pression",
     "guest": "Charlotte Baret",
     "role": "Danseuse & entrepreneuse",
     "publishedAt": "2026-07-14",
@@ -101,7 +101,7 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Quand une danseuse quitte le milieu : toxicité, transmission et reconstruire sa vie | Dance Lab",
+    "seoTitle": "Pourquoi elle a quitté le monde de la danse : toxicité, jalousie et pression | Dance Lab",
     "seoDescription": "Charlotte Baret parle sans détour de pourquoi elle a quitté la danse, de la toxicité du milieu, de la transmission et de ce qu'on gagne à aller voir ailleurs."
   },
   {
