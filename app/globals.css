@@ -3877,7 +3877,7 @@ transform:scale(1.05);
 
 /* Header */
 .ep2-header {
-  padding: 128px 0 88px;
+  padding: 88px 0 36px;
   /* pas de border-bottom : continuité visuelle avec les filtres */
 }
 
@@ -3906,13 +3906,13 @@ transform:scale(1.05);
   font-size: 18px;
   color: #666;
   line-height: 1.72;
-  margin: 0;
+  margin: 0 0 32px;
 }
 
 /* ─── Controls bar ─── */
 .ep2-controls-section {
   /* Plus de bordure, plus d'ombre, pas de sticky — zone intégrée */
-  padding: 0 0 40px;
+  padding: 0 0 16px;
   position: relative;
   z-index: 200; /* doit dépasser z-index: 20 des cartes au hover */
 }
@@ -3920,6 +3920,10 @@ transform:scale(1.05);
 .ep2-controls {
   display: flex;
   align-items: center;
+  background: #f5f5f3;
+  border: 1px solid #e8e8e4;
+  border-radius: 14px;
+  padding: 10px 14px;
   gap: 12px;
   flex-wrap: wrap;
 }
@@ -4081,14 +4085,14 @@ transform:scale(1.05);
 
 /* ─── Grid ─── */
 .ep2-list {
-  padding: 48px 0 88px;
+  padding: 12px 0 80px;
   overflow: visible;
 }
 
 .ep2-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
   overflow: visible;
   /* Espace latéral pour que les cartes de bord puissent scale sans être croppées */
   padding: 10px 6px;
@@ -4141,7 +4145,7 @@ transform:scale(1.05);
 
 /* ─── Image ─── */
 .ep2-card-img-wrap {
-  width: 90px;
+  width: 110px;
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
@@ -4167,7 +4171,7 @@ transform:scale(1.05);
 .ep2-card-content {
   flex: 1;
   min-width: 0;
-  padding: 11px 14px 11px 12px;
+  padding: 14px 18px 14px 14px;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -4175,13 +4179,13 @@ transform:scale(1.05);
 
 /* Badge "ÉPISODE 116" */
 .ep2-card-number {
-  font-size: 10px;
+  font-size: 11.5px;
   line-height: 1;
   text-transform: uppercase;
   letter-spacing: .11em;
   color: #5B7377;
   font-weight: 700;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
   font-family: var(--font-body);
 }
 
@@ -4189,41 +4193,41 @@ transform:scale(1.05);
    parfait de tous les éléments en-dessous, quelle que soit la longueur du titre */
 .ep2-card-title {
   font-family: var(--font-body) !important;
-  font-size: 13.5px !important;
-  line-height: 1.28 !important;
+  font-size: 15px !important;
+  line-height: 1.3 !important;
   font-weight: 600;
   color: #111;
-  margin: 0 0 6px;
+  margin: 0 0 7px;
   max-width: none;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-wrap: unset;
-  /* 3 lignes × 13.5px × 1.28 ≈ 51.84px — aligne badge+titre pour toutes les cartes */
-  min-height: calc(13.5px * 1.28 * 3);
+  /* 3 lignes × 15px × 1.3 = 58.5px — aligne badge+titre pour toutes les cartes */
+  min-height: calc(15px * 1.3 * 3);
 }
 
 /* "Avec Prénom Nom" */
 .ep2-card-guest {
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.2;
   color: #666;
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
 }
 
 /* Durée */
 .ep2-card-duration {
-  font-size: 10.5px;
+  font-size: 12px;
   color: #bbb;
   display: flex;
   align-items: center;
   gap: 3px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 /* Bouton — bleu ciel Dance Lab, toujours en bas de carte */
@@ -4231,12 +4235,12 @@ transform:scale(1.05);
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 10px;
+  padding: 5px 13px;
   border-radius: 999px;
   border: 1px solid transparent;
   background: var(--color-primary-light); /* #C1D0DF */
   color: var(--color-primary-dark);       /* #425659 */
-  font-size: 10px;
+  font-size: 11.5px;
   font-weight: 600;
   font-family: var(--font-body);
   letter-spacing: .02em;
@@ -4253,7 +4257,7 @@ transform:scale(1.05);
 /* Épisodes à deux invités (data-duo="true") : slot image élargi
    pour réduire le crop horizontal et laisser voir les deux visages */
 .ep2-card[data-duo="true"] .ep2-card-img-wrap {
-  width: 113px;
+  width: 138px;
 }
 
 /* ─── Empty state ─── */
@@ -4337,9 +4341,9 @@ transform:scale(1.05);
 }
 
 /* ─── Responsive ─── */
-@media (max-width: 1200px) {
+@media (max-width: 1100px) {
   .ep2-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -4362,6 +4366,8 @@ transform:scale(1.05);
     flex-direction: column;
     align-items: stretch;
     gap: 8px;
+    border-radius: 10px;
+    padding: 10px 12px;
   }
 
   .ep2-search-wrap {
