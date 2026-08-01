@@ -45,8 +45,12 @@ export default function Footer() {
             </a>
 
             <p className="footer-tagline">
-              Le média qui ouvre les portes du monde de la danse - pour les professionnels,
-              les passionnés et les curieux.
+              <span className="footer-tagline-line">
+                Le média qui ouvre les portes du monde de la danse
+              </span>
+              <span className="footer-tagline-line">
+                pour les professionnels, les passionnés et les curieux.
+              </span>
             </p>
 
             <div className="socials">
