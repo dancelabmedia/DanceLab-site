@@ -4,19 +4,21 @@ import AgendaExperience from "../agenda/AgendaExperience"
 export const metadata: Metadata = {
   title: "Sortir | Dance Lab",
   description:
-    "Spectacles, festivals, battles et événements danse à venir en France, sélectionnés par Dance Lab.",
+    "Spectacles, festivals, performances et événements danse à ne pas manquer en France, sélectionnés par Dance Lab.",
 }
 
 export default function SortirPage() {
   return (
-    <main className="agenda-page">
-      <section className="agenda-hero">
-        <div className="container">
-          <span className="section-label">Sorties danse</span>
-          <h1>Les événements danse à suivre maintenant.</h1>
-          <p>
-            Une sélection évolutive de spectacles, festivals, battles, ateliers et
-            rendez-vous chorégraphiques pour découvrir la danse en France.
+    <main className="srt-page">
+      <section className="srt-hero">
+        <div className="container srt-hero-inner">
+          <span className="section-label">Sortir</span>
+          <h1>
+            Les rendez-vous danse<br />
+            à ne pas manquer.
+          </h1>
+          <p className="srt-hero-sub">
+            Spectacles, festivals, performances et événements partout en France.
           </p>
         </div>
       </section>

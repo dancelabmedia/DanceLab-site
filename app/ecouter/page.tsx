@@ -4,21 +4,9 @@ import { episodes } from "../../data/episodes"
 import Link from "next/link"
 import { useState, useMemo, useRef, useEffect, useLayoutEffect, useCallback } from "react"
 import { createPortal } from "react-dom"
+import AnimatedCounter from "../components/AnimatedCounter"
 
 const EPISODES_PAGE_SIZE = 12
-
-const POPULAR_TAGS = [
-  "Santé mentale",
-  "Carrière",
-  "Heels",
-  "Chorégraphie",
-  "Opéra de Paris",
-  "Comédie musicale",
-  "Réseaux sociaux",
-  "Blessures",
-  "Hip-hop",
-  "Contemporain",
-]
 
 function getGuestCardImage(episode: (typeof episodes)[number]) {
   const episodeImageName = episode.image
@@ -37,6 +25,20 @@ function getGuestCardImage(episode: (typeof episodes)[number]) {
   return optimizedImageName
     ? `/images/les-invites/${optimizedImageName}`
     : episode.image
+}
+
+// Retourne l'image depuis /les-invites-header/ (photos plein-cadre éditoriales).
+// Utilise le même nom de fichier que episode.image, juste dans un dossier différent.
+// Le fallback (onError dans le JSX) revient sur getGuestCardImage si le fichier est absent.
+function getHeroHeaderImage(episode: (typeof episodes)[number]) {
+  const filename = episode.image
+    .split("/")
+    .pop()
+    ?.replace(/\.png\.png$/i, ".png")
+
+  return filename && filename !== "logo.png"
+    ? `/images/les-invites-header/${filename}`
+    : getGuestCardImage(episode)
 }
 
 function getThematique(episode: (typeof episodes)[number]): string {
@@ -210,6 +212,8 @@ export default function EcouterPage() {
   const [sort, setSort] = useState("recent")
   const [inviteFilter, setInviteFilter] = useState("Tous")
   const [page, setPage] = useState(1)
+  const episodesGridRef = useRef<HTMLDivElement>(null)
+  const revealedEpisodeIds = useRef(new Set<number>())
 
   /* ── Entrée du hero ─────────────────────────────────────────────── */
   const heroRef = useRef<HTMLElement>(null)
@@ -233,7 +237,8 @@ export default function EcouterPage() {
 
   /* ── Données ────────────────────────────────────────────────────── */
   const latestEpisode = episodes[0]
-  const heroImage = getGuestCardImage(latestEpisode)
+  const heroImage = getHeroHeaderImage(latestEpisode)
+  const heroImageFallback = getGuestCardImage(latestEpisode)
 
   const guestOptions = useMemo(() => {
     const all = [...new Set(episodes.map(e => e.guest))].sort((a, b) =>
@@ -288,6 +293,50 @@ export default function EcouterPage() {
   const startIndex = (safeCurrentPage - 1) * EPISODES_PAGE_SIZE
   const visibleEpisodes = filtered.slice(startIndex, startIndex + EPISODES_PAGE_SIZE)
 
+  /* ── Révélation progressive des cartes au scroll ──────────────── */
+  useEffect(() => {
+    const grid = episodesGridRef.current
+    if (!grid) return
+
+    const cards = Array.from(
+      grid.querySelectorAll<HTMLElement>(".ep2-card--reveal-pending")
+    )
+    if (cards.length === 0) return
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    if (reducedMotion || !("IntersectionObserver" in window)) {
+      cards.forEach(card => {
+        card.classList.add("ep2-card--revealed")
+        revealedEpisodeIds.current.add(Number(card.dataset.episodeId))
+      })
+      return
+    }
+
+    const columnCount = getComputedStyle(grid).gridTemplateColumns.split(" ").length
+    cards.forEach((card, index) => {
+      card.style.setProperty("--ep2-reveal-delay", `${(index % columnCount) * 80}ms`)
+    })
+
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return
+          const card = entry.target as HTMLElement
+          card.classList.add("ep2-card--revealed")
+          revealedEpisodeIds.current.add(Number(card.dataset.episodeId))
+          observer.unobserve(card)
+        })
+      },
+      {
+        threshold: 0.08,
+        rootMargin: "0px 0px 12% 0px",
+      }
+    )
+
+    cards.forEach(card => observer.observe(card))
+    return () => observer.disconnect()
+  }, [visibleEpisodes])
+
   const filtersRef = useRef({ search, thematique, duree, sort, inviteFilter })
   useEffect(() => {
     const prev = filtersRef.current
@@ -335,11 +384,33 @@ export default function EcouterPage() {
     <main id="episodes" className="episodes-page ep2">
 
       {/* ══════════════════════════════════════════════════════════════
-          HERO IMMERSIF — deux colonnes
+          HERO IMMERSIF — image plein cadre, texte superposé
       ══════════════════════════════════════════════════════════════ */}
       <section className="el-hero" ref={heroRef} aria-label="En-tête — Tous les épisodes">
 
-        {/* ── Colonne gauche : texte + recherche ── */}
+        {/* ── Image plein cadre en arrière-plan ── */}
+        <div className="el-hero-img-wrap" ref={heroImgRef} aria-hidden="true">
+          <img
+            src={heroImage}
+            alt=""
+            className="el-hero-img"
+            onError={e => {
+              if (!e.currentTarget.src.includes("/les-invites/")) {
+                e.currentTarget.src = heroImageFallback
+                return
+              }
+              const raw = latestEpisode.image
+              if (raw && !e.currentTarget.src.endsWith(raw)) {
+                e.currentTarget.src = raw
+              }
+            }}
+          />
+        </div>
+
+        {/* ── Voile sombre gauche → droite, identique aux pages épisode ── */}
+        <div className="el-hero-fade" aria-hidden="true" />
+
+        {/* ── Contenu superposé, aligné à gauche ── */}
         <div className="el-hero-left">
 
           <span
@@ -356,18 +427,22 @@ export default function EcouterPage() {
             Tous les épisodes
           </h1>
 
-          {/* Statistiques */}
+          {/* Statistiques — compteurs progressifs */}
           <div
             className="el-stats el-anim"
             style={{ "--el-delay": "140ms" } as React.CSSProperties}
           >
             <div className="el-stat">
-              <strong>121</strong>
+              <strong>
+                <AnimatedCounter value={episodes.length} duration={1200} />
+              </strong>
               <span>conversations</span>
             </div>
             <div className="el-stat-sep" aria-hidden="true" />
             <div className="el-stat">
-              <strong>+100&nbsp;000</strong>
+              <strong>
+                +<AnimatedCounter value={100} suffix={"\u00a0000"} duration={1600} />
+              </strong>
               <span>écoutes</span>
             </div>
             <div className="el-stat-sep" aria-hidden="true" />
@@ -417,27 +492,10 @@ export default function EcouterPage() {
             )}
           </label>
 
-          {/* Tags populaires */}
-          <div
-            className="el-tags el-anim"
-            style={{ "--el-delay": "320ms" } as React.CSSProperties}
-          >
-            {POPULAR_TAGS.map(tag => (
-              <button
-                key={tag}
-                type="button"
-                className={`el-tag${search === tag ? " el-tag--active" : ""}`}
-                onClick={() => setSearch(search === tag ? "" : tag)}
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
-
           {/* Filtres compacts */}
           <div
             className="el-chips el-anim"
-            style={{ "--el-delay": "380ms" } as React.CSSProperties}
+            style={{ "--el-delay": "310ms" } as React.CSSProperties}
           >
             <Dropdown
               label="Tous les invités"
@@ -482,30 +540,6 @@ export default function EcouterPage() {
 
         </div>
 
-        {/* ── Colonne droite : photo du dernier invité ── */}
-        <div className="el-hero-right" aria-hidden="true">
-          <div className="el-hero-img-wrap" ref={heroImgRef}>
-            <img
-              src={heroImage}
-              alt={latestEpisode.guest}
-              className="el-hero-img"
-              onError={e => {
-                const fallback = latestEpisode.image
-                if (fallback && !e.currentTarget.src.endsWith(fallback)) {
-                  e.currentTarget.src = fallback
-                }
-              }}
-            />
-          </div>
-          {/* Dégradé gauche pour la lisibilité du texte */}
-          <div className="el-hero-fade" />
-          {/* Légende discrète */}
-          <div className="el-hero-caption">
-            <span className="el-hero-caption-ep">Épisode {latestEpisode.number}</span>
-            <span className="el-hero-caption-guest">{latestEpisode.guest}</span>
-          </div>
-        </div>
-
       </section>
 
       {/* Transition douce vers la grille */}
@@ -523,13 +557,17 @@ export default function EcouterPage() {
               </button>
             </div>
           ) : (
-            <div className="ep2-grid">
-              {visibleEpisodes.map((episode, idx) => (
+            <div className="ep2-grid" ref={episodesGridRef}>
+              {visibleEpisodes.map(episode => (
                 <Link
                   key={episode.number}
                   href={`/episodes/${episode.slug}`}
-                  className="ep2-card"
-                  style={{ animationDelay: `${idx * 35}ms` }}
+                  className={`ep2-card ep2-card--reveal-pending${
+                    revealedEpisodeIds.current.has(episode.number)
+                      ? " ep2-card--revealed"
+                      : ""
+                  }`}
+                  data-episode-id={episode.number}
                   data-duo={episode.guest.includes("&") ? "true" : undefined}
                 >
                   <div className="ep2-card-img-wrap">

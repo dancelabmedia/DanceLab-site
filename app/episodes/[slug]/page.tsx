@@ -4,11 +4,13 @@ import { notFound } from "next/navigation";
 import { existsSync } from "node:fs";
 import path from "node:path";
 
+import EpisodeAnimations from "./EpisodeAnimations";
 import EpisodeShare from "../../../components/EpisodeShare";
 import { episodes, type Episode } from "../../../data/episodes";
 import { SITE_URL } from "../../../data/site";
 
-const HEADER_IMAGE_DIR = "/images/les-invites";
+const HEADER_IMAGE_DIR = "/images/les-invites-header";
+const HEADER_IMAGE_FALLBACK = "/images/les-invites-header/imagetest.png";
 
 function publicFileExists(publicPath: string) {
   return existsSync(path.join(process.cwd(), "public", publicPath.replace(/^\//, "")));
@@ -20,9 +22,10 @@ function getEpisodeCardImage(episode: Episode) {
 
 function getEpisodeHeaderImage(episode: Episode) {
   const imageName = episode.image.split("/").pop();
-  const headerImage = imageName ? `${HEADER_IMAGE_DIR}/${imageName}` : episode.image;
+  const headerImage = imageName ? `${HEADER_IMAGE_DIR}/${imageName}` : null;
 
-  return publicFileExists(headerImage) ? headerImage : getEpisodeCardImage(episode);
+  if (headerImage && publicFileExists(headerImage)) return headerImage;
+  return HEADER_IMAGE_FALLBACK;
 }
 
 function getEpisodeBySlug(slug: string) {
@@ -33,6 +36,15 @@ function formatEpisodeDate(date: string) {
   const [year, month, day] = date.split("-");
 
   return year && month && day ? `${day}.${month}.${year}` : date;
+}
+
+/** Extrait l'identifiant vidéo YouTube depuis toute forme d'URL YouTube. */
+function getYouTubeId(url: string | undefined): string | null {
+  if (!url) return null;
+  const match = url.match(
+    /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([a-zA-Z0-9_-]{11})/
+  );
+  return match?.[1] ?? null;
 }
 
 function splitContinuousDescription(text: string) {
@@ -380,6 +392,9 @@ export default async function EpisodePage({ params }: PageProps) {
   const descriptionParagraphs = getEpisodeDescriptionParagraphs(episode.description);
   const descriptionBlocks = getEpisodeDescriptionBlocks(descriptionParagraphs);
 
+  // Identifiant YouTube pour la miniature + le lien
+  const youtubeId = getYouTubeId(episode.youtube);
+
   // Points abordés — union des tags éditoriaux et des thèmes détectés
   const matchedThemes = getEpisodeThemes(episode);
   const themeLabels = [...matchedThemes].map((t) => THEME_DISPLAY[t]).filter(Boolean);
@@ -390,95 +405,113 @@ export default async function EpisodePage({ params }: PageProps) {
       <main className="ep-page">
 
         {/* ══════════════════════════════════════
-            HERO — éditorial, 72 vh
+            HERO — image plein cadre, texte gauche
         ══════════════════════════════════════ */}
         <section className="ep-hero">
-          <img
-            className="ep-hero-img"
-            src={headerImage}
-            alt={episode.guest}
-          />
-          <div className="ep-hero-shade" />
+          {/* Couche sticky : image + dégradé restent fixes pendant le scroll */}
+          <div className="ep-hero-sticky-bg">
+            <img
+              className="ep-hero-img"
+              src={headerImage}
+              alt={episode.guest}
+            />
+            {/* Dégradé horizontal : sombre à gauche → transparent à droite */}
+            <div className="ep-hero-shade" aria-hidden="true" />
+
+            {/* ── Lecteur YouTube révélé au scroll ── */}
+            {youtubeId ? (
+              <div className="ep-hero-youtube" id="ep-hero-youtube">
+                <a
+                  href={episode.youtube}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ep-youtube-link"
+                  aria-label={`Regarder « ${episode.title} » sur YouTube`}
+                >
+                  <div className="ep-youtube-thumb-wrap">
+                    <img
+                      src={`https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`}
+                      alt={episode.title}
+                      className="ep-youtube-thumb"
+                      loading="lazy"
+                    />
+                    {/* Bouton Play YouTube officiel */}
+                    <div className="ep-youtube-play-btn" aria-hidden="true">
+                      <svg viewBox="0 0 68 48" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                          d="M66.52 7.74a8.23 8.23 0 0 0-5.8-5.84C55.68 0 34 0 34 0S12.32 0 7.28 1.9a8.23 8.23 0 0 0-5.8 5.84C0 12.8 0 24 0 24s0 11.2 1.48 16.26a8.23 8.23 0 0 0 5.8 5.84C12.32 48 34 48 34 48s21.68 0 26.72-1.9a8.23 8.23 0 0 0 5.8-5.84C68 35.2 68 24 68 24s0-11.2-1.48-16.26z"
+                          fill="rgba(0,0,0,.72)"
+                        />
+                        <path d="M27 34 45 24 27 14v20z" fill="#fff" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="ep-youtube-bar">
+                    <span className="ep-youtube-logo" aria-hidden="true">
+                      {/* Wordmark YouTube simplifié */}
+                      <svg viewBox="0 0 90 20" xmlns="http://www.w3.org/2000/svg" height="14">
+                        <text y="16" fontSize="18" fontFamily="inherit" fontWeight="700" fill="#fff">YouTube</text>
+                      </svg>
+                    </span>
+                    <span className="ep-youtube-cta">Regarder l&apos;épisode complet</span>
+                  </div>
+                </a>
+              </div>
+            ) : null}
+          </div>
+          {/* Texte posé sur la partie gauche assombrie — défile normalement */}
           <div className="ep-hero-content">
-            <Link className="ep-back" href="/">← Retour à l&apos;accueil</Link>
+            <Link className="ep-back" href="/ecouter">← Tous les épisodes</Link>
             <p className="ep-kicker">
-              Épisode {episode.number}{episode.category ? ` · ${episode.category}` : ""}
+              Épisode {episode.number}
             </p>
             <h1>{episode.title}</h1>
             <p className="ep-guest">
-              Avec {episode.guest}{episode.role ? `, ${episode.role}` : ""}
+              {episode.guest}
             </p>
             <div className="ep-meta">
-              <span>{episode.duration}</span>
-              <time dateTime={episode.publishedAt}>{formatEpisodeDate(episode.publishedAt)}</time>
-              {episode.tags[0] ? <span>{episode.tags[0]}</span> : null}
+              <span className="ep-meta-duration">
+                <svg className="ep-meta-icon" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="8" cy="8" r="6.5"/>
+                  <polyline points="8,4.5 8,8.5 10.5,10.5"/>
+                </svg>
+                {episode.duration}
+              </span>
+              <time className="ep-meta-date" dateTime={episode.publishedAt}>{formatEpisodeDate(episode.publishedAt)}</time>
+              {episode.tags[0] ? <span className="ep-meta-tag">{episode.tags[0]}</span> : null}
             </div>
             <div className="ep-actions">
-              {episode.spotifyEmbedUrl ? <a href={episode.spotifyEmbedUrl}>Spotify</a> : null}
-              {episode.apple ? <a href={episode.apple}>Apple Podcasts</a> : null}
-              {episode.youtube ? <a href={episode.youtube}>YouTube</a> : null}
-              {episode.deezer ? <a href={episode.deezer}>Deezer</a> : null}
-              {episode.link ? <a href={episode.link}>Tous les liens</a> : null}
+              {episode.spotify ? <a href={episode.spotify} target="_blank" rel="noopener noreferrer">Spotify</a> : null}
+              {episode.apple ? <a href={episode.apple} target="_blank" rel="noopener noreferrer">Apple Podcasts</a> : null}
+              {episode.youtube ? <a href={episode.youtube} target="_blank" rel="noopener noreferrer">YouTube</a> : null}
+              {episode.deezer ? <a href={episode.deezer} target="_blank" rel="noopener noreferrer">Deezer</a> : null}
+              {episode.link ? <a href={episode.link} target="_blank" rel="noopener noreferrer">Tous les liens</a> : null}
             </div>
           </div>
         </section>
 
-        {/* ══════════════════════════════════════
-            CORPS — grille 2 colonnes
-            Col gauche : 4 sections empilées
-            Col droite : sidebar sticky
-        ══════════════════════════════════════ */}
+        {/* ══════════════════════════════════════════════════════
+            CORPS — grille 3 cols
+            [col1 row1]   Citation
+            [col2 row1]   Description complète (article)
+            [col3 rows1+] Sidebar sticky
+            [col1-2 row2] Lecteur audio
+        ══════════════════════════════════════════════════════ */}
         <section className="ep-body">
-          <div className="ep-body-inner">
+          <div className="ep-body-grid">
 
-            {/* ────────────────────────────────────
-                COLONNE PRINCIPALE
-            ──────────────────────────────────── */}
-            <div className="ep-main">
-
-              {/* ── ROW 1 : Citation + intro ── */}
-              <div className="ep-intro-block">
-                {episode.quote ? (
-                  <blockquote className="ep-quote">
-                    <span className="ep-quote-mark" aria-hidden="true">"</span>
-                    {episode.quote}
-                  </blockquote>
-                ) : null}
-                <p className="ep-eyebrow">À propos de cet épisode</p>
-                {episode.excerpt ? (
-                  <p className="ep-intro-excerpt">{episode.excerpt}</p>
-                ) : null}
-              </div>
-
-              {/* ── ROW 2 : Points abordés — pills ── */}
-              {topicsList.length > 0 ? (
-                <div className="ep-pills-section">
-                  <p className="ep-pills-label">Points abordés</p>
-                  <div className="ep-pills">
-                    {topicsList.map((topic) => (
-                      <span key={topic} className="ep-pill">{topic}</span>
-                    ))}
-                  </div>
-                </div>
+            {/* ── [col1 row1] Citation ── */}
+            <div className="ep-col-quote" data-ep-reveal>
+              {episode.quote ? (
+                <blockquote className="ep-big-quote">
+                  <span className="ep-big-quote-mark" aria-hidden="true">"</span>
+                  {episode.quote}
+                </blockquote>
               ) : null}
+            </div>
 
-              {/* ── ROW 3 : Lecteur Spotify ── */}
-              {episode.spotifyEmbedUrl ? (
-                <div className="ep-player-block">
-                  <p className="ep-eyebrow">Écouter l&apos;épisode</p>
-                  <iframe
-                    title={`Lecteur Spotify — ${episode.title}`}
-                    src={episode.spotifyEmbedUrl}
-                    width="100%"
-                    height="152"
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                    className="ep-player-iframe"
-                  />
-                </div>
-              ) : null}
-
-              {/* ── ROW 4 : Article éditorial complet ── */}
+            {/* ── [col2 row1] Description complète ── */}
+            <div className="ep-col-description" data-ep-reveal>
               <article className="ep-article">
                 <div className="ep-description">
                   {descriptionBlocks.map((block, blockIndex) => {
@@ -486,46 +519,67 @@ export default async function EpisodePage({ params }: PageProps) {
                       return (
                         <ul
                           key={`${episode.slug}-description-${blockIndex}`}
-                          className="ep-desc-block ep-desc-list"
+                          className="ep-desc-list"
                         >
                           {block.items.map((item, itemIndex) => (
                             <li key={`${episode.slug}-description-${blockIndex}-${itemIndex}`}>
-                              <span className="ep-desc-list-marker">{item.slice(0, 1)}</span>
-                              <span>{renderInlineEditorialText(item.slice(1))}</span>
+                              {renderInlineEditorialText(item.slice(1))}
                             </li>
                           ))}
                         </ul>
                       );
                     }
 
-                    const blockClass = [
-                      "ep-desc-block",
-                      `ep-desc-${block.type}`,
-                      blockIndex === 0 ? "ep-desc-lead" : "",
-                      blockIndex === descriptionBlocks.length - 1 ? "ep-desc-closing" : "",
-                    ].filter(Boolean).join(" ");
+                    const isLead = blockIndex === 0;
+                    const isClosing = blockIndex === descriptionBlocks.length - 1;
 
                     if (block.type === "quote") {
                       return (
                         <blockquote
                           key={`${episode.slug}-description-${blockIndex}`}
-                          className={blockClass}
+                          className="ep-desc-quote"
                         >
                           {renderInlineEditorialText(block.text)}
                         </blockquote>
                       );
                     }
 
+                    if (block.type === "callout") {
+                      return (
+                        <p
+                          key={`${episode.slug}-description-${blockIndex}`}
+                          className="ep-desc-callout"
+                        >
+                          {renderInlineEditorialText(block.text)}
+                        </p>
+                      );
+                    }
+
                     return (
                       <p
                         key={`${episode.slug}-description-${blockIndex}`}
-                        className={blockClass}
+                        className={[
+                          "ep-desc-p",
+                          isLead ? "ep-desc-lead" : "",
+                          isClosing ? "ep-desc-closing" : "",
+                        ].filter(Boolean).join(" ")}
                       >
                         {renderInlineEditorialText(block.text)}
                       </p>
                     );
                   })}
                 </div>
+
+                {topicsList.length > 0 ? (
+                  <div className="ep-topics-block">
+                    <p className="ep-topics-label">Points abordés</p>
+                    <div className="ep-topics-pills">
+                      {topicsList.map((topic) => (
+                        <span key={topic} className="ep-topic-pill">{topic}</span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
 
                 {episode.chapters.length > 0 ? (
                   <div className="ep-chapters">
@@ -541,20 +595,15 @@ export default async function EpisodePage({ params }: PageProps) {
                   </div>
                 ) : null}
               </article>
-
             </div>
 
-            {/* ────────────────────────────────────
-                SIDEBAR STICKY
-            ──────────────────────────────────── */}
-            <aside className="ep-sidebar-col">
+            {/* ── [col3 rows1+] Sidebar sticky ── */}
+            <aside className="ep-col-sidebar" data-ep-reveal>
               <div className="ep-sidebar-card">
-
                 <div className="ep-sidebar-section">
                   <h3 className="ep-sidebar-h3">Partager</h3>
                   <EpisodeShare title={episode.title} url={episodeUrl} />
                 </div>
-
                 {similarEpisodes.length > 0 ? (
                   <div className="ep-sidebar-section">
                     <h3 className="ep-sidebar-h3">Épisodes similaires</h3>
@@ -572,19 +621,34 @@ export default async function EpisodePage({ params }: PageProps) {
                     </div>
                   </div>
                 ) : null}
-
               </div>
             </aside>
+
+            {/* ── [col1-2 row2] Lecteur audio ── */}
+            {episode.spotifyEmbedUrl ? (
+              <div className="ep-col-player" data-ep-reveal>
+                <iframe
+                  title={`Lecteur Spotify — ${episode.title}`}
+                  src={episode.spotifyEmbedUrl}
+                  width="100%"
+                  height="152"
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                  loading="lazy"
+                  className="ep-player-iframe"
+                />
+              </div>
+            ) : null}
 
           </div>
         </section>
 
+        <EpisodeAnimations />
       </main>
 
 
       <style>{`
         /* ══════════════════════════════════════
-           PAGE EPISODE — design premium
+           PAGE ÉPISODE — template magazine
         ══════════════════════════════════════ */
 
         .ep-page {
@@ -593,84 +657,295 @@ export default async function EpisodePage({ params }: PageProps) {
           min-height: 100vh;
         }
 
-        /* ─ Animation page body ─ */
-        @keyframes epFadeUp {
-          from { opacity: 0; transform: translateY(14px); }
-          to   { opacity: 1; transform: translateY(0);   }
-        }
-        .ep-body { animation: epFadeUp 550ms ease-out 60ms both; }
+        /* ══════════════════════════════════════
+           ANIMATIONS — hero (CSS pur, au chargement)
+        ══════════════════════════════════════ */
 
-        /* ─ Eyebrow label ─ */
+        /* Image : fondu + très léger dézoom */
+        @keyframes epImgReveal {
+          from { opacity: 0; transform: scale(1.04); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+
+        /* Dégradé : simple fondu */
+        @keyframes epFadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+
+        /* Texte : remontée légère + fondu */
+        @keyframes epTextUp {
+          from { opacity: 0; transform: translateY(18px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Application sur les éléments du hero */
+        .ep-hero-img   { animation: epImgReveal 1100ms cubic-bezier(.25,.46,.45,.94) both; }
+        .ep-hero-shade { animation: epFadeIn     650ms ease                           both; }
+
+        /* Cascade textuelle — délais progressifs */
+        .ep-back            { animation: epTextUp 580ms ease 200ms both; }
+        .ep-kicker          { animation: epTextUp 580ms ease 330ms both; }
+        .ep-hero-content h1 { animation: epTextUp 600ms ease 450ms both; }
+        .ep-guest           { animation: epTextUp 580ms ease 570ms both; }
+        .ep-meta            { animation: epTextUp 560ms ease 670ms both; }
+        .ep-actions         { animation: epTextUp 560ms ease 770ms both; }
+
+        /* ══════════════════════════════════════
+           ANIMATIONS — scroll reveal (via JS IntersectionObserver)
+        ══════════════════════════════════════ */
+
+        /* État initial caché */
+        [data-ep-reveal] {
+          opacity: 0;
+          transform: translateY(22px);
+          transition:
+            opacity  600ms cubic-bezier(.25,.46,.45,.94),
+            transform 600ms cubic-bezier(.25,.46,.45,.94);
+        }
+
+        /* État révélé */
+        [data-ep-reveal].ep-revealed {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        /* Délais entre les colonnes du corps */
+        .ep-col-quote[data-ep-reveal]       { transition-delay:   0ms; }
+        .ep-col-description[data-ep-reveal] { transition-delay:  90ms; }
+        .ep-col-sidebar[data-ep-reveal]     { transition-delay: 180ms; }
+        .ep-col-player[data-ep-reveal]      { transition-delay:   0ms; }
+
+        /* ══════════════════════════════════════
+           ACCESSIBILITÉ — prefers-reduced-motion
+        ══════════════════════════════════════ */
+        @media (prefers-reduced-motion: reduce) {
+          .ep-hero-img,
+          .ep-hero-shade,
+          .ep-back,
+          .ep-kicker,
+          .ep-hero-content h1,
+          .ep-guest,
+          .ep-meta,
+          .ep-actions {
+            animation: none !important;
+          }
+          [data-ep-reveal] {
+            opacity: 1 !important;
+            transform: none !important;
+            transition: none !important;
+          }
+          /* Encart YouTube : toujours visible, pas d'animation */
+          .ep-hero-youtube {
+            opacity: 1 !important;
+            transform: translateY(-50%) !important;
+            pointer-events: auto !important;
+          }
+        }
+
+        /* Mobile : amplitudes réduites */
+        @media (max-width: 620px) {
+          @keyframes epTextUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+          }
+          [data-ep-reveal] { transform: translateY(14px); }
+        }
+
+        /* ─ Eyebrow ─ */
         .ep-eyebrow {
           font-family: var(--font-body);
-          font-size: 11px;
+          font-size: 10.5px;
           font-weight: 700;
           letter-spacing: .22em;
           text-transform: uppercase;
           color: var(--color-primary);
-          margin: 0 0 20px;
+          margin: 0 0 16px;
         }
-        .ep-eyebrow--center { text-align: center; }
 
         /* ─ Section h2 ─ */
         .ep-section-h2 {
           font-family: var(--font-display);
-          font-size: clamp(1.5rem, 2.2vw, 2rem);
+          font-size: clamp(1.4rem, 2vw, 1.8rem);
           font-weight: 600;
-          line-height: 1.12;
+          line-height: 1.15;
           color: #111;
-          margin: 0 0 28px;
+          margin: 0 0 22px;
         }
 
         /* ══════════════════════════════════════
-           HERO
+           HERO — image plein cadre, texte gauche
         ══════════════════════════════════════ */
         .ep-hero {
+          /* 200vh : 100vh pour le texte + 100vh de "parking" pendant le scroll */
           position: relative;
-          min-height: 73vh;
-          display: flex;
-          align-items: flex-end;
+          height: 200vh;
+        }
+
+        /* Couche sticky : reste visuelle pendant tout le scroll du hero */
+        .ep-hero-sticky-bg {
+          position: sticky;
+          top: 0;
+          height: 100vh;
           overflow: hidden;
           isolation: isolate;
         }
 
+        /* Photo plein cadre — sujet ancré à droite, image non déformée */
         .ep-hero-img {
           position: absolute;
           inset: 0;
           width: 100%;
           height: 100%;
           object-fit: cover;
-          /* portrait décalé vers la droite — zone de texte libre à gauche */
-          object-position: 72% center;
-          z-index: -2;
+          object-position: right center;
+          z-index: 0;
         }
 
+        /* Dégradé naturel : très sombre à gauche, invisible à droite */
         .ep-hero-shade {
           position: absolute;
           inset: 0;
-          z-index: -1;
+          z-index: 1;
           background:
-            /* dégradé horizontal : zone sombre à gauche, face préservée à droite */
-            linear-gradient(90deg,
-              rgba(0,0,0,.92) 0%,
-              rgba(0,0,0,.80) 24%,
-              rgba(0,0,0,.50) 42%,
-              rgba(0,0,0,.14) 58%,
-              rgba(0,0,0,.00) 70%
+            linear-gradient(
+              to right,
+              rgba(8,8,8,.97)   0%,
+              rgba(8,8,8,.92)  18%,
+              rgba(8,8,8,.78)  32%,
+              rgba(8,8,8,.46)  46%,
+              rgba(8,8,8,.14)  60%,
+              rgba(8,8,8,.00)  72%
             ),
-            /* dégradé bas → haut pour protéger les métadonnées */
-            linear-gradient(0deg,
-              rgba(0,0,0,.70) 0%,
-              rgba(0,0,0,.18) 36%,
-              transparent 58%
+            /* Légère protection en bas pour la lisibilité des boutons */
+            linear-gradient(
+              to top,
+              rgba(0,0,0,.40) 0%,
+              transparent     28%
             );
         }
 
+        /* ── Encart YouTube révélé au scroll ── */
+        .ep-hero-youtube {
+          position: absolute;
+          top: 50%;
+          /* Aligné sur le bord gauche du conteneur 1160px (même que le texte du hero) */
+          left: max(24px, calc(50% - 556px));
+          width: min(480px, 44%);
+          z-index: 4;
+          pointer-events: none; /* activé par JS quand visible */
+          /* État initial : caché, légèrement en dessous du centre vertical */
+          opacity: 0;
+          transform: translateY(calc(-50% + 60px));
+        }
+        .ep-hero-youtube.ep-yt-active {
+          pointer-events: auto;
+        }
+
+        .ep-youtube-link {
+          display: block;
+          border-radius: 12px;
+          overflow: hidden;
+          text-decoration: none;
+          box-shadow: 0 20px 60px rgba(0,0,0,.60), 0 4px 16px rgba(0,0,0,.30);
+          transition: transform 240ms cubic-bezier(.25,.46,.45,.94),
+                      box-shadow 240ms cubic-bezier(.25,.46,.45,.94);
+        }
+        .ep-youtube-link:hover {
+          transform: translateY(-4px) scale(1.01);
+          box-shadow: 0 32px 80px rgba(0,0,0,.70), 0 6px 24px rgba(0,0,0,.35);
+        }
+
+        /* Miniature 16:9 */
+        .ep-youtube-thumb-wrap {
+          position: relative;
+          aspect-ratio: 16 / 9;
+          overflow: hidden;
+          background: #000;
+        }
+        .ep-youtube-thumb {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+          transition: transform 400ms cubic-bezier(.25,.46,.45,.94);
+        }
+        .ep-youtube-link:hover .ep-youtube-thumb {
+          transform: scale(1.04);
+        }
+
+        /* Bouton Play */
+        .ep-youtube-play-btn {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .ep-youtube-play-btn svg {
+          width: 72px;
+          height: 51px;
+          filter: drop-shadow(0 3px 12px rgba(0,0,0,.50));
+          transition: transform 200ms ease, filter 200ms ease;
+        }
+        .ep-youtube-link:hover .ep-youtube-play-btn svg {
+          transform: scale(1.12);
+          filter: drop-shadow(0 4px 16px rgba(0,0,0,.65));
+        }
+
+        /* Barre inférieure — label editorial */
+        .ep-youtube-bar {
+          background: rgba(8,8,8,.88);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          padding: 11px 18px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+        }
+        .ep-youtube-logo svg text {
+          fill: #fff;
+        }
+        .ep-youtube-cta {
+          color: rgba(255,255,255,.70);
+          font-size: 0.76rem;
+          font-weight: 500;
+          letter-spacing: .03em;
+          text-transform: uppercase;
+          transition: color 200ms ease;
+        }
+        .ep-youtube-link:hover .ep-youtube-cta {
+          color: rgba(255,255,255,.95);
+        }
+
+        /* Conteneur texte — se superpose à la sticky bg, défile normalement */
         .ep-hero-content {
-          width: min(1120px, calc(100% - 48px));
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 100vh;
+          z-index: 2;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
+          width: 100%;
+          max-width: 1160px;
           margin: 0 auto;
-          padding: 64px 0 56px;
+          padding: 64px 24px 56px;
           color: white;
+          box-sizing: border-box;
+        }
+
+        /* Limite la largeur de chaque élément textuel */
+        .ep-back,
+        .ep-kicker,
+        .ep-hero-content h1,
+        .ep-guest,
+        .ep-meta,
+        .ep-actions {
+          max-width: min(540px, 46%);
         }
 
         .ep-back {
@@ -678,7 +953,7 @@ export default async function EpisodePage({ params }: PageProps) {
           align-items: center;
           gap: 6px;
           margin-bottom: 28px;
-          color: rgba(255,255,255,.80);
+          color: rgba(255,255,255,.62);
           text-decoration: none;
           font-size: 0.82rem;
           font-weight: 600;
@@ -689,52 +964,48 @@ export default async function EpisodePage({ params }: PageProps) {
 
         .ep-kicker {
           font-family: var(--font-body);
-          font-size: 0.72rem;
+          font-size: 0.71rem;
           font-weight: 700;
           text-transform: uppercase;
-          letter-spacing: .14em;
+          letter-spacing: .15em;
           color: var(--color-primary-light);
-          margin: 0 0 14px;
+          margin: 0 0 12px;
         }
 
         .ep-hero-content h1 {
-          /* largeur max ~52% — le titre ne chevauche pas le portrait */
-          max-width: clamp(320px, 52%, 620px);
-          margin: 0 0 16px;
+          margin: 0 0 14px;
           font-family: var(--font-display);
-          font-size: clamp(2.6rem, 4.8vw, 5.4rem);
+          font-size: clamp(2.2rem, 3.8vw, 4.8rem);
           font-weight: 600;
-          line-height: 1.0;
+          line-height: 1.02;
           letter-spacing: -0.02em;
           text-wrap: balance;
           color: #fff;
         }
 
         .ep-guest {
-          max-width: clamp(280px, 46%, 540px);
-          font-size: 1.05rem;
-          line-height: 1.65;
-          color: rgba(255,255,255,.82);
-          margin: 0 0 20px;
+          font-size: 1.02rem;
+          line-height: 1.6;
+          color: rgba(255,255,255,.75);
+          margin: 0 0 18px;
         }
 
         .ep-meta,
         .ep-actions {
           display: flex;
           flex-wrap: wrap;
-          gap: 10px;
-          margin-top: 18px;
+          gap: 8px;
+          margin-top: 16px;
         }
 
-        .ep-meta span,
-        .ep-meta time,
+        /* Boutons d'écoute — pill conservé */
         .ep-actions a {
-          border: 1px solid rgba(255,255,255,.38);
+          border: 1px solid rgba(255,255,255,.28);
           border-radius: 999px;
-          padding: 8px 14px;
-          color: rgba(255,255,255,.90);
+          padding: 7px 14px;
+          color: rgba(255,255,255,.88);
           text-decoration: none;
-          font-size: 0.78rem;
+          font-size: 0.77rem;
           font-weight: 600;
           letter-spacing: .03em;
           transition: border-color 200ms, background 200ms, color 200ms;
@@ -745,322 +1016,140 @@ export default async function EpisodePage({ params }: PageProps) {
           color: #fff;
         }
 
-        /* ══════════════════════════════════════
-           CORPS — 2 colonnes
-        ══════════════════════════════════════ */
-        .ep-body {
-          background: var(--color-background);
-          padding: 64px 0 88px;
+        /* Durée + date — style épuré, sans encart */
+        .ep-meta-duration,
+        .ep-meta-date {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          color: rgba(255,255,255,.68);
+          font-size: 0.80rem;
+          font-weight: 500;
+          letter-spacing: .01em;
         }
 
-        .ep-body-inner {
+        /* Icône horloge SVG */
+        .ep-meta-icon {
+          width: 13px;
+          height: 13px;
+          flex-shrink: 0;
+          opacity: .90;
+        }
+
+        /* Séparateur · entre durée et date */
+        .ep-meta-duration + .ep-meta-date::before {
+          content: '·';
+          margin-right: 3px;
+          opacity: .40;
+        }
+
+        /* Tag éventuel — pill conservé */
+        .ep-meta-tag {
+          border: 1px solid rgba(255,255,255,.28);
+          border-radius: 999px;
+          padding: 7px 14px;
+          color: rgba(255,255,255,.88);
+          font-size: 0.77rem;
+          font-weight: 600;
+          letter-spacing: .03em;
+        }
+
+        /* ══════════════════════════════════════
+           CORPS — grille principale
+        ══════════════════════════════════════ */
+        .ep-body {
+          position: relative;
+          z-index: 1; /* glisse par-dessus l'image sticky du hero */
+          background: var(--color-background);
+          padding: 56px 0 80px;
+        }
+
+        .ep-body-grid {
           width: min(1160px, calc(100% - 48px));
           margin: 0 auto;
           display: grid;
-          grid-template-columns: minmax(0, 1fr) 300px;
-          gap: 0 52px;
+          /* col1: citation étroite | col2: description article | col3: sidebar */
+          grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.6fr) 276px;
+          grid-template-rows: auto auto;
+          column-gap: 48px;
+          row-gap: 0;
           align-items: start;
         }
 
-        /* ─ Colonne principale — 4 sections empilées ─ */
-        .ep-main {
-          min-width: 0;
-          display: flex;
-          flex-direction: column;
-          gap: 48px;
+        /* ── [col1 row1] Citation ── */
+        .ep-col-quote {
+          grid-column: 1;
+          grid-row: 1;
+          padding-top: 4px;
         }
 
-        /* ── ROW 1 : Intro block ── */
-        .ep-intro-block {
-          display: flex;
-          flex-direction: column;
-          gap: 20px;
-        }
-
-        /* Citation dans l'intro */
-        .ep-quote {
-          padding: 4px 0 4px 20px;
+        .ep-big-quote {
+          /* Hook éditorial — mis en valeur comme un mini-titre de magazine */
+          padding: 0 0 28px 20px;
           border-left: 2px solid var(--color-primary-light);
           font-family: var(--font-display);
-          font-size: clamp(1.1rem, 1.5vw, 1.28rem);
-          font-style: italic;
-          font-weight: 500;
-          line-height: 1.54;
-          color: var(--color-primary-dark);
+          font-size: clamp(1.22rem, 1.65vw, 1.52rem);
+          font-style: normal;
+          font-weight: 700;
+          line-height: 1.46;
+          color: #111;
           margin: 0;
+          letter-spacing: -0.01em;
         }
 
-        .ep-quote-mark {
+        .ep-big-quote-mark {
           font-family: Georgia, serif;
-          font-size: 1.3em;
+          font-size: 1.6em;
           line-height: 0;
           color: var(--color-primary-light);
           font-style: normal;
-          vertical-align: -0.18em;
+          font-weight: 400;
+          vertical-align: -0.26em;
           user-select: none;
-          margin-right: 2px;
+          margin-right: 1px;
+          opacity: 0.7;
         }
 
-        /* Extrait court sous l'eyebrow */
-        .ep-intro-excerpt {
-          font-size: clamp(1rem, 1.15vw, 1.08rem);
-          line-height: 1.78;
-          color: #333;
-          margin: 0;
-          max-width: 64ch;
-        }
-
-        /* ── ROW 2 : Pills / tags ── */
-        .ep-pills-section {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          padding-top: 4px;
-          border-top: 1px solid rgba(0,0,0,.07);
-        }
-
-        .ep-pills-label {
-          font-family: var(--font-body);
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: .22em;
-          text-transform: uppercase;
-          color: var(--color-primary);
-          margin: 0;
-        }
-
-        .ep-pills {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-        }
-
-        .ep-pill {
-          display: inline-flex;
-          align-items: center;
-          padding: 5px 14px;
-          border-radius: 999px;
-          border: 1px solid rgba(91,115,119,.22);
-          background: rgba(193,208,223,.14);
-          color: var(--color-primary-dark);
-          font-size: 0.82rem;
-          font-weight: 500;
-          line-height: 1.2;
-          white-space: nowrap;
-          transition: background 180ms, border-color 180ms;
-        }
-        .ep-pill:hover {
-          background: rgba(193,208,223,.32);
-          border-color: rgba(91,115,119,.40);
-        }
-
-        /* ── ROW 3 : Lecteur Spotify ── */
-        .ep-player-block {
-          padding-top: 4px;
-          border-top: 1px solid rgba(0,0,0,.07);
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-        }
-
-        .ep-player-iframe {
-          display: block;
-          border: 0;
-          border-radius: 12px;
-          box-shadow: 0 4px 20px rgba(0,0,0,.08);
-          width: 100%;
-        }
-
-        /* ── ROW 4 : Article éditorial ── */
-        .ep-article {
-          display: flex;
-          flex-direction: column;
-          gap: 0;
-          padding-top: 4px;
-          border-top: 1px solid rgba(0,0,0,.07);
-        }
-
-        /* ─ Description magazine ─ */
-        .ep-description {
-          display: flex;
-          flex-direction: column;
-          gap: 1.6rem;
-        }
-
-        .ep-desc-block {
-          position: relative;
-          margin: 0;
-          line-height: 1.85;
-          font-size: clamp(1rem, 1.05vw, 1.06rem);
-          color: #1e1e1e;
-        }
-
-        .ep-desc-lead {
-          font-family: var(--font-display);
-          font-size: clamp(1.14rem, 1.38vw, 1.24rem) !important;
-          font-weight: 600;
-          line-height: 1.58 !important;
-          color: #111;
-          padding-bottom: 4px;
-          border-bottom: 1px solid rgba(0,0,0,.07);
-        }
-
-        .ep-desc-emphasis {
-          font-weight: 700;
-          color: inherit;
-        }
-
-        .ep-desc-inline-quote {
-          font-style: italic;
-          font-weight: 600;
-          color: inherit;
-        }
-
-        /* Citation dans le texte — discrète, pas de fond */
-        .ep-desc-quote {
-          padding: 6px 0 6px 20px;
-          border-left: 2px solid var(--color-primary-light);
-          color: var(--color-primary-dark);
-          font-family: var(--font-display);
-          font-size: clamp(1.08rem, 1.4vw, 1.26rem);
-          font-style: italic;
-          font-weight: 500;
-          line-height: 1.52;
-          margin: 4px 0;
-          background: none;
-        }
-
-        /* Callout — trait gauche discret, pas de fond coloré */
-        .ep-desc-callout {
-          padding: 2px 0 2px 20px;
-          border-left: 2px solid var(--color-primary-light);
-          background: none;
-          color: var(--color-primary-dark);
-          font-size: 1.04rem;
-          font-weight: 600;
-          line-height: 1.68;
-        }
-
-        /* Liste éditoriale — fond blanc, marqueur bleu discret */
-        .ep-desc-list {
-          display: flex;
-          flex-direction: column;
-          gap: 0;
-          list-style: none;
-          padding: 0;
-          margin: 4px 0;
-          border-left: 2px solid var(--color-primary-light);
-          padding-left: 20px;
-        }
-
-        .ep-desc-list li {
-          display: grid;
-          grid-template-columns: 18px 1fr;
-          gap: 8px;
-          align-items: baseline;
-          font-size: 1.01rem;
-          line-height: 1.72;
-          color: #1e1e1e;
-          padding: 3px 0;
-        }
-
-        .ep-desc-list-marker {
-          color: var(--color-primary-light);
-          font-weight: 700;
-          font-size: 1.05em;
-        }
-
-        .ep-desc-closing {
-          font-weight: 600;
-          color: inherit;
-        }
-
-        .ep-desc-list + .ep-desc-paragraph,
-        .ep-desc-callout + .ep-desc-paragraph,
-        .ep-desc-quote + .ep-desc-paragraph {
-          padding-top: 0.3rem;
-        }
-
-        /* ─ Chapitres ─ */
-        .ep-chapters {
-          padding-top: 32px;
-          border-top: 1px solid rgba(0,0,0,.08);
-        }
-
-        .ep-chapters-list {
-          display: grid;
-          gap: 0;
-          padding: 0;
-          list-style: none;
-        }
-
-        .ep-chapters-list li {
-          display: grid;
-          grid-template-columns: 72px 1fr;
-          gap: 16px;
-          padding: 16px 0;
-          border-top: 1px solid rgba(0,0,0,.08);
-          align-items: start;
-        }
-
-        .ep-chapters-list li span {
-          color: #755f3e;
-          font-size: 0.88rem;
-          font-weight: 700;
-          line-height: 1.4;
-          padding-top: 2px;
-        }
-
-        .ep-chapters-list li strong {
-          font-size: 0.98rem;
-          font-weight: 600;
-          line-height: 1.48;
-        }
-
-        /* ─ Col 3 : Sidebar ─ */
-        .ep-sidebar-col {
+        /* ── [col3 rows1+] Sidebar sticky ── */
+        .ep-col-sidebar {
+          grid-column: 3;
+          grid-row: 1 / -1;
           position: sticky;
-          top: calc(var(--nav-h, 64px) + 24px);
+          top: calc(var(--nav-h, 64px) + 20px);
           align-self: start;
         }
 
         .ep-sidebar-card {
           border: 1px solid rgba(0,0,0,.09);
-          border-radius: 14px;
+          border-radius: 13px;
           background: white;
-          box-shadow: 0 4px 28px rgba(0,0,0,.06);
+          box-shadow: 0 3px 22px rgba(0,0,0,.06);
           overflow: hidden;
         }
 
         .ep-sidebar-section {
-          padding: 20px 22px;
+          padding: 18px 20px;
           border-bottom: 1px solid rgba(0,0,0,.07);
         }
         .ep-sidebar-section:last-child { border-bottom: 0; }
 
         .ep-sidebar-h3 {
           font-family: var(--font-body);
-          font-size: 10px;
+          font-size: 9.5px;
           font-weight: 700;
           letter-spacing: .20em;
           text-transform: uppercase;
           color: var(--color-primary);
-          margin: 0 0 14px;
+          margin: 0 0 12px;
         }
 
-        /* Share buttons — gardés compatibles avec EpisodeShare */
-        .episode-share,
-        .ep-tags {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-        }
-        .episode-share { flex-wrap: nowrap; gap: 7px; position: relative; }
+        /* EpisodeShare component */
+        .episode-share { display: flex; flex-wrap: nowrap; gap: 7px; position: relative; }
 
         .episode-share-button {
           display: grid;
-          width: 40px; height: 40px;
-          flex: 0 0 40px;
+          width: 38px; height: 38px;
+          flex: 0 0 38px;
           place-items: center;
           border: 1px solid currentColor;
           border-radius: 50%;
@@ -1079,25 +1168,25 @@ export default async function EpisodePage({ params }: PageProps) {
         }
         .episode-share-button:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
         .episode-share-button svg {
-          width: 17px; height: 17px;
+          width: 16px; height: 16px;
           fill: none; stroke: currentColor;
           stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8;
         }
         .episode-share-menu {
           position: absolute; z-index: 10;
           top: calc(100% + 8px); right: 0;
-          width: 190px;
+          width: 188px;
           border: 1px solid rgba(0,0,0,.12);
           border-radius: 10px;
           background: #fff;
-          box-shadow: 0 12px 32px rgba(17,17,17,.14);
+          box-shadow: 0 10px 28px rgba(17,17,17,.13);
           overflow: hidden;
         }
         .episode-share-menu a,
         .episode-share-menu button {
           display: block; width: 100%;
           border: 0; border-bottom: 1px solid rgba(0,0,0,.07);
-          border-radius: 0; padding: 11px 14px;
+          border-radius: 0; padding: 10px 14px;
           background: transparent; color: inherit;
           font: inherit; text-align: left;
           text-decoration: none; cursor: pointer;
@@ -1105,41 +1194,30 @@ export default async function EpisodePage({ params }: PageProps) {
         .episode-share-menu a:last-child,
         .episode-share-menu button:last-child { border-bottom: 0; }
         .episode-share-menu a:hover,
-        .episode-share-menu button:hover { background: rgba(193,208,223,.25); }
+        .episode-share-menu button:hover { background: rgba(193,208,223,.22); }
 
-        /* Tags */
-        .ep-tags span {
-          border-radius: 999px;
-          background: rgba(193,208,223,.22);
-          padding: 6px 11px;
-          font-size: 0.80rem;
-          color: var(--color-primary-dark);
-          font-weight: 500;
-          line-height: 1.2;
-        }
-
-        /* Similar compacts dans la sidebar */
+        /* Épisodes similaires dans la sidebar */
         .ep-sidebar-similar {
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 8px;
         }
 
         .ep-sidebar-ep {
           display: flex;
-          gap: 11px;
+          gap: 10px;
           align-items: center;
           text-decoration: none;
           color: inherit;
-          padding: 8px;
-          border-radius: 8px;
+          padding: 7px;
+          border-radius: 7px;
           transition: background 200ms;
         }
-        .ep-sidebar-ep:hover { background: rgba(193,208,223,.15); }
+        .ep-sidebar-ep:hover { background: rgba(193,208,223,.14); }
 
         .ep-sidebar-ep-img {
-          width: 46px; height: 46px;
-          border-radius: 6px;
+          width: 42px; height: 42px;
+          border-radius: 5px;
           object-fit: cover;
           object-position: center top;
           flex-shrink: 0;
@@ -1153,7 +1231,7 @@ export default async function EpisodePage({ params }: PageProps) {
         }
 
         .ep-sidebar-ep-body span {
-          font-size: 0.68rem;
+          font-size: 0.65rem;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: .10em;
@@ -1161,9 +1239,9 @@ export default async function EpisodePage({ params }: PageProps) {
         }
 
         .ep-sidebar-ep-body strong {
-          font-size: 0.84rem;
+          font-size: 0.81rem;
           font-weight: 600;
-          line-height: 1.25;
+          line-height: 1.24;
           color: #111;
           display: -webkit-box;
           -webkit-line-clamp: 2;
@@ -1171,45 +1249,267 @@ export default async function EpisodePage({ params }: PageProps) {
           overflow: hidden;
         }
 
-        /* ── Épisodes similaires dans la sidebar — guest ── */
         .ep-sidebar-ep-guest {
-          font-size: 0.78rem;
+          font-size: 0.74rem;
           color: #888;
           margin: 2px 0 0;
           line-height: 1.3;
         }
 
+        /* ── [col2 row1] Description ── */
+        .ep-col-description {
+          grid-column: 2;
+          grid-row: 1;
+          padding-top: 4px;
+        }
+
+        /* Article */
+        .ep-article {
+          display: flex;
+          flex-direction: column;
+        }
+
+        /* ─ Description — style magazine sobre ─ */
+        .ep-description {
+          display: flex;
+          flex-direction: column;
+          gap: 0.85rem;
+        }
+
+        /* Paragraphe standard */
+        .ep-desc-p {
+          margin: 0;
+          font-size: clamp(0.97rem, 1.05vw, 1.03rem);
+          line-height: 1.76;
+          color: #1c1c1c;
+        }
+
+        /* Premier paragraphe — légèrement mis en valeur */
+        .ep-desc-lead {
+          font-size: clamp(1.06rem, 1.2vw, 1.14rem) !important;
+          font-weight: 500;
+          line-height: 1.68 !important;
+          color: #111;
+        }
+
+        /* Dernier paragraphe */
+        .ep-desc-closing {
+          color: #2a2a2a;
+        }
+
+        /* Citation — une seule fine ligne bleue */
+        .ep-desc-quote {
+          margin: 6px 0;
+          padding: 4px 0 4px 18px;
+          border-left: 2px solid var(--color-primary-light);
+          font-size: clamp(1.02rem, 1.18vw, 1.14rem);
+          font-style: italic;
+          font-weight: 500;
+          line-height: 1.62;
+          color: var(--color-primary-dark);
+        }
+
+        /* Callout — semi-gras discret, sans bordure */
+        .ep-desc-callout {
+          margin: 0;
+          font-size: clamp(0.97rem, 1.05vw, 1.03rem);
+          font-weight: 600;
+          line-height: 1.68;
+          color: #111;
+        }
+
+        /* Liste — propre, sans bordure décorative */
+        .ep-desc-list {
+          margin: 4px 0;
+          padding: 0 0 0 20px;
+          list-style: disc;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .ep-desc-list li {
+          font-size: clamp(0.96rem, 1.04vw, 1.02rem);
+          line-height: 1.72;
+          color: #1c1c1c;
+          padding-left: 4px;
+        }
+        .ep-desc-list li::marker {
+          color: var(--color-primary-light);
+        }
+
+        /* Inline emphasis */
+        .episode-description-emphasis {
+          font-weight: 700;
+          color: inherit;
+        }
+        .episode-description-inline-quote {
+          font-style: italic;
+          color: inherit;
+        }
+
+        /* Points abordés — inline sous la description */
+        .ep-topics-block {
+          margin-top: 32px;
+          padding-top: 24px;
+          border-top: 1px solid rgba(0,0,0,.07);
+        }
+
+        .ep-topics-label {
+          font-family: var(--font-body);
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: .22em;
+          text-transform: uppercase;
+          color: var(--color-primary);
+          margin: 0 0 12px;
+        }
+
+        .ep-topics-pills {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 7px;
+        }
+
+        .ep-topic-pill {
+          display: inline-flex;
+          align-items: center;
+          padding: 4px 12px;
+          border-radius: 999px;
+          border: 1px solid rgba(91,115,119,.20);
+          background: rgba(193,208,223,.12);
+          color: var(--color-primary-dark);
+          font-size: 0.80rem;
+          font-weight: 500;
+          white-space: nowrap;
+        }
+
+        /* Chapitres */
+        .ep-chapters {
+          margin-top: 36px;
+          padding-top: 32px;
+          border-top: 1px solid rgba(0,0,0,.07);
+        }
+
+        .ep-chapters-list {
+          display: grid;
+          gap: 0;
+          padding: 0;
+          list-style: none;
+        }
+
+        .ep-chapters-list li {
+          display: grid;
+          grid-template-columns: 72px 1fr;
+          gap: 14px;
+          padding: 14px 0;
+          border-top: 1px solid rgba(0,0,0,.06);
+          align-items: start;
+        }
+
+        .ep-chapters-list li span {
+          color: #755f3e;
+          font-size: 0.86rem;
+          font-weight: 700;
+          line-height: 1.4;
+          padding-top: 2px;
+        }
+
+        .ep-chapters-list li strong {
+          font-size: 0.96rem;
+          font-weight: 600;
+          line-height: 1.46;
+        }
+
+        /* ── [col1-2 row2] Lecteur audio ── */
+        .ep-col-player {
+          grid-column: 1 / 3;
+          grid-row: 2;
+          padding-top: 32px;
+          border-top: 1px solid rgba(0,0,0,.07);
+          margin-top: 32px;
+        }
+
+        .ep-player-iframe {
+          display: block;
+          border: 0;
+          border-radius: 12px;
+          box-shadow: 0 4px 20px rgba(0,0,0,.08);
+          width: 100%;
+        }
+
         /* ══════════════════════════════════════
            RESPONSIVE
         ══════════════════════════════════════ */
-        @media (max-width: 960px) {
-          .ep-body-inner {
-            grid-template-columns: minmax(0, 1fr) 272px;
-            gap: 0 36px;
+        @media (max-width: 1060px) {
+          .ep-body-grid {
+            grid-template-columns: minmax(0, 0.65fr) minmax(0, 1.5fr) 256px;
+            column-gap: 36px;
           }
         }
 
-        @media (max-width: 720px) {
-          .ep-hero-content h1 { font-size: clamp(2.4rem, 7vw, 3.8rem); }
-
-          .ep-body { padding: 48px 0 64px; }
-          .ep-body-inner {
-            grid-template-columns: 1fr;
-            gap: 48px;
+        @media (max-width: 860px) {
+          /* Tablette : citation disparaît dans la col, description occupe toute la largeur */
+          .ep-body-grid {
+            grid-template-columns: minmax(0, 1fr) 240px;
+            grid-template-rows: auto auto;
           }
-          .ep-sidebar-col { position: static; }
-          .ep-topics-grid { grid-template-columns: 1fr; }
-          .ep-desc-quote { font-size: 1.28rem; }
+          .ep-col-quote       { grid-column: 1; grid-row: 1; padding-bottom: 24px; border-bottom: 1px solid rgba(0,0,0,.07); margin-bottom: 24px; }
+          .ep-col-description { grid-column: 1; grid-row: 2; }
+          .ep-col-sidebar     { grid-column: 2; grid-row: 1 / -1; }
+          .ep-col-player      { grid-column: 1; grid-row: 3; }
         }
 
-        @media (max-width: 480px) {
-          .ep-hero { min-height: 80vh; }
-          .ep-hero-content h1 { font-size: 2.2rem; line-height: 1.02; }
-          .ep-guest { font-size: 0.95rem; }
-          .ep-body { padding: 40px 0 56px; }
-          .ep-main { gap: 28px; }
-          .ep-sidebar-card { border-radius: 10px; }
-          .ep-player-inline { padding: 18px 18px 22px; }
+        @media (max-width: 620px) {
+          /* Mobile : désactiver le parallax sticky */
+          .ep-hero {
+            height: auto;
+            min-height: 78vh;
+            display: flex;
+            align-items: flex-end;
+            overflow: hidden;
+          }
+          .ep-hero-sticky-bg {
+            position: absolute;
+            inset: 0;
+            height: auto;
+          }
+          .ep-hero-content {
+            position: relative;
+            height: auto;
+            min-height: 78vh;
+          }
+          /* Sur mobile le visage risque d'être coupé — on recentre légèrement */
+          .ep-hero-img { object-position: 70% center; }
+          .ep-hero-content { padding: 40px 24px 44px; }
+          /* Encart YouTube : pleine largeur sur mobile, ancré en bas à gauche */
+          .ep-hero-youtube {
+            top: auto;
+            bottom: 12%;
+            left: 16px;
+            width: calc(100% - 32px);
+            transform: translateY(0) !important;
+          }
+          .ep-back,
+          .ep-kicker,
+          .ep-hero-content h1,
+          .ep-guest,
+          .ep-meta,
+          .ep-actions { max-width: 100%; }
+          .ep-hero-content h1 { font-size: clamp(1.9rem, 7vw, 3rem); }
+          .ep-guest { font-size: 0.94rem; }
+
+          .ep-body { padding: 36px 0 56px; }
+          .ep-body-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+          }
+          /* Ordre mobile : citation → description → player → sidebar */
+          .ep-col-quote       { order: 1; padding-bottom: 24px; border-bottom: 1px solid rgba(0,0,0,.07); margin-bottom: 24px; }
+          .ep-col-description { order: 2; }
+          .ep-col-player      { order: 3; padding-top: 28px; margin-top: 28px; border-top: 1px solid rgba(0,0,0,.07); }
+          .ep-col-sidebar     { order: 4; margin-top: 36px; position: static; }
+          .ep-desc-quote      { font-size: 1.06rem; }
         }
       `}</style>
     </>

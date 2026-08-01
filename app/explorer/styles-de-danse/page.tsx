@@ -4,6 +4,7 @@ import StylesCarousel from "./StylesCarousel"
 import StylesExplorer from "./StylesExplorer"
 import StylesReveal from "./StylesReveal"
 import StylesStats from "./StylesStats"
+import StylesScrollGallery from "./StylesScrollGallery"
 import { danceStyles, upcomingStyles } from "./styles-data"
 
 export const metadata: Metadata = {
@@ -28,8 +29,11 @@ export default function StylesDeDansePage() {
         <div className="sty-hero-left">
           <span className="sty-kicker">Explorer · Styles de danse</span>
           <h1 className="sty-hero-title">
-            Comprendre les styles comme des cultures en mouvement.
+            Comprendre les styles de danse.
           </h1>
+          <p className="sty-hero-subtitle">
+            Leur histoire, leurs codes et les cultures qui les ont fait naître.
+          </p>
           <p className="sty-hero-desc">
             Hip-hop, contemporain, classique, afro, waacking, krump ou heels&nbsp;:
             chaque style porte une histoire, des codes, une énergie et une manière
@@ -138,6 +142,18 @@ export default function StylesDeDansePage() {
           </div>
         </div>
       </section>
+
+      {/* ════════════════════════════════════════
+          GALERIE SCROLL-DRIVEN — tous les styles
+      ════════════════════════════════════════ */}
+      <StylesScrollGallery
+        styles={[
+          ...danceStyles,
+          ...upcomingStyles.filter(
+            (u) => !danceStyles.some((s) => s.slug === u.slug)
+          ),
+        ].sort((a, b) => a.name.localeCompare(b.name, "fr", { sensitivity: "base" }))}
+      />
 
       {/* ════════════════════════════════════════
           MAGAZINE — trois cartes articles

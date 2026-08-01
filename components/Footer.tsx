@@ -76,8 +76,12 @@ export default function Footer() {
             </a>
 
             <p className="footer-tagline">
-              Le média qui ouvre les portes du monde de la danse - pour les professionnels,
-              les passionnés et les curieux.
+              <span className="footer-tagline-line">
+                Le média qui ouvre les portes du monde de la danse
+              </span>
+              <span className="footer-tagline-line">
+                pour les professionnels, les passionnés et les curieux.
+              </span>
             </p>
 
           </div>
@@ -125,7 +129,7 @@ export default function Footer() {
               <a href="/mentions-legales">Mentions légales</a>
             </li>
             <li>
-              <a href="/politique-confidentialite">Politique de confidentialité</a>
+              <a href="/politique-de-confidentialite">Politique de confidentialité</a>
             </li>
             <li>
               <a href="/gestion-cookies">Gestion des cookies</a>

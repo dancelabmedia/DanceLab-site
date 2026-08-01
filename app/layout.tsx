@@ -24,6 +24,7 @@ import './density-pass.css'
 import SiteLayout from '../components/SiteLayout'
 import DevLockButton from '../components/DevLockButton'
 import NewsletterModal from '../components/NewsletterModal'
+import ScrollReveal from './components/ScrollReveal'
 import { SITE_URL } from '../data/site'
 
 
@@ -83,6 +84,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </SiteLayout>
         <NewsletterModal />
         <DevLockButton />
+        <ScrollReveal />
       </body>
     </html>
   )

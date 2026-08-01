@@ -4,7 +4,10 @@ import React, { useState, useEffect, useRef } from 'react'
 import { featuredAgendaEvents, formatAgendaDateRange } from "./agenda/agenda-data"
 import type { AgendaEvent } from "./agenda/agenda-data"
 import { episodes } from "../data/episodes"
+import { magazineArticles } from "./decouvrir/articles-data"
 import Link from "next/link"
+import MediaReveal from "./components/MediaReveal"
+import LatestEpisodeSticky from "./components/LatestEpisodeSticky"
 
 /* =====================================================
    SVG ICONS (réutilisables)
@@ -194,6 +197,32 @@ function createGuestSelection(previousSlugs: string[]) {
   )
 }
 
+/**
+ * Image automatique du dernier épisode dans /images/les-invites.
+ * Convention : prénomNomSansAccentsSansEspaces + numéro.png
+ * ex. "Yasmine Habib" + 118 → "yasminehabib118.png"
+ * Fallback : episode.image si le fichier n'existe pas (géré côté client via onError).
+ */
+function getLatestEpisodeImage(episode: (typeof episodes)[number]): string {
+  const normalized = episode.guest
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')   // retire les accents
+    .replace(/[^a-z0-9]/g, '')          // retire espaces, tirets, apostrophes…
+  return `/images/les-invites/${normalized}${episode.number}.png`
+}
+
+/**
+ * Image éditoriale haute définition depuis /images/les-invites-header/.
+ * Utilise le même nom de fichier que episode.image, avec fallback sur les-invites.
+ */
+function getLatestEpisodeHeaderImage(episode: (typeof episodes)[number]): string {
+  const filename = episode.image.split('/').pop()?.replace(/\.png\.png$/i, '.png')
+  return filename && filename !== 'logo.png'
+    ? `/images/les-invites-header/${filename}`
+    : getLatestEpisodeImage(episode)
+}
+
 function getHomeGuestImage(episode: (typeof episodes)[number]) {
   const episodeImageName = episode.image
     .split('/')
@@ -274,6 +303,98 @@ export default function DanceLabPage() {
     startX: 0,
     scrollLeft: 0,
   })
+
+  // Défilement avec pré-téléportation pour la boucle infinie.
+  // Si la cible dépasse la zone réelle du set, on téléporte d'abord
+  // (imperceptible car même contenu), puis on smooth-scroll normalement.
+  function scrollCarousel(delta: number) {
+    const track = guestTrackRef.current
+    if (!track) return
+    const card = track.querySelector<HTMLElement>('.guest-card')
+    if (!card) return
+    const s = getComputedStyle(track)
+    const gap = parseFloat(s.columnGap || s.gap || '28')
+    const sw = guestSelection.length * card.offsetWidth + (guestSelection.length - 1) * gap
+    if (sw === 0) return
+    const target = track.scrollLeft + delta
+    if (delta < 0 && target < sw * 0.5) track.scrollLeft += sw
+    else if (delta > 0 && target > sw * 1.5) track.scrollLeft -= sw
+    track.scrollBy({ left: delta, behavior: 'smooth' })
+  }
+
+  // ── Carrousel infini ─────────────────────────────────────────────────────────
+  // Les cartes sont rendues en 3 exemplaires : [clones-gauche][réel][clones-droite].
+  // scrollLeft initial = setWidth (début du set réel).
+  // Le handler scroll détecte l'entrée dans une zone clone et téléporte
+  // silencieusement (même contenu → transition imperceptible).
+  // scrollCarousel() pré-téléporte AVANT le smooth-scroll pour éviter
+  // qu'une animation de flèche soit interrompue par le jump.
+  // ─────────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const track = guestTrackRef.current
+    if (!track || guestSelection.length === 0) return
+
+    function calcSetWidth(): number {
+      const card = track!.querySelector<HTMLElement>('.guest-card')
+      if (!card) return 0
+      const s = getComputedStyle(track!)
+      const gap = parseFloat(s.columnGap || s.gap || '28')
+      return guestSelection.length * card.offsetWidth + (guestSelection.length - 1) * gap
+    }
+
+    // Positionnement initial au set du milieu
+    const sw = calcSetWidth()
+    if (sw > 0) track.scrollLeft = sw
+
+    let jumping = false
+    function handleInfiniteScroll() {
+      if (jumping) return
+      const t = guestTrackRef.current
+      if (!t) return
+      const w = calcSetWidth()
+      if (w === 0) return
+      if (t.scrollLeft < w * 0.5) {
+        jumping = true
+        t.scrollLeft += w
+        guestDrag.current.scrollLeft += w   // garde la référence drag en phase
+        jumping = false
+      } else if (t.scrollLeft > w * 1.5) {
+        jumping = true
+        t.scrollLeft -= w
+        guestDrag.current.scrollLeft -= w
+        jumping = false
+      }
+    }
+
+    track.addEventListener('scroll', handleInfiniteScroll, { passive: true })
+    return () => track.removeEventListener('scroll', handleInfiniteScroll)
+  }, [guestSelection])
+
+  // Ajustement automatique de la taille des noms trop longs dans le carrousel.
+  // white-space: nowrap (CSS) empêche le saut de ligne ; ce hook réduit font-size
+  // par pas de 0.5 px jusqu'à ce que scrollWidth ≤ clientWidth.
+  // line-height fixe en CSS garantit que le bas de chaque nom reste aligné
+  // à la même hauteur quelle que soit la taille de police appliquée.
+  useEffect(() => {
+    function fitGuestNames() {
+      const nameEls = document.querySelectorAll<HTMLElement>(
+        '.home-interviews-grid .guest-name'
+      )
+      nameEls.forEach(el => {
+        el.style.fontSize = ''            // réinitialise à la valeur CSS (18 px)
+        if (el.scrollWidth <= el.clientWidth) return  // tient sur une ligne → rien à faire
+        let size = 18
+        while (el.scrollWidth > el.clientWidth && size > 13) {
+          size -= 0.5
+          el.style.fontSize = `${size}px`
+        }
+      })
+    }
+
+    fitGuestNames()
+    window.addEventListener('resize', fitGuestNames, { passive: true })
+    return () => window.removeEventListener('resize', fitGuestNames)
+  }, [guestSelection])
 
   useEffect(() => {
     let previousSlugs: string[] = []
@@ -564,318 +685,23 @@ export default function DanceLabPage() {
         </div>
       </div>
 
-      {/* ========================================
-          DERNIER ÉPISODE
-      ======================================== */}
-      <section className="section" id="ecouter">
-        <div className="container">
-          <div className="ep-grid">
-            {/* Image */}
-            <div className="ep-img-wrap fu episode-image-reveal">
-              <Link href={`/episodes/${latestEpisode.slug}`} className="latest-episode-link">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={latestEpisode.image}
-                  alt={`${latestEpisode.guest}, invité(e) de l'épisode ${latestEpisode.number}`}
-                  loading="lazy"
-                  className="latest-episode-img"
-                />
-                <div className="ep-badge">
-                  <span className="lbl">Ép.</span>
-                  <span className="num">{latestEpisode.number}</span>
-                </div>
-              </Link>
-            </div>
-
-            {/* Info */}
-            <div className="ep-info fu d1">
-              <span className="section-label">Dernier épisode</span>
-
-              <div className="ep-meta">
-                <span className="tag tag-accent">Nouveau</span>
-                <span className="ep-dur">
-                  <IconClock /> {latestEpisode.duration}
-                </span>
-              </div>
-
-              <Link
-                href={`/episodes/${latestEpisode.slug}`}
-                className="latest-episode-title-link"
-              >
-                <h2 className="ep-title">{latestEpisode.title}</h2>
-              </Link>
-
-              <p className="ep-guest">
-                Avec <strong>{latestEpisode.guest}</strong>
-              </p>
-
-              <p className="ep-desc">{latestEpisode.excerpt}</p>
-
-              {/* Plateformes */}
-              <div className="platforms">
-                <a
-                  href={latestEpisode.spotify}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="plt"
-                >
-                  <img src="/icons/spotify.svg" alt="Spotify" />
-                </a>
-
-                <a
-                  href={latestEpisode.apple}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="plt"
-                >
-                  <img src="/icons/apple-podcasts.svg" alt="Apple Podcasts" />
-                </a>
-
-                <a
-                  href={latestEpisode.youtube}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="plt"
-                >
-                  <img src="/icons/youtube.svg" alt="YouTube" />
-                </a>
-
-                <a
-                  href={latestEpisode.deezer}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="plt"
-                >
-                  <img src="/icons/deezer.svg" alt="Deezer" />
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================
-          INVITÉS
-      ======================================== */}
-      <section className="section" id="interviews">
-        <div className="container">
-          <div className="section-header">
-            <div className="sh-left">
-              <span className="section-label">Interviews</span>
-              <h2 className="section-title">Les invités</h2>
-              <p className="section-sub">Chorégraphes, danseurs, pédagogues, entrepreneurs, juristes, professionnels de santé : des voix qui façonnent la danse d&apos;aujourd&apos;hui et de demain.</p>
-            </div>
-            <a href="/ecouter" className="see-all">Tous les épisodes <IconArrow /></a>
-          </div>
-          <div
-            className="guests-grid"
-            ref={guestTrackRef}
-            onPointerDown={startGuestDrag}
-            onPointerMove={moveGuestDrag}
-            onPointerUp={endGuestDrag}
-            onPointerCancel={endGuestDrag}
-            onClickCapture={stopGuestClickAfterDrag}
-          >
-            {guestSelection.map((episode, index) => {
-              const delay = GUEST_CARD_DELAYS[index] ?? ''
-              const guestMeta =
-                episode.role || `Épisode ${episode.number} · ${episode.duration}`
-              const guestImage = getHomeGuestImage(episode)
-
-              return (
-                <Link
-                  href={`/episodes/${episode.slug}`}
-                  key={episode.slug}
-                  className={`guest-card fu${delay ? ' ' + delay : ''}`}
-                >
-                  <div className="guest-img-wrap">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={guestImage}
-                      alt={`${episode.guest}, invité(e) de l'épisode ${episode.number}`}
-                      loading="lazy"
-                      onError={(event) => {
-                        if (event.currentTarget.dataset.fallbackApplied) {
-                          return
-                        }
-
-                        event.currentTarget.dataset.fallbackApplied = 'true'
-                        event.currentTarget.src = episode.image
-                      }}
-                    />
-                    <div className="guest-overlay">
-                      <p className="guest-quote">
-                        &ldquo;{episode.quote}&rdquo;
-                      </p>
-                    </div>
-                  </div>
-                  <h3 className="guest-name">{episode.guest}</h3>
-                  <p className="guest-role">{guestMeta}</p>
-                </Link>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================
-          MAGAZINE
-      ======================================== */}
-      <section className="section section--gray" id="magazine">
-        <div className="container">
-          <div className="section-header">
-            <div className="sh-left">
-              <span className="section-label">Magazine</span>
-              <h2 className="section-title">Découvrir la danse</h2>
-              <p className="section-sub">Culture, histoire et tendances</p>
-            </div>
-            <a href="/decouvrir" className="see-all">Tous les articles <IconArrow /></a>
-          </div>
-
-          {/* Grille photo principale */}
-            <div className="mag-main fu">
-            <a href="/decouvrir/articles/pourquoi-le-breakdance-est-devenu-olympique" className="art-card art-card-big">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/images/danydann.jpg" alt="Breakdance olympique — Dany Dann" loading="lazy" />
-              <span className="about-photo-credit" aria-hidden="true">Danseur : Dany Dann · © Valroff Laurene</span>
-              <div className="art-overlay">
-                <p className="art-cat">Décryptage</p>
-                <h3 className="art-title">
-                  Pourquoi le break est devenu une discipline olympique et ce que ça change pour la culture hip-hop ?
-                </h3>
-                <p className="art-meta">07.07.26 · 8 min de lecture</p>
-              </div>
-            </a>
-            <div className="mag-side">
-              <a href="/decouvrir/articles/comprendre-le-waacking-histoire-culture-influences" className="art-card art-card-sm">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/images/sofiastanic.jpg" alt="Waacking — Sofia Stanić" loading="lazy" />
-                <span className="about-photo-credit" aria-hidden="true">Danseuse : Sofia Stanić · © Anna Jot</span>
-                <div className="art-overlay">
-                  <p className="art-cat">Culture</p>
-                  <h3 className="art-title">Comprendre le waacking</h3>
-                  <p className="art-meta">05.07.26 · 5 min</p>
-                </div>
-              </a>
-              <a href="/decouvrir/articles/festivals-danse-incontournables-ete" className="art-card art-card-sm">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/images/festivalavignon.jpg" alt="Festival d'Avignon" loading="lazy" />
-                <span className="about-photo-credit" aria-hidden="true">Festival d'Avignon · © Christophe Raynaud de Lage</span>
-                <div className="art-overlay">
-                  <p className="art-cat">Agenda</p>
-                  <h3 className="art-title">Les festivals de danse incontournables en France cet été</h3>
-                  <p className="art-meta">02.07.26 · 6 min</p>
-                </div>
-              </a>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ========================================
-          AGENDA
-      ======================================== */}
-      <section className="section" id="agenda">
-        <div className="container">
-          <div className="section-header">
-            <div className="sh-left">
-              <span className="section-label">Agenda culturel</span>
-              <h2 className="section-title">Sortir &amp; vivre la danse</h2>
-              <p className="section-sub">Spectacles, festivals, expositions, événements, ne manquez rien.</p>
-            </div>
-            <Link href="/agenda" className="see-all">Tout l&apos;agenda <IconArrow /></Link>
-          </div>
-          <div className="agenda-grid">
-            {agendaPreviewEvents.map((event, index) => {
-              const dateParts = getAgendaHomeDateParts(event)
-
-              return (
-                <Link
-                  href={`/sortir/${event.slug}`}
-                  key={event.slug}
-                  className="guest-card"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={event.image || "/images/Couverture.png"}
-                    alt={event.title}
-                    loading="lazy"
-                  />
-                  <div className="ag-body">
-                    <div className="ag-date">
-                      <span className="ag-day">{dateParts.day}</span>
-                      <div>
-                        <div className="ag-month">{dateParts.detail}</div>
-                        <div className="ag-year">{event.city}</div>
-                      </div>
-                    </div>
-                    <h3 className="ag-title">{event.title}</h3>
-                    <p className="ag-venue">
-                      <IconPin /> {event.venue} · {event.city}
-                    </p>
-                  </div>
-                  <div className="ag-foot">
-                    <span className="ag-type">{event.category}</span>
-                    <span className="ag-cta">Voir →</span>
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================
-          EXPLORER BAND
-      ======================================== */}
-      <section className="explore-band" id="explorer">
-        <div className="container">
-          <div className="section-header section-header--solo">
-            <div className="sh-left">
-              <span className="section-label">L&apos;univers Dance Lab</span>
-              <h2 className="section-title" style={{ color: '#fff' }}>Explorer la danse</h2>
-            </div>
-          </div>
-        </div>
-        <div className="explore-inner">
-          {EXPLORE_ITEMS.map(({ icon, label, sub, href, delay }) => (
-            <a key={label} href={href} className={`explore-item fu${delay ? ' ' + delay : ''}`}>
-              <div className="explore-icon"><PremiumSectionIcon name={icon} /></div>
-              <div className="explore-label">{label}</div>
-              <div className="explore-sub">{sub}</div>
-            </a>
-          ))}
-        </div>
-      </section>
-
-      {/* ========================================
-          RESSOURCES
-      ======================================== */}
-      <section className="section section--dark" id="ressources">
-        <div className="container">
-          <div className="section-header">
-            <div className="sh-left">
-              <span className="section-label">Pour les professionnels</span>
-              <h2 className="section-title" style={{ color: '#fff' }}>Ressources &amp; outils</h2>
-              <p className="section-sub" style={{ color: 'rgba(255,255,255,.48)' }}>
-                Tout ce dont un danseur a besoin pour gérer sa carrière, se protéger et évoluer.
-              </p>
-            </div>
-            <a href="/#ressources" className="see-all">Toutes les ressources <IconArrow /></a>
-          </div>
-          <div className="res-grid">
-            {RESOURCES.map(({ icon, title, desc, delay }) => (
-              <div key={title} className={`res-card fu${delay ? ' ' + delay : ''}`}>
-                <div className="res-icon"><PremiumSectionIcon name={icon} /></div>
-                <h3 className="res-title">{title}</h3>
-                <p className="res-desc">{desc}</p>
-                <a href="/#ressources" className="res-link">Accéder <IconArrow /></a>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* ════════════════════════════════════════════════════════════
+          EXPÉRIENCE IMMERSIVE — MediaReveal + LatestEpisodeSticky
+          Un seul wrapper, un seul dégradé, aucune coupure visible.
+          .mxp-wrapper fournit le fond continu ; les deux sections
+          internes sont transparentes et servent de fenêtres animées.
+      ════════════════════════════════════════════════════════════ */}
+      <div className="mxp-wrapper">
+        <MediaReveal
+          article={magazineArticles[0]}
+          event={featuredAgendaEvents[0] ?? null}
+        />
+        <LatestEpisodeSticky
+          episode={latestEpisode}
+          fallbackImage={getLatestEpisodeImage(latestEpisode)}
+          interviewPool={GUEST_POOL}
+          getGuestImage={getHomeGuestImage}
+        />
 
       {/* ========================================
           NEWSLETTER
@@ -890,7 +716,7 @@ export default function DanceLabPage() {
         </div>
 
         <div className="container">
-          <div className="nl-inner">
+          <div className="nl-inner fu">
             <span className="section-label">
               Newsletter hebdomadaire
             </span>
@@ -960,6 +786,9 @@ export default function DanceLabPage() {
           </div>
         </div>
       </section>
+
+        <div className="mxp-outro" aria-hidden="true" />
+      </div>
 
     </main>
   )

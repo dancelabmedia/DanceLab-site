@@ -1,0 +1,182 @@
+/* ===========================
+   GESTION DES COOKIES
+   Complète mentions-legales.css
+=========================== */
+
+
+/* ---- GRILLE CATÉGORIES ---- */
+.ck-category-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin: 2rem 0;
+}
+
+.ck-category-card {
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 22px 24px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.ck-category-card:hover {
+  border-color: var(--color-primary-light);
+  box-shadow: 0 4px 20px rgba(91, 115, 119, 0.08);
+}
+
+.ck-cat-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.ck-cat-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-dark);
+}
+
+.ck-category-card p {
+  font-size: 0.88rem !important;
+  line-height: 1.6 !important;
+  color: var(--color-text-muted) !important;
+  margin-bottom: 0 !important;
+}
+
+/* Badges */
+.ck-cat-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ck-badge--essential {
+  background: rgba(91, 115, 119, 0.12);
+  color: var(--color-primary-dark);
+  border: 1px solid rgba(91, 115, 119, 0.2);
+}
+
+.ck-badge--optional {
+  background: rgba(193, 208, 223, 0.25);
+  color: var(--color-primary);
+  border: 1px solid rgba(193, 208, 223, 0.5);
+}
+
+/* Bordures colorées par catégorie */
+.ck-cat--essential  { border-left: 3px solid var(--color-primary); }
+.ck-cat--analytics  { border-left: 3px solid var(--color-primary-light); }
+.ck-cat--functional { border-left: 3px solid #a8bfc3; }
+.ck-cat--third      { border-left: 3px solid var(--color-secondary); }
+
+
+/* ---- ÉTAPES CONSENTEMENT ---- */
+.ck-consent-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 2rem 0;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.ck-consent-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-background);
+  transition: background 0.18s;
+}
+
+.ck-consent-step:last-child {
+  border-bottom: none;
+}
+
+.ck-consent-step:hover {
+  background: var(--color-background-soft);
+}
+
+.ck-consent-step > div:last-child {
+  flex: 1;
+}
+
+.ck-consent-step strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-dark);
+  margin-bottom: 5px;
+}
+
+.ck-consent-step p {
+  font-size: 0.92rem !important;
+  line-height: 1.65 !important;
+  color: var(--color-text-muted) !important;
+  margin-bottom: 0 !important;
+}
+
+/* Icônes */
+.ck-step-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.ck-step-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.ck-step-icon--accept {
+  background: rgba(91, 115, 119, 0.1);
+  color: var(--color-primary);
+}
+
+.ck-step-icon--refuse {
+  background: rgba(193, 208, 223, 0.2);
+  color: var(--color-primary-light);
+}
+
+.ck-step-icon--custom {
+  background: rgba(205, 212, 214, 0.25);
+  color: var(--color-primary-dark);
+}
+
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 700px) {
+  .ck-category-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ck-consent-step {
+    padding: 18px 20px;
+    gap: 16px;
+  }
+
+  .ck-step-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .ck-step-icon svg {
+    width: 15px;
+    height: 15px;
+  }
+}

@@ -69,6 +69,59 @@
 
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   SCROLL REVEAL — système d'animation au défilement
+   Utiliser l'attribut data-reveal sur n'importe quel élément HTML.
+   data-reveal="delay-1|2|3|4" pour décaler l'animation.
+   data-reveal-type="fade-up|fade-in|slide-left|scale-in"
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* État initial : caché */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity  820ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 820ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+[data-reveal][data-reveal-type="fade-in"] {
+  transform: none;
+}
+
+[data-reveal][data-reveal-type="slide-left"] {
+  transform: translateX(32px);
+}
+
+[data-reveal][data-reveal-type="scale-in"] {
+  transform: scale(0.96);
+}
+
+/* Délais en cascade */
+[data-reveal="delay-1"] { transition-delay:  80ms; }
+[data-reveal="delay-2"] { transition-delay: 160ms; }
+[data-reveal="delay-3"] { transition-delay: 240ms; }
+[data-reveal="delay-4"] { transition-delay: 320ms; }
+[data-reveal="delay-5"] { transition-delay: 400ms; }
+
+/* État révélé */
+[data-reveal].dl-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Accessibilité : désactive toutes les transitions si demandé */
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════ */
+
 *, *::before, *::after {
   margin: 0;
   padding: 0;
@@ -1283,6 +1336,1090 @@ button {
   align-items: stretch;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   MEDIA REVEAL — Section « 3 facettes » scroll-driven
+   Magazine · Podcast · Explorer
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Section conteneur — 180vh = ~80vh de scroll sticky utile + phase d'approche */
+/* ══════════════════════════════════════════════════════════════════
+   Wrapper unique : MediaReveal + LatestEpisodeSticky
+   Un seul dégradé, une seule surface — aucune coupure visible.
+
+   Architecture :
+     .mxp-wrapper  →  fond continu partagé par MFR, LES et la Newsletter
+     .mfr-canvas   →  transparent  (laisse le gradient parent passer)
+     .les-scene-b  →  transparent  (idem)
+
+   En sticky, le canvas transparent agit comme une fenêtre dans le
+   gradient du wrapper : en faisant défiler la page, on voit
+   progressivement des teintes de plus en plus claires — sans JS.
+══════════════════════════════════════════════════════════════════ */
+.mxp-wrapper {
+  position: relative;
+  /* Une seule transition chromatique sur toute l'expérience :
+     noir → bleu principal → bleu clair → fond clair.
+     La dernière phase dissout uniquement le bleu clair par transparence
+     au-dessus du #FAFAFA, sans introduire de nouvelle teinte. */
+  background-color: #FAFAFA;
+  background-image: linear-gradient(
+    to bottom,
+    #050505                    0%,
+    #050505                    4%,
+    #5B7377                   20%,
+    #C1D0DF                   44%,
+    #C1D0DF                   86%,
+    rgba(193, 208, 223, .72)  90%,
+    rgba(193, 208, 223, .38)  94%,
+    rgba(193, 208, 223, .12)  98%,
+    rgba(193, 208, 223, 0)   100%
+  );
+}
+
+.mfr-section {
+  position: relative;
+  height: 180vh;
+  overflow-x: clip;   /* évite la scrollbar si une carte déborde pendant l'entrée */
+}
+
+/* Fenêtre sticky — reste ancrée pendant tout le scroll de la section */
+.mfr-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Canvas — fenêtre transparente sur le gradient parent (.mxp-wrapper).
+   Le fond ne recommence PAS ici : il est fourni par l'ancêtre commun. */
+.mfr-canvas {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+}
+
+/* ── Carte commune ─────────────────────────────────────────────── */
+.mfr-card {
+  position: absolute;
+  border-radius: 18px;
+  overflow: hidden;
+  /* opacity: 0 par défaut — le JS l'anime à 1 sur desktop */
+  opacity: 0;
+  will-change: transform, opacity;
+  cursor: pointer;
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, .60),
+    0  2px  8px rgba(0, 0, 0, .40);
+  /* scale est une propriété CSS individuelle — elle compose avec le
+     transform JS sans conflit, donc le hover n'interfère pas avec l'animation */
+  transition:
+    scale      380ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 350ms ease;
+  z-index: 1;
+}
+.mfr-card:hover {
+  scale: 1.028;
+  box-shadow:
+    0 22px 60px rgba(0, 0, 0, .74),
+    0  4px 14px rgba(0, 0, 0, .52);
+}
+
+/* Lien intérieur — couvre toute la surface de la carte via inset: 0
+   Toute la carte est cliquable, pas seulement le CTA en bas */
+.mfr-card-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  outline: none;
+}
+.mfr-card-inner:focus-visible {
+  outline: 2px solid rgba(167, 139, 250, .80);
+  outline-offset: 3px;
+  border-radius: 18px;
+}
+
+/* Image de couverture — position absolue, couvre toute la carte */
+.mfr-card-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.mfr-card:hover .mfr-card-img {
+  transform: scale(1.04);
+}
+
+/* Dégradé du bas vers le haut pour la lisibilité du texte */
+.mfr-card-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, .93)  0%,
+    rgba(0, 0, 0, .70)  38%,
+    rgba(0, 0, 0, .22)  66%,
+    transparent        100%
+  );
+  pointer-events: none;
+}
+
+/* Corps textuel — superposé sur le gradient, ancré en bas */
+.mfr-card-body {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 22px 22px 22px;
+  margin-top: auto;   /* pousse vers le bas de la carte */
+}
+
+/* ── Badge de format ── */
+.mfr-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  width: fit-content;
+  margin-bottom: 5px;
+}
+/* Magazine — violet */
+.mfr-badge--mag {
+  background: rgba(167, 139, 250, .18);
+  color: #c4b5fd;
+  border: 1px solid rgba(167, 139, 250, .32);
+}
+/* Podcast — vert eau */
+.mfr-badge--pod {
+  background: rgba(52, 211, 153, .18);
+  color: #6ee7b7;
+  border: 1px solid rgba(52, 211, 153, .32);
+}
+/* Explorer — ambre */
+.mfr-badge--exp {
+  background: rgba(251, 191, 36, .18);
+  color: #fcd34d;
+  border: 1px solid rgba(251, 191, 36, .32);
+}
+
+/* Catégorie / kicker */
+.mfr-card-cat {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .46);
+}
+
+/* Titre principal */
+.mfr-card-title {
+  font-family: var(--font-display, Georgia, serif);
+  font-size: clamp(14px, 1.35vw, 19px);
+  font-weight: 700;
+  line-height: 1.28;
+  color: #ffffff;
+  margin: 3px 0 5px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Chapo / extrait */
+.mfr-card-chapo {
+  font-size: clamp(11px, .95vw, 13px);
+  line-height: 1.56;
+  color: rgba(255, 255, 255, .58);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0;
+}
+
+/* Pied de carte */
+.mfr-card-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+/* Date · durée */
+.mfr-card-meta {
+  font-size: 10px;
+  color: rgba(255, 255, 255, .34);
+}
+
+/* CTA */
+.mfr-card-cta {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #c4b5fd;   /* violet doux — cohérent avec badge Magazine */
+}
+.mfr-card-cta--exp {
+  color: #fcd34d;   /* ambre pour l'explorer */
+}
+
+/* ── Positions absolues — composition asymétrique façon magazine ── */
+
+/* Carte 1 — Article (dominante, haut-gauche) */
+.mfr-card--article {
+  left: 6%;
+  top: 9%;
+  width: clamp(220px, 31vw, 390px);
+  aspect-ratio: 5 / 7;
+  z-index: 1;
+}
+
+/* Carte 2 — Style de danse (ancienne place du Podcast, inchangée) */
+.mfr-card--style {
+  right: 5%;
+  top: 18%;
+  width: clamp(185px, 24vw, 305px);
+  aspect-ratio: 5 / 7;
+  z-index: 2;
+}
+
+/* Carte 3 — Sortir : coordonnées inchangées, présence légèrement renforcée */
+.mfr-card--sortir {
+  left: 39%;
+  top: 22%;
+  width: clamp(160px, 19vw, 240px);
+  aspect-ratio: 4 / 5;
+  z-index: 2;
+}
+
+/* ── Sortir card — fond décoratif radial rose quand pas de photo ── */
+.mfr-sort-bg {
+  position: absolute;
+  inset: 0;
+  background-color: #0d1526;
+  background-image:
+    radial-gradient(ellipse at 62% 28%, rgba(244, 114, 182, .10) 0%, transparent 60%),
+    radial-gradient(ellipse at 30% 80%, rgba(139, 92, 246,  .06) 0%, transparent 55%);
+}
+
+/* Icône calendrier SVG centrée dans le fond */
+.mfr-sort-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -70%);
+  width: clamp(44px, 4.5vw, 62px);
+  height: clamp(44px, 4.5vw, 62px);
+  color: rgba(244, 114, 182, .28);
+  pointer-events: none;
+}
+
+/* Badge Sortir — rose */
+.mfr-badge--sort {
+  background: rgba(244, 114, 182, .18);
+  color: #f9a8d4;
+  border: 1px solid rgba(244, 114, 182, .32);
+}
+
+/* CTA Sortir */
+.mfr-card-cta--sort {
+  color: #f9a8d4;
+}
+
+/* ── Explorer card — pas de photo, fond géométrique ── */
+.mfr-exp-grid {
+  position: absolute;
+  inset: 0;
+  background-color: #0c1628;
+  background-image:
+    linear-gradient(rgba(167, 139, 250, .07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(167, 139, 250, .07) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+
+/* Icône SVG décorative centrée */
+.mfr-exp-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -65%);
+  width: clamp(48px, 5vw, 68px);
+  height: clamp(48px, 5vw, 68px);
+  color: rgba(251, 191, 36, .22);
+  pointer-events: none;
+}
+
+/* Corps texte de l'Explorer — pas en bas, mais ancré en haut */
+.mfr-card-body--exp {
+  position: relative;
+  z-index: 2;
+  padding: 116px 22px 28px;  /* top padding laisse de l'air pour l'icône */
+  margin-top: 0;
+}
+
+/* ── Label "Magazine · Podcast · Explorer" — apparaît en dernier ── */
+.mfr-label {
+  position: absolute;
+  bottom: 26px;
+  right: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;   /* animé par JS */
+  will-change: opacity;
+}
+.mfr-label-tag {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.mfr-label-tag--mag  { color: rgba(196, 181, 253, .45); }
+.mfr-label-tag--pod  { color: rgba(110, 231, 183, .45); }
+.mfr-label-tag--exp  { color: rgba(252, 211, 77,  .45); }
+.mfr-label-tag--sort { color: rgba(249, 168, 212, .45); }
+.mfr-label-sep {
+  font-size: 9.5px;
+  color: rgba(255, 255, 255, .16);
+}
+
+/* ── Mobile — les cartes s'empilent verticalement ── */
+@media (max-width: 768px) {
+  .mfr-section {
+    height: auto;
+  }
+
+  .mfr-sticky {
+    position: relative;
+    height: auto;
+    overflow: visible;
+  }
+
+  .mfr-canvas {
+    position: relative;
+    inset: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 40px 16px 56px;
+  }
+
+  /* Annule tout le positionnement et l'animation JS */
+  .mfr-card {
+    position: relative !important;
+    inset: auto !important;
+    left:   auto !important;
+    right:  auto !important;
+    top:    auto !important;
+    bottom: auto !important;
+    width:  100% !important;
+    max-width: 100% !important;
+    opacity:   1   !important;
+    transform: none !important;
+    aspect-ratio: 16 / 10 !important;
+  }
+
+  .mfr-card--style,
+  .mfr-card--sortir {
+    aspect-ratio: unset !important;
+  }
+
+  .mfr-card-body--exp {
+    padding-top: 80px;
+  }
+
+  .mfr-exp-icon {
+    transform: translate(-50%, -60%);
+  }
+
+  /* Fond Sortir sur mobile — laisse de l'espace pour l'icône */
+  .mfr-sort-icon {
+    transform: translate(-50%, -60%);
+  }
+
+  .mfr-sort-bg {
+    min-height: 140px;
+  }
+
+  .mfr-label {
+    position: static;
+    opacity: 1 !important;
+    justify-content: center;
+    margin: 12px 0 0;
+    padding: 0 16px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   DERNIER ÉPISODE — section immersive sticky-scroll (LatestEpisodeSticky)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Avance contrôlée : rapproche la séquence Épisodes de la fin de MediaReveal
+   pour éviter un écran bleu vide. Les seuils d'opacité conservent une courte
+   respiration et empêchent les cartes de se recouvrir visuellement. */
+.les-section {
+  position: relative;
+  height: 105vh;
+  margin-top: -62vh;
+}
+
+/* Couche sticky : image + contenu restent à l'écran pendant le scroll */
+.les-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Image plein cadre */
+.les-img-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.les-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: right center;
+  display: block;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+/* Dégradé sombre — même logique que les pages épisode */
+.les-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(
+      to right,
+      rgba(8, 8, 8, .97)   0%,
+      rgba(8, 8, 8, .90)  20%,
+      rgba(8, 8, 8, .72)  36%,
+      rgba(8, 8, 8, .34)  54%,
+      rgba(8, 8, 8, .08)  68%,
+      rgba(8, 8, 8, .00)  78%
+    ),
+    linear-gradient(to top, rgba(0,0,0,.42) 0%, transparent 28%);
+}
+
+/* Contenu superposé */
+.les-content {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 64px max(48px, calc((100vw - 1280px) / 2 + 48px));
+  max-width: min(760px, 60%);
+  color: #fff;
+}
+
+.les-num {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--color-primary-light);
+  margin-bottom: 14px;
+  display: block;
+  will-change: opacity, transform;
+}
+
+.les-guest {
+  font-size: clamp(14px, 1.3vw, 18px);
+  font-weight: 500;
+  color: rgba(255,255,255,.70);
+  margin-bottom: 12px;
+  will-change: opacity, transform;
+}
+
+.les-title {
+  font-family: var(--font-display);
+  font-size: clamp(26px, 3.4vw, 52px);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -.02em;
+  color: #fff;
+  margin-bottom: 18px;
+  will-change: opacity, transform;
+}
+
+.les-excerpt {
+  font-size: clamp(14px, 1.2vw, 16px);
+  line-height: 1.74;
+  color: rgba(255,255,255,.65);
+  margin-bottom: 20px;
+  max-width: 480px;
+  will-change: opacity, transform;
+}
+
+.les-meta {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 28px;
+  will-change: opacity, transform;
+}
+
+.les-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: rgba(255,255,255,.55);
+  font-weight: 500;
+}
+
+.les-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 999px;
+  padding: 12px 28px;
+  letter-spacing: .02em;
+  transition: background 220ms ease, transform 220ms ease;
+  align-self: flex-start;
+  will-change: opacity, transform;
+}
+.les-cta:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-2px);
+}
+
+/* Label de section au-dessus */
+.les-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: 32px;
+  display: block;
+}
+
+/* ── Wrappers de scènes ────────────────────────────────────────────── */
+
+/* Scène A : hero plein écran (par-dessus la scène B) */
+.les-scene-a {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  will-change: opacity;
+}
+
+/* Scène B : composition deux colonnes (sous la scène A)
+   Fond transparent — le gradient du .mxp-wrapper passe à travers */
+.les-scene-b {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  will-change: opacity, transform;
+  overflow: hidden;
+}
+
+/* ── Composition (Scene B) ─────────────────────────────────────────── */
+
+.les-comp {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: clamp(24px, 4vw, 56px);
+  padding: 0 max(48px, calc((100vw - 1280px) / 2 + 48px));
+  width: 100%;
+  align-items: center;
+}
+
+/* Label « Dernier épisode » / « Interviews » */
+.les-comp-label {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: 16px;
+}
+
+/* Colonne gauche ─────────────────────────────── */
+.les-comp-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* Grande carte épisode */
+.les-ep-card {
+  display: block;
+  position: relative;
+  width: min(240px, 22vw);
+  height: min(66vh, 520px);
+  min-width: 180px;
+  border-radius: 14px;
+  overflow: hidden;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: transform 240ms ease;
+}
+.les-ep-card:hover {
+  transform: scale(1.025);
+}
+
+.les-ep-card-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+/* Badge Nouveau + durée */
+.les-ep-card-top {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.les-ep-card-dur {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(0,0,0,.48);
+  padding: 4px 9px;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+}
+
+/* Overlay titre + invité */
+.les-ep-card-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  padding: 28px 14px 14px;
+  background: linear-gradient(to top, rgba(0,0,0,.92) 0%, transparent 100%);
+}
+
+.les-ep-card-title {
+  font-family: var(--font-display);
+  font-size: clamp(13px, 1.3vw, 16px);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.28;
+  margin: 0 0 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.les-ep-card-guest {
+  font-size: 12px;
+  color: rgba(255,255,255,.62);
+  margin: 0;
+}
+
+/* CTA sous la carte */
+.les-ep-card-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,.75);
+  text-decoration: none;
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 24px;
+  padding: 10px 18px;
+  margin-top: 14px;
+  transition: background 200ms ease, color 200ms ease;
+  white-space: nowrap;
+}
+.les-ep-card-cta:hover {
+  background: rgba(255,255,255,.18);
+  color: #fff;
+}
+
+/* Colonne droite — Interviews ──────────────────── */
+.les-comp-right {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* En-tête Interviews */
+.les-ivw-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.les-ivw-seeall {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(255,255,255,.45);
+  text-decoration: none;
+  letter-spacing: .02em;
+  transition: color 200ms ease;
+  white-space: nowrap;
+}
+.les-ivw-seeall:hover {
+  color: rgba(255,255,255,.80);
+}
+
+/* Wrapper du carrousel (espace pour les flèches) */
+.les-ivw-wrap {
+  position: relative;
+  padding: 0 28px;
+}
+
+/* Piste scrollable — 3 cartes simultanément visibles */
+/* scroll-snap désactivé : boucle infinie gérée manuellement via scrollLeft */
+.les-ivw-track {
+  display: flex;
+  align-items: stretch;
+  gap: 18px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  touch-action: pan-y;
+  overscroll-behavior-inline: contain;
+}
+.les-ivw-track::-webkit-scrollbar { display: none; }
+
+/* Carte interview individuelle — 1/3 de la piste */
+.les-ivw-card {
+  flex: 0 0 calc(33.333% - 12px);
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  height: auto;
+  gap: 0;
+  cursor: pointer;
+  outline: none;
+  contain: layout style;
+}
+.les-ivw-card:focus-visible {
+  outline: 2px solid var(--color-primary-light);
+  outline-offset: 3px;
+  border-radius: 12px;
+}
+
+.les-ivw-img-wrap {
+  position: relative;       /* nécessaire pour l'overlay en position absolue */
+  aspect-ratio: 3 / 4;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  background: #1a2030;
+  flex: 0 0 auto;
+  contain: paint;
+}
+
+.les-ivw-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  transition: transform 380ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Les épisodes de groupe utilisent les images éditoriales plus larges afin
+   de conserver de l'air autour de tous les visages dans le cadre portrait. */
+.les-ivw-card[data-multi-guest="true"] .les-ivw-img {
+  object-position: center center;
+}
+
+.les-ivw-card[data-jurists="true"] .les-ivw-img {
+  object-position: right center;
+}
+.les-ivw-card:hover .les-ivw-img,
+.les-ivw-card:focus-visible .les-ivw-img {
+  transform: scale(1.05);
+}
+
+/* ── Overlay citation ───────────────────────────────────────────────── */
+.les-ivw-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 16px 13px 14px;
+  background:
+    linear-gradient(to top,
+      rgba(0,0,0,.88) 0%,
+      rgba(0,0,0,.60) 40%,
+      rgba(0,0,0,.14) 75%,
+      transparent    100%
+    );
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity  360ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;   /* le clic passe à travers vers le Link */
+}
+.les-ivw-card:hover .les-ivw-overlay,
+.les-ivw-card:focus-visible .les-ivw-overlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.les-ivw-quote {
+  font-family: var(--font-display);
+  font-size: clamp(11px, 1vw, 13px);
+  font-style: italic;
+  font-weight: 500;
+  line-height: 1.52;
+  color: rgba(255,255,255,.90);
+  margin: 0 0 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.les-ivw-see {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+  color: var(--color-primary-light);
+}
+
+.les-ivw-copy {
+  flex: 0 0 54px;
+  min-height: 54px;
+  display: flex;
+  flex-direction: column;
+}
+
+.les-ivw-name {
+  font-size: clamp(13px, 1.1vw, 15px);
+  font-weight: 600;
+  line-height: 1.25;
+  color: #fff;
+  margin: 0 0 4px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.les-ivw-meta {
+  font-size: 11.5px;
+  color: rgba(255,255,255,.42);
+  margin: auto 0 0;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+/* ── Skeleton (état avant hydratation) ─────────────────────────────── */
+.les-ivw-track--loading {
+  overflow: hidden;   /* pas de scrollbar sur le skeleton */
+}
+
+.les-ivw-card--skeleton {
+  pointer-events: none;
+}
+
+.les-ivw-img-wrap--skeleton {
+  aspect-ratio: 3 / 4;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,.06) 0%,
+    rgba(255,255,255,.11) 50%,
+    rgba(255,255,255,.06) 100%
+  );
+  background-size: 200% 100%;
+  animation: les-shimmer 1.6s ease-in-out infinite;
+}
+
+.les-ivw-skel-line {
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,.06) 0%,
+    rgba(255,255,255,.11) 50%,
+    rgba(255,255,255,.06) 100%
+  );
+  background-size: 200% 100%;
+  animation: les-shimmer 1.6s ease-in-out infinite;
+}
+
+.les-ivw-skel-line--name {
+  height: 13px;
+  width: 72%;
+  margin-bottom: 6px;
+}
+
+.les-ivw-skel-line--meta {
+  height: 11px;
+  width: 48%;
+}
+
+@keyframes les-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Cascade d'entrée des cartes interviews — déclenchée depuis JS
+   (transition inline avec animation-delay individuel par carte) */
+@keyframes les-ivw-cascade {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Flèches de navigation */
+.les-ivw-arrow {
+  position: absolute;
+  top: 38%;             /* centré sur la partie image (3:4 ratio) */
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.20);
+  background: rgba(20,28,40,.80);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  opacity: var(--les-controls-opacity, 0);
+  transition: opacity 240ms ease, background 200ms ease, border-color 200ms ease;
+  z-index: 3;
+}
+.les-ivw-arrow:hover {
+  background: rgba(20,28,40,.96);
+  border-color: rgba(255,255,255,.40);
+}
+.les-ivw-arrow--left  { left: -4px; }
+.les-ivw-arrow--right { right: -4px; }
+
+/* ── Mobile ────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Section : hauteur automatique — deux scènes empilées, overlap desktop annulé */
+  .les-section {
+    height: auto;
+    margin-top: 0;
+  }
+
+  /* Couche sticky désactivée : flux normal */
+  .les-sticky {
+    position: relative;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* Scène A : hero en hauteur fixe (comme avant) */
+  .les-scene-a {
+    position: relative;
+    height: 100svh;
+    z-index: 1;
+    opacity: 1 !important;
+  }
+
+  /* Scène B : toujours visible, sous la Scène A */
+  .les-scene-b {
+    position: relative;
+    opacity: 1 !important;
+    transform: none !important;
+    pointer-events: auto !important;
+    padding: 48px 0 52px;
+    align-items: flex-start;
+  }
+
+  .les-content {
+    max-width: 100%;
+    padding: 40px 24px;
+  }
+  .les-shade {
+    background:
+      linear-gradient(
+        to right,
+        rgba(8,8,8,.92) 0%,
+        rgba(8,8,8,.70) 50%,
+        rgba(8,8,8,.25) 100%
+      ),
+      linear-gradient(to top, rgba(0,0,0,.55) 0%, transparent 35%);
+  }
+
+  /* Colonne unique sur mobile */
+  .les-comp {
+    grid-template-columns: 1fr;
+    gap: 36px;
+    padding: 0 20px;
+  }
+
+  /* Carte épisode : largeur complète, hauteur réduite */
+  .les-ep-card {
+    width: 100%;
+    height: clamp(280px, 55vw, 360px);
+  }
+
+  /* 1 seule carte d'interview visible */
+  .les-ivw-card {
+    flex: 0 0 min(220px, 72vw);
+  }
+
+  /* Flèches cachées sur mobile (scroll tactile natif) */
+  .les-ivw-arrow {
+    display: none;
+  }
+
+  /* Wrap sans padding latéral pour les flèches */
+  .les-ivw-wrap {
+    padding: 0;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────── */
+
 /* ── Colonne gauche : épisode ── */
 .home-ep-col {
   display: flex;
@@ -1853,8 +2990,6 @@ button {
 /* ===========================
    MAGAZINE
 =========================== */
-.mag-main { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px; }
-.mag-side { display: flex; flex-direction: column; gap: 20px; }
 .art-card { position: relative; overflow: hidden; border-radius: 8px; cursor: pointer; }
 .art-card img { width: 100%; height: 100%; object-fit: cover; transition: transform .55s ease; }
 .art-card-big { height: 420px; }
@@ -2759,11 +3894,26 @@ button {
    NEWSLETTER
 =========================== */
 .newsletter {
-  background: var(--color-primary-dark);
+  background: linear-gradient(
+    to bottom,
+    rgba(193, 208, 223, 0) 0%,
+    #C1D0DF 16%,
+    #C1D0DF 72%,
+    rgba(193, 208, 223, .58) 86%,
+    rgba(193, 208, 223, 0) 100%
+  );
   position: relative;
+  z-index: auto;
   overflow: hidden;
-  padding: 56px 0;
+  min-height: 68vh;
+  margin-top: 0;
+  padding: clamp(36px, 5vh, 54px) 0 clamp(86px, 12vh, 128px);
   scroll-margin-top: var(--nav-h);
+  display: flex;
+  align-items: flex-start;
+}
+.newsletter::before {
+  content: none;
 }
 .newsletter-watermark {
   position: absolute;
@@ -2772,7 +3922,7 @@ button {
   transform: translate(-50%, -50%);
   pointer-events: none;
   user-select: none;
-  z-index: 0;
+  z-index: 1;
 }
 
 .newsletter-logo-bg {
@@ -2780,23 +3930,23 @@ button {
   height: auto;
   opacity: 0.05;
 }
-.nl-inner { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; text-align: center; }
-.nl-title { font-family: var(--font-display); font-size: clamp(34px, 4.5vw, 58px); font-weight: 700; color: #fff; line-height: 1.08; margin-bottom: 18px; }
-.nl-desc { max-width: 620px; margin: 0 auto 44px; font-size: 17px; color: rgba(255,255,255,.55); line-height: 1.65; }
+.nl-inner { position: relative; z-index: 2; max-width: 760px; margin: 0 auto; text-align: center; }
+.nl-title { font-family: var(--font-display); font-size: clamp(34px, 4.5vw, 58px); font-weight: 700; color: #233033; line-height: 1.08; margin-bottom: 18px; }
+.nl-desc { max-width: 620px; margin: 0 auto 44px; font-size: 17px; color: rgba(35,48,51,.68); line-height: 1.65; }
 .nl-form { display: flex; gap: 10px; max-width: 520px; margin: 0 auto 20px; }
 .nl-input {
   flex: 1;
   padding: 15px 20px;
-  border: 1.5px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.05);
+  border: 1.5px solid rgba(35,48,51,.20);
+  background: rgba(250,250,250,.72);
   border-radius: 100px;
-  color: #fff;
+  color: #233033;
   font-family: var(--font-body);
   font-size: 14px;
   outline: none;
   transition: border-color .2s;
 }
-.nl-input::placeholder { color: rgba(255,255,255,.3); }
+.nl-input::placeholder { color: rgba(35,48,51,.46); }
 .nl-input:focus { border-color: var(--color-primary-light); }
 .nl-input[aria-invalid="true"] { border-color: rgba(255, 166, 166, 0.9); }
 .nl-form .btn:disabled {
@@ -2805,15 +3955,19 @@ button {
   transform: none;
   box-shadow: none;
 }
+.nl-form .btn-primary {
+  background: #5B7377;
+  color: #fff;
+}
 .nl-message {
   min-height: 24px;
   max-width: 560px;
   margin: -6px auto 16px;
-  color: rgba(255,255,255,.62);
+  color: rgba(35,48,51,.68);
   font-size: 13px;
   line-height: 1.5;
 }
-.nl-message-success { color: rgba(255,255,255,.86); }
+.nl-message-success { color: #233033; }
 .nl-message-error { color: #ffd0d0; }
 .nl-frame {
   position: absolute;
@@ -2824,6 +3978,13 @@ button {
   pointer-events: none;
 }
 .nl-note { font-size: 12px; color: rgba(255,255,255,.28); }
+
+/* Respiration finale : le bleu clair finit de se dissoudre dans le blanc
+   avant que le footer ne commence. */
+.mxp-outro {
+  height: clamp(42px, 7vh, 76px);
+  background: transparent;
+}
 
 /* ===========================
    FOOTER
@@ -2955,6 +4116,11 @@ button {
 
 @media (max-width: 768px) {
 
+  .newsletter {
+    min-height: auto;
+    margin-top: 0;
+  }
+
   .nav-links {
     display: none;
   }
@@ -2995,10 +4161,6 @@ button {
   }
 
   .ep-cards {
-    grid-template-columns: 1fr;
-  }
-
-  .mag-main {
     grid-template-columns: 1fr;
   }
 
@@ -3246,10 +4408,6 @@ button {
     grid-template-columns: 1fr;
   }
 
-  .mag-main {
-    grid-template-columns: 1fr;
-  }
-
   .text-cards {
     grid-template-columns: 1fr;
   }
@@ -3488,9 +4646,20 @@ button {
 
 /* MISSION */
 
-/* about-mission — fond bleu ciel DA épuré, sans texture ni rayures */
+/* about-mission — fond bleu ciel DA épuré, sans texture ni rayures.
+   Le fond bleu s'arrête environ à mi-hauteur des cartes blanches ;
+   le reste de la section devient blanc pour l'effet de superposition éditorial. */
 .about-mission {
   background:
+    /* ── Blanc à partir du mi-hauteur des cartes ──────────────────────────
+       clamp(210px, 26vw, 260px) ≈ padding-bas inner (~80px) + ½ carte (~160px).
+       La couche blanche masque le bleu sous les cartes, les faisant "flotter"
+       à cheval entre les deux fonds.                                         */
+    linear-gradient(
+      to bottom,
+      transparent calc(100% - clamp(210px, 26vw, 260px)),
+      #ffffff      calc(100% - clamp(210px, 26vw, 260px))
+    ),
     /* Lumière douce coin supérieur gauche */
     radial-gradient(ellipse 60% 50% at -4% 0%, rgba(255, 255, 255, 0.30) 0%, transparent 55%),
     /* Touche bleu gris bas droit très discrète */
@@ -3866,28 +5035,28 @@ transform:scale(1.05);
    ÉCOUTER — HERO IMMERSIF
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ── Conteneur principal ────────────────────────────────────────── */
+/* ── Conteneur principal — plein cadre, même structure que .ep-hero ── */
 .el-hero {
-  display: grid;
-  grid-template-columns: 45fr 55fr;
+  position: relative;
   min-height: 72vh;
   max-height: 92vh;
-  background: #FAFAFA;
   overflow: hidden;
-  position: relative;
+  background: #0a0a0a; /* fallback pendant le chargement de l'image */
 }
 
-/* ── Colonne gauche ─────────────────────────────────────────────── */
+/* ── Contenu superposé, aligné à gauche ─────────────────────────── */
 .el-hero-left {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0;
-  /* Aligné sur le container (max-width 1280px, padding 48px) */
-  padding: 96px 40px 72px max(48px, calc((100vw - 1280px) / 2 + 48px));
   position: relative;
   z-index: 2;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  /* Largeur limitée pour préserver le sujet visible à droite */
+  max-width: min(800px, 62%);
+  min-height: 72vh;
+  max-height: 92vh;
+  padding: 64px 40px 56px max(48px, calc((100vw - 1280px) / 2 + 48px));
+  color: #fff;
 }
 
 /* ── Animation d'entrée ─────────────────────────────────────────── */
@@ -3910,7 +5079,8 @@ transform:scale(1.05);
   font-weight: 700;
   letter-spacing: .22em;
   text-transform: uppercase;
-  color: var(--color-primary);
+  /* Même couleur que le kicker des pages épisode */
+  color: var(--color-primary-light);
   margin-bottom: 20px;
   display: block;
 }
@@ -3922,7 +5092,7 @@ transform:scale(1.05);
   font-weight: 700;
   letter-spacing: -.03em;
   line-height: 1.02;
-  color: #0d0d0d;
+  color: #fff;
   margin: 0 0 24px;
 }
 
@@ -3945,7 +5115,7 @@ transform:scale(1.05);
   font-family: var(--font-display);
   font-size: clamp(20px, 2vw, 26px);
   font-weight: 700;
-  color: #0d0d0d;
+  color: #fff;
   letter-spacing: -.02em;
   line-height: 1;
 }
@@ -3955,13 +5125,13 @@ transform:scale(1.05);
   font-weight: 500;
   letter-spacing: .06em;
   text-transform: uppercase;
-  color: #999;
+  color: rgba(255, 255, 255, .50);
 }
 
 .el-stat-sep {
   width: 1px;
   height: 32px;
-  background: #ddd;
+  background: rgba(255, 255, 255, .18);
   flex-shrink: 0;
 }
 
@@ -3969,46 +5139,42 @@ transform:scale(1.05);
 .el-hero-desc {
   font-size: clamp(14px, 1.2vw, 16px);
   line-height: 1.72;
-  color: #666;
-  max-width: 420px;
+  color: rgba(255, 255, 255, .68);
+  max-width: 520px;
   margin: 0 0 28px;
 }
 
-/* ── Barre de recherche ─────────────────────────────────────────── */
+/* ── Barre de recherche — verre sombre sur fond image ───────────── */
 .el-search-wrap {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(193, 208, 223, 0.55);
+  background: rgba(255, 255, 255, .10);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, .20);
   border-radius: 999px;
   padding: 0 8px 0 18px;
   gap: 10px;
-  box-shadow:
-    0 2px 24px rgba(0, 0, 0, .06),
-    0 1px 4px rgba(0, 0, 0, .04);
-  transition: border-color .2s, box-shadow .2s;
+  transition: border-color .2s, background .2s;
   cursor: text;
-  margin-bottom: 16px;
-  max-width: 480px;
+  margin-bottom: 12px;
+  max-width: 560px;
 }
 
 .el-search-wrap:focus-within {
-  border-color: var(--color-primary);
-  box-shadow:
-    0 0 0 3px rgba(91, 115, 119, .14),
-    0 2px 24px rgba(0, 0, 0, .06);
+  background: rgba(255, 255, 255, .15);
+  border-color: rgba(255, 255, 255, .40);
+  box-shadow: 0 0 0 3px rgba(193, 208, 223, .18);
 }
 
 .el-search-icon {
   flex-shrink: 0;
-  color: #aaa;
+  color: rgba(255, 255, 255, .45);
   transition: color .2s;
 }
 
 .el-search-wrap:focus-within .el-search-icon {
-  color: var(--color-primary);
+  color: var(--color-primary-light);
 }
 
 .el-search {
@@ -4016,7 +5182,7 @@ transform:scale(1.05);
   border: none;
   background: transparent;
   font-size: 14px;
-  color: #222;
+  color: #fff;
   outline: none;
   font-family: inherit;
   padding: 14px 0;
@@ -4024,7 +5190,7 @@ transform:scale(1.05);
 }
 
 .el-search::placeholder {
-  color: #bbb;
+  color: rgba(255, 255, 255, .35);
 }
 
 .el-search-clear {
@@ -4032,8 +5198,8 @@ transform:scale(1.05);
   height: 30px;
   border-radius: 50%;
   border: none;
-  background: #f0f0ee;
-  color: #666;
+  background: rgba(255, 255, 255, .14);
+  color: rgba(255, 255, 255, .65);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4043,8 +5209,8 @@ transform:scale(1.05);
 }
 
 .el-search-clear:hover {
-  background: #e0e0dc;
-  color: #333;
+  background: rgba(255, 255, 255, .24);
+  color: #fff;
 }
 
 /* ── Tags populaires ────────────────────────────────────────────── */
@@ -4059,9 +5225,9 @@ transform:scale(1.05);
   font-family: inherit;
   font-size: 12px;
   font-weight: 500;
-  color: #555;
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(0, 0, 0, .1);
+  color: rgba(255, 255, 255, .78);
+  background: rgba(255, 255, 255, .10);
+  border: 1px solid rgba(255, 255, 255, .18);
   border-radius: 999px;
   padding: 5px 13px;
   cursor: pointer;
@@ -4070,9 +5236,9 @@ transform:scale(1.05);
 }
 
 .el-tag:hover {
-  background: #fff;
-  border-color: var(--color-primary-light);
-  color: var(--color-primary-dark);
+  background: rgba(255, 255, 255, .18);
+  border-color: rgba(255, 255, 255, .35);
+  color: #fff;
   transform: translateY(-1px);
 }
 
@@ -4096,23 +5262,23 @@ transform:scale(1.05);
   align-items: center;
 }
 
-/* Redéfinir les dropdowns dans le contexte hero */
+/* Redéfinir les dropdowns dans le contexte hero sombre */
 .el-chips .ep2-dropdown-btn {
   font-size: 12.5px;
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(0, 0, 0, .1);
-  color: #555;
+  background: rgba(255, 255, 255, .10);
+  border: 1px solid rgba(255, 255, 255, .18);
+  color: rgba(255, 255, 255, .78);
   font-weight: 500;
   gap: 5px;
 }
 
 .el-chips .ep2-dropdown-btn:hover,
 .el-chips .ep2-dropdown-btn--open {
-  background: #fff;
-  border-color: var(--color-primary-light);
-  color: var(--color-primary-dark);
+  background: rgba(255, 255, 255, .18);
+  border-color: rgba(255, 255, 255, .35);
+  color: #fff;
 }
 
 .el-chips .ep2-dropdown-btn--active {
@@ -4130,9 +5296,9 @@ transform:scale(1.05);
   font-family: inherit;
   font-size: 12px;
   font-weight: 500;
-  color: #888;
+  color: rgba(255, 255, 255, .50);
   background: none;
-  border: 1px solid #ddd;
+  border: 1px solid rgba(255, 255, 255, .18);
   border-radius: 999px;
   padding: 6px 12px;
   cursor: pointer;
@@ -4140,19 +5306,15 @@ transform:scale(1.05);
 }
 
 .el-chip-clear:hover {
-  color: #c0392b;
-  border-color: #c0392b;
+  color: rgba(255, 255, 255, .85);
+  border-color: rgba(255, 255, 255, .40);
 }
 
-/* ── Colonne droite : image ─────────────────────────────────────── */
-.el-hero-right {
-  position: relative;
-  overflow: hidden;
-}
-
+/* ── Image plein cadre — même système que les pages épisode ─────── */
 .el-hero-img-wrap {
   position: absolute;
   inset: 0;
+  z-index: 0;
   transform: scale(1.04);
   transform-origin: center center;
   will-change: transform;
@@ -4162,49 +5324,33 @@ transform:scale(1.05);
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 15%;
+  /* Sujet ancré à droite, texte à gauche — identique aux pages épisode */
+  object-position: right center;
   display: block;
 }
 
-/* Dégradé gauche pour la lisibilité */
+/* Voile sombre — dégradé latéral + protection bas
+   Copie exacte du gradient .ep-hero-shade des pages épisode */
 .el-hero-fade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to right,
-    rgba(250, 250, 250, 0.72) 0%,
-    rgba(250, 250, 250, 0.20) 30%,
-    transparent 55%
-  );
   z-index: 1;
   pointer-events: none;
-}
-
-/* Légende */
-.el-hero-caption {
-  position: absolute;
-  bottom: 24px;
-  right: 24px;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-}
-
-.el-hero-caption-ep {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, .55);
-}
-
-.el-hero-caption-guest {
-  font-size: 13px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, .88);
-  letter-spacing: -.01em;
+  background:
+    linear-gradient(
+      to right,
+      rgba(8, 8, 8, .96)   0%,
+      rgba(8, 8, 8, .90)  18%,
+      rgba(8, 8, 8, .76)  32%,
+      rgba(8, 8, 8, .44)  48%,
+      rgba(8, 8, 8, .12)  62%,
+      rgba(8, 8, 8, .00)  74%
+    ),
+    linear-gradient(
+      to top,
+      rgba(0, 0, 0, .40)   0%,
+      transparent          26%
+    );
 }
 
 /* ── Transition douce vers la grille ────────────────────────────── */
@@ -4223,29 +5369,34 @@ transform:scale(1.05);
 /* ── Mobile ─────────────────────────────────────────────────────── */
 @media (max-width: 860px) {
   .el-hero {
-    grid-template-columns: 1fr;
-    min-height: auto;
+    min-height: 90vh;
     max-height: none;
   }
 
-  .el-hero-right {
-    order: -1;
-    height: 50vw;
-    min-height: 240px;
-    max-height: 380px;
+  /* Sur mobile, le voile couvre davantage (lecture sur fond sombre) */
+  .el-hero-fade {
+    background:
+      linear-gradient(
+        to right,
+        rgba(8, 8, 8, .92)   0%,
+        rgba(8, 8, 8, .80)  40%,
+        rgba(8, 8, 8, .55)  65%,
+        rgba(8, 8, 8, .20)  85%,
+        rgba(8, 8, 8, .00) 100%
+      ),
+      linear-gradient(to top, rgba(0,0,0,.50) 0%, transparent 30%);
   }
 
-  .el-hero-fade {
-    background: linear-gradient(
-      to bottom,
-      transparent 40%,
-      rgba(250, 250, 250, 0.85) 100%
-    );
+  /* L'image se recadre au centre pour mieux afficher le sujet */
+  .el-hero-img {
+    object-position: 70% center;
   }
 
   .el-hero-left {
-    padding: 28px 24px 48px;
-    justify-content: flex-start;
+    max-width: 100%;
+    min-height: 90vh;
+    padding: 80px 24px 48px;
+    justify-content: flex-end;
   }
 
   .el-hero-title {
@@ -4281,10 +5432,6 @@ transform:scale(1.05);
 
   .el-search-wrap {
     max-width: 100%;
-  }
-
-  .el-hero-caption {
-    display: none;
   }
 
   .el-hero-transition {
@@ -4549,13 +5696,6 @@ transform:scale(1.05);
 
 /* ─── Card — HORIZONTAL layout (image gauche, texte droite) ─── */
 
-/* Animation d'entrée sur opacity uniquement — évite tout conflit avec
-   le transform du hover (CSS ne peut gérer qu'un transform à la fois) */
-@keyframes ep2-fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
 .ep2-card {
   background: #fff;
   border-radius: 7px;
@@ -4575,8 +5715,22 @@ transform:scale(1.05);
   transition:
     transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 260ms cubic-bezier(0.22, 1, 0.36, 1),
-    z-index 0ms 260ms;
-  animation: ep2-fade-in .3s ease both;
+    z-index 0ms 260ms,
+    opacity 620ms ease-out,
+    translate 620ms ease-out;
+}
+
+/* `translate` reste indépendant du `transform: scale()` du hover :
+   la révélation n'altère donc ni les dimensions ni l'interaction existante. */
+.ep2-card--reveal-pending {
+  opacity: 0;
+  translate: 0 24px;
+}
+
+.ep2-card--reveal-pending.ep2-card--revealed {
+  opacity: 1;
+  translate: 0 0;
+  transition-delay: var(--ep2-reveal-delay, 0ms);
 }
 
 /* Hover — carte vivante style Netflix / Apple TV */
@@ -4589,7 +5743,18 @@ transform:scale(1.05);
   transition:
     transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 260ms cubic-bezier(0.22, 1, 0.36, 1),
-    z-index 0ms;
+    z-index 0ms,
+    opacity 620ms ease-out,
+    translate 620ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ep2-card--reveal-pending,
+  .ep2-card--reveal-pending.ep2-card--revealed {
+    opacity: 1;
+    translate: none;
+    transition-delay: 0ms;
+  }
 }
 
 /* ─── Image ─── */
@@ -4695,12 +5860,13 @@ transform:scale(1.05);
   letter-spacing: .02em;
   align-self: flex-start;
   margin-top: auto; /* colle le bouton en bas — alignement Apple/Spotify */
-  transition: background .15s;
+  transition: background .2s, color .2s;
   white-space: nowrap;
 }
 
 .ep2-card:hover .ep2-card-btn {
   background: #aec2d2;
+  color: #fff;
 }
 
 /* Épisodes à deux invités (data-duo="true") : slot image élargi
@@ -6907,6 +8073,503 @@ p,
   }
 }
 
+/* ══════════════════════════════════════════════════════════════
+   DÉCOUVRIR — Hero éditorial 2 colonnes + bande magazine
+══════════════════════════════════════════════════════════════ */
+
+/* ── Structure principale ─────────────────────────────────────── */
+.dc-hero {
+  display: grid;
+  grid-template-columns: 64px 45fr 55fr;
+  min-height: 88vh;
+  max-height: 96vh;
+  background: #FAFAFA;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Bande verticale magazine ────────────────────────────────── */
+.dc-nav-strip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 56px 0 48px;
+  gap: 14px;
+  border-right: 1px solid rgba(91,115,119,.10);
+  position: relative;
+  z-index: 1;
+}
+
+.dc-nav-num {
+  font-family: var(--font-body);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .20em;
+  color: rgba(91,115,119,.40);
+  text-transform: uppercase;
+}
+
+.dc-nav-line {
+  width: 1px;
+  flex: 1;
+  max-height: 100px;
+  background: linear-gradient(to bottom, rgba(91,115,119,.22), transparent);
+}
+
+.dc-nav-label {
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: rgba(91,115,119,.38);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.dc-nav-dots {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(91,115,119,.25);
+  margin-top: 4px;
+}
+
+/* ── Colonne gauche ───────────────────────────────────────────── */
+.dc-hero-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(72px,9vw,110px) clamp(32px,4.5vw,68px) clamp(72px,9vw,110px) clamp(28px,4vw,52px);
+  position: relative;
+  z-index: 1;
+}
+
+.dc-kicker {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: rgba(91,115,119,.52);
+  margin-bottom: 30px;
+}
+
+.dc-hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 5.4vw, 78px);
+  font-weight: 700;
+  line-height: 1.03;
+  letter-spacing: -0.028em;
+  color: #1b2e33;
+  margin-bottom: 26px;
+  text-wrap: balance;
+}
+
+.dc-hero-desc {
+  font-family: var(--font-body);
+  font-size: clamp(14px,1.25vw,16.5px);
+  line-height: 1.76;
+  color: rgba(27,46,51,.56);
+  margin-bottom: 44px;
+  max-width: 380px;
+}
+
+/* ── CTAs ─────────────────────────────────────────────────────── */
+.dc-ctas {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.dc-cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 14px 28px;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .22s, color .22s, border-color .22s, box-shadow .22s;
+}
+
+.dc-cta--primary {
+  background: #5B7377;
+  color: #fff;
+  border: 1.5px solid #5B7377;
+  box-shadow: 0 4px 18px rgba(91,115,119,.22);
+}
+.dc-cta--primary:hover {
+  background: #425659;
+  border-color: #425659;
+  box-shadow: 0 6px 24px rgba(91,115,119,.30);
+}
+
+.dc-cta--outline {
+  background: transparent;
+  color: #5B7377;
+  border: 1.5px solid rgba(91,115,119,.45);
+}
+.dc-cta--outline:hover {
+  background: rgba(91,115,119,.06);
+  border-color: #5B7377;
+}
+
+/* ── Colonne droite — photo ───────────────────────────────────── */
+.dc-hero-right {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Formes géométriques décoratives (5-7 % opacité) */
+.dc-shapes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dc-shape-circle {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.dc-shape-circle--lg {
+  width: 620px;
+  height: 620px;
+  border: 1px solid rgba(91,115,119,.07);
+  top: -180px;
+  right: -130px;
+}
+
+.dc-shape-circle--sm {
+  width: 350px;
+  height: 350px;
+  border: 1px solid rgba(193,208,223,.08);
+  bottom: -80px;
+  left: 30px;
+}
+
+.dc-shape-arc {
+  position: absolute;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  border: 1px solid rgba(91,115,119,.05);
+  top: 55%;
+  right: 60px;
+}
+
+/* Photo */
+.dc-hero-photo-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.dc-hero-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 15%;
+}
+
+/* Dégradé gauche → lisibilité */
+.dc-hero-fade {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    to right,
+    rgba(250,250,250,.70) 0%,
+    rgba(250,250,250,.18) 28%,
+    transparent 52%
+  );
+}
+
+/* Légende photo */
+.dc-hero-caption {
+  position: absolute;
+  bottom: 22px;
+  right: 22px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.dc-hero-caption-ep {
+  font-family: var(--font-body);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.55);
+}
+
+.dc-hero-caption-guest {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,.88);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DÉCOUVRIR — Section « Dernier épisode »
+══════════════════════════════════════════════════════════════ */
+
+.dc-latest {
+  background: #fff;
+  padding: clamp(52px,7vw,88px) max(24px,calc(50vw - 640px));
+  border-bottom: 1px solid rgba(91,115,119,.08);
+}
+
+.dc-latest-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* En-tête de section */
+.dc-latest-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.dc-latest-title {
+  font-family: var(--font-display);
+  font-size: clamp(22px,2.8vw,34px);
+  font-weight: 700;
+  color: #1b2e33;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.dc-latest-seeall {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+  letter-spacing: .02em;
+  transition: color .2s;
+}
+.dc-latest-seeall:hover { color: var(--color-primary-dark); }
+
+/* Grande carte horizontale */
+.dc-latest-card {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(91,115,119,.11);
+  background: #fff;
+  box-shadow: 0 4px 28px rgba(0,0,0,.06), 0 1px 4px rgba(0,0,0,.03);
+  transition: box-shadow .28s ease, transform .28s ease;
+}
+.dc-latest-card:hover {
+  box-shadow: 0 14px 52px rgba(0,0,0,.11);
+  transform: translateY(-3px);
+}
+
+/* Photo invité */
+.dc-latest-img {
+  position: relative;
+  overflow: hidden;
+  min-height: 320px;
+}
+.dc-latest-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 15%;
+  transition: transform .45s ease;
+}
+.dc-latest-card:hover .dc-latest-img img {
+  transform: scale(1.04);
+}
+
+/* Contenu */
+.dc-latest-body {
+  padding: clamp(28px,4vw,52px);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  justify-content: center;
+}
+
+.dc-latest-ep-num {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: rgba(91,115,119,.60);
+}
+
+.dc-latest-ep-title {
+  font-family: var(--font-display);
+  font-size: clamp(20px,2.4vw,30px);
+  font-weight: 700;
+  line-height: 1.14;
+  color: #1b2e33;
+  letter-spacing: -0.015em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.dc-latest-ep-excerpt {
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  line-height: 1.72;
+  color: rgba(27,46,51,.60);
+  margin: 0;
+  max-width: 520px;
+}
+
+/* Méta durée + date */
+.dc-latest-meta {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+}
+
+.dc-latest-meta-item {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  color: rgba(91,115,119,.68);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Boutons plateformes */
+.dc-latest-platforms {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dc-platform-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(91,115,119,.20);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: #5B7377;
+  text-decoration: none;
+  background: rgba(91,115,119,.04);
+  transition: border-color .2s, background .2s, color .2s;
+}
+.dc-platform-btn:hover {
+  border-color: #5B7377;
+  background: rgba(91,115,119,.09);
+  color: #425659;
+}
+
+/* CTA principal */
+.dc-listen-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 26px;
+  border-radius: 999px;
+  background: #5B7377;
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  width: fit-content;
+  box-shadow: 0 4px 16px rgba(91,115,119,.22);
+  transition: background .22s, box-shadow .22s;
+  margin-top: 4px;
+}
+.dc-listen-btn:hover {
+  background: #425659;
+  box-shadow: 0 6px 22px rgba(91,115,119,.30);
+}
+
+/* ── Mobile ───────────────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .dc-hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    max-height: none;
+  }
+
+  .dc-nav-strip { display: none; }
+
+  .dc-hero-right {
+    order: -1;
+    height: 52vw;
+    max-height: 340px;
+  }
+
+  .dc-hero-fade {
+    background: linear-gradient(
+      to bottom,
+      transparent 40%,
+      rgba(250,250,250,.85) 80%,
+      #FAFAFA 100%
+    );
+  }
+
+  .dc-hero-caption { display: none; }
+
+  .dc-hero-left {
+    padding: 28px 24px 52px;
+  }
+
+  .dc-hero-title {
+    font-size: clamp(34px,8vw,52px);
+  }
+
+  .dc-hero-desc { max-width: 100%; }
+
+  .dc-ctas { gap: 10px; }
+
+  .dc-cta { padding: 13px 22px; font-size: 13px; }
+
+  .dc-latest {
+    padding: 40px 20px;
+  }
+
+  .dc-latest-card {
+    grid-template-columns: 1fr;
+  }
+
+  .dc-latest-img {
+    height: 240px;
+    min-height: unset;
+  }
+
+  .dc-latest-body {
+    gap: 14px;
+  }
+}
+
+@media (max-width: 640px) {
+  .dc-latest-platforms {
+    gap: 8px;
+  }
+  .dc-platform-btn {
+    font-size: 11px;
+    padding: 6px 12px;
+  }
+}
+
 /* ================================
    RUBRIQUE DÉCOUVRIR
 ================================ */
@@ -8786,8 +10449,20 @@ p,
   font-weight: 700;
   line-height: 1.10;
   color: var(--color-heading);
-  margin: 0 0 26px;
+  margin: 0 0 18px;
   max-width: 560px;
+}
+
+/* Sous-titre éditorial — hiérarchie magazine */
+.sty-hero-subtitle {
+  font-family: var(--font-display);
+  font-size: clamp(16px, 2.1vw, 28px);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.45;
+  color: #5B7377;
+  margin: 0 0 28px;
+  max-width: 520px;
 }
 
 .sty-hero-desc {
@@ -9131,12 +10806,13 @@ p,
   padding: 0 max(24px, calc(50vw - 580px)) 32px;   /* 32px avant le carrousel (était 56px en bas de section) */
 }
 
-/* ── Valeurs — bande bleu-gris ────────────────────────────────── */
+/* ── Valeurs — bande bleu-gris charte Dance Lab ───────────────── */
 .sty-values {
   padding: 88px 0;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(150deg, #1b2e33 0%, #233033 55%, #2b3e45 100%);
+  /* Dégradé monochrome en déclinaisons de #5B7377 — élégant, intemporel */
+  background: linear-gradient(150deg, #4f6c71 0%, #5B7377 48%, #637e84 100%);
   /* Révélation */
   opacity: 0;
   transform: translateY(40px);
@@ -9144,21 +10820,21 @@ p,
 }
 .sty-values.sty-revealed { opacity: 1; transform: translateY(0); }
 
-/* Cercles décoratifs */
+/* Cercles décoratifs — très discrets, 5–7 % d'opacité */
 .sty-values-circles {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 80% 20%, rgba(193,208,223,.06) 0%, transparent 50%),
-    radial-gradient(circle at 10% 85%, rgba(91,115,119,.10) 0%, transparent 45%);
+    radial-gradient(circle at 80% 20%, rgba(193,208,223,.07) 0%, transparent 50%),
+    radial-gradient(circle at 10% 85%, rgba(255,255,255,.05) 0%, transparent 45%);
 }
 .sty-values-circles::before,
 .sty-values-circles::after {
   content: '';
   position: absolute;
   border-radius: 50%;
-  border: 1px solid rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.06);
 }
 .sty-values-circles::before {
   width: 700px; height: 700px;
@@ -9178,7 +10854,7 @@ p,
 .sty-value-sep {
   width: 1px;
   height: 90px;
-  background: rgba(255,255,255,.10);
+  background: rgba(255,255,255,.14);
   align-self: center;
   margin: 0 48px;
 }
@@ -9193,12 +10869,12 @@ p,
   width: 46px;
   height: 46px;
   border-radius: 13px;
-  background: rgba(255,255,255,.07);
-  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.11);
+  border: 1px solid rgba(255,255,255,.18);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255,255,255,.80);
+  color: rgba(255,255,255,.92);
   flex-shrink: 0;
 }
 
@@ -9207,7 +10883,7 @@ p,
   font-weight: 700;
   letter-spacing: .12em;
   text-transform: uppercase;
-  color: rgba(255,255,255,.28);
+  color: rgba(255,255,255,.52);
   margin: 0;
 }
 
@@ -9222,7 +10898,7 @@ p,
 .sty-value-col p {
   font-size: 14px;
   line-height: 1.68;
-  color: rgba(255,255,255,.58);
+  color: rgba(255,255,255,.74);
   margin: 0;
 }
 
@@ -10899,5 +12575,287 @@ p,
 
   .style-continue-links {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ======================================================================
+   STYLES DE DANSE — Galerie horizontale scroll-driven (Part D)
+   Les cartes défilent horizontalement pendant le scroll vertical.
+   Sur mobile (< 768 px) : overflow-x natif.
+====================================================================== */
+
+.ssg-section {
+  position: relative;
+  /* height calculée dynamiquement via JS — défaut 100vh pour le SSR */
+}
+
+.ssg-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: #050a0f;
+  display: flex;
+  align-items: center;
+  isolation: isolate;
+}
+
+/* En-tête (coin supérieur gauche) */
+.ssg-intro {
+  position: absolute;
+  top: 44px;
+  left: max(48px, calc((100vw - 1280px) / 2 + 48px));
+  z-index: 10;
+}
+
+.ssg-intro-label {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: 5px;
+}
+
+.ssg-intro-title {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 2.8vw, 34px);
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  line-height: 1.15;
+}
+
+/* Zone d'affichage (recouvre tout le sticky) */
+.ssg-viewport {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* Piste de cartes — transformée par JS */
+.ssg-track {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
+  padding: 0 max(48px, calc((100vw - 1280px) / 2 + 48px));
+  will-change: transform;
+  /* La largeur totale de la piste détermine la distance de scroll */
+}
+
+/* Carte individuelle */
+.ssg-card {
+  flex-shrink: 0;
+  width: 380px;
+  height: 68vh;
+  max-height: 580px;
+  min-height: 340px;
+  border-radius: 18px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 260ms cubic-bezier(0.22,1,0.36,1);
+}
+
+.ssg-card:hover {
+  transform: scale(1.02);
+}
+
+.ssg-card--upcoming {
+  cursor: default;
+  opacity: 0.58;
+}
+
+.ssg-card--upcoming:hover {
+  transform: none;
+}
+
+/* Image de fond ou dégradé */
+.ssg-card-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Dégradé de protection bas → haut */
+.ssg-card-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,.92) 0%,
+    rgba(0,0,0,.38) 55%,
+    rgba(0,0,0,.06) 100%
+  );
+}
+
+/* Contenu texte */
+.ssg-card-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0;
+  height: 100%;
+  padding: 26px 28px 28px;
+}
+
+.ssg-card-num {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.32);
+  margin-bottom: 14px;
+}
+
+.ssg-card-family {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--color-primary-light);
+  margin-bottom: 7px;
+}
+
+.ssg-card-name {
+  font-family: var(--font-display);
+  font-size: clamp(20px, 2.2vw, 26px);
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 5px;
+  line-height: 1.12;
+}
+
+.ssg-card-era {
+  font-size: 11.5px;
+  color: rgba(255,255,255,.44);
+  margin: 0 0 12px;
+}
+
+.ssg-card-summary {
+  font-size: 12.5px;
+  line-height: 1.58;
+  color: rgba(255,255,255,.60);
+  margin: 0 0 18px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ssg-card-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(255,255,255,.80);
+  letter-spacing: 0.04em;
+}
+
+.ssg-card-coming {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.32);
+}
+
+/* Barre de progression en bas */
+.ssg-progress-wrap {
+  position: absolute;
+  bottom: 32px;
+  left: max(48px, calc((100vw - 1280px) / 2 + 48px));
+  right: max(48px, calc((100vw - 1280px) / 2 + 48px));
+  height: 2px;
+  background: rgba(255,255,255,.10);
+  border-radius: 2px;
+}
+
+.ssg-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--color-primary-light);
+  border-radius: 2px;
+}
+
+/* Indication de scroll */
+.ssg-hint {
+  position: absolute;
+  bottom: 46px;
+  right: max(48px, calc((100vw - 1280px) / 2 + 48px));
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.28);
+  margin: 0;
+}
+
+/* ── Mobile : défilement natif horizontal ───────────────────────── */
+@media (max-width: 767px) {
+  .ssg-section {
+    height: auto !important;
+  }
+
+  .ssg-sticky {
+    position: relative;
+    height: auto;
+    padding: 56px 0 52px;
+    overflow: visible;
+  }
+
+  .ssg-intro {
+    position: relative;
+    top: auto;
+    left: auto;
+    padding: 0 24px 28px;
+  }
+
+  .ssg-viewport {
+    position: relative;
+    inset: auto;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .ssg-viewport::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ssg-track {
+    transform: none !important;
+    padding: 0 24px;
+    will-change: auto;
+  }
+
+  .ssg-card {
+    width: min(320px, 82vw);
+    height: 58vh;
+    scroll-snap-align: start;
+  }
+
+  .ssg-card:hover {
+    transform: none;
+  }
+
+  .ssg-progress-wrap,
+  .ssg-hint {
+    display: none;
   }
 }
