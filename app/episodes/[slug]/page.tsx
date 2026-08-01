@@ -6,6 +6,7 @@ import path from "node:path";
 
 import EpisodeAnimations from "./EpisodeAnimations";
 import EpisodeShare from "../../../components/EpisodeShare";
+import HistoryBackLink from "../../../components/HistoryBackLink";
 import { episodes, type Episode } from "../../../data/episodes";
 import { SITE_URL } from "../../../data/site";
 
@@ -461,7 +462,9 @@ export default async function EpisodePage({ params }: PageProps) {
           </div>
           {/* Texte posé sur la partie gauche assombrie — défile normalement */}
           <div className="ep-hero-content">
-            <Link className="ep-back" href="/ecouter">← Tous les épisodes</Link>
+            <HistoryBackLink className="ep-back" fallbackHref="/ecouter">
+              ← Tous les épisodes
+            </HistoryBackLink>
             <p className="ep-kicker">
               Épisode {episode.number}
             </p>
@@ -1515,4 +1518,3 @@ export default async function EpisodePage({ params }: PageProps) {
     </>
   );
 }
-

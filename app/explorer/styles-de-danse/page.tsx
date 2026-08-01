@@ -6,6 +6,7 @@ import StylesReveal from "./StylesReveal"
 import StylesStats from "./StylesStats"
 import StylesScrollGallery from "./StylesScrollGallery"
 import { danceStyles, upcomingStyles } from "./styles-data"
+import { withDedicatedStyleImages } from "./style-image-resolver"
 
 export const metadata: Metadata = {
   title: "Explorer les styles de danse | Dance Lab",
@@ -14,6 +15,8 @@ export const metadata: Metadata = {
 }
 
 export default function StylesDeDansePage() {
+  const resolvedDanceStyles = withDedicatedStyleImages(danceStyles)
+  const resolvedUpcomingStyles = withDedicatedStyleImages(upcomingStyles)
   const totalEpisodes = danceStyles.reduce(
     (acc, s) => acc + s.episodeLinks.length,
     0
@@ -62,13 +65,13 @@ export default function StylesDeDansePage() {
       <section className="sty-featured">
 
         {/* 1. Barre de recherche + filtres par catégorie */}
-        <StylesExplorer styles={danceStyles} />
+        <StylesExplorer styles={resolvedDanceStyles} />
 
         {/* 2. Carrousel des styles */}
         <StylesCarousel styles={[
-          ...danceStyles,
-          ...upcomingStyles.filter(
-            (u) => !danceStyles.some((s) => s.slug === u.slug)
+          ...resolvedDanceStyles,
+          ...resolvedUpcomingStyles.filter(
+            (u) => !resolvedDanceStyles.some((s) => s.slug === u.slug)
           ),
         ].sort((a, b) => a.name.localeCompare(b.name, "fr", { sensitivity: "base" }))} />
 
@@ -148,9 +151,9 @@ export default function StylesDeDansePage() {
       ════════════════════════════════════════ */}
       <StylesScrollGallery
         styles={[
-          ...danceStyles,
-          ...upcomingStyles.filter(
-            (u) => !danceStyles.some((s) => s.slug === u.slug)
+          ...resolvedDanceStyles,
+          ...resolvedUpcomingStyles.filter(
+            (u) => !resolvedDanceStyles.some((s) => s.slug === u.slug)
           ),
         ].sort((a, b) => a.name.localeCompare(b.name, "fr", { sensitivity: "base" }))}
       />

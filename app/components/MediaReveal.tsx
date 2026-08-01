@@ -3,7 +3,7 @@
 import { useRef, useEffect } from 'react'
 import Link from 'next/link'
 import type { MagazineArticle } from '../decouvrir/articles-data'
-import type { AgendaEvent } from '../agenda/agenda-data'
+import { formatAgendaDate, type AgendaEvent } from '../agenda/agenda-data'
 
 /* ─────────────────────────────────────────────────────────
    Props
@@ -24,6 +24,11 @@ function ss(e0: number, e1: number, x: number) {
   const t = clamp((x - e0) / (e1 - e0), 0, 1)
   return t * t * (3 - 2 * t)
 }
+/** Courbe plus cinématographique : départ et arrivée plus progressifs. */
+function ssp(e0: number, e1: number, x: number) {
+  const t = clamp((x - e0) / (e1 - e0), 0, 1)
+  return t * t * t * (t * (t * 6 - 15) + 10)
+}
 function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t
 }
@@ -37,6 +42,21 @@ export default function MediaReveal({ article, event }: Props) {
   const card2Ref   = useRef<HTMLDivElement>(null)   // Style de danse (2e à apparaître)
   const card4Ref   = useRef<HTMLDivElement>(null)   // Sortir (position et timing conservés)
   const labelRef   = useRef<HTMLDivElement>(null)
+  const eventDates = event
+    ? event.dates !== 'À compléter'
+      ? event.dates
+      : event.endDate && event.endDate !== event.startDate
+        ? `${formatAgendaDate(event.startDate)} au ${formatAgendaDate(event.endDate)}`
+        : formatAgendaDate(event.startDate)
+    : ''
+  const isParisSummerFestival = event?.slug === 'festival-paris-lete-2026'
+  const eventVenue = isParisSummerFestival
+    ? 'Paris · Jardin des Tuileries, Monnaie de Paris, Jardin d’Acclimatation et autres lieux'
+    : event ? `${event.venue}${event.city ? ` · ${event.city}` : ''}` : ''
+  const eventPrice = isParisSummerFestival
+    ? 'Propositions gratuites ou très accessibles · certains rendez-vous à 13 €'
+    : event?.price !== 'À compléter' ? event?.price : null
+  const eventTimes = event?.time ?? (isParisSummerFestival ? '19 h ou 22 h selon les propositions' : null)
 
   useEffect(() => {
     const section = sectionRef.current
@@ -76,6 +96,12 @@ export default function MediaReveal({ article, event }: Props) {
       //   p = 1   → section entièrement scrollée
       const p = clamp((vh - rect.top) / sectionH, 0, 1)
 
+      /* Lissage temporel limité aux entrées : un geste de scroll rapide ne
+         peut plus faire apparaître une carte presque instantanément. */
+      c1!.classList.toggle('mfr-card--entry-smoothing', p < 0.52)
+      c2!.classList.toggle('mfr-card--entry-smoothing', p < 0.74)
+      c4?.classList.toggle('mfr-card--entry-smoothing', p < 0.84)
+
       /* ── ENTRÉE — ordre : Magazine → Style de danse → Sortir ────────── */
       // Le Magazine conserve un court temps de respiration avant son entrée ;
       // les cartes suivantes restent synchronisées avec ce départ global.
@@ -83,23 +109,23 @@ export default function MediaReveal({ article, event }: Props) {
       // avec 6 % de chevauchement pour conserver une continuité parfaite.
 
       /* ① Magazine — plateau prolongé de 10 % avant sa sortie */
-      const c1e  = ss(0.25, 0.46, p)
-      const c1s  = ss(0.56, 0.64, p)
+      const c1e  = ssp(0.22, 0.52, p)
+      const c1s  = ss(0.76, 0.84, p)
       const c1tx = lerp(-9, 0, c1e) + lerp(0, -2, c1s)
       const c1ty = lerp(9, 0, c1e)
 
       /* ② Style de danse — entrée retardée, puis court plateau lisible */
-      const c2e  = ss(0.48, 0.68, p)
+      const c2e  = ssp(0.50, 0.74, p)
       const c2tx = lerp(9, 0, c2e)
       const c2ty = lerp(-9, 0, c2e)
 
       /* ③ Sortir — entre pendant la disparition progressive du Magazine */
-      const c4e  = ss(0.58, 0.80, p)
+      const c4e  = ssp(0.62, 0.84, p)
       const c4ty = lerp(10, 0, c4e)
 
       /* ── SORTIES INDIVIDUELLES — chaque encart cède progressivement
          la place au suivant après un court temps d'installation. ─────── */
-      const c1x = ss(0.56, 0.70, p)
+      const c1x = ss(0.76, 0.90, p)
       const c2x = ss(0.76, 0.84, p)
       const c4x = ss(0.84, 0.90, p)
 
@@ -146,26 +172,44 @@ export default function MediaReveal({ article, event }: Props) {
               className="mfr-card-inner"
               aria-label={article.title}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={article.image}
-                alt=""
-                aria-hidden="true"
-                className="mfr-card-img"
-                loading="lazy"
-              />
-              <div className="mfr-card-gradient" />
-              <div className="mfr-card-body">
-                <span className="mfr-badge mfr-badge--mag">Magazine</span>
-                <span className="mfr-card-cat">{article.category}</span>
-                <h2 className="mfr-card-title">{article.title}</h2>
-                <p className="mfr-card-chapo">{article.chapo}</p>
-                <div className="mfr-card-foot">
-                  <span className="mfr-card-meta">
-                    {article.publishedDate}&thinsp;·&thinsp;{article.readTime} de lecture
-                  </span>
-                  <span className="mfr-card-cta">Lire l&apos;article →</span>
+              <div className="mfr-card-face mfr-card-face--front">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={article.image}
+                  alt=""
+                  aria-hidden="true"
+                  className="mfr-card-img"
+                  loading="lazy"
+                />
+                <div className="mfr-card-gradient" />
+                <div className="mfr-card-body">
+                  <span className="mfr-badge mfr-badge--mag">Magazine</span>
+                  <span className="mfr-card-cat">{article.category}</span>
+                  <h2 className="mfr-card-title">{article.title}</h2>
+                  <p className="mfr-card-chapo">{article.chapo}</p>
+                  <div className="mfr-card-foot">
+                    <span className="mfr-card-meta">
+                      {article.publishedDate}&thinsp;·&thinsp;{article.readTime} de lecture
+                    </span>
+                    <span className="mfr-card-cta">Lire l&apos;article →</span>
+                  </div>
                 </div>
+              </div>
+              <div className="mfr-card-face mfr-card-face--back mfr-card-back mfr-card-back--mag">
+                <div className="mfr-preview-browser" aria-hidden="true">
+                  <span /><span /><span />
+                </div>
+                <div className="mfr-preview-image">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={article.image} alt="" aria-hidden="true" loading="lazy" />
+                  {article.imageCredit ? (
+                    <span className="mfr-preview-image-credit">{article.imageCredit}</span>
+                  ) : null}
+                </div>
+                <span className="mfr-preview-kicker">Magazine · {article.category}</span>
+                <h3 className="mfr-preview-title">{article.title}</h3>
+                <p className="mfr-preview-copy">{article.chapo}</p>
+                <span className="mfr-preview-cta">Aperçu de l&apos;article →</span>
               </div>
             </Link>
           </div>
@@ -181,24 +225,45 @@ export default function MediaReveal({ article, event }: Props) {
               className="mfr-card-inner"
               aria-label="Explorer l'encyclopédie des styles de danse"
             >
-              <div className="mfr-exp-grid" aria-hidden="true">
-                <svg className="mfr-exp-icon" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-                  <circle cx="32" cy="12" r="6" stroke="currentColor" strokeWidth="1.5" />
-                  <path d="M32 18 C28 26 20 30 18 40" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                  <path d="M32 18 C36 26 44 30 46 40" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                  <path d="M26 30 C20 34 16 42 14 52" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                  <path d="M38 30 C44 34 48 42 50 52" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
+              <div className="mfr-card-face mfr-card-face--front">
+                {/* Image locale imposée : aucun ancien fond ou fallback généré. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/styles-de-danse/jazz.png"
+                  alt=""
+                  aria-hidden="true"
+                  className="mfr-card-img"
+                  loading="lazy"
+                />
+                <div className="mfr-card-gradient" />
+                <div className="mfr-card-body mfr-card-body--exp mfr-card-body--lower">
+                  <span className="mfr-badge mfr-badge--exp">Explorer</span>
+                  <span className="mfr-card-cat">Encyclopédie de la danse</span>
+                  <h2 className="mfr-card-title">Styles de danse</h2>
+                  <p className="mfr-card-chapo">
+                    Hip-hop, contemporain, classique, afro, waacking — chaque style
+                    porte une histoire et une manière d&apos;habiter le corps.
+                  </p>
+                  <span className="mfr-card-cta mfr-card-cta--exp">Découvrir →</span>
+                </div>
               </div>
-              <div className="mfr-card-body mfr-card-body--exp">
-                <span className="mfr-badge mfr-badge--exp">Explorer</span>
-                <span className="mfr-card-cat">Encyclopédie de la danse</span>
-                <h2 className="mfr-card-title">Styles de danse</h2>
-                <p className="mfr-card-chapo">
-                  Hip-hop, contemporain, classique, afro, waacking — chaque style
-                  porte une histoire et une manière d&apos;habiter le corps.
-                </p>
-                <span className="mfr-card-cta mfr-card-cta--exp">Découvrir →</span>
+              <div className="mfr-card-face mfr-card-face--back mfr-card-back mfr-card-back--styles">
+                <div className="mfr-style-preview-head">
+                  <span className="mfr-preview-kicker">Encyclopédie Dance Lab</span>
+                  <h3 className="mfr-preview-title">Explorer les styles</h3>
+                </div>
+                <div className="mfr-style-preview" aria-hidden="true">
+                  <div><img src="/images/styles-de-danse/jazz.png" alt="" /><span>Jazz</span></div>
+                  <div><img src="/images/styles-de-danse/break.png" alt="" /><span>Break</span></div>
+                  <div><img src="/images/styles-de-danse/danseclassique.png" alt="" /><span>Classique</span></div>
+                  <div><img src="/images/sofiastanic.jpg" alt="" /><span>Waacking</span></div>
+                  <div><img src="/images/les-invites-header/imagetest.png" alt="" /><span>Voguing</span></div>
+                  <div><img src="/images/les-invites-header/imagetest.png" alt="" /><span>Krump</span></div>
+                  <div><img src="/images/styles-de-danse/claquettes.png" alt="" /><span>Claquettes</span></div>
+                  <div><img src="/images/les-invites-header/imagetest.png" alt="" /><span>Street jazz</span></div>
+                  <div><img src="/images/les-invites-header/imagetest.png" alt="" /><span>Hip-hop</span></div>
+                </div>
+                <span className="mfr-preview-cta">Ouvrir l&apos;encyclopédie →</span>
               </div>
             </Link>
           </div>
@@ -215,44 +280,41 @@ export default function MediaReveal({ article, event }: Props) {
                 className="mfr-card-inner"
                 aria-label={event.title}
               >
-                {event.image ? (
-                  <>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={event.image}
-                      alt=""
-                      aria-hidden="true"
-                      className="mfr-card-img"
-                      loading="lazy"
-                    />
-                    <div className="mfr-card-gradient" />
-                  </>
-                ) : (
-                  /* Fond décoratif si pas de photo — motif radial rose */
-                  <div className="mfr-sort-bg" aria-hidden="true">
-                    <svg className="mfr-sort-icon" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-                      {/* Icône calendrier stylisée */}
-                      <rect x="8" y="16" width="48" height="38" rx="4" stroke="currentColor" strokeWidth="1.5" />
-                      <line x1="8" y1="27" x2="56" y2="27" stroke="currentColor" strokeWidth="1.5" />
-                      <line x1="20" y1="10" x2="20" y2="22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                      <line x1="44" y1="10" x2="44" y2="22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                      <circle cx="21" cy="38" r="2.2" fill="currentColor" />
-                      <circle cx="32" cy="38" r="2.2" fill="currentColor" />
-                      <circle cx="43" cy="38" r="2.2" fill="currentColor" />
-                      <circle cx="21" cy="48" r="2.2" fill="currentColor" />
-                      <circle cx="32" cy="48" r="2.2" fill="currentColor" />
-                    </svg>
+                <div className="mfr-card-face mfr-card-face--front">
+                  {/* Image locale imposée : aucun fallback vers event.image ou un visuel généré. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/images/sorties/parisfestivalete.png"
+                    alt=""
+                    aria-hidden="true"
+                    className="mfr-card-img"
+                    loading="lazy"
+                  />
+                  <div className="mfr-card-gradient" />
+                  <div className="mfr-card-body mfr-card-body--lower">
+                    <span className="mfr-badge mfr-badge--sort">Sortir</span>
+                    <span className="mfr-card-cat">{event.category}&thinsp;·&thinsp;{event.city}</span>
+                    <h2 className="mfr-card-title">{event.title}</h2>
+                    <p className="mfr-card-chapo">{event.description}</p>
+                    <div className="mfr-card-foot">
+                      <span className="mfr-card-meta">{event.dates}</span>
+                      <span className="mfr-card-cta mfr-card-cta--sort">Voir l&apos;événement →</span>
+                    </div>
                   </div>
-                )}
-                <div className="mfr-card-body">
-                  <span className="mfr-badge mfr-badge--sort">Sortir</span>
-                  <span className="mfr-card-cat">{event.category}&thinsp;·&thinsp;{event.city}</span>
-                  <h2 className="mfr-card-title">{event.title}</h2>
-                  <p className="mfr-card-chapo">{event.description}</p>
-                  <div className="mfr-card-foot">
-                    <span className="mfr-card-meta">{event.dates}</span>
-                    <span className="mfr-card-cta mfr-card-cta--sort">Voir l&apos;événement →</span>
-                  </div>
+                </div>
+                <div className="mfr-card-face mfr-card-face--back mfr-card-back mfr-card-back--event">
+                  <span className="mfr-preview-kicker">Informations pratiques</span>
+                  <h3 className="mfr-preview-title">{event.title}</h3>
+                  <dl className="mfr-event-facts">
+                    <div><dt>Dates</dt><dd>{eventDates}</dd></div>
+                    <div><dt>Lieux</dt><dd>{eventVenue}</dd></div>
+                    {eventTimes ? <div><dt>Horaires</dt><dd>{eventTimes}</dd></div> : null}
+                    {eventPrice ? <div><dt>Tarifs</dt><dd>{eventPrice}</dd></div> : null}
+                    {isParisSummerFestival ? (
+                      <div><dt>Programme</dt><dd>Danse, performance, cirque, théâtre et propositions en espace public</dd></div>
+                    ) : null}
+                  </dl>
+                  <span className="mfr-preview-cta">Voir l&apos;événement →</span>
                 </div>
               </Link>
             </div>

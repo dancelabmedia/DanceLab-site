@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import HistoryBackLink from "../../../../components/HistoryBackLink"
 import { getMagazineArticleBySlug, magazineArticles } from "../../articles-data"
 
 type ArticlePageProps = {
@@ -52,9 +53,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       <section className="article-hero">
         <div className="container article-hero-grid">
           <div className="article-hero-copy">
-            <Link href="/decouvrir" className="article-back">
+            <HistoryBackLink fallbackHref="/decouvrir" className="article-back">
               Retour au magazine
-            </Link>
+            </HistoryBackLink>
             <span className="section-label">{article.category}</span>
             <h1>{article.title}</h1>
             <p>{article.chapo}</p>

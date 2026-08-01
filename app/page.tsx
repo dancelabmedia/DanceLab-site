@@ -703,18 +703,12 @@ export default function DanceLabPage() {
           getGuestImage={getHomeGuestImage}
         />
 
+        <div className="episodes-newsletter-transition" aria-hidden="true" />
+
       {/* ========================================
           NEWSLETTER
       ======================================== */}
       <section className="newsletter" id="newsletter">
-        <div className="newsletter-watermark">
-          <img
-            src="/logo.png"
-            alt="Dance Lab"
-            className="newsletter-logo-bg"
-          />
-        </div>
-
         <div className="container">
           <div className="nl-inner fu">
             <span className="section-label">
@@ -725,6 +719,13 @@ export default function DanceLabPage() {
               Interviews, spectacles à découvrir, conseils professionnels et actualités culturelles,
               directement dans votre boîte mail. Gratuit, sans spam.
             </p>
+            <div className="newsletter-watermark">
+              <img
+                src="/logo.png"
+                alt="Dance Lab"
+                className="newsletter-logo-bg"
+              />
+            </div>
             <form
               className="nl-form"
               action="https://dancelablemedia.substack.com/api/v1/free?nojs=true"

@@ -1424,16 +1424,50 @@ button {
     0  4px 14px rgba(0, 0, 0, .52);
 }
 
+/* Le scroll peut avancer par grands incréments avec une molette ou un trackpad.
+   Ce lissage, actif uniquement pendant l'entrée, conserve une installation
+   progressive des cartes sans ralentir leurs sorties. */
+.mfr-card.mfr-card--entry-smoothing {
+  transition:
+    opacity    650ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform  650ms cubic-bezier(0.22, 1, 0.36, 1),
+    scale      380ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 350ms ease;
+}
+
 /* Lien intérieur — couvre toute la surface de la carte via inset: 0
    Toute la carte est cliquable, pas seulement le CTA en bas */
 .mfr-card-inner {
   position: absolute;
   inset: 0;
-  display: flex;
-  flex-direction: column;
   text-decoration: none;
   color: inherit;
   outline: none;
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mfr-card:hover .mfr-card-inner {
+    transform: rotateY(180deg);
+  }
+}
+
+.mfr-card-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: inherit;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.mfr-card-face--back {
+  transform: rotateY(180deg) translateZ(1px);
 }
 .mfr-card-inner:focus-visible {
   outline: 2px solid rgba(167, 139, 250, .80);
@@ -1453,6 +1487,205 @@ button {
 }
 .mfr-card:hover .mfr-card-img {
   transform: scale(1.04);
+}
+
+/* Versos — teasers sobres des pages de destination. */
+.mfr-card-back {
+  justify-content: flex-start;
+  padding: clamp(17px, 2vw, 24px);
+  background: #FAFAFA;
+  color: #233033;
+  box-shadow: inset 0 0 0 1px rgba(35, 48, 51, .08);
+}
+
+.mfr-card-back--mag {
+  background: linear-gradient(155deg, #FAFAFA 0%, #f2effa 100%);
+}
+
+.mfr-card-back--styles {
+  background: linear-gradient(155deg, #FAFAFA 0%, #f4f1e8 100%);
+}
+
+.mfr-card-back--event {
+  background: linear-gradient(155deg, #FAFAFA 0%, #f8eef3 100%);
+}
+
+.mfr-preview-browser {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 18px;
+  padding: 0 8px;
+  border: 1px solid rgba(35, 48, 51, .10);
+  border-bottom: 0;
+  border-radius: 7px 7px 0 0;
+  background: rgba(255, 255, 255, .72);
+}
+
+.mfr-preview-browser span {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(35, 48, 51, .26);
+}
+
+.mfr-preview-image {
+  position: relative;
+  flex: 1 1 42%;
+  min-height: clamp(120px, 14vw, 185px);
+  margin-bottom: clamp(14px, 1.8vw, 21px);
+  overflow: hidden;
+  border-radius: 0 0 9px 9px;
+}
+
+.mfr-preview-image img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center 30%;
+}
+
+.mfr-preview-image-credit {
+  position: absolute;
+  right: 7px;
+  bottom: 6px;
+  max-width: calc(100% - 14px);
+  padding: 2px 5px;
+  border-radius: 3px;
+  background: rgba(5, 5, 5, .28);
+  color: rgba(255, 255, 255, .88);
+  font-size: clamp(6px, .55vw, 8px);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: .015em;
+  text-align: right;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .72);
+  backdrop-filter: blur(2px);
+}
+
+.mfr-preview-kicker {
+  font-size: clamp(8px, .75vw, 10px);
+  font-weight: 800;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: rgba(35, 48, 51, .48);
+}
+
+.mfr-preview-title {
+  margin: 7px 0 9px;
+  font-family: var(--font-display, Georgia, serif);
+  font-size: clamp(16px, 1.65vw, 23px);
+  line-height: 1.14;
+  color: #233033;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mfr-preview-copy {
+  margin: 0;
+  color: rgba(35, 48, 51, .62);
+  font-size: clamp(10px, .9vw, 12px);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mfr-preview-cta {
+  margin-top: auto;
+  padding-top: 15px;
+  font-size: clamp(9px, .78vw, 11px);
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #5B7377;
+}
+
+.mfr-style-preview {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: 5px;
+  margin: 8px 0 9px;
+}
+
+.mfr-style-preview div {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 7px;
+  background: #233033;
+}
+
+.mfr-style-preview img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.mfr-style-preview span {
+  position: absolute;
+  inset: auto 5px 5px;
+  color: #fff;
+  font-size: clamp(7px, .65vw, 9px);
+  font-weight: 700;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, .8);
+}
+
+.mfr-style-preview-head {
+  flex: 0 0 auto;
+}
+
+.mfr-card-back--styles .mfr-preview-title {
+  margin-bottom: 0;
+}
+
+.mfr-card-back--styles .mfr-preview-cta {
+  flex: 0 0 auto;
+  padding-top: 5px;
+}
+
+.mfr-event-facts {
+  display: grid;
+  flex: 1 1 auto;
+  align-content: space-evenly;
+  gap: clamp(8px, 1.2vw, 13px);
+  margin: clamp(10px, 1.4vw, 16px) 0 0;
+}
+
+.mfr-event-facts div {
+  padding-bottom: clamp(7px, .8vw, 10px);
+  border-bottom: 1px solid rgba(35, 48, 51, .11);
+}
+
+.mfr-event-facts dt {
+  margin-bottom: 2px;
+  color: rgba(35, 48, 51, .44);
+  font-size: clamp(7px, .65vw, 9px);
+  font-weight: 800;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.mfr-event-facts dd {
+  margin: 0;
+  color: #233033;
+  font-size: clamp(10px, .9vw, 12px);
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mfr-card-inner {
+    transition: none;
+  }
 }
 
 /* Dégradé du bas vers le haut pour la lisibilité du texte */
@@ -1577,27 +1810,27 @@ button {
 
 /* Carte 1 — Article (dominante, haut-gauche) */
 .mfr-card--article {
-  left: 6%;
+  left: 9%;
   top: 9%;
   width: clamp(220px, 31vw, 390px);
   aspect-ratio: 5 / 7;
   z-index: 1;
 }
 
-/* Carte 2 — Style de danse (ancienne place du Podcast, inchangée) */
+/* Carte 2 — Style de danse, légèrement rapprochée du centre */
 .mfr-card--style {
-  right: 5%;
+  right: 9%;
   top: 18%;
   width: clamp(185px, 24vw, 305px);
   aspect-ratio: 5 / 7;
   z-index: 2;
 }
 
-/* Carte 3 — Sortir : coordonnées inchangées, présence légèrement renforcée */
+/* Carte 3 — Sortir : recentrée et agrandie entre les deux cartes extérieures */
 .mfr-card--sortir {
-  left: 39%;
+  left: 42%;
   top: 22%;
-  width: clamp(160px, 19vw, 240px);
+  width: clamp(175px, 23vw, 285px);
   aspect-ratio: 4 / 5;
   z-index: 2;
 }
@@ -1659,12 +1892,19 @@ button {
   pointer-events: none;
 }
 
-/* Corps texte de l'Explorer — pas en bas, mais ancré en haut */
+/* Corps texte de l'Explorer — même ancrage bas que la carte Sortir */
 .mfr-card-body--exp {
   position: relative;
   z-index: 2;
-  padding: 116px 22px 28px;  /* top padding laisse de l'air pour l'icône */
-  margin-top: 0;
+  padding: 22px;
+  margin-top: auto;
+}
+
+/* Ancrage éditorial commun aux cartes Styles et Sortir. Le léger décalage
+   rapproche le bloc du tiers inférieur sans modifier ses espacements internes. */
+.mfr-card-body--lower {
+  margin-top: auto;
+  transform: translateY(6px);
 }
 
 /* ── Label "Magazine · Podcast · Explorer" — apparaît en dernier ── */
@@ -1735,7 +1975,7 @@ button {
   }
 
   .mfr-card-body--exp {
-    padding-top: 80px;
+    padding-top: 22px;
   }
 
   .mfr-exp-icon {
@@ -3893,21 +4133,31 @@ button {
 /* ===========================
    NEWSLETTER
 =========================== */
-.newsletter {
+.episodes-newsletter-transition {
+  position: relative;
+  z-index: 1;
+  height: clamp(120px, 18vh, 180px);
   background: linear-gradient(
     to bottom,
-    rgba(193, 208, 223, 0) 0%,
-    #C1D0DF 16%,
-    #C1D0DF 72%,
-    rgba(193, 208, 223, .58) 86%,
-    rgba(193, 208, 223, 0) 100%
+    rgba(250, 250, 250, 0) 0%,
+    rgba(250, 250, 250, .08) 12%,
+    rgba(250, 250, 250, .22) 28%,
+    rgba(250, 250, 250, .48) 50%,
+    rgba(250, 250, 250, .75) 72%,
+    rgba(250, 250, 250, .93) 90%,
+    #FAFAFA 100%
   );
+  pointer-events: none;
+}
+
+.newsletter {
+  background: #FAFAFA;
   position: relative;
   z-index: auto;
   overflow: hidden;
-  min-height: 68vh;
+  min-height: 0;
   margin-top: 0;
-  padding: clamp(36px, 5vh, 54px) 0 clamp(86px, 12vh, 128px);
+  padding: clamp(36px, 5vh, 54px) 0 clamp(48px, 7vh, 68px);
   scroll-margin-top: var(--nav-h);
   display: flex;
   align-items: flex-start;
@@ -3917,20 +4167,32 @@ button {
 }
 .newsletter-watermark {
   position: absolute;
-  top: 50%;
+  top: 68%;
   left: 50%;
   transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(94vw, 920px);
+  height: clamp(180px, 24vw, 280px);
+  margin: 0;
+  overflow: hidden;
   pointer-events: none;
   user-select: none;
-  z-index: 1;
+  z-index: 0;
 }
 
 .newsletter-logo-bg {
-  width: 12000px !important;
-  height: auto;
-  opacity: 0.05;
+  display: block;
+  width: min(94vw, 920px) !important;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: invert(1);
+  opacity: 0.045;
 }
 .nl-inner { position: relative; z-index: 2; max-width: 760px; margin: 0 auto; text-align: center; }
+.nl-inner > :not(.newsletter-watermark) { position: relative; z-index: 1; }
 .nl-title { font-family: var(--font-display); font-size: clamp(34px, 4.5vw, 58px); font-weight: 700; color: #233033; line-height: 1.08; margin-bottom: 18px; }
 .nl-desc { max-width: 620px; margin: 0 auto 44px; font-size: 17px; color: rgba(35,48,51,.68); line-height: 1.65; }
 .nl-form { display: flex; gap: 10px; max-width: 520px; margin: 0 auto 20px; }
@@ -3979,11 +4241,10 @@ button {
 }
 .nl-note { font-size: 12px; color: rgba(255,255,255,.28); }
 
-/* Respiration finale : le bleu clair finit de se dissoudre dans le blanc
-   avant que le footer ne commence. */
+/* Courte respiration blanche entre la Newsletter et le footer. */
 .mxp-outro {
-  height: clamp(42px, 7vh, 76px);
-  background: transparent;
+  height: clamp(20px, 3vh, 32px);
+  background: #FAFAFA;
 }
 
 /* ===========================

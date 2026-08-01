@@ -71,6 +71,7 @@ export default function LatestEpisodeSticky({
   getGuestImage,
 }: Props) {
   const sectionRef   = useRef<HTMLDivElement>(null)
+  const compRef      = useRef<HTMLDivElement>(null)
   const leftColRef   = useRef<HTMLDivElement>(null)
   const ivwHeaderRef = useRef<HTMLDivElement>(null)
   const ivwRevealRef = useRef<HTMLDivElement>(null)
@@ -80,16 +81,18 @@ export default function LatestEpisodeSticky({
   /* ── Scroll handler ───────────────────────────────────────────────── */
   useEffect(() => {
     const section   = sectionRef.current
+    const comp      = compRef.current
     const leftCol   = leftColRef.current
     const ivwHeader = ivwHeaderRef.current
     const ivwReveal = ivwRevealRef.current
     const seeAll    = seeAllRef.current
-    if (!section || !leftCol || !ivwHeader || !ivwReveal || !seeAll) return
+    if (!section || !comp || !leftCol || !ivwHeader || !ivwReveal || !seeAll) return
 
     const isMobile = window.innerWidth < 768
 
     if (isMobile) {
       /* Mobile : tout visible, aucune animation JS */
+      comp.style.cssText = 'opacity:1;transform:none;filter:none'
       leftCol.style.cssText  = 'opacity:1;transform:none'
       ivwHeader.style.cssText = 'opacity:1;transform:none'
       ivwReveal.style.cssText = 'opacity:1;transform:none;pointer-events:auto'
@@ -98,6 +101,7 @@ export default function LatestEpisodeSticky({
     }
 
     /* ── will-change pour la couche de compositing ── */
+    comp.style.willChange      = 'opacity, transform, filter'
     leftCol.style.willChange   = 'opacity, transform'
     ivwHeader.style.willChange = 'opacity, transform'
     ivwReveal.style.willChange = 'opacity, transform'
@@ -118,21 +122,29 @@ export default function LatestEpisodeSticky({
       // les seuils conservent une entrée progressive sous l'encart Sortir.
       const p = clamp((vh - rect.top) / sectionH, 0, 1)
 
+      /* Entrée commune — révélation strictement verticale, du haut vers le bas,
+         accompagnée d'un flou léger qui se résorbe progressivement. */
+      const blockP = ss(0.05, 0.55, p)
+      comp!.style.opacity = blockP.toFixed(3)
+      comp!.style.transform =
+        `translate3d(0, ${lerp(-24, 0, blockP).toFixed(1)}px, 0)`
+      comp!.style.filter = `blur(${lerp(8, 0, blockP).toFixed(2)}px)`
+
       /* ① Carte Dernier épisode — léger temps de respiration après MediaReveal. */
       const lp = ss(0.05, 0.22, p)
       leftCol!.style.opacity   = lp.toFixed(3)
       leftCol!.style.transform =
-        `translateY(${lerp(44, 0, lp).toFixed(1)}px) scale(${lerp(0.97, 1, lp).toFixed(3)})`
+        `translateY(${lerp(-12, 0, lp).toFixed(1)}px)`
 
       /* ② Titre Interviews — suit presque immédiatement la carte gauche. */
       const hp = ss(0.08, 0.22, p)
       ivwHeader!.style.opacity   = hp.toFixed(3)
-      ivwHeader!.style.transform = `translateY(${lerp(20, 0, hp).toFixed(1)}px)`
+      ivwHeader!.style.transform = `translateY(${lerp(-10, 0, hp).toFixed(1)}px)`
 
-      /* ③ Cartes du carrousel — entrent ensuite depuis la droite. */
+      /* ③ Cartes du carrousel — même axe vertical, sans glissement latéral. */
       const cp = ss(0.16, 0.32, p)
       ivwReveal!.style.opacity       = cp.toFixed(3)
-      ivwReveal!.style.transform     = `translateX(${lerp(28, 0, cp).toFixed(1)}px)`
+      ivwReveal!.style.transform     = `translateY(${lerp(-10, 0, cp).toFixed(1)}px)`
       ivwReveal!.style.pointerEvents = cp > 0.35 ? 'auto' : 'none'
 
       /* ④ Contrôles — lien et flèches terminent la séquence. */
@@ -149,9 +161,9 @@ export default function LatestEpisodeSticky({
         ).slice(0, 3)
 
         realCards.forEach((card, i) => {
-          /* Démarre depuis un état légèrement en bas */
+          /* Démarre légèrement au-dessus : révélation verticale homogène. */
           card.style.opacity   = '0'
-          card.style.transform = 'translateY(16px)'
+          card.style.transform = 'translateY(-10px)'
           /* Double-RAF : garantit que l'état initial est peint avant la transition */
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
@@ -178,7 +190,7 @@ export default function LatestEpisodeSticky({
 
         {/* Fond sombre + composition — visible dès l'entrée dans la section */}
         <div className="les-scene-b">
-          <div className="les-comp">
+          <div ref={compRef} className="les-comp">
 
             {/* ════════════════════════════
                 Colonne gauche — Dernier épisode

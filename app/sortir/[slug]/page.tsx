@@ -1,6 +1,7 @@
 import { headers } from "next/headers"
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import HistoryBackLink from "../../../components/HistoryBackLink"
 import type { AgendaEvent } from "../../agenda/agenda-data"
 import { formatAgendaDateRange, resolveAgendaEventLocation } from "../../agenda/agenda-data"
 
@@ -42,9 +43,9 @@ export default async function SortirEventPage({
         {event.image ? <img src={event.image} alt={event.title} /> : null}
         <div className="agenda-detail-hero-shade" />
         <div className="container agenda-detail-hero-content">
-          <Link href="/sortir" className="agenda-detail-back">
+          <HistoryBackLink fallbackHref="/sortir" className="agenda-detail-back">
             Retour aux sorties
-          </Link>
+          </HistoryBackLink>
           <span className="section-label">{event.category}</span>
           <h1>{event.title}</h1>
           <p>{event.description}</p>
