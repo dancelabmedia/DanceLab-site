@@ -1,6 +1,6 @@
 'use client'
 
-import { episodes } from "../../data/episodes"
+import { episodesList as episodes, type EpisodeListItem } from "../../data/episodes-list"
 import Link from "next/link"
 import { useState, useMemo, useRef, useEffect, useLayoutEffect, useCallback } from "react"
 import { createPortal } from "react-dom"
@@ -8,7 +8,7 @@ import AnimatedCounter from "../components/AnimatedCounter"
 
 const EPISODES_PAGE_SIZE = 12
 
-function getGuestCardImage(episode: (typeof episodes)[number]) {
+function getGuestCardImage(episode: EpisodeListItem) {
   const episodeImageName = episode.image
     .split("/")
     .pop()
@@ -30,7 +30,7 @@ function getGuestCardImage(episode: (typeof episodes)[number]) {
 // Retourne l'image depuis /les-invites-header/ (photos plein-cadre éditoriales).
 // Utilise le même nom de fichier que episode.image, juste dans un dossier différent.
 // Le fallback (onError dans le JSX) revient sur getGuestCardImage si le fichier est absent.
-function getHeroHeaderImage(episode: (typeof episodes)[number]) {
+function getHeroHeaderImage(episode: EpisodeListItem) {
   const filename = episode.image
     .split("/")
     .pop()
@@ -41,7 +41,7 @@ function getHeroHeaderImage(episode: (typeof episodes)[number]) {
     : getGuestCardImage(episode)
 }
 
-function getThematique(episode: (typeof episodes)[number]): string {
+function getThematique(episode: EpisodeListItem): string {
   const t = (episode.title + " " + episode.excerpt).toLowerCase()
   if (/santé|kiné|bless|corps|physique|douleur|bienêtre|bien-être|médecin|préserv/.test(t))
     return "Santé & Corps"
