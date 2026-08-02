@@ -1,0 +1,216 @@
+import { episodes } from "../../../data/episodes"
+
+export default function DerniersEpisodesPage() {
+  return (
+    <main id="episodes" className="episodes-page">
+
+      <section className="episodes-header">
+        <div className="container">
+
+          <span className="section-label">
+            Podcast Dance Lab
+          </span>
+
+          <h1>
+            Derniers épisodes
+          </h1>
+
+          <p>
+            Retrouvez les dernières conversations Dance Lab.
+          </p>
+
+          <div className="episodes-stats">
+
+            <div className="episodes-count">
+              <strong>{episodes.length}</strong>
+              <span>épisodes</span>
+            </div>
+
+            <div className="episodes-search">
+              <input
+                type="text"
+                placeholder="Rechercher un invité, un thème..."
+              />
+            </div>
+
+          </div>
+
+
+          <div className="episodes-filters">
+
+            <button className="active">
+              Tous
+            </button>
+
+            <button>
+              Droit
+            </button>
+
+            <button>
+              Santé mentale
+            </button>
+
+            <button>
+              Carrière
+            </button>
+
+            <button>
+              Entrepreneuriat
+            </button>
+
+          </div>
+
+        </div>
+      </section>
+
+
+      <section className="episodes-list">
+
+        <div className="container">
+
+          <div className="episodes-grid">
+
+            {episodes.map((episode) => (
+
+              <article
+                key={episode.number}
+                className="episode-card"
+              >
+
+                <div className="episode-image-wrapper">
+
+                  <img
+                    src={episode.image}
+                    alt={episode.guest}
+                    className="episode-image"
+                  />
+
+                </div>
+
+
+                <div className="episode-content">
+
+                  <span className="episode-meta">
+                    Épisode {episode.number}
+                  </span>
+
+
+                  <h2>
+                    {episode.title}
+                  </h2>
+
+
+                  <h3>
+                    Avec {episode.guest}
+                  </h3>
+
+
+                  <p>
+                    {episode.description}
+                  </p>
+
+
+                  <a
+                    href={episode.link}
+                    target="_blank"
+                    className="btn btn-primary"
+                  >
+                    Écouter l'épisode
+                  </a>
+
+                </div>
+
+              </article>
+
+            ))}
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+  )
+}
+
+/* Episodes premium layout */
+
+.episodes-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:32px;
+}
+
+
+.episode-card {
+  background:white;
+  border-radius:28px;
+  overflow:hidden;
+  border:1px solid rgba(0,0,0,.06);
+  display:flex;
+  flex-direction:column;
+}
+
+
+.episode-image-wrapper {
+  overflow:hidden;
+}
+
+
+.episode-image {
+  width:100%;
+  aspect-ratio:16/10;
+  object-fit:cover;
+  display:block;
+  transition:transform .6s ease;
+}
+
+
+.episode-card:hover .episode-image {
+  transform:scale(1.05);
+}
+
+
+.episode-content {
+  padding:28px;
+}
+
+
+.episode-meta {
+  font-size:13px;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  color:#5B7377;
+}
+
+
+.episode-content h2 {
+  font-family:var(--font-display);
+  font-size:26px;
+  line-height:1.2;
+  margin:16px 0 12px;
+}
+
+
+.episode-content h3 {
+  font-size:16px;
+  font-weight:500;
+  margin-bottom:16px;
+}
+
+
+.episode-content p {
+  color:#666;
+  line-height:1.7;
+}
+
+
+@media(max-width:900px){
+
+  .episodes-grid{
+    grid-template-columns:1fr;
+  }
+
+}
+grep -n "episodes-grid" app/ecouter/derniers-episodes/page.
