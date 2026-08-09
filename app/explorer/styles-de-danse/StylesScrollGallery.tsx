@@ -209,7 +209,15 @@ export default function StylesScrollGallery({ styles }: Props) {
           <div className="ssg-progress-fill" ref={progressRef} />
         </div>
 
-        <p className="ssg-hint" aria-hidden="true">Faites défiler ↓</p>
+        <button
+          className="ssg-hint ssg-hint--btn"
+          onClick={() => {
+            document.querySelector('.sty-magazine')?.scrollIntoView({ behavior: 'smooth' })
+          }}
+          aria-label="Passer la galerie et continuer vers la suite"
+        >
+          Continuer ↓
+        </button>
       </div>
     </div>
   )

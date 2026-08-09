@@ -388,14 +388,14 @@ export default function IvwCarousel({ pool, latestSlug, getGuestImage }: Props) 
   if (episodes.length === 0) {
     return (
       <div className="les-ivw-wrap">
-        <div className="les-ivw-track les-ivw-track--loading">
-          {Array.from({ length: VISIBLE }).map((_, i) => (
-            <div key={i} className="les-ivw-card les-ivw-card--skeleton" aria-hidden="true">
-              <div className="les-ivw-img-wrap les-ivw-img-wrap--skeleton" />
-              <div className="les-ivw-skel-line les-ivw-skel-line--name" />
-              <div className="les-ivw-skel-line les-ivw-skel-line--meta" />
-            </div>
-          ))}
+        <div className="les-ivw-viewport">
+          <div className="les-ivw-track les-ivw-track--loading">
+            {Array.from({ length: VISIBLE }).map((_, i) => (
+              <div key={i} className="les-ivw-card les-ivw-card--skeleton" aria-hidden="true">
+                <div className="les-ivw-img-wrap les-ivw-img-wrap--skeleton" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     )
@@ -403,6 +403,9 @@ export default function IvwCarousel({ pool, latestSlug, getGuestImage }: Props) 
 
   return (
     <div className="les-ivw-wrap" ref={wrapRef}>
+      {/* Viewport clipper — overflow:hidden ici pour masquer les cartes partielles,
+          les flèches restent dans le wrap (position:absolute sur le wrap) */}
+      <div className="les-ivw-viewport">
       {/* Piste scrollable — pas de scroll-snap pour ne pas interférer
           avec la gestion manuelle du scrollLeft */}
       <div className="les-ivw-track" ref={trackRef}>
@@ -443,6 +446,19 @@ export default function IvwCarousel({ pool, latestSlug, getGuestImage }: Props) 
                       }
                     }}
                   />
+
+                  {/* Overlay info — visible par défaut, disparaît au survol */}
+                  <div className="les-ivw-info" aria-hidden="true">
+                    <div className="les-ivw-info-top">
+                      <span className="les-ivw-info-ep">Ép.&nbsp;{ep.number}</span>
+                      <span className="les-ivw-info-dur">{ep.duration}</span>
+                    </div>
+                    <div className="les-ivw-info-bottom">
+                      <p className="les-ivw-info-title">{ep.title}</p>
+                      <p className="les-ivw-info-guest">Avec <strong>{ep.guest}</strong></p>
+                    </div>
+                  </div>
+
                   {/* Overlay citation — visible au survol */}
                   {ep.quote && (
                     <div className="les-ivw-overlay" aria-hidden="true">
@@ -451,17 +467,12 @@ export default function IvwCarousel({ pool, latestSlug, getGuestImage }: Props) 
                     </div>
                   )}
                 </div>
-                <div className="les-ivw-copy">
-                  <p className="les-ivw-name">{ep.guest}</p>
-                  <p className="les-ivw-meta">
-                    Ép.&nbsp;{ep.number}&nbsp;·&nbsp;{ep.duration}
-                  </p>
-                </div>
               </Link>
             )
           })
         )}
       </div>
+      </div>{/* fin les-ivw-viewport */}
 
       {/* Flèches */}
       <button
