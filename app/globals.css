@@ -5342,7 +5342,7 @@ transform:scale(1.05);
   text-transform: uppercase;
   /* Même couleur que le kicker des pages épisode */
   color: var(--color-primary-light);
-  margin-bottom: 20px;
+  margin-bottom: 32px;
   display: block;
 }
 
@@ -5354,7 +5354,7 @@ transform:scale(1.05);
   letter-spacing: -.03em;
   line-height: 1.02;
   color: #fff;
-  margin: 0 0 24px;
+  margin: 0 0 32px;
 }
 
 /* ── Statistiques ───────────────────────────────────────────────── */
@@ -5362,7 +5362,7 @@ transform:scale(1.05);
   display: flex;
   align-items: center;
   gap: 20px;
-  margin-bottom: 22px;
+  margin-bottom: 42px;
   flex-wrap: wrap;
 }
 
@@ -5399,10 +5399,10 @@ transform:scale(1.05);
 /* ── Description ────────────────────────────────────────────────── */
 .el-hero-desc {
   font-size: clamp(14px, 1.2vw, 16px);
-  line-height: 1.72;
+  line-height: 1.55;
   color: rgba(255, 255, 255, .68);
-  max-width: 520px;
-  margin: 0 0 28px;
+  max-width: 630px;
+  margin: 0 0 32px;
 }
 
 /* ── Barre de recherche — verre sombre sur fond image ───────────── */

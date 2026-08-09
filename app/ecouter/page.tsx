@@ -447,7 +447,10 @@ export default function EcouterPage() {
             </div>
             <div className="el-stat-sep" aria-hidden="true" />
             <div className="el-stat">
-              <strong>Depuis 2024</strong>
+              <strong>
+                +<AnimatedCounter value={2} suffix={"\u00a0MILLIONS"} duration={1800} />
+              </strong>
+              <span>de vues</span>
             </div>
           </div>
 
@@ -456,8 +459,7 @@ export default function EcouterPage() {
             className="el-hero-desc el-anim"
             style={{ "--el-delay": "200ms" } as React.CSSProperties}
           >
-            Conversations avec celles et ceux qui façonnent la danse d&apos;aujourd&apos;hui.
-            Parcours, création, carrière, santé, transmission et coulisses du métier d&apos;artiste.
+            Celles et ceux qui font, pensent et transforment la danse. Des conversations sur les parcours, la création, les carrières, les corps et la culture.
           </p>
 
           {/* Barre de recherche */}
