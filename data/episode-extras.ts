@@ -2,56 +2,62 @@
  * data/episode-extras.ts
  *
  * Données complémentaires à ajouter MANUELLEMENT pour chaque nouvel épisode.
- * Ausha est la source de vérité pour les données de base (titre, invité, durée, etc.).
- * Ce fichier sert à enrichir ces données avec :
- *   - une citation mise en avant (affichée sur la carte et la page de l'épisode)
- *   - un chemin d'image local si tu déposes le visuel dans /public/episodes/
+ * Ausha et YouTube sont les sources automatiques — ce fichier sert uniquement
+ * à enrichir ou corriger ces données.
  *
- * ─── Naming convention pour les images ────────────────────────────────────────
- * Dépose les visuels dans : public/episodes/
- * Nom recommandé          : {numéro}.jpg  (ex : 122.jpg, 123.jpg)
+ * ─── Ce que tu gères ici ────────────────────────────────────────────────────
+ *  • quote     : citation affichée sur la carte interview et la page épisode
+ *  • image     : chemin local si tu veux un nom personnalisé (sinon {number}.jpg)
+ *  • youtubeId : ID YouTube (11 car.) si la correspondance auto échoue ou
+ *                si la vidéo est trop ancienne pour figurer dans le flux RSS
  *
- * Si le fichier existe, il est utilisé automatiquement.
- * Si aucun fichier ne correspond, l'image Ausha CDN est utilisée à la place.
- * Tu peux aussi spécifier un nom personnalisé via le champ `image` ci-dessous.
+ * ─── Ce que tu n'as PAS besoin de renseigner ────────────────────────────────
+ *  • Données de base (titre, invité, durée, date) → Ausha RSS automatiquement
+ *  • Vidéos récentes (15 derniers uploads) → YouTube RSS automatiquement
+ *  • Image de couverture → Ausha CDN en fallback si pas de fichier local
  *
- * ─── Comment ajouter un épisode ───────────────────────────────────────────────
- * 1. Ausha publie l'épisode → il apparaît automatiquement dans les listes
- * 2. Tu ajoutes une entrée ici si tu veux une citation ou une image personnalisée
- * 3. Tu déposes le visuel dans public/episodes/
+ * ─── Naming convention pour les images ──────────────────────────────────────
+ *  Dépose les visuels dans : public/episodes/
+ *  Nom recommandé          : {numéro}.jpg  (ex : 122.jpg)
+ *  Le fallback auto        : image de couverture Ausha CDN
  *
- * ─── Format ───────────────────────────────────────────────────────────────────
- * La clé est le numéro d'épisode (number).
+ * ─── Comment associer une vidéo YouTube manuellement ────────────────────────
+ *  URL YouTube : https://www.youtube.com/watch?v=XXXXXXXXXXX
+ *  ID à copier :                                 ^^^^^^^^^^^ (11 caractères)
+ *
+ *  Exemples :
+ *    https://www.youtube.com/watch?v=1arXpUwWODA  →  youtubeId: "1arXpUwWODA"
+ *    https://youtu.be/1arXpUwWODA                 →  youtubeId: "1arXpUwWODA"
+ *
+ * ─── Clé = numéro d'épisode ─────────────────────────────────────────────────
  */
 
 export type EpisodeExtra = {
-  /** Citation mise en avant (affichée sur la carte interview) */
+  /** Citation mise en avant */
   quote?: string
-  /**
-   * Chemin local de l'image (relatif à /public/).
-   * Exemple : "/episodes/mylene-amboka.jpg"
-   * Si absent, le système cherche automatiquement /episodes/{number}.jpg puis .png,
-   * avant de retomber sur l'image du CDN Ausha.
-   */
+  /** Chemin image personnalisé (ex : "/episodes/mylene-amboka.jpg") */
   image?: string
+  /**
+   * ID YouTube (11 caractères) si la correspondance automatique échoue.
+   * Utilisé aussi pour les épisodes trop anciens pour figurer dans le flux RSS YouTube.
+   * Un override manuel prend toujours la priorité sur la correspondance automatique.
+   */
+  youtubeId?: string
 }
 
 /**
- * Extras manuels pour les épisodes publiés depuis Ausha.
- * Clé = numéro d'épisode.
- *
- * Les épisodes 1–121 sont dans data/episodes-list.ts (données historiques).
- * Seuls les nouveaux épisodes (≥ 122) doivent être ajoutés ici.
+ * Extras manuels. Les épisodes 1–121 sont dans data/episodes-list.ts.
+ * N'ajoute une entrée ici que si tu as quelque chose à renseigner manuellement.
  */
 export const episodeExtras: Record<number, EpisodeExtra> = {
-  // ── Exemples — remplace par tes vrais contenus ────────────────────────────
+  // ── Exemple ─────────────────────────────────────────────────────────────────
   //
   // 122: {
-  //   quote: "Savoir dire non et penser à sa vie perso, c'est une bonne chose.",
-  //   image: "/episodes/mylene-amboka.jpg",
+  //   quote:     "Savoir dire non et penser à sa vie perso, c'est une bonne chose.",
+  //   youtubeId: "1arXpUwWODA",   // vidéo complète Ép.122 déjà trouvée auto → inutile ici
   // },
   //
-  // 123: {
-  //   quote: "Arrêtons de toujours se comparer, on disperse nos énergies.",
+  // 50: {
+  //   youtubeId: "abc12345678",   // épisode ancien, hors du flux YouTube → manuel
   // },
 }

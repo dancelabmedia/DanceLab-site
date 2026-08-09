@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 
 import EpisodeAnimations from "./EpisodeAnimations";
@@ -9,6 +9,16 @@ import EpisodeShare from "../../../components/EpisodeShare";
 import HistoryBackLink from "../../../components/HistoryBackLink";
 import { episodes, type Episode } from "../../../data/episodes";
 import { SITE_URL } from "../../../data/site";
+import {
+  getEpisodeBySlug as getUnifiedEpisodeBySlug,
+  getEpisodeYoutubeUrl,
+  type UnifiedEpisode,
+} from "@/lib/episodes";
+import { youtubeUrl, youtubeThumbnail } from "@/lib/youtube-rss";
+
+// ISR : les nouveaux épisodes (≥ 122) sont rendus dynamiquement et mis en cache 1h
+export const revalidate = 3600;
+export const dynamicParams = true;
 
 const HEADER_IMAGE_DIR = "/images/les-invites-header";
 const HEADER_IMAGE_FALLBACK = "/images/les-invites-header/imagetest.png";
@@ -312,9 +322,27 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const episode = getEpisodeBySlug(slug);
 
+  // Épisode statique introuvable → essayer le flux RSS
   if (!episode) {
+    const unified = await getUnifiedEpisodeBySlug(slug);
+    if (!unified) return { title: "Épisode introuvable | Dance Lab" };
+    const imageUrl = unified.aushaImage || unified.image;
     return {
-      title: "Épisode introuvable | Dance Lab",
+      title: `${unified.title} — Dance Lab`,
+      description: unified.excerpt,
+      openGraph: {
+        title: `${unified.title} — Dance Lab`,
+        description: unified.excerpt,
+        url: new URL(`/episodes/${unified.slug}`, SITE_URL).toString(),
+        images: [{ url: imageUrl, alt: `${unified.title} — ${unified.guest}` }],
+        type: "article",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `${unified.title} — Dance Lab`,
+        description: unified.excerpt,
+        images: [imageUrl],
+      },
     };
   }
 
@@ -383,8 +411,11 @@ export default async function EpisodePage({ params }: PageProps) {
   const { slug } = await params;
   const episode = getEpisodeBySlug(slug);
 
+  // ── Épisode RSS (nouveau, ≥ 122) ────────────────────────────────────────────
   if (!episode) {
-    notFound();
+    const unified = await getUnifiedEpisodeBySlug(slug);
+    if (!unified) notFound();
+    return <RssEpisodePage unified={unified!} />;
   }
 
   const similarEpisodes = getSimilarEpisodes(episode.slug);
@@ -393,8 +424,14 @@ export default async function EpisodePage({ params }: PageProps) {
   const descriptionParagraphs = getEpisodeDescriptionParagraphs(episode.description);
   const descriptionBlocks = getEpisodeDescriptionBlocks(descriptionParagraphs);
 
-  // Identifiant YouTube pour la miniature + le lien
-  const youtubeId = getYouTubeId(episode.youtube);
+  // Identifiant YouTube :
+  // 1. URL statique dans episodes.ts → getYouTubeId()
+  // 2. Auto-match YouTube RSS ou override manuel dans episode-extras.ts
+  const unified = await getUnifiedEpisodeBySlug(slug);
+  const youtubeId = getYouTubeId(episode.youtube) ?? unified?.youtubeId ?? null;
+  const youtubeHref = youtubeId
+    ? (episode.youtube || youtubeUrl(youtubeId))
+    : null;
 
   // Points abordés — union des tags éditoriaux et des thèmes détectés
   const matchedThemes = getEpisodeThemes(episode);
@@ -423,7 +460,7 @@ export default async function EpisodePage({ params }: PageProps) {
             {youtubeId ? (
               <div className="ep-hero-youtube" id="ep-hero-youtube">
                 <a
-                  href={episode.youtube}
+                  href={youtubeHref!}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="ep-youtube-link"
@@ -486,7 +523,7 @@ export default async function EpisodePage({ params }: PageProps) {
             <div className="ep-actions">
               {episode.spotify ? <a href={episode.spotify} target="_blank" rel="noopener noreferrer">Spotify</a> : null}
               {episode.apple ? <a href={episode.apple} target="_blank" rel="noopener noreferrer">Apple Podcasts</a> : null}
-              {episode.youtube ? <a href={episode.youtube} target="_blank" rel="noopener noreferrer">YouTube</a> : null}
+              {youtubeHref ? <a href={youtubeHref} target="_blank" rel="noopener noreferrer">YouTube</a> : null}
               {episode.deezer ? <a href={episode.deezer} target="_blank" rel="noopener noreferrer">Deezer</a> : null}
               {episode.link ? <a href={episode.link} target="_blank" rel="noopener noreferrer">Tous les liens</a> : null}
             </div>
@@ -1515,6 +1552,190 @@ export default async function EpisodePage({ params }: PageProps) {
           .ep-desc-quote      { font-size: 1.06rem; }
         }
       `}</style>
+    </>
+  );
+}
+
+// ─── Page pour les épisodes RSS (≥ 122) ──────────────────────────────────────
+
+async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
+  const youtubeId   = unified.youtubeId ?? null;
+  const youtubeHref = youtubeId ? youtubeUrl(youtubeId) : null;
+  const episodeUrl  = new URL(`/episodes/${unified.slug}`, SITE_URL).toString();
+
+  // Hero image : priorité les-invites-header → les-invites → CDN Ausha
+  const heroImage = (() => {
+    // 1. Cherche dans les-invites-header (même convention de nommage)
+    try {
+      const headerDir   = path.join(process.cwd(), 'public', 'images', 'les-invites-header');
+      const headerFiles = readdirSync(headerDir);
+      const headerMatch = headerFiles.find((f) =>
+        new RegExp(`${unified.number}\\.(png|jpg|jpeg|webp|avif)$`, 'i').test(f)
+      );
+      if (headerMatch) return `/images/les-invites-header/${headerMatch}`;
+    } catch { /* dossier absent */ }
+    // 2. Image d'encart (les-invites ou override manuel) déjà résolue dans UnifiedEpisode.image
+    if (unified.image && !unified.image.startsWith('http')) return unified.image;
+    // 3. Fallback CDN Ausha
+    return unified.aushaImage || unified.image;
+  })();
+
+  const descriptionParagraphs = getEpisodeDescriptionParagraphs(unified.excerpt);
+  const descriptionBlocks     = getEpisodeDescriptionBlocks(descriptionParagraphs);
+
+  return (
+    <>
+      <main className="ep-page">
+
+        {/* HERO */}
+        <section className="ep-hero">
+          <div className="ep-hero-sticky-bg">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              className="ep-hero-img"
+              src={heroImage}
+              alt={unified.guest}
+            />
+            <div className="ep-hero-shade" aria-hidden="true" />
+
+            {/* Lecteur YouTube */}
+            {youtubeId ? (
+              <div className="ep-hero-youtube" id="ep-hero-youtube">
+                <a
+                  href={youtubeHref!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ep-youtube-link"
+                  aria-label={`Regarder « ${unified.title} » sur YouTube`}
+                >
+                  <div className="ep-youtube-thumb-wrap">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`}
+                      alt={unified.title}
+                      className="ep-youtube-thumb"
+                      loading="lazy"
+                    />
+                    <div className="ep-youtube-play-btn" aria-hidden="true">
+                      <svg viewBox="0 0 68 48" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M66.52 7.74a8.23 8.23 0 0 0-5.8-5.84C55.68 0 34 0 34 0S12.32 0 7.28 1.9a8.23 8.23 0 0 0-5.8 5.84C0 12.8 0 24 0 24s0 11.2 1.48 16.26a8.23 8.23 0 0 0 5.8 5.84C12.32 48 34 48 34 48s21.68 0 26.72-1.9a8.23 8.23 0 0 0 5.8-5.84C68 35.2 68 24 68 24s0-11.2-1.48-16.26z" fill="rgba(0,0,0,.72)" />
+                        <path d="M27 34 45 24 27 14v20z" fill="#fff" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="ep-youtube-bar">
+                    <span className="ep-youtube-logo" aria-hidden="true">
+                      <svg viewBox="0 0 90 20" xmlns="http://www.w3.org/2000/svg" height="14">
+                        <text y="16" fontSize="18" fontFamily="inherit" fontWeight="700" fill="#fff">YouTube</text>
+                      </svg>
+                    </span>
+                    <span className="ep-youtube-cta">Regarder l&apos;épisode complet</span>
+                  </div>
+                </a>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="ep-hero-content">
+            <HistoryBackLink className="ep-back" fallbackHref="/ecouter">
+              ← Tous les épisodes
+            </HistoryBackLink>
+            <p className="ep-kicker">Épisode {unified.number}</p>
+            <h1>{unified.title}</h1>
+            <p className="ep-guest">{unified.guest}</p>
+            <div className="ep-meta">
+              <span className="ep-meta-duration">
+                <svg className="ep-meta-icon" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="8" cy="8" r="6.5"/>
+                  <polyline points="8,4.5 8,8.5 10.5,10.5"/>
+                </svg>
+                {unified.duration}
+              </span>
+              {unified.pubDate ? (
+                <time className="ep-meta-date" dateTime={unified.pubDate}>
+                  {formatEpisodeDate(unified.pubDate.split('T')[0])}
+                </time>
+              ) : null}
+            </div>
+            <div className="ep-actions">
+              <a href={unified.link} target="_blank" rel="noopener noreferrer">Écouter</a>
+              {youtubeHref ? <a href={youtubeHref} target="_blank" rel="noopener noreferrer">YouTube</a> : null}
+            </div>
+          </div>
+        </section>
+
+        {/* CORPS */}
+        <section className="ep-body">
+          <div className="ep-body-grid">
+
+            {/* Citation */}
+            <div className="ep-col-quote" data-ep-reveal>
+              {unified.quote ? (
+                <blockquote className="ep-big-quote">
+                  <span className="ep-big-quote-mark" aria-hidden="true">&ldquo;</span>
+                  {unified.quote}
+                </blockquote>
+              ) : null}
+            </div>
+
+            {/* Description */}
+            <div className="ep-col-description" data-ep-reveal>
+              <article className="ep-article">
+                <div className="ep-description">
+                  {descriptionBlocks.map((block, blockIndex) => {
+                    if (block.type === 'list') {
+                      return (
+                        <ul key={`rss-desc-${blockIndex}`} className="ep-desc-list">
+                          {block.items.map((item, i) => (
+                            <li key={i}>{renderInlineEditorialText(item.slice(1))}</li>
+                          ))}
+                        </ul>
+                      );
+                    }
+                    const isLead    = blockIndex === 0;
+                    const isClosing = blockIndex === descriptionBlocks.length - 1;
+                    if (block.type === 'quote') {
+                      return (
+                        <blockquote key={`rss-desc-${blockIndex}`} className="ep-desc-quote">
+                          {renderInlineEditorialText(block.text)}
+                        </blockquote>
+                      );
+                    }
+                    if (block.type === 'callout') {
+                      return (
+                        <p key={`rss-desc-${blockIndex}`} className="ep-desc-callout">
+                          {renderInlineEditorialText(block.text)}
+                        </p>
+                      );
+                    }
+                    return (
+                      <p
+                        key={`rss-desc-${blockIndex}`}
+                        className={['ep-desc-p', isLead ? 'ep-desc-lead' : '', isClosing ? 'ep-desc-closing' : ''].filter(Boolean).join(' ')}
+                      >
+                        {renderInlineEditorialText(block.text)}
+                      </p>
+                    );
+                  })}
+                </div>
+              </article>
+            </div>
+
+            {/* Sidebar */}
+            <aside className="ep-col-sidebar" data-ep-reveal>
+              <div className="ep-sidebar-card">
+                <div className="ep-sidebar-section">
+                  <h3 className="ep-sidebar-h3">Partager</h3>
+                  <EpisodeShare title={unified.title} url={episodeUrl} />
+                </div>
+              </div>
+            </aside>
+
+          </div>
+        </section>
+
+        <EpisodeAnimations />
+      </main>
     </>
   );
 }
