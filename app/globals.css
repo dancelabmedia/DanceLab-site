@@ -6130,11 +6130,7 @@ transform:scale(1.05);
   color: #fff;
 }
 
-/* Épisodes à deux invités (data-duo="true") : slot image élargi
-   pour réduire le crop horizontal et laisser voir les deux visages */
-.ep2-card[data-duo="true"] .ep2-card-img-wrap {
-  width: 138px;
-}
+/* Tous les épisodes, y compris les duos, partagent la même largeur d'image */
 
 /* ─── Empty state ─── */
 .ep2-empty {
