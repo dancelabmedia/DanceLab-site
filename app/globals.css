@@ -1418,7 +1418,7 @@ button {
   z-index: 1;
 }
 .mfr-card:hover {
-  scale: 1.028;
+  scale: 1.010;   /* valeur réduite : effet léger sans flou GPU */
   box-shadow:
     0 22px 60px rgba(0, 0, 0, .74),
     0  4px 14px rgba(0, 0, 0, .52);
@@ -1486,7 +1486,7 @@ button {
   transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .mfr-card:hover .mfr-card-img {
-  transform: scale(1.04);
+  transform: scale(1.015);  /* zoom très subtil — conserve la netteté */
 }
 
 /* Versos — teasers sobres des pages de destination. */
