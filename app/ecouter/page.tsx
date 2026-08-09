@@ -441,14 +441,14 @@ export default function EcouterPage() {
             <div className="el-stat-sep" aria-hidden="true" />
             <div className="el-stat">
               <strong>
-                +<AnimatedCounter value={100} suffix={"\u00a0000"} duration={1600} />
+                <AnimatedCounter prefix="+" value={100} suffix={"\u00a0000"} duration={1600} />
               </strong>
               <span>écoutes</span>
             </div>
             <div className="el-stat-sep" aria-hidden="true" />
             <div className="el-stat">
               <strong>
-                +<AnimatedCounter value={2} suffix={"\u00a0MILLIONS"} duration={1800} />
+                <AnimatedCounter prefix="+" value={2} suffix={"\u00a0MILLIONS"} duration={1800} />
               </strong>
               <span>de vues</span>
             </div>
