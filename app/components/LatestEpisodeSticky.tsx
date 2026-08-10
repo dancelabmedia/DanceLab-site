@@ -19,6 +19,7 @@
 import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { type Episode } from '../../data/episodes'
+import { type UnifiedEpisode } from '@/lib/episodes'
 import IvwCarousel from './IvwCarousel'
 
 /* ── Icônes SVG ───────────────────────────────────────────────────── */
@@ -54,7 +55,11 @@ function lerp(a: number, b: number, t: number) { return a + (b - a) * t }
 
 /* ── Types ────────────────────────────────────────────────────────── */
 interface Props {
-  episode: Episode
+  /**
+   * Dernier épisode — peut être un épisode RSS (UnifiedEpisode) ou statique (Episode).
+   * UnifiedEpisode est un sur-ensemble d'Episode, les deux sont compatibles.
+   */
+  episode: UnifiedEpisode | Episode
   /** Image optimisée pour la carte épisode (gauche) */
   fallbackImage: string
   /** Pool complet d'épisodes éligibles — IvwCarousel gère le mélange */
