@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import type { MagazineArticle } from '../decouvrir/articles-data'
 import { formatAgendaDate, type AgendaEvent } from '../agenda/agenda-data'
@@ -12,6 +12,74 @@ interface Props {
   article: MagazineArticle
   event:   AgendaEvent | null   // 3e carte — rubrique Sortir
 }
+
+/* ─────────────────────────────────────────────────────────
+   Explorer features — tournent selon le jour du mois
+   Chaque entrée pointe vers une rubrique Explorer distincte.
+───────────────────────────────────────────────────────── */
+type ExplorerFeature = {
+  section: string
+  label:   string
+  kicker:  string
+  title:   string
+  chapo:   string
+  image:   string
+  href:    string
+  quote:   string
+}
+
+const EXPLORER_FEATURES: ExplorerFeature[] = [
+  {
+    section: 'styles-de-danse',
+    label:   'Styles de danse',
+    kicker:  'Langages',
+    title:   'Styles de danse',
+    chapo:   'Hip-hop, contemporain, classique, afro, waacking — chaque style porte une histoire et une manière d\'habiter le corps.',
+    image:   '/images/styles-de-danse/break.png',
+    href:    '/explorer/styles-de-danse',
+    quote:   'Explorer un style, c\'est entrer dans une histoire, une musicalité et une façon de penser le monde.',
+  },
+  {
+    section: 'choregraphes',
+    label:   'Chorégraphes',
+    kicker:  'Création',
+    title:   'Chorégraphes',
+    chapo:   'Ils composent des mondes, inventent des langages et donnent une forme sensible aux idées. Lire la danse à travers celles et ceux qui l\'écrivent.',
+    image:   '/images/maiwenn-danse.jpg',
+    href:    '/explorer/choregraphes',
+    quote:   'Un chorégraphe organise une attention, une écoute et une manière de regarder les corps.',
+  },
+  {
+    section: 'artistes',
+    label:   'Artistes',
+    kicker:  'Portraits',
+    title:   'Artistes',
+    chapo:   'Interprètes, enseignants, performeurs, créateurs de contenus : la danse se raconte aussi par les trajectoires individuelles.',
+    image:   '/images/sofiastanic.jpg',
+    href:    '/explorer/artistes',
+    quote:   'Chaque parcours d\'artiste raconte une manière de tenir dans le métier et de transformer une pratique en langage.',
+  },
+  {
+    section: 'compagnies',
+    label:   'Compagnies',
+    kicker:  'Scènes',
+    title:   'Compagnies',
+    chapo:   'Répertoires, tournées, esthétiques : chaque compagnie est un écosystème humain qui rend le mouvement possible.',
+    image:   '/images/styles-de-danse/danseclassique.png',
+    href:    '/explorer/compagnies',
+    quote:   'Derrière une compagnie, il y a une vision artistique et une structure humaine qui rend le mouvement possible.',
+  },
+  {
+    section: 'metiers-de-la-danse',
+    label:   'Métiers',
+    kicker:  'Professionnel',
+    title:   'Métiers de la danse',
+    chapo:   'Danseur, chorégraphe, répétiteur, régisseur, professeur : la danse est un ensemble de compétences et de responsabilités.',
+    image:   '/images/styles-de-danse/claquettes.png',
+    href:    '/explorer/metiers-de-la-danse',
+    quote:   'Le plateau n\'est que la partie visible d\'un écosystème immense.',
+  },
+]
 
 /* ─────────────────────────────────────────────────────────
    Math helpers (no import cost)
@@ -39,9 +107,18 @@ function lerp(a: number, b: number, t: number) {
 export default function MediaReveal({ article, event }: Props) {
   const sectionRef = useRef<HTMLElement>(null)
   const card1Ref   = useRef<HTMLDivElement>(null)   // Magazine
-  const card2Ref   = useRef<HTMLDivElement>(null)   // Style de danse (2e à apparaître)
+  const card2Ref   = useRef<HTMLDivElement>(null)   // Explorer (2e à apparaître)
   const card4Ref   = useRef<HTMLDivElement>(null)   // Sortir (position et timing conservés)
   const labelRef   = useRef<HTMLDivElement>(null)
+
+  /* ── Feature Explorer du jour ──────────────────────────────────────────────
+     On choisit selon le jour du mois pour varier sans aléatoire (SSR-stable). */
+  const explorerFeature = useMemo(() => {
+    const day = new Date().getDate()           // 1–31
+    return EXPLORER_FEATURES[day % EXPLORER_FEATURES.length]
+  }, [])
+
+  /* ── Informations pratiques de l'événement Sortir ─────────────────────── */
   const eventDates = event
     ? event.dates !== 'À compléter'
       ? event.dates
@@ -49,19 +126,23 @@ export default function MediaReveal({ article, event }: Props) {
         ? `${formatAgendaDate(event.startDate)} au ${formatAgendaDate(event.endDate)}`
         : formatAgendaDate(event.startDate)
     : ''
-  const isParisSummerFestival = event?.slug === 'festival-paris-lete-2026'
-  const eventVenue = isParisSummerFestival
-    ? 'Paris · Jardin des Tuileries, Monnaie de Paris, Jardin d’Acclimatation et autres lieux'
-    : event ? `${event.venue}${event.city ? ` · ${event.city}` : ''}` : ''
-  const eventPrice = isParisSummerFestival
-    ? 'Propositions gratuites ou très accessibles · certains rendez-vous à 13 €'
-    : event?.price !== 'À compléter' ? event?.price : null
-  const eventTimes = event?.time ?? (isParisSummerFestival ? '19 h ou 22 h selon les propositions' : null)
+
+  const eventVenue = event
+    ? [event.venue, event.city]
+        .filter((v) => v && v !== 'À compléter')
+        .join(' · ')
+    : ''
+
+  const eventPrice = event?.price !== 'À compléter' ? event?.price ?? null : null
+  const eventTimes = event?.time ?? null
+
+  /* Image de la carte Sortir — utilise event.image si disponible */
+  const sortirImage = event?.image ?? '/images/sorties/parisfestivalete.png'
 
   useEffect(() => {
     const section = sectionRef.current
     const c1  = card1Ref.current   // Magazine
-    const c2  = card2Ref.current   // Style de danse
+    const c2  = card2Ref.current   // Explorer
     const c4  = card4Ref.current   // Sortir (peut être null si pas d'événement)
     const lbl = labelRef.current
     if (!section || !c1 || !c2 || !lbl) return
@@ -72,7 +153,7 @@ export default function MediaReveal({ article, event }: Props) {
     c1.style.opacity  = '0'
     c1.style.transform = 'translate(-9vw, 9vh) scale(0.95)'
 
-    // Style de danse (haut-droite) — reprend exactement l'entrée du Podcast
+    // Explorer (haut-droite) — reprend exactement l'entrée du Podcast
     c2.style.opacity  = '0'
     c2.style.transform = 'translate(9vw, -9vh) scale(0.95)'
 
@@ -102,7 +183,7 @@ export default function MediaReveal({ article, event }: Props) {
       c2!.classList.toggle('mfr-card--entry-smoothing', p < 0.74)
       c4?.classList.toggle('mfr-card--entry-smoothing', p < 0.84)
 
-      /* ── ENTRÉE — ordre : Magazine → Style de danse → Sortir ────────── */
+      /* ── ENTRÉE — ordre : Magazine → Explorer → Sortir ────────────────── */
       // Le Magazine conserve un court temps de respiration avant son entrée ;
       // les cartes suivantes restent synchronisées avec ce départ global.
       // Cascade éditoriale lente : 16 % de progression entre chaque départ,
@@ -114,7 +195,7 @@ export default function MediaReveal({ article, event }: Props) {
       const c1tx = lerp(-9, 0, c1e) + lerp(0, -2, c1s)
       const c1ty = lerp(9, 0, c1e)
 
-      /* ② Style de danse — entrée retardée, puis court plateau lisible */
+      /* ② Explorer — entrée retardée, puis court plateau lisible */
       const c2e  = ssp(0.50, 0.74, p)
       const c2tx = lerp(9, 0, c2e)
       const c2ty = lerp(-9, 0, c2e)
@@ -215,21 +296,20 @@ export default function MediaReveal({ article, event }: Props) {
           </div>
 
           {/* ════════════════════════════════════════
-              Carte 2 — Style de danse
+              Carte 2 — Explorer
+              Tourne entre les 5 rubriques de la section.
               Apparaît en DEUXIÈME
-              À la place et au timing de l'ancien Podcast
           ════════════════════════════════════════ */}
           <div ref={card2Ref} className="mfr-card mfr-card--style">
             <Link
-              href="/explorer/styles-de-danse"
+              href={explorerFeature.href}
               className="mfr-card-inner"
-              aria-label="Explorer l'encyclopédie des styles de danse"
+              aria-label={`Explorer — ${explorerFeature.title}`}
             >
               <div className="mfr-card-face mfr-card-face--front">
-                {/* Image locale imposée : aucun ancien fond ou fallback généré. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/images/styles-de-danse/jazz.png"
+                  src={explorerFeature.image}
                   alt=""
                   aria-hidden="true"
                   className="mfr-card-img"
@@ -238,33 +318,48 @@ export default function MediaReveal({ article, event }: Props) {
                 <div className="mfr-card-gradient" />
                 <div className="mfr-card-body mfr-card-body--exp mfr-card-body--lower">
                   <span className="mfr-badge mfr-badge--exp">Explorer</span>
-                  <span className="mfr-card-cat">Encyclopédie de la danse</span>
-                  <h2 className="mfr-card-title">Styles de danse</h2>
-                  <p className="mfr-card-chapo">
-                    Hip-hop, contemporain, classique, afro, waacking — chaque style
-                    porte une histoire et une manière d&apos;habiter le corps.
-                  </p>
+                  <span className="mfr-card-cat">{explorerFeature.kicker}</span>
+                  <h2 className="mfr-card-title">{explorerFeature.title}</h2>
+                  <p className="mfr-card-chapo">{explorerFeature.chapo}</p>
                   <span className="mfr-card-cta mfr-card-cta--exp">Découvrir →</span>
                 </div>
               </div>
-              <div className="mfr-card-face mfr-card-face--back mfr-card-back mfr-card-back--styles">
-                <div className="mfr-style-preview-head">
-                  <span className="mfr-preview-kicker">Encyclopédie Dance Lab</span>
-                  <h3 className="mfr-preview-title">Explorer les styles</h3>
+
+              {/* Verso — styles : grille d'images ; autres rubriques : citation éditoriale */}
+              {explorerFeature.section === 'styles-de-danse' ? (
+                <div className="mfr-card-face mfr-card-face--back mfr-card-back mfr-card-back--styles">
+                  <div className="mfr-style-preview-head">
+                    <span className="mfr-preview-kicker">Encyclopédie Dance Lab</span>
+                    <h3 className="mfr-preview-title">Explorer les styles</h3>
+                  </div>
+                  <div className="mfr-style-preview" aria-hidden="true">
+                    <div><img src="/images/styles-de-danse/jazz.png" alt="" /><span>Jazz</span></div>
+                    <div><img src="/images/styles-de-danse/break.png" alt="" /><span>Break</span></div>
+                    <div><img src="/images/styles-de-danse/danseclassique.png" alt="" /><span>Classique</span></div>
+                    <div><img src="/images/sofiastanic.jpg" alt="" /><span>Waacking</span></div>
+                    <div><img src="/images/styles-de-danse/jazz.png" alt="" /><span>Voguing</span></div>
+                    <div><img src="/images/styles-de-danse/break.png" alt="" /><span>Krump</span></div>
+                    <div><img src="/images/styles-de-danse/claquettes.png" alt="" /><span>Claquettes</span></div>
+                    <div><img src="/images/styles-de-danse/danseclassique.png" alt="" /><span>Street jazz</span></div>
+                    <div><img src="/images/sofiastanic.jpg" alt="" /><span>Hip-hop</span></div>
+                  </div>
+                  <span className="mfr-preview-cta">Ouvrir l&apos;encyclopédie →</span>
                 </div>
-                <div className="mfr-style-preview" aria-hidden="true">
-                  <div><img src="/images/styles-de-danse/jazz.png" alt="" /><span>Jazz</span></div>
-                  <div><img src="/images/styles-de-danse/break.png" alt="" /><span>Break</span></div>
-                  <div><img src="/images/styles-de-danse/danseclassique.png" alt="" /><span>Classique</span></div>
-                  <div><img src="/images/sofiastanic.jpg" alt="" /><span>Waacking</span></div>
-                  <div><img src="/images/les-invites-header/imagetest.png" alt="" /><span>Voguing</span></div>
-                  <div><img src="/images/les-invites-header/imagetest.png" alt="" /><span>Krump</span></div>
-                  <div><img src="/images/styles-de-danse/claquettes.png" alt="" /><span>Claquettes</span></div>
-                  <div><img src="/images/les-invites-header/imagetest.png" alt="" /><span>Street jazz</span></div>
-                  <div><img src="/images/les-invites-header/imagetest.png" alt="" /><span>Hip-hop</span></div>
+              ) : (
+                <div className="mfr-card-face mfr-card-face--back mfr-card-back mfr-card-back--styles">
+                  <div className="mfr-preview-browser" aria-hidden="true">
+                    <span /><span /><span />
+                  </div>
+                  <div className="mfr-preview-image">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={explorerFeature.image} alt="" aria-hidden="true" loading="lazy" />
+                  </div>
+                  <span className="mfr-preview-kicker">Explorer · {explorerFeature.label}</span>
+                  <h3 className="mfr-preview-title">{explorerFeature.title}</h3>
+                  <p className="mfr-preview-copy">{explorerFeature.quote}</p>
+                  <span className="mfr-preview-cta">Découvrir →</span>
                 </div>
-                <span className="mfr-preview-cta">Ouvrir l&apos;encyclopédie →</span>
-              </div>
+              )}
             </Link>
           </div>
 
@@ -281,10 +376,9 @@ export default function MediaReveal({ article, event }: Props) {
                 aria-label={event.title}
               >
                 <div className="mfr-card-face mfr-card-face--front">
-                  {/* Image locale imposée : aucun fallback vers event.image ou un visuel généré. */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/images/sorties/parisfestivalete.png"
+                    src={sortirImage}
                     alt=""
                     aria-hidden="true"
                     className="mfr-card-img"
@@ -297,7 +391,7 @@ export default function MediaReveal({ article, event }: Props) {
                     <h2 className="mfr-card-title">{event.title}</h2>
                     <p className="mfr-card-chapo">{event.description}</p>
                     <div className="mfr-card-foot">
-                      <span className="mfr-card-meta">{event.dates}</span>
+                      <span className="mfr-card-meta">{eventDates}</span>
                       <span className="mfr-card-cta mfr-card-cta--sort">Voir l&apos;événement →</span>
                     </div>
                   </div>
@@ -307,12 +401,9 @@ export default function MediaReveal({ article, event }: Props) {
                   <h3 className="mfr-preview-title">{event.title}</h3>
                   <dl className="mfr-event-facts">
                     <div><dt>Dates</dt><dd>{eventDates}</dd></div>
-                    <div><dt>Lieux</dt><dd>{eventVenue}</dd></div>
+                    {eventVenue && <div><dt>Lieu</dt><dd>{eventVenue}</dd></div>}
                     {eventTimes ? <div><dt>Horaires</dt><dd>{eventTimes}</dd></div> : null}
                     {eventPrice ? <div><dt>Tarifs</dt><dd>{eventPrice}</dd></div> : null}
-                    {isParisSummerFestival ? (
-                      <div><dt>Programme</dt><dd>Danse, performance, cirque, théâtre et propositions en espace public</dd></div>
-                    ) : null}
                   </dl>
                   <span className="mfr-preview-cta">Voir l&apos;événement →</span>
                 </div>
