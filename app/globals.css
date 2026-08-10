@@ -5688,8 +5688,13 @@ transform:scale(1.05);
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* Sujet ancré à droite, texte à gauche — identique aux pages épisode */
-  object-position: right center;
+  /*
+   * Ancrage vertical sur "top" : les couvertures podcast Ausha sont carrées.
+   * Dans un hero paysage, cover zoome et coupe le haut. En ancrant sur top,
+   * la tête de l'invité reste toujours visible, quelle que soit la photo.
+   * L'axe horizontal "right" conserve le sujet visible à droite du texte.
+   */
+  object-position: right top;
   display: block;
 }
 
@@ -5751,9 +5756,9 @@ transform:scale(1.05);
       linear-gradient(to top, rgba(0,0,0,.50) 0%, transparent 30%);
   }
 
-  /* L'image se recadre au centre pour mieux afficher le sujet */
+  /* Mobile : ancrage horizontal à 70 % + vertical top pour garder le visage */
   .el-hero-img {
-    object-position: 70% center;
+    object-position: 70% top;
   }
 
   .el-hero-left {
