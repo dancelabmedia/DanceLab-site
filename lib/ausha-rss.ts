@@ -39,9 +39,19 @@ export type RssEpisode = {
   audioUrl: string
   /**
    * Identifiant interne Ausha de l'épisode (tag <guid>).
-   * Utilisé pour construire l'URL de l'embed player Ausha.
    */
   guid: string
+  /**
+   * Identifiant Spotify de l'épisode (ex : "1aHJlEfCHVamG7Y62uEuhb").
+   * Récupéré automatiquement depuis la smartlink Ausha. null si absent/indisponible.
+   */
+  spotifyId: string | null
+  /**
+   * URL de l'embed Spotify prête à l'emploi.
+   * Format : https://open.spotify.com/embed/episode/{spotifyId}?utm_source=generator
+   * Vide si spotifyId est null.
+   */
+  spotifyEmbedUrl: string
   /** true si c'est un EXTRAIT (court clip promotionnel) */
   isExtrait: boolean
 }
@@ -167,6 +177,53 @@ function parseTitle(raw: string): {
   return { number, title, guest, isExtrait }
 }
 
+// ─── Détection automatique du lien Spotify ────────────────────────────────────
+
+/**
+ * Récupère l'identifiant Spotify d'un épisode depuis sa page smartlink Ausha.
+ *
+ * La page smartlink contient un bouton "Écouter sur Spotify" dont le lien
+ * pointe vers `open.spotify.com/episode/{id}`. On le distingue des simples
+ * liens en texte (épisodes mentionnés dans la description) grâce à la classe
+ * CSS "ListeningLink" présente dans son contenu immédiat.
+ *
+ * Timeout : 5 s — retourne null silencieusement en cas d'erreur réseau.
+ * Cache Next.js : 24 h (l'ID Spotify d'un épisode ne change jamais).
+ */
+async function fetchSpotifyId(aushaSlug: string): Promise<string | null> {
+  try {
+    const controller = new AbortController()
+    const timerId    = setTimeout(() => controller.abort(), 5000)
+
+    const res = await fetch(
+      `https://smartlink.ausha.co/dance-lab/${aushaSlug}`,
+      {
+        signal: controller.signal,
+        // L'ID Spotify d'un épisode est permanent → cache long
+        next: { revalidate: 86400 },
+      },
+    )
+    clearTimeout(timerId)
+
+    if (!res.ok) return null
+    const html = await res.text()
+
+    // Parcourt tous les liens Spotify épisode dans la page.
+    // Seul le bouton plateforme (class "ListeningLink") est le bon lien ;
+    // les autres apparaissent dans la description (épisodes mentionnés).
+    const re = /<a\s[^>]*href="https:\/\/open\.spotify\.com\/episode\/([A-Za-z0-9]+)"[^>]*>/gi
+    let m: RegExpExecArray | null
+    while ((m = re.exec(html)) !== null) {
+      // Les 350 caractères suivant l'ouverture du <a> contiennent la div ListeningLink
+      const after = html.slice(m.index, m.index + 350)
+      if (after.includes('ListeningLink')) return m[1]
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
 // ─── Fetcher principal ────────────────────────────────────────────────────────
 
 export async function getEpisodesFromRSS(
@@ -233,13 +290,33 @@ export async function getEpisodesFromRSS(
         quote,
         audioUrl,
         guid,
+        // Spotify : rempli juste après en parallèle
+        spotifyId:       null,
+        spotifyEmbedUrl: '',
         isExtrait,
       } satisfies RssEpisode
     })
     .filter((ep) => ep.number > 0 && (includeExtraits || !ep.isExtrait))
     .sort((a, b) => b.number - a.number)
 
-  return episodes
+  // ── Détection Spotify en parallèle ──────────────────────────────────────────
+  // On récupère l'ID Spotify de chaque épisode depuis sa smartlink Ausha.
+  // Promise.allSettled garantit qu'une erreur sur un épisode ne bloque pas les autres.
+  const spotifyResults = await Promise.allSettled(
+    episodes.map((ep) => fetchSpotifyId(ep.aushaSlug)),
+  )
+
+  return episodes.map((ep, i) => {
+    const result    = spotifyResults[i]
+    const spotifyId = result.status === 'fulfilled' ? result.value : null
+    return {
+      ...ep,
+      spotifyId,
+      spotifyEmbedUrl: spotifyId
+        ? `https://open.spotify.com/embed/episode/${spotifyId}?utm_source=generator`
+        : '',
+    }
+  })
 }
 
 // ─── Helpers publics ──────────────────────────────────────────────────────────

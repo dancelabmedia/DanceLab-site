@@ -601,7 +601,7 @@ export const episodes: Episode[] = [
   {
     "number": 99,
     "slug": "99-marion-crampe",
-    "title": "Y croire quand personne n’y croit : discipline, pole dance, anecdotes",
+    "title": "Comment construire une carrière dans la pole dance ?",
     "guest": "Marion Crampe",
     "role": "",
     "publishedAt": "2026-02-24",
@@ -621,7 +621,7 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Y croire quand personne n’y croit : discipline, pole dance, anecdotes | Dance Lab",
+    "seoTitle": "Comment construire une carrière dans la pole dance ? | Dance Lab",
     "seoDescription": "Découvrez Marion Crampe dans Dance Lab : On lui a dit qu’elle n’était pas faite pour danser, qu’elle n’était pas bonne. Alors elle a écrit : “Je serai…"
   },
   {

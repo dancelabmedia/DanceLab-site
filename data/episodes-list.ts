@@ -260,7 +260,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 99,
     "slug": "99-marion-crampe",
-    "title": "Y croire quand personne n’y croit : discipline, pole dance, anecdotes",
+    "title": "Comment construire une carrière dans la pole dance ?",
     "guest": "Marion Crampe",
     "duration": "1 h 15",
     "image": "/episodes/marioncrampe99.png",

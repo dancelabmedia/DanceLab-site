@@ -20,7 +20,7 @@ import { readdirSync }                                          from 'node:fs'
 import path                                                    from 'node:path'
 import { episodesList, type EpisodeListItem }                  from '@/data/episodes-list'
 import { episodeExtras }                                       from '@/data/episode-extras'
-import { getEpisodesFromRSS, type RssEpisode, aushaEmbedUrl } from '@/lib/ausha-rss'
+import { getEpisodesFromRSS, type RssEpisode }                from '@/lib/ausha-rss'
 import { getYoutubeEpisodeMap, youtubeUrl }                    from '@/lib/youtube-rss'
 
 // ─── Type unifié ──────────────────────────────────────────────────────────────
@@ -59,10 +59,10 @@ export type UnifiedEpisode = {
    */
   youtubeId: string | null
   /**
-   * URL de l'embed player Ausha (construit depuis le guid RSS).
-   * Vide pour les épisodes legacy.
+   * URL de l'embed Spotify prête à l'emploi.
+   * Vide pour les épisodes legacy (qui utilisent episode.spotifyEmbedUrl de data/episodes.ts).
    */
-  aushaEmbedUrl: string
+  spotifyEmbedUrl: string
   /** true si l'épisode provient du flux RSS Ausha live (≥ 122) */
   fromRSS: boolean
 }
@@ -154,7 +154,7 @@ function fromLegacy(
     link:         `https://podcast.ausha.co/dance-lab/${ep.slug}`,
     pubDate:      '',
     youtubeId,
-    aushaEmbedUrl: '',         // legacy : lecteur Spotify géré séparément
+    spotifyEmbedUrl: '',       // legacy : lecteur Spotify géré séparément
     fromRSS:      false,
   }
 }
@@ -192,8 +192,10 @@ function fromRss(
     link:         ep.link,
     pubDate:      ep.pubDate,
     youtubeId,
-    // Embed player Ausha construit depuis l'ID du fichier audio (enclosure URL)
-    aushaEmbedUrl: ep.audioUrl ? aushaEmbedUrl(ep.audioUrl) : '',
+    // Embed Spotify : override manuel (episode-extras) > détection auto (smartlink Ausha)
+    spotifyEmbedUrl: extras?.spotifyId
+      ? `https://open.spotify.com/embed/episode/${extras.spotifyId}?utm_source=generator`
+      : ep.spotifyEmbedUrl,
     fromRSS:      true,
   }
 }

@@ -862,19 +862,17 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
               </div>
             </aside>
 
-            {/* Player Ausha — même emplacement que le lecteur Spotify sur les épisodes legacy */}
-            {unified.aushaEmbedUrl ? (
+            {/* Lecteur Spotify — même design que les épisodes statiques */}
+            {unified.spotifyEmbedUrl ? (
               <div className="ep-col-player" data-ep-reveal>
                 <iframe
-                  title={`Lecteur Ausha — ${unified.title}`}
-                  src={unified.aushaEmbedUrl}
+                  title={`Lecteur Spotify — ${unified.title}`}
+                  src={unified.spotifyEmbedUrl}
                   width="100%"
-                  height="200"
-                  scrolling="no"
+                  height="152"
                   allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                   loading="lazy"
                   className="ep-player-iframe"
-                  style={{ border: 'none' }}
                 />
               </div>
             ) : null}
