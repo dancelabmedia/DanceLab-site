@@ -246,10 +246,18 @@ export async function getEpisodesFromRSS(
 
 /**
  * Construit l'URL de l'embed player Ausha pour un épisode.
- * Format : https://player.ausha.co?podcastId=…&episodeId=…&v=3
+ *
+ * Le paramètre `podcastId` de l'embed n'est PAS l'ID du podcast Ausha,
+ * mais l'identifiant du fichier audio, extrait de l'URL `<enclosure>` :
+ *   https://audio.ausha.co/D3EkKCMdrrDp.mp3?t=… → D3EkKCMdrrDp
+ *
+ * Format : https://player.ausha.co?podcastId={audioFileId}&v=2
  */
-export function aushaEmbedUrl(guid: string): string {
-  return `https://player.ausha.co?podcastId=${AUSHA_PODCAST_ID}&episodeId=${guid}&v=3`
+export function aushaEmbedUrl(audioUrl: string): string {
+  const match = audioUrl.match(/\/([A-Za-z0-9]+)\.mp3/)
+  const fileId = match?.[1] ?? ''
+  if (!fileId) return ''
+  return `https://player.ausha.co?podcastId=${fileId}&v=2`
 }
 
 export type Episode = RssEpisode & {

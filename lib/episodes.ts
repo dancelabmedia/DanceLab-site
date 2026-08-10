@@ -192,8 +192,8 @@ function fromRss(
     link:         ep.link,
     pubDate:      ep.pubDate,
     youtubeId,
-    // Embed player Ausha construit depuis le guid RSS
-    aushaEmbedUrl: ep.guid ? aushaEmbedUrl(ep.guid) : '',
+    // Embed player Ausha construit depuis l'ID du fichier audio (enclosure URL)
+    aushaEmbedUrl: ep.audioUrl ? aushaEmbedUrl(ep.audioUrl) : '',
     fromRSS:      true,
   }
 }
