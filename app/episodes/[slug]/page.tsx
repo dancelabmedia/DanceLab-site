@@ -43,10 +43,37 @@ function getEpisodeBySlug(slug: string) {
   return episodes.find((episode) => episode.slug === slug);
 }
 
-function formatEpisodeDate(date: string) {
-  const [year, month, day] = date.split("-");
+/**
+ * Convertit n'importe quelle chaîne de date en format français JJ.MM.AAAA.
+ *
+ * Accepte :
+ *   - ISO date     "2026-08-03"                        → "03.08.2026"
+ *   - ISO datetime "2026-08-03T22:26:50Z"              → "03.08.2026"
+ *   - RFC 2822     "Mon, 03 Aug 2026 22:26:50 +0000"   → "03.08.2026"
+ *
+ * En cas d'échec (date vide ou non parseable), retourne une chaîne vide.
+ */
+function formatEpisodeDate(date: string): string {
+  if (!date) return "";
 
-  return year && month && day ? `${day}.${month}.${year}` : date;
+  // Format ISO YYYY-MM-DD (avec ou sans suffixe heure) — chemin rapide, sans new Date()
+  const isoMatch = date.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoMatch) {
+    const [, year, month, day] = isoMatch;
+    return `${day}.${month}.${year}`;
+  }
+
+  // Tout autre format : déléguer au moteur JS (RFC 2822, etc.)
+  try {
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return "";
+    const day   = String(d.getUTCDate()).padStart(2, "0");
+    const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+    const year  = d.getUTCFullYear();
+    return `${day}.${month}.${year}`;
+  } catch {
+    return "";
+  }
 }
 
 /** Extrait l'identifiant vidéo YouTube depuis toute forme d'URL YouTube. */
@@ -784,7 +811,7 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
               </span>
               {unified.pubDate ? (
                 <time className="ep-meta-date" dateTime={unified.pubDate}>
-                  {formatEpisodeDate(unified.pubDate.split('T')[0])}
+                  {formatEpisodeDate(unified.pubDate)}
                 </time>
               ) : null}
             </div>

@@ -65,6 +65,37 @@ export const AUSHA_PODCAST_ID = 'yvVqGgCrEkqK'
 /** Revalidation ISR : les données sont rafraîchies au plus toutes les heures */
 export const RSS_REVALIDATE = 3600
 
+// ─── Helpers date ─────────────────────────────────────────────────────────────
+
+/**
+ * Normalise n'importe quel format de date en YYYY-MM-DD.
+ *
+ * Formats pris en charge :
+ *   - RFC 2822 RSS  : "Mon, 03 Aug 2026 22:26:50 +0000"  → "2026-08-03"
+ *   - ISO 8601 full : "2026-08-03T22:26:50Z"              → "2026-08-03"
+ *   - ISO date seule: "2026-08-03"                        → "2026-08-03"
+ *
+ * Utilise les valeurs UTC pour éviter tout décalage de fuseau horaire.
+ * Retourne une chaîne vide si la date est non parseable.
+ */
+function normalizeRssDate(raw: string): string {
+  if (!raw) return ''
+  // Déjà au format YYYY-MM-DD (avec ou sans suffixe heure)
+  const isoMatch = raw.match(/^(\d{4}-\d{2}-\d{2})/)
+  if (isoMatch) return isoMatch[1]
+  // Tout autre format (RFC 2822, etc.) : déléguer au moteur JS
+  try {
+    const d = new Date(raw)
+    if (isNaN(d.getTime())) return ''
+    const y = d.getUTCFullYear()
+    const m = String(d.getUTCMonth() + 1).padStart(2, '0')
+    const day = String(d.getUTCDate()).padStart(2, '0')
+    return `${y}-${m}-${day}`
+  } catch {
+    return ''
+  }
+}
+
 // ─── Helpers XML ──────────────────────────────────────────────────────────────
 
 /** Extrait le contenu d'un tag XML simple (non-CDATA, premier match) */
@@ -268,7 +299,9 @@ export async function getEpisodesFromRSS(
       // Texte brut complet, sans boilerplate Ausha
       const description = cleanDescription(stripHtml(descRaw))
 
-      const pubDate = extractTag(item, 'pubDate')
+      // pubDate normalisé en YYYY-MM-DD dès le parsing RSS
+      // (le flux Ausha retourne du RFC 2822 : "Mon, 03 Aug 2026 22:26:50 +0000")
+      const pubDate = normalizeRssDate(extractTag(item, 'pubDate'))
 
       // Fichier audio direct (tag <enclosure>)
       const audioUrl = extractAttr(item, 'enclosure', 'url')
