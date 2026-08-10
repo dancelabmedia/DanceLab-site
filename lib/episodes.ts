@@ -175,7 +175,8 @@ function fromRss(
   return {
     number:       ep.number,
     slug,
-    title:        ep.title,
+    // Override manuel du titre si renseigné (ex : ajout "?" manquant)
+    title:        extras?.title ?? ep.title,
     guest,
     duration:     ep.duration,
     image,

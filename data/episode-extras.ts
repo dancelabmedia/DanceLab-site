@@ -35,6 +35,11 @@
 export type EpisodeExtra = {
   /** Citation mise en avant */
   quote?: string
+  /**
+   * Titre corrigé — remplace celui du RSS si besoin
+   * (ex : ajouter un "?" manquant, corriger une coquille)
+   */
+  title?: string
   /** Chemin image personnalisé (ex : "/episodes/mylene-amboka.jpg") */
   image?: string
   /**
@@ -50,14 +55,14 @@ export type EpisodeExtra = {
  * N'ajoute une entrée ici que si tu as quelque chose à renseigner manuellement.
  */
 export const episodeExtras: Record<number, EpisodeExtra> = {
-  // ── Exemple ─────────────────────────────────────────────────────────────────
+  122: {
+    title: "Peut-on réussir dans la danse sans sacrifier sa santé mentale ?",
+    quote: "Savoir dire non et penser à sa vie perso, c'est une bonne chose",
+  },
+  // ── Ajouter les prochains épisodes ici ──────────────────────────────────────
   //
-  // 122: {
-  //   quote:     "Savoir dire non et penser à sa vie perso, c'est une bonne chose.",
-  //   youtubeId: "1arXpUwWODA",   // vidéo complète Ép.122 déjà trouvée auto → inutile ici
-  // },
-  //
-  // 50: {
-  //   youtubeId: "abc12345678",   // épisode ancien, hors du flux YouTube → manuel
+  // 123: {
+  //   quote:     "…",
+  //   youtubeId: "abc12345678",   // si la correspondance auto échoue
   // },
 }

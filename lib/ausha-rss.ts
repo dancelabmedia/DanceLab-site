@@ -86,6 +86,28 @@ function stripHtml(html: string): string {
 }
 
 /**
+ * Supprime le boilerplate récurrent en fin de description Ausha :
+ *   • Blocs 👉🏽 (liens réseaux sociaux, épisodes mentionnés…)
+ *   • CTA "Si cet épisode t'a plu…"
+ *   • Date d'enregistrement [Cet épisode a été enregistré…]
+ *   • Mention d'hébergement "Hébergé par Ausha…"
+ *   • Artefact XML résiduel ]]>
+ */
+function cleanDescription(text: string): string {
+  // Tout ce qui suit le premier 👉 est du boilerplate
+  const cutIndex = text.indexOf('👉')
+  const body = cutIndex > 0 ? text.slice(0, cutIndex) : text
+
+  return body
+    .replace(/^\s*\]\]>\s*$/gm, '')          // artefact XML
+    .replace(/\[Cet épisode[^\]]*\]/gi, '')              // date d'enregistrement
+    .replace(/Hébergé par Ausha\.[^\n]*/gi, '')          // mention hébergeur
+    .replace(/Si cet épisode[^\n]*/gi, '')               // CTA partage
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
+/**
  * Extrait la première phrase en <b>…</b> de la description HTML.
  * C'est la question d'accroche éditoriale (ex : "Comment est-ce qu'on parvient…").
  * Retourne une chaîne vide si absent.
@@ -186,8 +208,8 @@ export async function getEpisodesFromRSS(
       // Citation = première phrase en <b>…</b> (question d'accroche)
       const quote = extractBoldQuote(descRaw)
 
-      // Texte brut complet (sans HTML) — pas de troncature
-      const description = stripHtml(descRaw)
+      // Texte brut complet, sans boilerplate Ausha
+      const description = cleanDescription(stripHtml(descRaw))
 
       const pubDate = extractTag(item, 'pubDate')
 
