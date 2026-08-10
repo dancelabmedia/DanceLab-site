@@ -7018,6 +7018,223 @@ transform:scale(1.05);
   }
 }
 
+/* ─── Bouton effacement recherche ─── */
+.srt-search-clear {
+  position: absolute;
+  right: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  padding: 3px;
+  border-radius: 4px;
+  transition: color 0.14s;
+}
+.srt-search-clear:hover { color: var(--color-primary-dark); }
+
+/* ─── Mobile : ligne toggle + tri ─── */
+.srt-mobile-controls {
+  display: none;           /* caché sur desktop */
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.srt-filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 9px;
+  background: #f8f8f8;
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  color: var(--color-text-dark);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.15s, background 0.15s;
+}
+.srt-filter-toggle--active {
+  border-color: var(--color-primary-light);
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  font-weight: 600;
+}
+
+.srt-filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--color-primary-dark);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.srt-mobile-sort {
+  margin-left: auto;
+}
+
+/* Le tri desktop est caché sur mobile (le sort est dans srt-mobile-controls) */
+.srt-desktop-sort { display: flex; }
+
+/* ─── Panneau filtres : visible en desktop, collapsible sur mobile ─── */
+@media (max-width: 640px) {
+  .srt-mobile-controls { display: flex; }
+  .srt-desktop-sort    { display: none; }
+
+  /* Par défaut sur mobile : filters cachés */
+  .srt-filter-row {
+    display: none;
+  }
+  /* Ouvert : affiché en colonne */
+  .srt-filter-row--open {
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px 0;
+    border-top: 1px solid #f0f0f0;
+    margin-top: 4px;
+    animation: srt-dd-in 0.15s ease;
+  }
+  .srt-filter-row--open .srt-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+  }
+  .srt-filter-row--open .srt-filters .srt-dd { width: 100%; }
+  .srt-filter-row--open .srt-filters .srt-dd-btn { width: 100%; }
+}
+
+/* ─── Chips de filtres actifs ─── */
+.srt-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0 4px;
+  border-top: 1px solid #f4f4f4;
+  margin-top: 6px;
+}
+
+.srt-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px 5px 10px;
+  border-radius: 20px;
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.14s, opacity 0.14s;
+}
+.srt-chip:hover { background: #a8c0d0; }
+
+.srt-chip-x {
+  font-size: 0.82rem;
+  font-weight: 400;
+  opacity: 0.6;
+  margin-left: 1px;
+  line-height: 1;
+}
+.srt-chip:hover .srt-chip-x { opacity: 1; }
+
+.srt-chips-clear {
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1.5px solid #ddd;
+  background: none;
+  font-family: var(--font-body);
+  font-size: 0.76rem;
+  color: #aaa;
+  cursor: pointer;
+  transition: color 0.14s, border-color 0.14s;
+}
+.srt-chips-clear:hover {
+  color: var(--color-primary-dark);
+  border-color: var(--color-primary);
+}
+
+/* ─── Compteur de résultats ─── */
+.srt-results-count {
+  font-size: 0.8rem;
+  color: #bbb;
+  margin: 0 0 28px;
+  letter-spacing: 0.01em;
+}
+
+/* ─── État vide enrichi ─── */
+.srt-empty {
+  text-align: center;
+  padding: 72px 0 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.srt-empty-icon {
+  color: #d8d8d8;
+  margin-bottom: 4px;
+}
+
+.srt-empty-title {
+  font-family: var(--font-display) !important;
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+  color: var(--color-text-dark) !important;
+  margin: 0 !important;
+  max-width: none !important;
+}
+
+.srt-empty-desc {
+  font-size: 0.88rem;
+  color: #bbb;
+  max-width: 380px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.srt-empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.srt-empty-suggest {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1.5px solid var(--color-primary-light);
+  background: none;
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--color-primary-dark);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.srt-empty-suggest:hover {
+  background: var(--color-primary-light);
+}
+
 /* ================================
    PAGES ÉCOUTER - RUBRIQUES À COMPLÉTER
 ================================ */
