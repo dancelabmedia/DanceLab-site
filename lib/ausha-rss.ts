@@ -7,16 +7,12 @@
  * Aucune dépendance externe — le parsing XML est fait manuellement
  * pour rester compatible avec l'environnement Edge / Node.js de Next.js
  * sans alourdir le bundle.
- *
- * Utilisation (Server Component) :
- *   import { getEpisodes } from '@/lib/ausha-rss'
- *   const episodes = await getEpisodes()
  */
 
 export type RssEpisode = {
   /** Numéro de l'épisode extrait du titre (ex : 122) */
   number: number
-  /** Titre de l'épisode sans le préfixe numéroté (ex : "Peut-on réussir…") */
+  /** Titre de l'épisode sans le préfixe numéroté */
   title: string
   /** Nom de l'invité extrait de "avec Prénom Nom" dans le titre */
   guest: string
@@ -32,15 +28,29 @@ export type RssEpisode = {
   aushaImage: string
   /** Description courte (itunes:subtitle) */
   subtitle: string
-  /** Description complète (description, texte uniquement) */
+  /** Description complète (description, texte brut sans HTML) */
   description: string
+  /**
+   * Citation mise en valeur : première phrase en <b>…</b> de la description.
+   * C'est la question d'accroche éditoriale placée en tête de chaque épisode.
+   */
+  quote: string
+  /** URL du fichier audio MP3 direct (tag <enclosure>) */
+  audioUrl: string
+  /**
+   * Identifiant interne Ausha de l'épisode (tag <guid>).
+   * Utilisé pour construire l'URL de l'embed player Ausha.
+   */
+  guid: string
   /** true si c'est un EXTRAIT (court clip promotionnel) */
   isExtrait: boolean
 }
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
-const RSS_URL = 'https://feed.ausha.co/yvVqGgCrEkqK'
+const RSS_URL   = 'https://feed.ausha.co/yvVqGgCrEkqK'
+/** ID Ausha du podcast (extrait de l'URL du flux RSS) */
+export const AUSHA_PODCAST_ID = 'yvVqGgCrEkqK'
 
 /** Revalidation ISR : les données sont rafraîchies au plus toutes les heures */
 export const RSS_REVALIDATE = 3600
@@ -53,7 +63,7 @@ function extractTag(xml: string, tag: string): string {
   return xml.match(re)?.[1]?.trim() ?? ''
 }
 
-/** Extrait la valeur d'un attribut nommé dans un tag auto-fermant */
+/** Extrait la valeur d'un attribut nommé dans un tag */
 function extractAttr(xml: string, tag: string, attr: string): string {
   const re = new RegExp(`<${tag}[^>]*\\s${attr}="([^"]*)"`, 'i')
   return xml.match(re)?.[1]?.trim() ?? ''
@@ -61,14 +71,35 @@ function extractAttr(xml: string, tag: string, attr: string): string {
 
 /** Supprime les balises HTML/XML d'une chaîne */
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]+>/g, ' ').replace(/\s{2,}/g, ' ').trim()
+  return html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
+/**
+ * Extrait la première phrase en <b>…</b> de la description HTML.
+ * C'est la question d'accroche éditoriale (ex : "Comment est-ce qu'on parvient…").
+ * Retourne une chaîne vide si absent.
+ */
+function extractBoldQuote(html: string): string {
+  const match = html.match(/<b>([\s\S]*?)<\/b>/i)
+  if (!match) return ''
+  return stripHtml(match[1]).trim()
 }
 
 // ─── Formatage de la durée ─────────────────────────────────────────────────
 
 /**
  * Convertit "1:20:06" → "1 h 20"  |  "15:03" → "15 min"
- * Garde les secondes significatives si < 1 min (rare).
  */
 function formatDuration(raw: string): string {
   const parts = raw.split(':').map(Number)
@@ -87,41 +118,28 @@ function formatDuration(raw: string): string {
 
 // ─── Parsing du titre ─────────────────────────────────────────────────────────
 
-/**
- * Extrait le numéro, le titre propre, l'indicateur EXTRAIT et l'invité.
- *
- * Formats rencontrés :
- *   "122. Peut-on réussir dans la danse sans sacrifier sa santé mentale, avec Mylène Amboka"
- *   "123. EXTRAIT - \"Arrêtons de toujours se comparer...\", avec Bertrand Exertier"
- */
 function parseTitle(raw: string): {
   number: number
   title: string
   guest: string
   isExtrait: boolean
 } {
-  // Numéro : premier entier avant le point
   const numMatch = raw.match(/^(\d+)\.\s*/)
   const number = numMatch ? parseInt(numMatch[1], 10) : 0
   let rest = numMatch ? raw.slice(numMatch[0].length) : raw
 
-  // EXTRAIT ?
   const isExtrait = /^EXTRAIT\b/i.test(rest)
 
-  // Invité : tout ce qui suit ", avec " (insensible à la casse)
   const guestMatch = rest.match(/,\s*avec\s+(.+)$/i)
   const guest = guestMatch ? guestMatch[1].trim() : ''
   if (guestMatch) {
     rest = rest.slice(0, rest.length - guestMatch[0].length)
   }
 
-  // Nettoyer le titre : enlever EXTRAIT - "..." si présent, guillemets résiduels
   let title = rest
     .replace(/^EXTRAIT\s*[-–]\s*/i, '')
     .replace(/^["«"]|["»"]$/g, '')
     .trim()
-
-  // Supprimer la virgule finale si l'invité a été retiré
   title = title.replace(/,\s*$/, '').trim()
 
   return { number, title, guest, isExtrait }
@@ -129,11 +147,6 @@ function parseTitle(raw: string): {
 
 // ─── Fetcher principal ────────────────────────────────────────────────────────
 
-/**
- * Récupère et parse le flux RSS Ausha.
- *
- * @param includeExtraits  Si false (défaut), filtre les courts extraits promotionnels.
- */
 export async function getEpisodesFromRSS(
   includeExtraits = false,
 ): Promise<RssEpisode[]> {
@@ -146,8 +159,6 @@ export async function getEpisodesFromRSS(
   }
 
   const xml = await res.text()
-
-  // Découpe en items individuels
   const itemMatches = xml.match(/<item>[\s\S]*?<\/item>/g) ?? []
 
   const episodes: RssEpisode[] = itemMatches
@@ -167,11 +178,24 @@ export async function getEpisodesFromRSS(
 
       const subtitle = extractTag(item, 'itunes:subtitle')
 
-      // Description : préférer le texte brut (sans balises HTML)
-      const descRaw = extractTag(item, 'description')
-      const description = stripHtml(descRaw).slice(0, 800)
+      // Description complète — préférer content:encoded, fallback description
+      const descRaw =
+        extractTag(item, 'content:encoded') ||
+        extractTag(item, 'description')
+
+      // Citation = première phrase en <b>…</b> (question d'accroche)
+      const quote = extractBoldQuote(descRaw)
+
+      // Texte brut complet (sans HTML) — pas de troncature
+      const description = stripHtml(descRaw)
 
       const pubDate = extractTag(item, 'pubDate')
+
+      // Fichier audio direct (tag <enclosure>)
+      const audioUrl = extractAttr(item, 'enclosure', 'url')
+
+      // Identifiant interne Ausha (tag <guid>)
+      const guid = extractTag(item, 'guid')
 
       return {
         number,
@@ -184,23 +208,29 @@ export async function getEpisodesFromRSS(
         aushaImage,
         subtitle,
         description,
+        quote,
+        audioUrl,
+        guid,
         isExtrait,
       } satisfies RssEpisode
     })
     .filter((ep) => ep.number > 0 && (includeExtraits || !ep.isExtrait))
-    // Du plus récent au plus ancien
     .sort((a, b) => b.number - a.number)
 
   return episodes
 }
 
-// ─── Type enrichi (RSS + extras locaux) ───────────────────────────────────────
+// ─── Helpers publics ──────────────────────────────────────────────────────────
+
+/**
+ * Construit l'URL de l'embed player Ausha pour un épisode.
+ * Format : https://player.ausha.co?podcastId=…&episodeId=…&v=3
+ */
+export function aushaEmbedUrl(guid: string): string {
+  return `https://player.ausha.co?podcastId=${AUSHA_PODCAST_ID}&episodeId=${guid}&v=3`
+}
 
 export type Episode = RssEpisode & {
-  /** Chemin local de l'image dans /public/episodes/ (ou CDN si absent) */
   image: string
-  /** Citation mise en avant (ajoutée manuellement dans episode-extras.ts) */
-  quote: string
-  /** Slug utilisé dans les URL du site Dance Lab */
   slug: string
 }

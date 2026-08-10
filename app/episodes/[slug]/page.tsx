@@ -710,7 +710,8 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
     return unified.aushaImage || unified.image;
   })();
 
-  const descriptionParagraphs = getEpisodeDescriptionParagraphs(unified.excerpt);
+  // Description : texte complet depuis le RSS (fallback sur l'excerpt si absent)
+  const descriptionParagraphs = getEpisodeDescriptionParagraphs(unified.description || unified.excerpt);
   const descriptionBlocks     = getEpisodeDescriptionBlocks(descriptionParagraphs);
 
   return (
@@ -860,6 +861,23 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
                 </div>
               </div>
             </aside>
+
+            {/* Player Ausha — même emplacement que le lecteur Spotify sur les épisodes legacy */}
+            {unified.aushaEmbedUrl ? (
+              <div className="ep-col-player" data-ep-reveal>
+                <iframe
+                  title={`Lecteur Ausha — ${unified.title}`}
+                  src={unified.aushaEmbedUrl}
+                  width="100%"
+                  height="200"
+                  scrolling="no"
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                  loading="lazy"
+                  className="ep-player-iframe"
+                  style={{ border: 'none' }}
+                />
+              </div>
+            ) : null}
 
           </div>
         </section>

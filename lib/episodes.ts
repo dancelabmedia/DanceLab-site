@@ -16,12 +16,12 @@
  * Extras manuels (citation, image, youtubeId) → data/episode-extras.ts
  */
 
-import { readdirSync }                            from 'node:fs'
-import path                                       from 'node:path'
-import { episodesList, type EpisodeListItem }     from '@/data/episodes-list'
-import { episodeExtras }                          from '@/data/episode-extras'
-import { getEpisodesFromRSS, type RssEpisode }   from '@/lib/ausha-rss'
-import { getYoutubeEpisodeMap, youtubeUrl }       from '@/lib/youtube-rss'
+import { readdirSync }                                          from 'node:fs'
+import path                                                    from 'node:path'
+import { episodesList, type EpisodeListItem }                  from '@/data/episodes-list'
+import { episodeExtras }                                       from '@/data/episode-extras'
+import { getEpisodesFromRSS, type RssEpisode, aushaEmbedUrl } from '@/lib/ausha-rss'
+import { getYoutubeEpisodeMap, youtubeUrl }                    from '@/lib/youtube-rss'
 
 // ─── Type unifié ──────────────────────────────────────────────────────────────
 
@@ -40,7 +40,14 @@ export type UnifiedEpisode = {
   image: string
   /** URL CDN Ausha — fallback réseau si image locale absente */
   aushaImage: string
+  /** Résumé court (pour les cards et l'og:description) */
   excerpt: string
+  /**
+   * Description complète (texte brut, paragraphes séparés par \n\n).
+   * Vide pour les épisodes legacy (utiliser episode.description directement).
+   */
+  description: string
+  /** Citation mise en valeur (question d'accroche ou phrase forte) */
   quote: string
   /** Lien d'écoute Ausha */
   link: string
@@ -51,6 +58,11 @@ export type UnifiedEpisode = {
    * null = pas de vidéo YouTube associée (ni auto ni manuel).
    */
   youtubeId: string | null
+  /**
+   * URL de l'embed player Ausha (construit depuis le guid RSS).
+   * Vide pour les épisodes legacy.
+   */
+  aushaEmbedUrl: string
   /** true si l'épisode provient du flux RSS Ausha live (≥ 122) */
   fromRSS: boolean
 }
@@ -129,19 +141,21 @@ function fromLegacy(
   const image     = resolveCardImage(ep.number, extras, inviteImages, ep.image)
 
   return {
-    number:     ep.number,
-    slug:       ep.slug,
-    title:      ep.title,
-    guest:      ep.guest,
-    duration:   ep.duration,
+    number:       ep.number,
+    slug:         ep.slug,
+    title:        ep.title,
+    guest:        ep.guest,
+    duration:     ep.duration,
     image,
-    aushaImage: ep.image,   // pas de CDN Ausha pour les épisodes legacy
-    excerpt:    ep.excerpt,
-    quote:      extras?.quote ?? ep.quote,
-    link:       `https://podcast.ausha.co/dance-lab/${ep.slug}`,
-    pubDate:    '',
+    aushaImage:   ep.image,
+    excerpt:      ep.excerpt,
+    description:  '',          // legacy : la description complète est dans data/episodes.ts
+    quote:        extras?.quote ?? ep.quote,
+    link:         `https://podcast.ausha.co/dance-lab/${ep.slug}`,
+    pubDate:      '',
     youtubeId,
-    fromRSS:    false,
+    aushaEmbedUrl: '',         // legacy : lecteur Spotify géré séparément
+    fromRSS:      false,
   }
 }
 
@@ -159,19 +173,27 @@ function fromRss(
   const image     = resolveCardImage(ep.number, extras, inviteImages, ep.aushaImage)
 
   return {
-    number:     ep.number,
+    number:       ep.number,
     slug,
-    title:      ep.title,
+    title:        ep.title,
     guest,
-    duration:   ep.duration,
+    duration:     ep.duration,
     image,
-    aushaImage: ep.aushaImage,
-    excerpt:    ep.subtitle || ep.description.slice(0, 200),
-    quote:      extras?.quote ?? '',
-    link:       ep.link,
-    pubDate:    ep.pubDate,
+    aushaImage:   ep.aushaImage,
+    // Résumé court : subtitle Ausha ou début de description (≤ 220 chars)
+    excerpt:      ep.subtitle
+                    ? ep.subtitle.split('\n')[0].trim().slice(0, 220)
+                    : ep.description.slice(0, 220),
+    // Description complète (texte brut, pas de troncature)
+    description:  ep.description,
+    // Citation : override manuel > question d'accroche en gras > vide
+    quote:        extras?.quote ?? ep.quote,
+    link:         ep.link,
+    pubDate:      ep.pubDate,
     youtubeId,
-    fromRSS:    true,
+    // Embed player Ausha construit depuis le guid RSS
+    aushaEmbedUrl: ep.guid ? aushaEmbedUrl(ep.guid) : '',
+    fromRSS:      true,
   }
 }
 
