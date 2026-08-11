@@ -176,32 +176,30 @@ export default function MediaReveal({ article, event }: Props) {
       /* Lissage temporel limité aux entrées : un geste de scroll rapide ne
          peut plus faire apparaître une carte presque instantanément. */
       c1!.classList.toggle('mfr-card--entry-smoothing', p < 0.52)
-      c2!.classList.toggle('mfr-card--entry-smoothing', p < 0.74)
-      c4?.classList.toggle('mfr-card--entry-smoothing', p < 0.84)
+      c2!.classList.toggle('mfr-card--entry-smoothing', p < 0.60)
+      c4?.classList.toggle('mfr-card--entry-smoothing', p < 0.68)
 
       /* ── ENTRÉE — ordre : Magazine → Explorer → Sortir ────────────────── */
-      // Le Magazine conserve un court temps de respiration avant son entrée ;
-      // les cartes suivantes restent synchronisées avec ce départ global.
-      // Cascade éditoriale lente : 16 % de progression entre chaque départ,
-      // avec 6 % de chevauchement pour conserver une continuité parfaite.
+      // Cascade séquencée et premium : ① part en premier, ② et ③ anticipés
+      // pour que les trois cartes soient en place ensemble plus tôt.
+      // Espacement réduit : ~16 % entre chaque départ au lieu de ~28 %.
 
-      /* ① Magazine — plateau prolongé de 10 % avant sa sortie */
+      /* ① Magazine — timing inchangé */
       const c1e  = ssp(0.22, 0.52, p)
       const c1s  = ss(0.76, 0.84, p)
       const c1tx = lerp(-9, 0, c1e) + lerp(0, -2, c1s)
       const c1ty = lerp(9, 0, c1e)
 
-      /* ② Explorer — entrée retardée, puis court plateau lisible */
-      const c2e  = ssp(0.50, 0.74, p)
+      /* ② Explorer — anticipé : démarre à 0.38 au lieu de 0.50 */
+      const c2e  = ssp(0.38, 0.60, p)
       const c2tx = lerp(9, 0, c2e)
       const c2ty = lerp(-9, 0, c2e)
 
-      /* ③ Sortir — entre pendant la disparition progressive du Magazine */
-      const c4e  = ssp(0.62, 0.84, p)
+      /* ③ Sortir — anticipé : démarre à 0.48 au lieu de 0.62 */
+      const c4e  = ssp(0.48, 0.68, p)
       const c4ty = lerp(10, 0, c4e)
 
-      /* ── SORTIES INDIVIDUELLES — chaque encart cède progressivement
-         la place au suivant après un court temps d'installation. ─────── */
+      /* ── SORTIES INDIVIDUELLES — inchangées ─────────────────────────── */
       const c1x = ss(0.76, 0.90, p)
       const c2x = ss(0.76, 0.84, p)
       const c4x = ss(0.84, 0.90, p)
@@ -221,8 +219,8 @@ export default function MediaReveal({ article, event }: Props) {
           `translate(0, ${(c4ty + lerp(0, -8, c4x)).toFixed(2)}vh) scale(${lerp(0.95, 1, c4e).toFixed(3)})`
       }
 
-      /* Label — apparaît une fois toutes les cartes en place */
-      lbl!.style.opacity = (ss(0.74, 0.82, p) * (1 - c4x)).toFixed(3)
+      /* Label — apparaît une fois toutes les cartes en place (synchronisé avec c4) */
+      lbl!.style.opacity = (ss(0.68, 0.76, p) * (1 - c4x)).toFixed(3)
     }
 
     window.addEventListener('scroll', tick, { passive: true })

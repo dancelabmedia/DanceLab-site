@@ -1817,19 +1817,19 @@ button {
   z-index: 1;
 }
 
-/* Carte 2 — Explorer : même taille que le Magazine */
+/* Carte 2 — Explorer : alignée sur la même ligne que le Magazine */
 .mfr-card--style {
   right: 8%;
-  top: 18%;
+  top: 9%;
   width: clamp(200px, 28vw, 355px);
   aspect-ratio: 5 / 7;
   z-index: 2;
 }
 
-/* Carte 3 — Sortir : centrée entre les deux autres, même taille et même ratio */
+/* Carte 3 — Sortir : centrée, alignée sur la même ligne que les deux autres */
 .mfr-card--sortir {
   left: calc(50% - 14vw);
-  top: 23%;
+  top: 9%;
   width: clamp(200px, 28vw, 355px);
   aspect-ratio: 5 / 7;
   z-index: 2;
@@ -2274,7 +2274,7 @@ button {
 
 .les-ep-card-title {
   font-family: var(--font-display);
-  font-size: clamp(13px, 1.3vw, 16px);
+  font-size: clamp(13px, 1.3vw, 15px);
   font-weight: 700;
   color: #fff;
   line-height: 1.28;
