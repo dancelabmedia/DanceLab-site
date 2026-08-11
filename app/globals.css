@@ -2214,7 +2214,7 @@ button {
 .les-ep-card {
   display: block;
   position: relative;
-  width: min(240px, 22vw);
+  width: min(270px, 25vw);
   height: min(66vh, 520px);
   min-width: 180px;
   border-radius: 14px;
@@ -2383,7 +2383,7 @@ button {
 .les-ivw-card {
   flex: 0 0 auto;
   /* Fallback vw : largeur disponible = 100vw − padding section (×2) − largeur ep-card − gap colonne − padding wrap (2×38px) − 2 gaps cartes (2×18px) */
-  width: calc((100vw - 2 * max(48px, (100vw - 1280px) / 2 + 48px) - min(240px, 22vw) - clamp(24px, 4vw, 56px) - 76px - 36px) / 3);
+  width: calc((100vw - 2 * max(48px, (100vw - 1280px) / 2 + 48px) - min(270px, 25vw) - clamp(24px, 4vw, 56px) - 76px - 36px) / 3);
   /* Enhancement cqi (Safari 16+, Chrome 105+) — écrase le fallback si supporté */
   width: calc((100cqi - 36px) / 3);
   text-decoration: none;
