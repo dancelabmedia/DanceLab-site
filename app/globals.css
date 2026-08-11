@@ -1810,26 +1810,26 @@ button {
 
 /* Carte 1 — Article (dominante, haut-gauche) */
 .mfr-card--article {
-  left: 8%;
-  top: 9%;
+  left: 4vw;
+  top: 16%;
   width: clamp(200px, 28vw, 355px);
   aspect-ratio: 5 / 7;
   z-index: 1;
 }
 
-/* Carte 2 — Explorer : alignée sur la même ligne que le Magazine */
+/* Carte 2 — Explorer : même ligne, espacement homogène */
 .mfr-card--style {
-  right: 8%;
-  top: 9%;
+  right: 4vw;
+  top: 16%;
   width: clamp(200px, 28vw, 355px);
   aspect-ratio: 5 / 7;
   z-index: 2;
 }
 
-/* Carte 3 — Sortir : centrée, alignée sur la même ligne que les deux autres */
+/* Carte 3 — Sortir : gap de 4vw de chaque côté (4vw marge + 28vw + 4vw gap = 36vw) */
 .mfr-card--sortir {
-  left: calc(50% - 14vw);
-  top: 9%;
+  left: 36vw;
+  top: 16%;
   width: clamp(200px, 28vw, 355px);
   aspect-ratio: 5 / 7;
   z-index: 2;
