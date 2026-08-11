@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect, useMemo } from 'react'
+import { useRef, useEffect } from 'react'
 import Link from 'next/link'
 import type { MagazineArticle } from '../decouvrir/articles-data'
 import { formatAgendaDate, type AgendaEvent } from '../agenda/agenda-data'
@@ -111,12 +111,8 @@ export default function MediaReveal({ article, event }: Props) {
   const card4Ref   = useRef<HTMLDivElement>(null)   // Sortir (position et timing conservés)
   const labelRef   = useRef<HTMLDivElement>(null)
 
-  /* ── Feature Explorer du jour ──────────────────────────────────────────────
-     On choisit selon le jour du mois pour varier sans aléatoire (SSR-stable). */
-  const explorerFeature = useMemo(() => {
-    const day = new Date().getDate()           // 1–31
-    return EXPLORER_FEATURES[day % EXPLORER_FEATURES.length]
-  }, [])
+  /* ── Feature Explorer — toujours Styles de danse ─────────────────────── */
+  const explorerFeature = EXPLORER_FEATURES[0]
 
   /* ── Informations pratiques de l'événement Sortir ─────────────────────── */
   const eventDates = event
@@ -263,7 +259,7 @@ export default function MediaReveal({ article, event }: Props) {
                   loading="lazy"
                 />
                 <div className="mfr-card-gradient" />
-                <div className="mfr-card-body">
+                <div className="mfr-card-body mfr-card-body--lower">
                   <span className="mfr-badge mfr-badge--mag">Magazine</span>
                   <span className="mfr-card-cat">{article.category}</span>
                   <h2 className="mfr-card-title">{article.title}</h2>

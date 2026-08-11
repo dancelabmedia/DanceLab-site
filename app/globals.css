@@ -1810,28 +1810,28 @@ button {
 
 /* Carte 1 — Article (dominante, haut-gauche) */
 .mfr-card--article {
-  left: 9%;
+  left: 8%;
   top: 9%;
-  width: clamp(220px, 31vw, 390px);
+  width: clamp(200px, 28vw, 355px);
   aspect-ratio: 5 / 7;
   z-index: 1;
 }
 
-/* Carte 2 — Style de danse, légèrement rapprochée du centre */
+/* Carte 2 — Explorer : même taille que le Magazine */
 .mfr-card--style {
-  right: 9%;
+  right: 8%;
   top: 18%;
-  width: clamp(185px, 24vw, 305px);
+  width: clamp(200px, 28vw, 355px);
   aspect-ratio: 5 / 7;
   z-index: 2;
 }
 
-/* Carte 3 — Sortir : recentrée et agrandie entre les deux cartes extérieures */
+/* Carte 3 — Sortir : centrée entre les deux autres, même taille et même ratio */
 .mfr-card--sortir {
-  left: 42%;
-  top: 22%;
-  width: clamp(175px, 23vw, 285px);
-  aspect-ratio: 4 / 5;
+  left: calc(50% - 14vw);
+  top: 23%;
+  width: clamp(200px, 28vw, 355px);
+  aspect-ratio: 5 / 7;
   z-index: 2;
 }
 

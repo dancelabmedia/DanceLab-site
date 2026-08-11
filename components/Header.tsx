@@ -102,7 +102,7 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
   ]
 
   const navGroups = [
-    { label: 'Découvrir', directHref: '/decouvrir' },
+    { label: 'Magazine', directHref: '/decouvrir' },
     { label: 'Écouter', directHref: '/ecouter' },
     { label: 'Sortir', directHref: '/sortir' },
     { label: 'Explorer', items: exploreLinks },
