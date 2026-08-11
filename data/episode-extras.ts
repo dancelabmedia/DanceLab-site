@@ -74,6 +74,9 @@ export const episodeExtras: Record<number, EpisodeExtra> = {
     title: "Peut-on réussir dans la danse sans sacrifier sa santé mentale ?",
     quote: "Savoir dire non et penser à sa vie perso, c'est une bonne chose",
   },
+  123: {
+    quote: "Arrêtons de toujours se comparer, on disperse nos énergies, on ne les met pas à la bonne place.",
+  },
   // ── Ajouter les prochains épisodes ici ──────────────────────────────────────
   //
   // 123: {
