@@ -12,6 +12,7 @@
  */
 
 import { getEpisodes } from '@/lib/episodes'
+import { getPublishedArticles } from './decouvrir/articles-data'
 import HomeClient from './HomeClient'
 
 // Revalidation ISR Vercel — 1 heure (identique à /ecouter)
@@ -27,5 +28,7 @@ export default async function DanceLabPage() {
   const episodes = await getEpisodes()
   // episodes[0] est toujours le plus récent (RSS Ausha > statique)
   const latestEpisode = episodes[0]
-  return <HomeClient latestEpisode={latestEpisode} />
+  // Dernier article publié — null si aucun article n'est encore publié
+  const latestArticle = getPublishedArticles()[0] ?? null
+  return <HomeClient latestEpisode={latestEpisode} latestArticle={latestArticle} />
 }

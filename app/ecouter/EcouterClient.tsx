@@ -388,14 +388,14 @@ export default function EcouterClient({ episodes }: Props) {
               <strong>
                 <AnimatedCounter prefix="+" value={100} suffix={"\u00a0000"} duration={1600} />
               </strong>
-              <span>écoutes</span>
+              <span>écoutes cumulées</span>
             </div>
             <div className="el-stat-sep" aria-hidden="true" />
             <div className="el-stat">
               <strong>
                 <AnimatedCounter prefix="+" value={2} suffix={"\u00a0MILLIONS"} duration={1800} />
               </strong>
-              <span>de vues</span>
+              <span>vues cumulées</span>
             </div>
           </div>
 

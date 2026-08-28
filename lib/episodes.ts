@@ -65,6 +65,11 @@ export type UnifiedEpisode = {
   spotifyEmbedUrl: string
   /** true si l'épisode provient du flux RSS Ausha live (≥ 122) */
   fromRSS: boolean
+  /**
+   * URL du Reel Instagram correspondant à cet épisode.
+   * Undefined si aucun Reel n'a été associé → la section n'est pas affichée.
+   */
+  instagramReelUrl?: string
 }
 
 // ─── Résolution d'image centralisée ───────────────────────────────────────────
@@ -156,6 +161,7 @@ function fromLegacy(
     youtubeId,
     spotifyEmbedUrl: '',       // legacy : lecteur Spotify géré séparément
     fromRSS:      false,
+    instagramReelUrl: extras?.instagramReelUrl,
   }
 }
 
@@ -197,6 +203,7 @@ function fromRss(
       ? `https://open.spotify.com/embed/episode/${extras.spotifyId}?utm_source=generator`
       : ep.spotifyEmbedUrl,
     fromRSS:      true,
+    instagramReelUrl: extras?.instagramReelUrl,
   }
 }
 

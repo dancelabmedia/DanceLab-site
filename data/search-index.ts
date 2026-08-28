@@ -52,7 +52,7 @@ const articleItems: SearchItem[] = magazineArticles.map((article) => ({
     article.guest,
     ...article.tags,
     ...article.sections.flatMap((section) => [section.heading, ...section.paragraphs]),
-    article.conclusion,
+    ...(Array.isArray(article.conclusion) ? article.conclusion : [article.conclusion]),
   ]),
 }))
 

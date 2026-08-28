@@ -101,67 +101,92 @@ function AccesPriveForm() {
       </div>
 
       <style>{`
+
+        /* ── Arrière-plan ────────────────────────────────────────── */
         .acces-prive-page {
           min-height: 100vh;
-          background: var(--color-background, #fafafa);
+          background: #ffffff;
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 2rem;
         }
 
+        /* ── Carte principale ────────────────────────────────────── */
         .acces-prive-card {
           background: #ffffff;
-          border: 1px solid rgba(0, 0, 0, 0.10);
-          border-radius: 16px;
-          padding: clamp(2rem, 5vw, 3.5rem);
-          max-width: 420px;
+          border: 1px solid rgba(193, 208, 223, 0.65);
+          border-radius: 24px;
+          padding: clamp(2.5rem, 6vw, 4rem);
+          max-width: 520px;
           width: 100%;
           display: flex;
           flex-direction: column;
-          gap: 1.25rem;
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.09);
+          box-shadow:
+            0 2px 4px  rgba(35, 48, 51, 0.03),
+            0 10px 36px rgba(35, 48, 51, 0.08),
+            0 36px 88px rgba(35, 48, 51, 0.06);
         }
 
+        /* ── Logo ────────────────────────────────────────────────── */
         .acces-prive-logo {
           display: block;
-          margin-bottom: 0.5rem;
+          margin-bottom: 2.75rem;
         }
 
         .acces-prive-logo img {
-          height: 32px;
+          height: 64px;
           width: auto;
+          display: block;
         }
 
+        /* Trait éditorial sous le logo */
+        .acces-prive-logo::after {
+          content: "";
+          display: block;
+          width: 32px;
+          height: 2px;
+          background: var(--color-primary-light, #C1D0DF);
+          margin-top: 1.75rem;
+          border-radius: 1px;
+        }
+
+        /* ── Titre ───────────────────────────────────────────────── */
         .acces-prive-card h1 {
           font-family: var(--font-display, 'Aileron', sans-serif);
-          font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+          font-size: clamp(1.3rem, 3vw, 1.65rem);
           font-weight: 700;
-          color: #1a1a1a;
-          line-height: 1.35;
-          margin: 0;
-          letter-spacing: -0.01em;
+          color: var(--color-text-dark, #233033);
+          line-height: 1.28;
+          margin: 0 0 1rem;
+          letter-spacing: -0.02em;
         }
 
+        /* ── Texte descriptif ────────────────────────────────────── */
         .acces-prive-card > p {
-          font-size: 0.9rem;
-          color: #6b7280;
+          font-size: clamp(0.88rem, 1.15vw, 0.95rem);
+          color: var(--color-text-secondary, #5B7377);
           margin: 0;
-          line-height: 1.65;
+          line-height: 1.72;
         }
 
+        /* ── Formulaire ──────────────────────────────────────────── */
         .acces-prive-form {
           display: flex;
           flex-direction: column;
           gap: 0.75rem;
-          margin-top: 0.5rem;
+          margin-top: 2.25rem;
+          padding-top: 2.25rem;
+          border-top: 1px solid var(--color-border, #D8E0E2);
         }
 
         .acces-prive-form label {
-          font-size: 0.85rem;
-          font-weight: 600;
-          color: #1a1a1a;
-          letter-spacing: 0.01em;
+          font-family: var(--font-body, 'DM Sans', sans-serif);
+          font-size: 0.70rem;
+          font-weight: 700;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: var(--color-text-muted, #7F9195);
         }
 
         /* Wrapper champ + bouton œil */
@@ -173,42 +198,41 @@ function AccesPriveForm() {
 
         .acces-prive-input-wrap input {
           width: 100%;
-          padding: 0.78rem 3rem 0.78rem 1rem;
-          border: 1.5px solid #c4c9cc;
-          border-radius: 8px;
-          font-size: 0.95rem;
+          padding: 0.92rem 3.2rem 0.92rem 1.1rem;
+          border: 1.5px solid var(--color-border, #D8E0E2);
+          border-radius: 10px;
+          font-size: 1rem;
           font-family: inherit;
-          background: #ffffff;
-          color: #1a1a1a;
-          caret-color: #5B7377;
+          background: var(--color-background-soft, #F6F8F9);
+          color: var(--color-text-dark, #233033);
+          caret-color: var(--color-primary, #5B7377);
           outline: none;
-          transition: border-color 0.18s, box-shadow 0.18s;
+          transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
           box-sizing: border-box;
-          -webkit-text-fill-color: #1a1a1a;
         }
 
         .acces-prive-input-wrap input::placeholder {
-          color: #9ca3af;
+          color: var(--color-text-muted, #7F9195);
           opacity: 1;
-          -webkit-text-fill-color: #9ca3af;
         }
 
         .acces-prive-input-wrap input:focus {
-          border-color: #5B7377;
-          box-shadow: 0 0 0 3px rgba(91, 115, 119, 0.14);
+          border-color: var(--color-primary, #5B7377);
+          background: #ffffff;
+          box-shadow: 0 0 0 3px rgba(91, 115, 119, 0.12);
         }
 
         /* Bouton afficher / masquer */
         .acces-prive-toggle {
           position: absolute;
-          right: 0.75rem;
+          right: 0.85rem;
           top: 50%;
           transform: translateY(-50%);
           background: none;
           border: none;
           padding: 4px;
           cursor: pointer;
-          color: #6b7280;
+          color: var(--color-text-muted, #7F9195);
           display: flex;
           align-items: center;
           transition: color 0.18s;
@@ -216,11 +240,11 @@ function AccesPriveForm() {
         }
 
         .acces-prive-toggle:hover {
-          color: #1a1a1a;
+          color: var(--color-text-dark, #233033);
         }
 
         .acces-prive-toggle:focus-visible {
-          outline: 2px solid #5B7377;
+          outline: 2px solid var(--color-primary, #5B7377);
           border-radius: 4px;
         }
 
@@ -231,15 +255,15 @@ function AccesPriveForm() {
           margin: 0;
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 8px;
         }
 
         .acces-prive-error::before {
           content: "✕";
-          font-size: 0.75rem;
+          font-size: 0.68rem;
           font-weight: 700;
-          width: 16px;
-          height: 16px;
+          width: 18px;
+          height: 18px;
           background: #fee2e2;
           border-radius: 50%;
           display: inline-flex;
@@ -251,34 +275,49 @@ function AccesPriveForm() {
         /* Bouton Accéder */
         .acces-prive-submit {
           width: 100%;
-          padding: 0.88rem 1rem;
-          background: #5B7377;
+          padding: 1rem 1.5rem;
+          background: var(--color-primary, #5B7377);
           color: #ffffff;
           border: none;
-          border-radius: 8px;
+          border-radius: 10px;
           font-size: 0.95rem;
           font-weight: 600;
-          font-family: inherit;
+          font-family: var(--font-body, 'DM Sans', sans-serif);
           cursor: pointer;
-          margin-top: 0.25rem;
-          letter-spacing: 0.01em;
-          transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+          margin-top: 0.5rem;
+          letter-spacing: 0.03em;
+          transition: background 0.2s, box-shadow 0.2s, transform 0.12s;
         }
 
         .acces-prive-submit:hover:not(:disabled) {
-          background: #4a6165;
-          box-shadow: 0 4px 14px rgba(91, 115, 119, 0.28);
+          background: var(--color-primary-dark, #425659);
+          box-shadow: 0 6px 22px rgba(91, 115, 119, 0.30);
           transform: translateY(-1px);
         }
 
         .acces-prive-submit:active:not(:disabled) {
           transform: translateY(0);
-          box-shadow: none;
+          box-shadow: 0 2px 8px rgba(91, 115, 119, 0.18);
         }
 
         .acces-prive-submit:disabled {
-          opacity: 0.45;
+          opacity: 0.38;
           cursor: not-allowed;
+        }
+
+        /* ── Mobile ──────────────────────────────────────────────── */
+        @media (max-width: 540px) {
+          .acces-prive-page {
+            padding: 1.25rem;
+            align-items: flex-start;
+            padding-top: clamp(3rem, 12vh, 6rem);
+          }
+          .acces-prive-card {
+            border-radius: 18px;
+          }
+          .acces-prive-logo img {
+            height: 52px;
+          }
         }
       `}</style>
     </main>

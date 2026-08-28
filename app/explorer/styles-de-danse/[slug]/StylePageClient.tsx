@@ -3,11 +3,11 @@
 import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
 import type { DanceStyle } from "../styles-data"
-import type { Episode } from "../../../../data/episodes"
+import type { LinkedEpisode } from "./page"
 
 type Props = {
   style: DanceStyle
-  linkedEpisodes: { episode: Episode; relevance: string }[]
+  linkedEpisodes: LinkedEpisode[]
   relatedStylesData: DanceStyle[]
 }
 
@@ -301,8 +301,10 @@ export default function StylePageClient({ style, linkedEpisodes, relatedStylesDa
                       <span className="style-episode-number">Épisode {episode.number}</span>
                       <strong>{episode.guest}</strong>
                       <p className="style-episode-title">{episode.title}</p>
-                      <p className="style-episode-relevance">{relevance}</p>
-                      <span className="style-episode-cta">Écouter l'épisode →</span>
+                      {relevance && (
+                        <p className="style-episode-relevance">{relevance}</p>
+                      )}
+                      <span className="style-episode-cta">Écouter l&apos;épisode →</span>
                     </div>
                   </Link>
                 ))}
@@ -313,31 +315,54 @@ export default function StylePageClient({ style, linkedEpisodes, relatedStylesDa
         </article>
       </div>
 
-      {/* ── Continuer à explorer ────────────────────────────────── */}
-      <section className="style-continue">
+      {/* ── Pour aller plus loin — bandeau éditorial ───────────── */}
+      <section className="sc-band-section">
         <div className="container">
-          <div className="style-continue-header">
-            <span className="section-label">Continuer à explorer</span>
-            <h2>D'autres styles à découvrir</h2>
-          </div>
-          <div className="style-continue-links">
-            <Link href="/explorer/styles-de-danse" className="style-continue-card">
-              <span>←</span>
-              <strong>Tous les styles</strong>
-              <span>Revenir à l'index</span>
-            </Link>
-            {relatedStylesData.slice(0, 2).map((s) => (
-              <Link key={s.slug} href={`/explorer/styles-de-danse/${s.slug}`} className="style-continue-card">
-                <span className="style-badge style-badge--family">{s.family}</span>
-                <strong>{s.name}</strong>
-                <span>{s.era} · {s.originCity}</span>
+          <div className="sc-band">
+
+            {/* Bloc éditorial gauche */}
+            <div className="sc-editorial">
+              <span className="sc-pretitle">Pour aller plus loin</span>
+              <p className="sc-subtitle">
+                D&apos;autres styles, d&apos;autres récits,<br />
+                d&apos;autres façons de vivre la danse.
+              </p>
+            </div>
+
+            <div className="sc-divider" aria-hidden="true" />
+
+            {/* Rangée de cartes */}
+            <div className="sc-cards" role="list">
+
+              {/* Carte 1 — index des styles */}
+              <Link href="/explorer/styles-de-danse" className="sc-card sc-card--ink" role="listitem">
+                <strong className="sc-card-title">Tous les styles</strong>
+                <span className="sc-card-sub">Revenir à l&apos;index</span>
+                <span className="sc-card-arrow" aria-hidden="true">→</span>
               </Link>
-            ))}
-            <Link href="/ecouter" className="style-continue-card">
-              <span>🎙</span>
-              <strong>Podcast Dance Lab</strong>
-              <span>Tous les épisodes</span>
-            </Link>
+
+              {/* Cartes 2 & 3 — styles associés */}
+              {relatedStylesData.slice(0, 2).map((s, i) => (
+                <Link
+                  key={s.slug}
+                  href={`/explorer/styles-de-danse/${s.slug}`}
+                  className={`sc-card ${i === 0 ? "sc-card--deep" : "sc-card--mid"}`}
+                  role="listitem"
+                >
+                  <strong className="sc-card-title">{s.name}</strong>
+                  <span className="sc-card-sub">{s.era} · {s.originCity}</span>
+                  <span className="sc-card-arrow" aria-hidden="true">→</span>
+                </Link>
+              ))}
+
+              {/* Carte 4 — podcast */}
+              <Link href="/ecouter" className="sc-card sc-card--mist" role="listitem">
+                <strong className="sc-card-title">Podcast Dance Lab</strong>
+                <span className="sc-card-sub">Tous les épisodes</span>
+                <span className="sc-card-arrow" aria-hidden="true">→</span>
+              </Link>
+
+            </div>
           </div>
         </div>
       </section>

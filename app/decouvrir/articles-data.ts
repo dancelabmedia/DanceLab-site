@@ -5,17 +5,38 @@ export type EpisodeLink = {
   image: string
 }
 
+export type DocLink = {
+  title: string       // Titre affiché du documentaire
+  platform: string    // "Netflix", "Apple TV", "Prime Video", "ARTE"
+  url: string         // Lien de streaming (s'ouvre dans un nouvel onglet)
+  thumbnail?: string  // URL de miniature vérifiée (YouTube thumbnail ou autre)
+  free?: boolean      // true si gratuit sur la plateforme
+}
+
 export type MagazineArticle = {
   slug: string
+  // ── Statut éditorial ───────────────────────────────────────────────────
+  // draft     → jamais visible sur le site public
+  // scheduled → visible seulement quand publishedAt est atteint
+  // published → en ligne (publishedAt doit être dans le passé)
+  status: "draft" | "scheduled" | "published"
+  // Heure de publication en UTC ISO 8601.
+  // Été (CEST, UTC+2) : 09h00 Paris = "T07:00:00.000Z"
+  // Hiver (CET,  UTC+1) : 09h00 Paris = "T08:00:00.000Z"
+  publishedAt: string
+  // ──────────────────────────────────────────────────────────────────────
   category: string
   title: string
   chapo: string
   meta: string
-  publishedDate: string
+  publishedDate: string   // date d'affichage (ex : "13.08.26") — source de vérité : publishedAt
   episodeSlug: string
   episodeNumber: string
   guest: string
   image: string
+  imageObjectPosition?: string  // surcharge de object-position pour le hero (défaut : right center)
+  heroAspectRatio?: string      // force aspect-ratio sur le conteneur hero (ex: "16/9" pour une miniature paysage)
+  useHeroSlider?: boolean       // si true : le hero affiche un slider des miniatures de chaque section (docLink.thumbnail)
   imageCredit?: string
   readTime: string
   tags: string[]
@@ -23,81 +44,239 @@ export type MagazineArticle = {
   sections: {
     heading: string
     paragraphs: string[]
+    items?: string[]         // liste à puces optionnelle après les paragraphes
+    itemPrefix?: string      // préfixe visuel (ex: "➔", "•") — défaut : "•" si items présents
+    itemConclusion?: string  // phrase de synthèse affichée après la liste
+    sectionImage?: string    // image inline dans le corps de la section (avant la DocCard)
+    sectionImageAlt?: string // texte alternatif pour l'image inline
+    docLink?: DocLink        // Encart documentaire / lien visuel (optionnel)
   }[]
   aside?: {
     title: string
     items: string[]
   }
   episodeLinks?: EpisodeLink[]
-  conclusion: string
+  conclusion: string | string[]  // string simple ou tableau pour les conclusions multi-paragraphes
 }
 
 export const magazineArticles: MagazineArticle[] = [
   {
+    slug: "cv-artistes-auront-disparu",
+    status: "published",
+    publishedAt: "2026-08-13T08:00:00.000Z", // 10h00 Paris (CEST = UTC+2)
+    category: "Décryptage",
+    title: "Dans 3-5 ans les CV d'artistes auront disparu.",
+    chapo:
+      "J'ai eu une vision en décembre 2025 : Dans 3-5 ans les CV d'artistes auront disparu. Et c'est pas si irréaliste que ça, pour tout un tas de raisons que je perçois depuis un moment. Donc, j'ai noté un peu à l'arrache tout ce qui m'était passé par la tête.",
+    meta: "13.08.26 · 5 min de lecture",
+    publishedDate: "13.08.26",
+    episodeSlug: "",
+    episodeNumber: "",
+    guest: "Maïwenn Bramoulle",
+    image: "/images/articles/cv.JPG",
+    imageCredit: "© Blandine Abad",
+    imageObjectPosition: "center 20%",
+    readTime: "5 min",
+    tags: ["Carrière", "Marque personnelle", "Réseaux sociaux", "Avenir"],
+    sections: [
+      {
+        // Section d'ouverture — liste flash des observations (sans heading)
+        heading: "",
+        paragraphs: [],
+        items: [
+          "L'identité personnelle et artistique remplace déjà le CV par ce que tu dégages et ce que tu crées.",
+          "Les castings en ligne, accentués par les réseaux sociaux, sont déjà en train de remplacer certains castings physiques.",
+          "De nouvelles formes de collaborations naissent de plus en plus grâce aux réseaux sociaux.",
+          "On ne voudra plus de feuilles A4, avec tes 150 jobs entassés. On veut du visuel et que tu procures de l'émotion.",
+          "La prise de parole en ligne, comme le copywriting ou le storytelling, sans ChatGPT, Gemini ou autres, t'aura déjà fait sortir du lot d'ici là.",
+          "La création de nouveaux espaces numériques dédiés aux artistes, avec notamment le développement de nouvelles applications grâce à l'IA (j'ai ma petite idée mais plutôt dans 5-7 ans), verra le jour.",
+        ],
+        itemPrefix: "➔",
+      },
+      {
+        // Transition — la mise en contexte avant les sections développées
+        heading: "",
+        paragraphs: [
+          "Tout va déjà vite et dans les années à venir, ça ira encore plus vite.",
+          "Et je pense à tous ceux qui, aujourd'hui, ne montent pas dans le train parce qu'ils attendent la \"prochaine\" opportunité, en se reposant sur leurs lauriers.",
+          "Sauf qu'il n'y aura pas de prochaine opportunité aussi vite que tu ne le penses, vu que le marché est déjà bouché.",
+        ],
+      },
+      {
+        heading: "Les directeurs de casting, programmateurs et producteurs regardent aussi :",
+        paragraphs: [],
+        items: [
+          "Une certaine présence en ligne (portfolio, site, page pro, réseaux sociaux),",
+          "Des vidéos qui montrent ce que l'artiste sait faire,",
+          "Une esthétique identifiable (style, univers, singularité).",
+        ],
+        itemPrefix: "•",
+        itemConclusion: "⮕ La marque personnelle devient plus parlant qu'une liste de lignes de CV.",
+      },
+      {
+        heading: "Les plateformes remplaceront le papier",
+        paragraphs: [
+          "Des outils comme Instagram, TikTok, YouTube, LinkedIn ou des plateformes spécialisées dans les arts vivants servent déjà de vitrine :",
+        ],
+        items: [
+          "Mises à jour instantanées,",
+          "Preuves concrètes de compétences (performances filmées, coulisses de projets),",
+          "Réseautage direct avec des décideurs.",
+        ],
+        itemPrefix: "•",
+        itemConclusion: "⮕ Le CV deviendra obsolète face à des profils vivants et interactifs.",
+      },
+      {
+        heading: "La valeur est dans la preuve, pas dans la déclaration",
+        paragraphs: [
+          "Dans un monde saturé d'informations, les employeurs et collaborateurs veulent voir :",
+        ],
+        items: [
+          "Ce que tu fais, pas ce que tu dis que tu fais.",
+          "Des expériences vécues, des collaborations visibles, des extraits de travail.",
+        ],
+        itemPrefix: "•",
+        itemConclusion: "⮕ La crédibilité ne se construit plus sur une feuille A4, mais sur une trace numérique et une réputation.",
+      },
+      {
+        heading: "Les artistes deviennent leurs propres médias",
+        paragraphs: [
+          "Dans 3 à 5 ans, il est probable que :",
+        ],
+        items: [
+          "Chaque artiste aura son espace numérique centralisé (un \"hub\" ou portfolio interactif),",
+          "Les recruteurs utiliseront l'IA pour faire des recherches croisées de profils selon des critères artistiques précis,",
+        ],
+        itemPrefix: "•",
+        itemConclusion: "⮕ Les collaborations naîtront de plus en plus des rencontres plutôt que des candidatures classiques.",
+      },
+      {
+        heading: "Ce que cette vision implique",
+        paragraphs: [],
+        items: [
+          "Les artistes devront soigner leur présence en ligne et utiliser les réseaux sociaux comme un outil stratégique.",
+          "Les écoles et formations devront enseigner la communication et le marketing autant que la technique.",
+          "Les recruteurs devront adapter leurs méthodes de sélection.",
+        ],
+        itemPrefix: "•",
+      },
+    ],
+    aside: {
+      title: "À retenir",
+      items: [
+        "La marque personnelle remplace progressivement le CV papier.",
+        "Les castings et les collaborations évoluent vers des formats numériques.",
+        "Être visible et être bon·ne ne sont pas la même chose — mais les deux comptent.",
+        "Montrer ce qu'on fait vaut plus que déclarer ce qu'on a fait.",
+      ],
+    },
+    episodeLinks: [
+      {
+        // Épisode 1 — Mathilde Champion : ancienne danseuse devenue community manager
+        // Elle explique comment les recruteurs cherchent sur Instagram et TikTok,
+        // comment se démarquer et pourquoi les réseaux sont devenus une vraie carte de visite.
+        name: "Mathilde Champion",
+        slug: "1-mathilde-champion",
+        number: "1",
+        image: "/episodes/mathildechampion1.png",
+      },
+      {
+        // Épisode 42 — Gaël Grzeskowiak : créer du lien et montrer son travail en ligne
+        // Il aborde la manière dont les réseaux sociaux permettent de montrer vers où
+        // on veut aller artistiquement et de rendre son travail visible.
+        name: "Gaël Grzeskowiak",
+        slug: "42-gael-grzeskowiak",
+        number: "42",
+        image: "/episodes/gaelgrzeskowiak42.png",
+      },
+      {
+        // Épisode 62 — Joël Luzolo : gestion de l'image, réseaux et exposition médiatique
+        // On y parle de visibilité numérique et de l'impact des réseaux sur une carrière,
+        // notamment après son passage dans Danse avec les stars.
+        name: "Joël Luzolo",
+        slug: "62-joel-luzolo",
+        number: "62",
+        image: "/episodes/joelluzolo62.png",
+      },
+    ],
+    conclusion:
+      "Donc pour te démarquer et ne pas être aux fraises en 2030, montre dès maintenant ce que tu fais, pas seulement ce que tu dis que tu fais.",
+  },
+  {
     slug: "pourquoi-le-breakdance-est-devenu-olympique",
+    status: "published",
+    publishedAt: "2026-06-18T07:00:00.000Z", // 09h00 Paris (CEST = UTC+2)
     category: "Décryptage",
     title: "Pourquoi le break est devenu une discipline olympique et ce que ça change pour la culture hip-hop ?",
     chapo:
-      "Entré au programme des Jeux de Paris 2024, le breaking a déplacé une culture née dans la rue vers l'une des scènes sportives les plus regardées au monde. Une consécration, mais aussi un débat sur ce que l'institution fait aux danses issues des cultures populaires.",
+      "En 2024, pour la première fois de l'histoire, on a vu du break aux Jeux olympiques. Des battles, des B-Girls et des B-Boys, avec un DJ et un cercle. Mais aussi des juges, des règles, des notes et des médailles olympiques. Quand une danse née dans la rue se retrouve sur l'une des scènes sportives les plus regardées au monde, ça pose quelques questions.",
     meta: "18.06.26 · 8 min de lecture",
     publishedDate: "18.06.26",
     episodeSlug: "113-grichka-rootz",
     episodeNumber: "113",
     guest: "Grichka Rootz",
-    image: "/images/danydann.jpg",
+    image: "/images/articles/danydann.jpg",
     imageCredit: "Danseur : Dany Dann · © Valroff Laurene",
     readTime: "8 min",
     tags: ["Breaking", "Olympisme", "Culture hip-hop"],
     sections: [
       {
-        heading: "Une culture née loin des stades",
+        heading: "Avant d'être un sport olympique, le break est une culture",
         paragraphs: [
-          "Avant d'être nommé dans un programme olympique, le breaking est d'abord une pratique culturelle. Il naît dans le Bronx dans les années 1970, au croisement de la musique, du DJing, de la fête, de l'affirmation de soi et de la rivalité créative. On n'y entre pas seulement par la performance physique : on y entre par une histoire, un rapport au son, une attitude, une manière de prendre sa place dans le cercle.",
-          "C'est ce qui rend son arrivée aux Jeux à la fois spectaculaire et délicate. Le breaking possède déjà ses codes, ses compétitions, ses figures, ses mythologies et ses scènes internationales. L'institution olympique ne lui donne donc pas une existence : elle lui donne une visibilité différente."
+          "Le breaking, plus souvent appelé break, naît dans le Bronx, à New York, dans les années 1970 et se développe au sein de la culture hip-hop. Et dès le départ, il ne s'agit pas simplement d'enchaîner des figures impressionnantes. Il y a la musique, le rapport au DJ, les battles, les crews, l'improvisation, la manière de prendre sa place dans le cercle et évidemment toute une culture autour.",
+          "C'est important de le rappeler parce qu'on pourrait facilement croire que les Jeux olympiques ont permis au break de devenir une « vraie » discipline. Alors qu'il n'a évidemment pas attendu les JO pour exister. Bien avant Paris 2024, il existait déjà des battles internationaux, des compétitions, des événements et surtout une communauté présente partout dans le monde. Les Jeux ne lui ont donc pas donné sa légitimité. Ils lui ont donné une autre visibilité."
         ],
       },
       {
-        heading: "Pourquoi Paris 2024 a changé la donne",
+        heading: "Mais alors, pourquoi le break est arrivé aux JO ?",
         paragraphs: [
-          "Le breaking a été intégré aux Jeux de Paris 2024 dans une volonté plus large de rapprocher l'événement olympique de pratiques urbaines, jeunes et spectaculaires. Après son apparition aux Jeux olympiques de la jeunesse de Buenos Aires en 2018, la discipline a trouvé à Paris une vitrine mondiale.",
-          "Les épreuves ont eu lieu sous forme de battles individuels, avec des B-Girls et des B-Boys évalués sur leur musicalité, leur technique, leur originalité, leur vocabulaire et leur capacité à répondre à l'adversaire. Autrement dit : l'enjeu n'était pas seulement d'exécuter des figures, mais de garder l'esprit du duel, de l'improvisation et de la présence."
+          "Ce n'est pas arrivé du jour au lendemain. Le break avait déjà fait une première apparition aux Jeux olympiques de la jeunesse de Buenos Aires en 2018. Pour Paris 2024, l'objectif était aussi d'intégrer au programme des disciplines plus urbaines, plus spectaculaires et capables de toucher un public plus jeune.",
+          "À Paris, les compétitions ont pris la forme de battles individuels entre B-Girls puis entre B-Boys. Les juges ne regardaient pas uniquement la difficulté physique ou le nombre de figures réalisées. La technique comptait évidemment, mais aussi la musicalité, l'originalité, le vocabulaire du danseur ou encore sa manière de répondre à son adversaire. L'objectif était donc de transformer le break en discipline olympique sans complètement effacer ce qui en fait un battle. Et c'est probablement là que commence tout le débat."
         ],
       },
       {
-        heading: "La reconnaissance et ses tensions",
+        heading: "Est-ce qu'une danse reste la même lorsqu'on la transforme en sport ?",
         paragraphs: [
-          "Pour une partie du public, l'entrée du breaking aux Jeux a permis de révéler la complexité d'une danse souvent réduite à quelques images acrobatiques. Pour une partie de la communauté, elle a aussi soulevé une question : que devient une culture de battle lorsqu'elle est traduite dans un cadre réglementé, chronométré, noté, diffusé et commenté comme un sport ?",
-          "Cette tension n'est pas une faiblesse. Elle dit quelque chose de la richesse du breaking : une danse capable d'entrer dans les institutions sans cesser de défendre son ancrage culturel."
+          "Cette arrivée aux JO a offert au break une exposition assez exceptionnelle. Des millions de personnes qui n'auraient probablement jamais regardé un battle ont découvert cette danse pendant les Jeux. Et surtout, le grand public a pu voir autre chose que l'image du break parfois résumé aux power moves ou à quelques figures spectaculaires.",
+          "Mais de l'autre, une partie de la communauté s'est interrogée sur ce que cette institutionnalisation pouvait faire à la culture. Parce qu'il y a quand même quelque chose d'assez paradoxal à voir une danse née dans la rue, avec ses propres codes et ses propres espaces, devoir rentrer dans les cases d'une institution pour être présentée au monde entier."
         ],
       },
       {
-        heading: "Et après les Jeux ?",
+        heading: "Est-ce que les JO ont vraiment changé quelque chose ?",
         paragraphs: [
-          "Le paradoxe est là : le breaking a marqué les Jeux de Paris, mais il ne figure pas au programme de Los Angeles 2028. Ce retrait rappelle que l'olympisme fonctionne par cycles, choix stratégiques et arbitrages locaux. Une discipline peut être visible un été sans être durablement installée dans le programme.",
-          "Pour le breaking, l'essentiel se jouera donc ailleurs aussi : dans les battles, les écoles, les crews, les événements indépendants et les communautés qui continuent de transmettre la culture au-delà du calendrier olympique."
+          "Oui, forcément. Ne serait-ce qu'en termes d'image. Pendant quelques jours, le break n'était plus une discipline « underground » ou une culture connue principalement de ceux qui la suivent. C'était une discipline olympique — avec tout ce que ce mot peut apporter : médiatisation, reconnaissance institutionnelle, financements, développement de structures ou simplement envie, pour une nouvelle génération, de commencer à danser.",
+          "Mais il faut aussi faire attention à ne pas raconter l'histoire à l'envers. Le break n'est pas devenu important parce qu'il est entré aux Jeux olympiques. S'il a pu entrer aux Jeux, c'est justement parce qu'une culture entière l'avait développé et fait vivre pendant plusieurs décennies avant que l'institution olympique ne s'y intéresse. Et cette nuance change beaucoup de choses."
+        ],
+      },
+      {
+        heading: "Et maintenant ?",
+        paragraphs: [
+          "C'est peut-être le plus surprenant dans toute cette histoire. Après avoir fait son entrée à Paris en 2024, le break ne sera pas au programme des Jeux olympiques de Los Angeles en 2028 — ce qui pourrait sembler assez ironique quand on sait que la Californie a joué un rôle important dans son développement aux États-Unis.",
+          "Mais ça montre surtout une chose : l'avenir du break ne dépend pas des Jeux Olympiques. Il continuera d'exister sans eux, comme il existait avant eux. Dans les battles, les crews, les événements, les écoles, les studios, et surtout auprès des danseurs et des communautés qui continuent de transmettre cette culture."
         ],
       },
     ],
     aside: {
       title: "Repères",
       items: [
-        "Le breaking s'est développé dans le Bronx dans les années 1970.",
-        "La discipline a fait ses débuts olympiques à Paris 2024.",
-        "Elle n'est pas inscrite au programme des Jeux de Los Angeles 2028."
+        "Le break naît dans le Bronx, à New York, dans les années 1970.",
+        "Première apparition olympique aux JO de la jeunesse de Buenos Aires en 2018.",
+        "Discipline olympique aux Jeux de Paris 2024.",
+        "Pas au programme des Jeux de Los Angeles 2028."
       ],
     },
     episodeLinks: [
       {
-        name: "Arnaud Deprez",
-        slug: "51-arnaud-deprez",
-        number: "51",
-        image: "/episodes/arnauddeprez51.png",
+        name: "Grichka Rootz",
+        slug: "113-grichka-rootz",
+        number: "113",
+        image: "/episodes/grichkarootz113.png",
       },
       {
-        name: "Yaman Okur",
-        slug: "71-yaman-okur",
-        number: "71",
-        image: "/episodes/yamanokur71.png",
+        name: "Dexter",
+        slug: "91-dexter",
+        number: "91",
+        image: "/episodes/dexter91.png",
       },
       {
         name: "Kanti",
@@ -105,18 +284,14 @@ export const magazineArticles: MagazineArticle[] = [
         number: "100",
         image: "/episodes/kanti100.png",
       },
-      {
-        name: "Mounir Rodin",
-        slug: "106-mounir-amhiln",
-        number: "106",
-        image: "/episodes/mouniramhiln106.png",
-      },
     ],
     conclusion:
-      "Le passage du breaking par les Jeux olympiques n'épuise pas son histoire. Il en ouvre plutôt un chapitre : celui d'une culture populaire devenue visible à l'échelle mondiale, tout en continuant de vivre dans les cercles, les studios, les battles et les corps de celles et ceux qui la portent.",
+      "La vraie question n'est peut-être pas de savoir si le break avait sa place aux Jeux olympiques. Mais plutôt de se demander ce que l'on attend de cette reconnaissance. Parce qu'être vu par des millions de personnes, c'est énorme. Mais pour cette culture, être reconnue ne devrait jamais vouloir dire devoir oublier d'où l'on vient pour rentrer dans les cases de ceux qui nous regardent.",
   },
   {
     slug: "comprendre-le-waacking-histoire-culture-influences",
+    status: "published",
+    publishedAt: "2026-06-25T07:00:00.000Z", // 09h00 Paris (CEST = UTC+2)
     category: "Culture",
     title: "Comprendre le waacking",
     chapo:
@@ -126,7 +301,7 @@ export const magazineArticles: MagazineArticle[] = [
     episodeSlug: "118-yasmine-habib",
     episodeNumber: "118",
     guest: "Yasmine Habib",
-    image: "/images/sofiastanic.jpg",
+    image: "/images/articles/sofiastanic.jpg",
     imageCredit: "Danseuse : Sofia Stanić · © Anna Jot",
     readTime: "7 min",
     tags: ["Waacking", "Disco", "Culture club"],
@@ -187,6 +362,8 @@ export const magazineArticles: MagazineArticle[] = [
   },
   {
     slug: "festivals-danse-incontournables-ete",
+    status: "published",
+    publishedAt: "2026-07-02T07:00:00.000Z", // 09h00 Paris (CEST = UTC+2)
     category: "Agenda",
     title: "Les festivals de danse incontournables de l'été",
     chapo:
@@ -196,7 +373,7 @@ export const magazineArticles: MagazineArticle[] = [
     episodeSlug: "117-tatiana-seguin",
     episodeNumber: "117",
     guest: "Tatiana Seguin",
-    image: "/images/festivalavignon.jpg",
+    image: "/images/articles/festivalavignon.jpg",
     imageCredit: "Festival d'Avignon · © Christophe Raynaud de Lage",
     readTime: "6 min",
     tags: ["Festivals", "Agenda", "Spectacle vivant"],
@@ -257,6 +434,8 @@ export const magazineArticles: MagazineArticle[] = [
   },
   {
     slug: "prevenir-les-blessures-danseurs",
+    status: "published",
+    publishedAt: "2026-07-06T07:00:00.000Z", // 09h00 Paris (CEST = UTC+2)
     category: "Santé",
     title: "Prévenir les blessures : pourquoi les danseurs doivent être considérés comme des athlètes",
     chapo:
@@ -315,6 +494,8 @@ export const magazineArticles: MagazineArticle[] = [
   },
   {
     slug: "sante-mentale-artistes-danse",
+    status: "published",
+    publishedAt: "2026-07-09T07:00:00.000Z", // 09h00 Paris (CEST = UTC+2)
     category: "Décryptage",
     title: "Santé mentale : penser l'artiste au-delà de la performance",
     chapo:
@@ -377,6 +558,8 @@ export const magazineArticles: MagazineArticle[] = [
   },
   {
     slug: "construire-carriere-danseur-durable",
+    status: "published",
+    publishedAt: "2026-07-11T07:00:00.000Z", // 09h00 Paris (CEST = UTC+2)
     category: "Carrière",
     title: "Construire une carrière durable : compétences, valeurs et choix humains",
     chapo:
@@ -451,8 +634,418 @@ export const magazineArticles: MagazineArticle[] = [
     conclusion:
       "La carrière d'un danseur ne se joue pas seulement dans le studio. Elle se construit dans une somme de décisions : comment apprendre, avec qui travailler, quoi accepter, quand dire non et comment rester aligné sans s'isoler.",
   },
+  {
+    slug: "5-documentaires-danse-a-regarder",
+    status: "published",
+    publishedAt: "2026-08-11T07:00:00.000Z", // 09h00 Paris (CEST = UTC+2)
+    category: "Sélection",
+    title: "J'ai arrêté de scroller, voilà les 5 documentaires que j'ai regardés",
+    chapo:
+      "On passe des heures à scroller en ayant parfois l'impression de n'avoir rien retenu une fois le téléphone posé. Alors récemment, j'ai remplacé une partie de ce temps par des documentaires sur la danse, et je vous les partage pour que vous aussi vous compreniez ce qu'il y a derrière un mouvement, un style de danse ou une culture.",
+    meta: "11.08.26 · 8 min de lecture",
+    publishedDate: "11.08.26",
+    episodeSlug: "",
+    episodeNumber: "",
+    guest: "Maïwenn Bramoulle",
+    image: "https://img.youtube.com/vi/ljP4RU067jY/maxresdefault.jpg",
+    imageObjectPosition: "center center",
+    heroAspectRatio: "16 / 9",
+    useHeroSlider: true,
+    readTime: "8 min",
+    tags: ["Documentaires", "Cinéma", "Culture", "Sélection"],
+    quote: "Comprendre l'histoire d'une danse change complètement la manière dont on la regarde.",
+    sections: [
+      {
+        heading: "1. Reset – Relève : histoire d'une création",
+        paragraphs: [
+          "Réalisé par Thierry Demaizière et Alban Teurlai, Reset suit Benjamin Millepied dans les coulisses de la création d'un ballet pour l'Opéra national de Paris, alors qu'il vient d'en prendre la direction de la danse.",
+          "On assiste aux répétitions, aux recherches, aux échanges avec les danseurs, aux choix artistiques, mais aussi aux doutes et à la pression qui accompagnent la création. Ce qui m'intéresse le plus dans ce documentaire : on ne voit pas uniquement le résultat final. On voit tout ce qu'on ne montre habituellement pas : les erreurs, les ajustements, les idées qui évoluent. Et surtout tout le travail qu'il y a derrière pour quelques minutes passées sur scène.",
+          "Une vraie plongée dans le processus de création chorégraphique."
+        ],
+        docLink: {
+          title: "Relève : histoire d'une création",
+          platform: "Netflix",
+          url: "https://www.netflix.com/title/80107599",
+          thumbnail: "https://img.youtube.com/vi/MOkV27lgjBc/maxresdefault.jpg",
+        },
+      },
+      {
+        heading: "2. Rize",
+        paragraphs: [
+          "Réalisé par David LaChapelle et sorti en 2005, Rize nous emmène dans les quartiers de Los Angeles où se développent le clowning puis le krump. Mais le documentaire ne raconte pas simplement l'apparition d'un nouveau style de danse.",
+          "Il montre surtout pourquoi cette danse est apparue ; dans un contexte marqué par les difficultés sociales et la violence, le mouvement devient donc un moyen d'expression, un espace de communauté et une manière de transformer ce qui est vécu en quelque chose d'autre.",
+          "C'est aussi ce qui rend le documentaire intéressant quand on ne danse pas : comprendre qu'un style ne naît jamais de nulle part et que derrière des mouvements que l'on peut aujourd'hui retrouver sur scène, dans des clips ou dans des battles, il y a une histoire et toute une culture."
+        ],
+        docLink: {
+          title: "Rize",
+          platform: "Apple TV",
+          url: "https://tv.apple.com/fr/movie/rize/umc.cmc.7bt61f1l4xaaggyg69l9iit7x",
+          thumbnail: "/images/articles/rize.jpeg",
+        },
+      },
+      {
+        heading: "3. Paris Is Burning",
+        paragraphs: [
+          "Réalisé par Jennie Livingston et tourné dans le New York des années 1980, Paris Is Burning nous plonge au cœur de la scène ballroom et de ses balls, de ses catégories et de ses Houses. Aujourd'hui, le voguing et l'esthétique ballroom sont partout — dans la mode, les clips, les défilés, les émissions télévisées ou encore sur les réseaux sociaux. Mais pour comprendre d'où vient cette culture, ce documentaire reste incontournable.",
+          "On y découvre une communauté principalement noire et latino LGBTQ+, qui crée ses propres espaces d'expression et de reconnaissance dans une société où elle subit de nombreuses discriminations.",
+          "Le documentaire permet aussi de remettre beaucoup de choses dans leur contexte. Parce que derrière des termes, des mouvements ou des références aujourd'hui repris par la pop culture se trouve toute une histoire sociale et culturelle qu'on ne connaît pas forcément. À voir pour découvrir le voguing, évidemment, mais surtout pour comprendre la culture qui l'entoure."
+        ],
+        docLink: {
+          title: "Paris Is Burning",
+          platform: "Prime Video",
+          url: "https://www.primevideo.com/detail/Paris-Is-Burning/0SLP8LK9UUBFOCA25XROXDP8RN",
+          thumbnail: "https://img.youtube.com/vi/o47CwiJLpes/maxresdefault.jpg",
+        },
+      },
+      {
+        heading: "4. Rebonds : une épopée de la danse électro",
+        paragraphs: [
+          "Produite par ARTE, cette série documentaire retrace l'histoire de la danse électro depuis ses origines dans les clubs parisiens. Si, pour vous, danse électro rime uniquement avec Tecktonik et années 2000, Rebonds risque de vous faire revoir pas mal de choses.",
+          "La série revient évidemment sur l'explosion du phénomène Tecktonik, qui a propulsé cette danse dans les médias et dans le monde entier, mais aussi sur ce qu'il s'est passé lorsque la tendance est retombée. Car la danse, elle, n'a jamais vraiment disparu.",
+          "C'est aussi un documentaire intéressant pour comprendre la différence entre une tendance médiatique et une culture qui, elle, continue d'exister une fois que les projecteurs se sont éteints — jusqu'à trouver une nouvelle reconnaissance autour des Jeux olympiques de Paris 2024."
+        ],
+        docLink: {
+          title: "Rebonds : une épopée de la danse électro",
+          platform: "ARTE",
+          url: "https://www.youtube.com/watch?v=ljP4RU067jY",
+          thumbnail: "https://img.youtube.com/vi/ljP4RU067jY/maxresdefault.jpg",
+          free: true,
+        },
+      },
+      {
+        heading: "5. Mr. Gaga",
+        paragraphs: [
+          "Réalisé par Tomer Heymann, Mr. Gaga retrace le parcours du chorégraphe israélien Ohad Naharin, longtemps directeur artistique de la Batsheva Dance Company et créateur du langage de mouvement Gaga. Et non, rien à voir avec Lady Gaga.",
+          "À travers des images d'archives, des répétitions et son parcours personnel, le documentaire permet de comprendre progressivement sa manière d'envisager le corps et la danse. Ce qui est intéressant ici, c'est justement de sortir de l'idée qu'il faudrait toujours reproduire une forme parfaitement définie.",
+          "Avec le Gaga, la recherche passe beaucoup par les sensations, l'imaginaire et l'exploration du mouvement. Même sans pratiquer la danse contemporaine, Mr. Gaga donne une autre manière de regarder un corps bouger — et de comprendre tout le travail de recherche qui peut se cacher derrière un geste qui paraît instinctif."
+        ],
+        docLink: {
+          title: "Mr. Gaga, sur les pas d'Ohad Naharin",
+          platform: "Apple TV",
+          url: "https://tv.apple.com/fr/movie/mr-gaga/umc.cmc.4719va9sz7ufv9etdcxvirx89",
+          thumbnail: "https://img.youtube.com/vi/F6gd8xpFMsM/maxresdefault.jpg",
+        },
+      },
+    ],
+    aside: {
+      title: "Les 5 en résumé",
+      items: [
+        "Reset – Relève · Demaizière & Teurlai · Les coulisses d'une création à l'Opéra de Paris.",
+        "Rize · David LaChapelle · L'émergence du krump à Los Angeles.",
+        "Paris Is Burning · Jennie Livingston · La culture ballroom et voguing des années 80.",
+        "Rebonds · ARTE · L'histoire de la danse électro, de la Tecktonik aux JO 2024.",
+        "Mr. Gaga · Tomer Heymann · Ohad Naharin et le langage de mouvement Gaga."
+      ],
+    },
+    episodeLinks: [
+      {
+        name: "Grichka Rootz",
+        slug: "113-grichka-rootz",
+        number: "113",
+        image: "/episodes/grichkarootz113.png",
+      },
+      {
+        name: "Dexter",
+        slug: "91-dexter",
+        number: "91",
+        image: "/episodes/dexter91.png",
+      },
+      {
+        name: "Taylor Chateau",
+        slug: "82-taylor-chateau",
+        number: "82",
+        image: "/episodes/taylorchateau82.png",
+      },
+    ],
+    conclusion: [
+      "Ces 5 documentaires parlent tous de danse, mais surtout de création, de culture, d'identité, de transmission, de communautés et de la société dans laquelle ces mouvements sont apparus. Comprendre l'histoire d'une danse change complètement la manière dont on la regarde.",
+      "Et maintenant, j'ai besoin de vous : quel documentaire sur la danse tout le monde devrait avoir vu au moins une fois ? Je prends vos recommandations juste en dessous pour une partie 2.",
+    ],
+  },
+  {
+    slug: "reseaux-sociaux-obligatoires-danseur",
+    status: "published",
+    publishedAt: "2026-08-13T07:00:00.000Z", // 09h00 Paris (CEST = UTC+2)
+    category: "Décryptage",
+    title: "Les réseaux sociaux sont-ils devenus obligatoires pour un.e danseur.se ?",
+    chapo:
+      "Il y a encore quelques années, avoir un compte Instagram quand on était danseur.se professionnel.le, c'était un plus. Aujourd'hui, la question que je me pose est la suivante : est-ce qu'un.e danseur.se qui n'est pas présent sur les réseaux sociaux peut encore faire carrière ?",
+    meta: "13.08.26 · 9 min de lecture",
+    publishedDate: "13.08.26",
+    episodeSlug: "",
+    episodeNumber: "",
+    guest: "Maïwenn Bramoulle",
+    image: "/images/maiwenn-2.jpg",
+    imageCredit: "© Blandine Abad",
+    imageObjectPosition: "right 38%",
+    readTime: "9 min",
+    tags: ["Réseaux sociaux", "Carrière", "Visibilité", "Instagram"],
+    quote: "Danser et savoir se rendre visible sont deux compétences différentes.",
+    sections: [
+      {
+        heading: "Instagram est-il devenu notre nouveau CV ?",
+        paragraphs: [
+          "Quand un chorégraphe, un directeur artistique ou une production découvre le nom d'un danseur, l'un des premiers réflexes c'est : <strong>chercher son profil sur Instagram</strong>. En quelques secondes, on peut voir comment iel danse, son style, les projets sur lesquels il a travaillé, les chorégraphes avec lesquels iel collabore et plus largement son univers artistique.",
+          "Finalement, là où un CV permet de raconter son parcours, les réseaux permettent de le montrer immédiatement. Un danseur peut aujourd'hui être découvert grâce à une vidéo, entrer en contact avec des artistes du monde entier, y décrocher des opportunités ou simplement rester dans l'esprit d'un chorégraphe qui pensera peut-être à lui quelques mois plus tard pour un projet.",
+          "Le problème commence lorsque cette visibilité n'est plus seulement un avantage, mais devient progressivement <strong>une compétence que l'on attend de nous</strong>.",
+          "Hors, <strong>danser et savoir se rendre visible sont deux compétences différentes</strong>, pourtant, elles ont tendance à devenir de plus en plus liées.",
+          "Et cela pose une vraie question : à partir de quel moment la capacité à communiquer autour de son travail prend-elle trop de place par rapport au travail lui-même ? [Vous avez 4h ou alors vous pouvez répondre à cette question, spontanément, dans l'espace dédié à la fin de cet article.]",
+        ],
+      },
+      {
+        heading: "Être un.e bon.ne danseur.se et savoir créer du contenu, ce n'est pas la même chose",
+        paragraphs: [
+          "C'est probablement là que le sujet devient beaucoup plus intéressant. Parce qu'<strong>un excellent danseur n'est pas nécessairement un excellent créateur de contenu</strong>.",
+          "Notamment à l'ère de la recherche du chiffre en tout genre : like, followers, etc, tout le monde ne s'y retrouve pas",
+          "La réalité c'est qu'on peut avoir <strong>une présence incroyable sur scène</strong> et <strong>être extrêmement mal à l'aise devant une caméra</strong>. [Et je peux vous dire qu'on est nombreux.ses]",
+          "On peut aussi être capable d'interpréter une chorégraphie devant des milliers de personnes et pourtant détester parler face caméra.",
+          "On peut avoir énormément de choses à proposer artistiquement sans avoir envie d'exposer son quotidien, sa vie privée, de vloger, de comprendre les algorithmes ou de réfléchir constamment à ce qu'il faudrait publier.",
+        ],
+      },
+      {
+        heading: "Le nombre d'abonnés fait-il vraiment la différence ?",
+        paragraphs: [
+          "Il faut aussi distinguer ceci : <strong>avoir une présence en ligne et avoir une grosse communauté c'est autre chose</strong>.",
+          "On peut très bien avoir 800 abonnés et un compte qui permet immédiatement de comprendre qui l'on est artistiquement. À l'inverse, avoir des dizaines de milliers d'abonnés et ne pas dire nécessairement grand-chose de son travail et de sa capacité à s'intégrer dans une création, à apprendre rapidement une chorégraphie ou à travailler avec une équipe.",
+          "[Et autre point, très important pour moi : <strong>tes followers ne disent rien de ton comportement au travail</strong>, ni de ton éthique et de tes vraies valeurs, ou encore si tu respectes tes collègues]",
+          "Dans certains projets, notamment lorsqu'une marque est impliquée ou que la visibilité fait partie de la campagne, la communauté d'un artiste peut évidemment représenter un intérêt supplémentaire. Mais par pitié, <strong>ne confondez pas la visibilité et les compétences artistiques</strong> qui n'ont absolument rien à voir. C'est une distinction importante à conserver.",
+        ],
+      },
+      {
+        heading: "Peut-on encore faire carrière sans les réseaux sociaux ?",
+        paragraphs: [
+          "Je dirai que oui, même si je pense que <strong>d'ici 3/5 ans les CV auront disparu</strong>.",
+          "En revanches, aujourd'hui, les auditions existent toujours, le bouche-à-oreille aussi.",
+          "Les rencontres via les cours, les workshops, les directeurs de casting et surtout le réseau professionnel construit au fil des contrats continuent d'avoir une place essentielle.",
+          "Mais <strong>prétendre que les réseaux sociaux n'ont aucune importance aujourd'hui est évidemment faux</strong>. Un.e danseur.se visible dispose d'un outil supplémentaire pour être découvert et pour rester dans les esprits.",
+          "Et dans un métier où énormément de personnes sont talentueuses, cette visibilité peut forcément devenir un avantage. <strong>Pas parce que la personne danse mieux, mais simplement parce qu'on pense à elle.</strong> C'est le game, comme on dit dans notre milieu.",
+        ],
+      },
+      {
+        heading: "Le vrai enjeu : se construire un portfolio, et ne pas penser qu'aux abonnés",
+        paragraphs: [
+          "Quand on parle des réseaux sociaux aux artistes, on tombe rapidement dans la même injonction : il faut poster régulièrement, faire des Reels, montrer les coulisses, parler face caméra, comprendre les tendances, etc. Mais je ne pense vraiment pas que tous les danseurs.ses aient besoin de devenir créateurs de contenu.",
+          "En revanche, avoir un espace qui représente réellement son travail peut aujourd'hui avoir du sens en partageant quelques vidéos que l'on aime vraiment, des extraits de projets, une bio claire, son univers, les informations permettant de nous contacter.",
+          "Il faut penser son compte davantage comme <strong>un portfolio artistique</strong> que comme <strong>une course permanente aux abonnés</strong>.",
+          "Parce qu'il y a aussi un piège à vouloir absolument être visible : passer tellement de temps à montrer que l'on travaille que l'on finit par consacrer une énergie considérable à <strong>documenter sa carrière plutôt qu'à la construire</strong>.",
+        ],
+      },
+      {
+        heading: "Être visible, oui, mais à quel prix ?",
+        paragraphs: [
+          "Si être présent sur les réseaux devient <strong>une source permanente de comparaison, de pression ou d'épuisement</strong>, il faut aussi être capable de prendre de la distance.",
+          "Le paradoxe est assez fou : les réseaux peuvent nous aider à développer notre carrière tout en nous donnant constamment l'impression que celle des autres avance plus vite.",
+          "On ouvre Instagram et quelqu'un vient de décrocher un contrat, une autre personne est en tournée, une autre annonce un nouveau projet, une autre publie une vidéo dans un studio alors qu'on est chez soi depuis trois semaines sans contrat.",
+          "On est censé être content pour l'autre, mais si on n'est pas bien dans sa propre tête, on peut se retrouver à se comparer à sa propre situation. Et à force, <strong>notre perception de notre propre carrière peut être complètement faussée</strong>.",
+          "<strong>Les réseaux sont des outils</strong> et comme tous les outils, leur utilité dépend entièrement de la manière dont on les utilise et surtout du recul que l'on garde sur eux.",
+          "En 2026, choisir de ne pas être présent sur les réseaux, c'est choisir de se passer d'un outil professionnel qui peut être très puissant pour sa propre marque personnelle. Et encore une fois, ce n'est pas obligatoire mais s'il existe et s'il ouvre des portes, il faut savoir s'en servir.",
+          "L'objectif n'est donc peut-être pas de devenir visible à tout prix, mais de trouver <strong>la manière d'être visible, celle qui nous ressemble</strong>, sans transformer notre métier de danseur en une obligation permanente de créer du contenu.",
+        ],
+      },
+    ],
+    aside: {
+      title: "À retenir",
+      items: [
+        "Les réseaux ne remplacent pas l'audition, la recommandation ou le réseau professionnel.",
+        "Être bon danseur et être bon créateur de contenu sont deux compétences distinctes.",
+        "Un compte qui montre clairement qui l'on est vaut souvent plus que beaucoup d'abonnés.",
+        "Penser « portfolio artistique » plutôt que « course à la visibilité »."
+      ],
+    },
+    episodeLinks: [
+      {
+        name: "Maxime Rullier",
+        slug: "102-maxime-rullier",
+        number: "102",
+        image: "/episodes/maximerullier102.png",
+      },
+      {
+        name: "Rose Otentick",
+        slug: "114-rose-otentick",
+        number: "114",
+        image: "/episodes/roseotentick114.png",
+      },
+      {
+        name: "Bertrand Exertier",
+        slug: "123-bertrand-exertier",
+        number: "123",
+        image: "/episodes/bertrandexertier123.png",
+      },
+    ],
+    conclusion:
+      "Et toi, est-ce que tu as déjà eu l'impression que ta présence ou ton absence sur les réseaux avait eu un impact sur ta carrière ?",
+  },
+  {
+    slug: "5-lieux-freestyler-paris",
+    status: "published",
+    publishedAt: "2026-08-15T07:00:00.000Z",
+    category: "Recommandations",
+    title: "5 lieux où freestyler à Paris",
+    chapo:
+      "On associe encore beaucoup le freestyle au hip-hop, pourtant, \"freestyler\", improviser, ce n'est pas pratiquer un style de danse en particulier.",
+    meta: "15.08.26 · 4 min de lecture",
+    publishedDate: "15.08.26",
+    episodeSlug: "",
+    episodeNumber: "",
+    guest: "Maïwenn Bramoulle",
+    image: "/images/articles/lavillette.jpg",
+    imageCredit: "© Joseph Banderet",
+    readTime: "4 min",
+    tags: ["Freestyle", "Paris", "Adresses", "Hip-hop", "Spots"],
+    quote:
+      "Danser avec un DJ, avec les autres et avec ce qui se passe réellement dans la musique, c'est aussi une autre manière d'apprendre.",
+    sections: [
+      {
+        heading: "",
+        paragraphs: [
+          "On associe encore beaucoup le freestyle au hip-hop, pourtant, \"freestyler\", improviser, ce n'est pas pratiquer un style de danse en particulier.",
+          "Que tu pratiques la house, le hip-hop, le waacking, le voguing, le krump, l'électro, le contemporain, peu importe ton style, l'improvisation traverse toutes les danses, avec des histoires, des codes et des cultures qui leur sont propres.",
+          "Et oui, pour progresser en freestyle, pour affiner son propre style, les cours ne font pas tout.",
+          "Il faut aussi des endroits où chercher, tester, observer, échanger, entrer dans un cercle, écouter de la musique et rencontrer d'autres danseurs.ses.",
+          "À Paris, certains lieux permettent justement de vivre la danse autrement qu'en suivant une chorégraphie face à un miroir.",
+          "J'en ai donc sélectionné 5 juste pour vous.",
+        ],
+      },
+      {
+        heading: "01. Le CENTQUATRE-PARIS",
+        paragraphs: [
+          "C'est probablement l'un des endroits les plus évidents de Paris lorsqu'on cherche simplement un espace pour danser.",
+          "Sous les grandes halles du 104, les <strong>Espaces libres sont accessibles gratuitement et sans réservation</strong> pendant leurs périodes d'ouverture.",
+          "Là-bas vous retrouverez du Krump, du break, du contemporain, du classique, du lindy hop, mais aussi cirque, roller, double dutch et même des comédiens qui révisent et jouent leur texte.",
+          "C'est évidemment ça qui rend le lieu intéressant : tu peux venir t'entraîner et observer les autres danser, c'est si inspirant",
+          "📍 5 rue Curial, Paris 19e",
+        ],
+      },
+      {
+        heading: "02. La Place",
+        paragraphs: [
+          "La Place est davantage ancrée dans les cultures hip-hop, mais reste difficile à enlever de cette sélection tant le freestyle y occupe une place importante.",
+          "Chaque jeudi, le Grand Studio Léo Ferré accueille notamment un <strong>training libre de trois heures de 17h à 20h</strong>, ouvert aux danseurs.ses souhaitant venir s'entraîner en autonomie.",
+          "Le lieu accueille aussi des battles et événements autour du breaking, du krump, de la house, du hip-hop ou encore du waacking.",
+          "Ce n'est donc pas seulement un endroit où regarder de la danse : c'est aussi <strong>un lieu où les communautés se croisent, s'entraînent et se rencontrent</strong>.",
+          "📍 10 passage de la Canopée, Paris 1er",
+        ],
+      },
+      {
+        heading: "03. La Villette, sous la Grande Halle",
+        paragraphs: [
+          "Si tu es danseur.se à Paris, tu es probablement déjà passé devant les danseurs qui s'entraînent sous la Grande Halle de La Villette.",
+          "Depuis plusieurs années, un grand parquet est installé sous le péristyle de la Grande Halle et permet de venir danser et s'entraîner librement. D'autres espaces de danse ont également été installés dans le parc.",
+          "Tu n'as pas besoin d'attendre un événement ou un workshop : tu peux venir avec ta musique, t'entraîner, chercher, freestyler et observer les autres danseurs.",
+          "Là-bas tu croises toutes les disciplines et quand tu viens pour travailler ta danse, tu repars souvent inspiré.e par celle des autres.",
+          "📍 Sous le péristyle de la Grande Halle de La Villette, Paris 19e",
+        ],
+      },
+      {
+        heading: "04. La Mona",
+        paragraphs: [
+          "Aller, on quitte les studios pour revenir à l'endroit le plus essentiel dans l'histoire de nombreuses danses : le club.",
+          "La Mona organise depuis 2008 des soirées autour de la house et du disco avec une particularité : <strong>la danse est réellement placée au centre du dancefloor</strong>.",
+          "Les soirées commencent notamment par une Dance Class avant de laisser place au club et à la danse et des contests sont également organisés au cours de l'année.",
+          "Et c'est éminemment important pour moi de l'intégrer ici parce que <strong>le freestyle, et ton style de danse ne se travaille pas uniquement dans un studio</strong>.",
+          "Danser avec un DJ, avec les autres et avec ce qui se passe réellement dans la musique, c'est aussi une autre manière d'apprendre, peut-être la meilleure, je ne sais pas.",
+          "📍 Événements notamment à La Bellevilloise, Paris 20e, et en open air selon la programmation.",
+        ],
+      },
+      {
+        heading: "05. Le Carreau du Temple",
+        paragraphs: [
+          "Le Carreau du Temple est un peu différent des quatre autres.",
+          "Ce n'est pas un spot où l'on vient forcément poser son enceinte pour s'entraîner librement, mais c'est plutôt un lieu où tu peux aller chercher de nouvelles influences.",
+          "Sa programmation fait se rencontrer pratiques artistiques, sportives, spectacles, festivals et danse contemporaine. La Ville de Paris le présente d'ailleurs comme un lieu associant pratiques sportives et artistiques à une programmation de spectacles et de festivals.",
+          "Et pour moi, ça compte aussi dans cet article.",
+          "Parce que <strong>la base du développement de soi, de sa danse, c'est d'observer, de regarder d'autres corps, d'autres écritures et d'autres façons de penser le mouvement</strong>.",
+          "📍 2 rue Perrée, Paris 3e",
+        ],
+      },
+    ],
+    aside: {
+      title: "Les 5 spots en résumé",
+      items: [
+        "Le 104 — Espaces libres gratuits et sans réservation, toutes disciplines.",
+        "La Place — Training libre chaque jeudi de 17h à 20h, cultures hip-hop.",
+        "La Villette — Parquet sous la Grande Halle, accès libre, toutes disciplines.",
+        "La Mona — Soirées house et disco depuis 2008, la danse au cœur du dancefloor.",
+        "Le Carreau du Temple — Programmation artistique pour nourrir son regard et ses références.",
+      ],
+    },
+    conclusion: [
+      "De manière simple, pour apprendre à freestyler il faut surtout développer son écoute, ses références, sa curiosité et sa manière personnelle de répondre à la musique.",
+      "Et si tu as peur du regard des autres, l'endroit le plus safe reste chez toi, alors mets le son à fond et lâche toi, danses matin, midi et soir.",
+      "Et toi, c'est où ton spot préféré pour freestyler à Paris ?",
+    ],
+  },
 ]
 
 export function getMagazineArticleBySlug(slug: string) {
   return magazineArticles.find((article) => article.slug === slug)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ── Logique de publication — SOURCE DE VÉRITÉ UNIQUE ─────────────────────────
+//
+// Toutes les parties du site (Magazine, Tous les articles, article individuel,
+// HomeClient, slider…) DOIVENT utiliser ces deux fonctions.
+// Ne jamais filtrer magazineArticles directement ailleurs dans le code.
+//
+// Format de publishedAt : ISO 8601 UTC
+//   Été  (CEST, UTC+2) → 09h00 Paris = "T07:00:00.000Z"
+//   Hiver (CET, UTC+1) → 09h00 Paris = "T08:00:00.000Z"
+//
+// Pour programmer 6 articles toutes les 3 jours à partir du 15 août :
+//   Article 1 → publishedAt: "2026-08-15T07:00:00.000Z"  status: "scheduled"
+//   Article 2 → publishedAt: "2026-08-18T07:00:00.000Z"  status: "scheduled"
+//   Article 3 → publishedAt: "2026-08-21T07:00:00.000Z"  status: "scheduled"
+//   …
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Retourne true si l'article est actuellement visible sur le site public.
+ *
+ * - "draft"     → jamais visible
+ * - "scheduled" → visible seulement si publishedAt ≤ maintenant (UTC)
+ * - "published" → visible (publishedAt doit être dans le passé)
+ */
+export function isArticlePublished(article: MagazineArticle): boolean {
+  if (article.status === "draft") return false
+  return new Date(article.publishedAt).getTime() <= Date.now()
+}
+
+/**
+ * Retourne UNIQUEMENT les articles actuellement publiés,
+ * triés du plus récent au plus ancien (par publishedAt).
+ *
+ * À utiliser partout sur le site à la place de `magazineArticles` directement.
+ */
+export function getPublishedArticles(): MagazineArticle[] {
+  return magazineArticles
+    .filter(isArticlePublished)
+    .sort(
+      (a, b) =>
+        new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+    )
+}
+
+// ─── File éditoriale (lecture seule — pour visualiser l'état du Magazine) ────
+//
+// PUBLIÉS     → status: "published"  + publishedAt dans le passé
+// PROGRAMMÉS  → status: "scheduled"  + publishedAt dans le futur
+// BROUILLONS  → status: "draft"
+//
+// Exemple d'affichage dans un éditeur / dashboard futur :
+//   getEditorialQueue() → { published, scheduled, drafts }
+//
+export function getEditorialQueue() {
+  const now = Date.now()
+  const published  = magazineArticles.filter(
+    a => a.status !== "draft" && new Date(a.publishedAt).getTime() <= now
+  ).sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+
+  const scheduled = magazineArticles.filter(
+    a => a.status === "scheduled" && new Date(a.publishedAt).getTime() > now
+  ).sort((a, b) => new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime())
+
+  const drafts = magazineArticles.filter(a => a.status === "draft")
+
+  return { published, scheduled, drafts }
 }

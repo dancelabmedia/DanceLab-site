@@ -9,8 +9,8 @@ import { formatAgendaDate, type AgendaEvent } from '../agenda/agenda-data'
    Props
 ───────────────────────────────────────────────────────── */
 interface Props {
-  article: MagazineArticle
-  event:   AgendaEvent | null   // 3e carte — rubrique Sortir
+  article: MagazineArticle | null  // null si aucun article publié disponible
+  event:   AgendaEvent | null      // 3e carte — rubrique Sortir
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -243,49 +243,63 @@ export default function MediaReveal({ article, event }: Props) {
           ════════════════════════════════════════ */}
           <div ref={card1Ref} className="mfr-card mfr-card--article">
             <Link
-              href={`/decouvrir/articles/${article.slug}`}
+              href={article ? `/decouvrir/articles/${article.slug}` : "/decouvrir"}
               className="mfr-card-inner"
-              aria-label={article.title}
+              aria-label={article?.title ?? "Magazine Dance Lab"}
             >
-              <div className="mfr-card-face mfr-card-face--front">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={article.image}
-                  alt=""
-                  aria-hidden="true"
-                  className="mfr-card-img"
-                  loading="lazy"
-                />
-                <div className="mfr-card-gradient" />
-                <div className="mfr-card-body mfr-card-body--lower">
-                  <span className="mfr-badge mfr-badge--mag">Magazine</span>
-                  <span className="mfr-card-cat">{article.category}</span>
-                  <h2 className="mfr-card-title">{article.title}</h2>
-                  <p className="mfr-card-chapo">{article.chapo}</p>
-                  <div className="mfr-card-foot">
-                    <span className="mfr-card-meta">
-                      {article.publishedDate}&thinsp;·&thinsp;{article.readTime} de lecture
-                    </span>
-                    <span className="mfr-card-cta">Lire l&apos;article →</span>
+              {article ? (
+                <>
+                  <div className="mfr-card-face mfr-card-face--front">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={article.image}
+                      alt=""
+                      aria-hidden="true"
+                      className="mfr-card-img"
+                      loading="lazy"
+                    />
+                    <div className="mfr-card-gradient" />
+                    <div className="mfr-card-body mfr-card-body--lower">
+                      <span className="mfr-badge mfr-badge--mag">Magazine</span>
+                      <span className="mfr-card-cat">{article.category}</span>
+                      <h2 className="mfr-card-title">{article.title}</h2>
+                      <p className="mfr-card-chapo">{article.chapo}</p>
+                      <div className="mfr-card-foot">
+                        <span className="mfr-card-meta">
+                          {article.publishedDate}&thinsp;·&thinsp;{article.readTime} de lecture
+                        </span>
+                        <span className="mfr-card-cta">Lire l&apos;article →</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mfr-card-face mfr-card-face--back mfr-card-back mfr-card-back--mag">
+                    <div className="mfr-preview-browser" aria-hidden="true">
+                      <span /><span /><span />
+                    </div>
+                    <div className="mfr-preview-image">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={article.image} alt="" aria-hidden="true" loading="lazy" />
+                      {article.imageCredit ? (
+                        <span className="mfr-preview-image-credit">{article.imageCredit}</span>
+                      ) : null}
+                    </div>
+                    <span className="mfr-preview-kicker">Magazine · {article.category}</span>
+                    <h3 className="mfr-preview-title">{article.title}</h3>
+                    <p className="mfr-preview-copy">{article.chapo}</p>
+                    <span className="mfr-preview-cta">Aperçu de l&apos;article →</span>
+                  </div>
+                </>
+              ) : (
+                <div className="mfr-card-face mfr-card-face--front">
+                  <div className="mfr-card-gradient" />
+                  <div className="mfr-card-body mfr-card-body--lower">
+                    <span className="mfr-badge mfr-badge--mag">Magazine</span>
+                    <h2 className="mfr-card-title">Dance Lab Magazine</h2>
+                    <p className="mfr-card-chapo">Décryptages, culture et ressources pour comprendre la danse autrement.</p>
+                    <span className="mfr-card-cta">Découvrir →</span>
                   </div>
                 </div>
-              </div>
-              <div className="mfr-card-face mfr-card-face--back mfr-card-back mfr-card-back--mag">
-                <div className="mfr-preview-browser" aria-hidden="true">
-                  <span /><span /><span />
-                </div>
-                <div className="mfr-preview-image">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={article.image} alt="" aria-hidden="true" loading="lazy" />
-                  {article.imageCredit ? (
-                    <span className="mfr-preview-image-credit">{article.imageCredit}</span>
-                  ) : null}
-                </div>
-                <span className="mfr-preview-kicker">Magazine · {article.category}</span>
-                <h3 className="mfr-preview-title">{article.title}</h3>
-                <p className="mfr-preview-copy">{article.chapo}</p>
-                <span className="mfr-preview-cta">Aperçu de l&apos;article →</span>
-              </div>
+              )}
             </Link>
           </div>
 

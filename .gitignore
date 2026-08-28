@@ -4,3 +4,9 @@ node_modules
 .DS_Store
 .env*
 tsconfig.tsbuildinfo
+
+# Données locales et fichiers de travail
+dancelab.db
+dancelab.db-shm
+dancelab.db-wal
+*.numbers

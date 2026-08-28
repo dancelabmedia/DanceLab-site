@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
 const PROTECTED_PATHS = ["/sortir", "/apprendre"]
+const ADMIN_PATHS     = ["/admin"]
 const COOKIE_NAME = "preview_access"
 
 async function hashPassword(password: string): Promise<string> {
@@ -16,6 +17,26 @@ async function hashPassword(password: string): Promise<string> {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // ── Pages admin : protégées par ADMIN_PASSWORD (ou PREVIEW_PASSWORD en fallback)
+  const isAdmin = ADMIN_PATHS.some(
+    (path) => pathname === path || pathname.startsWith(path + "/")
+  )
+
+  if (isAdmin) {
+    const adminPassword = process.env.ADMIN_PASSWORD ?? process.env.PREVIEW_PASSWORD
+    if (adminPassword) {
+      const expected     = await hashPassword(adminPassword)
+      const accessCookie = request.cookies.get(COOKIE_NAME)
+      if (accessCookie?.value !== expected) {
+        const loginUrl = new URL("/acces-prive", request.url)
+        loginUrl.searchParams.set("redirect", pathname)
+        return NextResponse.redirect(loginUrl)
+      }
+    }
+    return NextResponse.next()
+  }
+
+  // ── Pages preview classiques
   const isProtected = PROTECTED_PATHS.some(
     (path) => pathname === path || pathname.startsWith(path + "/")
   )
@@ -38,5 +59,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/sortir/:path*", "/apprendre/:path*"],
+  matcher: ["/sortir/:path*", "/apprendre/:path*", "/admin/:path*", "/admin"],
 }

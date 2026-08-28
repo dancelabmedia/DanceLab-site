@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { featuredAgendaEvents, formatAgendaDateRange } from "./agenda/agenda-data"
 import type { AgendaEvent } from "./agenda/agenda-data"
 import { episodes } from "../data/episodes"
-import { magazineArticles } from "./decouvrir/articles-data"
+import type { MagazineArticle } from "./decouvrir/articles-data"
 import Link from "next/link"
 import MediaReveal from "./components/MediaReveal"
 import LatestEpisodeSticky from "./components/LatestEpisodeSticky"
@@ -260,6 +260,17 @@ const RESOURCES = [
 ]
 
 const TICKER_ITEMS = ['Podcast', 'Articles', 'Agenda culturel', "Portraits d\'artistes", 'Ressources pro', 'Styles de danse', 'Festivals', 'Interviews', 'Compagnies', 'Spectacles']
+
+const COLLAB_ITEMS = [
+  'La Villette',
+  'La Place',
+  'DANC·R',
+  'Centre National de la Danse',
+  'Festival d\'Avignon',
+  'Montpellier Danse',
+  'Pôle Emploi Spectacle',
+  'AFDAS',
+]
 const HOME_AGENDA_LIMIT = 3
 
 function getAgendaHomeDateParts(event: AgendaEvent) {
@@ -286,9 +297,11 @@ function getAgendaHomeDateParts(event: AgendaEvent) {
 interface HomeClientProps {
   /** Dernier épisode — provient de getEpisodes() côté serveur (RSS + statique). */
   latestEpisode: UnifiedEpisode
+  /** Dernier article publié — filtré côté serveur (ne contient jamais de draft/scheduled futur). */
+  latestArticle: MagazineArticle | null
 }
 
-export default function HomeClient({ latestEpisode }: HomeClientProps) {
+export default function HomeClient({ latestEpisode, latestArticle }: HomeClientProps) {
   const [scrolled, setScrolled]       = useState(false)
   const [progress, setProgress]       = useState(33)
   const [newsletterStatus, setNewsletterStatus] = useState<
@@ -665,7 +678,7 @@ export default function HomeClient({ latestEpisode }: HomeClientProps) {
               <IconPlay /> Écouter le podcast
             </a>
 
-            <a href="#magazine" className="btn btn-outline-w">
+            <a href="/decouvrir" className="btn btn-outline-w">
               Découvrir l&apos;univers Dance Lab <IconArrow />
             </a>
           </div>
@@ -689,6 +702,23 @@ export default function HomeClient({ latestEpisode }: HomeClientProps) {
         </div>
       </div>
 
+      {/* ========================================
+          RUBAN COLLABORATIONS
+      ======================================== */}
+      <div className="collabs-band" aria-label="Collaborations et partenaires">
+        <span className="collabs-band-label" aria-hidden="true">avec</span>
+        <div className="collabs-band-track-wrapper">
+          <div className="collabs-band-track">
+            {[...COLLAB_ITEMS, ...COLLAB_ITEMS].map((name, i) => (
+              <span key={i} className="collabs-band-item">
+                <span className="collabs-band-dot" aria-hidden="true">·</span>
+                {name}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* ════════════════════════════════════════════════════════════
           EXPÉRIENCE IMMERSIVE — MediaReveal + LatestEpisodeSticky
           Un seul wrapper, un seul dégradé, aucune coupure visible.
@@ -697,7 +727,7 @@ export default function HomeClient({ latestEpisode }: HomeClientProps) {
       ════════════════════════════════════════════════════════════ */}
       <div className="mxp-wrapper">
         <MediaReveal
-          article={magazineArticles[0]}
+          article={latestArticle}
           event={featuredAgendaEvents[0] ?? null}
         />
         <LatestEpisodeSticky

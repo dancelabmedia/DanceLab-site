@@ -1,9 +1,11 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { episodes } from "../../../../data/episodes"
+import { getEpisodes, type UnifiedEpisode } from "@/lib/episodes"
 import { danceStyles, getDanceStyle } from "../styles-data"
 import StylePageClient from "./StylePageClient"
+
+export const revalidate = 3600
 
 type PageProps = { params: Promise<{ slug: string }> }
 
@@ -27,18 +29,83 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+export type LinkedEpisode = {
+  episode: UnifiedEpisode
+  /** Texte éditorial explicatif (null = lien automatique sans note) */
+  relevance: string | null
+}
+
+// ─── Helper : auto-linking ────────────────────────────────────────────────────
+
+/**
+ * Construit la liste d'épisodes liés à un style.
+ *
+ * Algorithme :
+ *   1. Liens éditoriaux explicites (episodeLinks) — toujours en premier, avec note
+ *   2. Liens automatiques — tout épisode dont le titre ou l'excerpt mentionne
+ *      le nom du style, ses alias ou ses autoMatchTerms
+ *      → sans note éditorialle (relevance: null)
+ *
+ * Les doublons (slug déjà présent) sont éliminés : l'explicite prime.
+ */
+function buildLinkedEpisodes(
+  style: NonNullable<ReturnType<typeof getDanceStyle>>,
+  allEpisodes: UnifiedEpisode[],
+): LinkedEpisode[] {
+  // --- 1. Liens explicites ---
+  const explicitMap = new Map<string, string>()
+  for (const link of style.episodeLinks) {
+    explicitMap.set(link.slug, link.relevance)
+  }
+
+  const explicit: LinkedEpisode[] = []
+  for (const [slug, relevance] of explicitMap) {
+    const ep = allEpisodes.find((e) => e.slug === slug)
+    if (ep) explicit.push({ episode: ep, relevance })
+  }
+
+  // --- 2. Liens automatiques ---
+  // Termes à rechercher (en minuscules) dans le titre + excerpt de l'épisode
+  const rawTerms: string[] = [
+    style.name,
+    ...(style.aliases ?? []),
+    ...(style.autoMatchTerms ?? []),
+  ]
+  const terms = rawTerms.map((t) => t.toLowerCase()).filter(Boolean)
+
+  const auto: LinkedEpisode[] = []
+  if (terms.length > 0) {
+    for (const ep of allEpisodes) {
+      // Éviter les doublons avec les liens explicites
+      if (explicitMap.has(ep.slug)) continue
+
+      const haystack = [ep.title, ep.excerpt, ep.description]
+        .join(" ")
+        .toLowerCase()
+
+      if (terms.some((t) => haystack.includes(t))) {
+        auto.push({ episode: ep, relevance: null })
+      }
+    }
+  }
+
+  return [...explicit, ...auto]
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default async function StylePage({ params }: PageProps) {
   const { slug } = await params
   const style = getDanceStyle(slug)
   if (!style) notFound()
 
-  // Résoudre les épisodes Dance Lab liés
-  const linkedEpisodes = style.episodeLinks
-    .map((link) => {
-      const ep = episodes.find((e) => e.slug === link.slug)
-      return ep ? { episode: ep, relevance: link.relevance } : null
-    })
-    .filter(Boolean) as { episode: (typeof episodes)[0]; relevance: string }[]
+  // Tous les épisodes (statiques + RSS) — ISR 1h
+  const allEpisodes = await getEpisodes()
+
+  // Épisodes liés (explicites + auto-matching)
+  const linkedEpisodes = buildLinkedEpisodes(style, allEpisodes)
 
   // Styles associés résolus
   const relatedStylesData = style.relatedStyles

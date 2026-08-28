@@ -1,12 +1,12 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import StylesCarousel from "./StylesCarousel"
-import StylesExplorer from "./StylesExplorer"
+import StylesHeroFeatured from "./StylesHeroFeatured"
 import StylesReveal from "./StylesReveal"
-import StylesStats from "./StylesStats"
 import StylesScrollGallery from "./StylesScrollGallery"
+import MissionReveal from "../../../components/MissionReveal"
 import { danceStyles, upcomingStyles } from "./styles-data"
 import { withDedicatedStyleImages } from "./style-image-resolver"
+import { getEpisodes } from "@/lib/episodes"
 
 export const metadata: Metadata = {
   title: "Explorer les styles de danse | Dance Lab",
@@ -14,135 +14,94 @@ export const metadata: Metadata = {
     "Une encyclopédie vivante des styles de danse : histoire, origines, vocabulaire, figures clés, musiques et ressources. Break, waacking, voguing, classique, contemporain et plus encore.",
 }
 
-export default function StylesDeDansePage() {
+// ISR : même cycle que la page Écouter — regénération automatique toutes les heures
+export const revalidate = 3600
+
+export default async function StylesDeDansePage() {
   const resolvedDanceStyles = withDedicatedStyleImages(danceStyles)
   const resolvedUpcomingStyles = withDedicatedStyleImages(upcomingStyles)
-  const totalEpisodes = danceStyles.reduce(
-    (acc, s) => acc + s.episodeLinks.length,
-    0
-  )
+
+  // Source de vérité : même données que la page Écouter (legacy + RSS Ausha)
+  const episodes = await getEpisodes()
 
   return (
     <main className="sty-page">
 
       {/* ════════════════════════════════════════
-          HERO — deux colonnes éditoriales
+          HERO + RECHERCHE / FILTRES + CARROUSEL
+          (état partagé via StylesHeroFeatured)
       ════════════════════════════════════════ */}
-      <section className="sty-hero">
-        <div className="sty-hero-left">
-          <span className="sty-kicker">Explorer · Styles de danse</span>
-          <h1 className="sty-hero-title">
-            Comprendre les styles de danse.
-          </h1>
-          <p className="sty-hero-subtitle">
-            Leur histoire, leurs codes et les cultures qui les ont fait naître.
-          </p>
-          <p className="sty-hero-desc">
-            Hip-hop, contemporain, classique, afro, waacking, krump ou heels&nbsp;:
-            chaque style porte une histoire, des codes, une énergie et une manière
-            d&apos;habiter le corps. Bienvenue dans l&apos;encyclopédie de référence
-            pour découvrir, comprendre et vivre la danse.
-          </p>
-          <StylesStats
-            stylesCount={danceStyles.length}
-            episodesCount={totalEpisodes}
-          />
-        </div>
-
-        <div className="sty-hero-right" aria-hidden="true">
-          <img
-            src="/images/les-invites-header/imagetest.png"
-            alt=""
-            className="sty-hero-photo"
-          />
-          <div className="sty-hero-fade" />
-        </div>
-      </section>
-
-      {/* ════════════════════════════════════════
-          RECHERCHE / FILTRES + CARROUSEL
-      ════════════════════════════════════════ */}
-      <section className="sty-featured">
-
-        {/* 1. Barre de recherche + filtres par catégorie */}
-        <StylesExplorer styles={resolvedDanceStyles} />
-
-        {/* 2. Carrousel des styles */}
-        <StylesCarousel styles={[
+      <StylesHeroFeatured
+        availableStyles={resolvedDanceStyles}
+        allStyles={[
           ...resolvedDanceStyles,
           ...resolvedUpcomingStyles.filter(
             (u) => !resolvedDanceStyles.some((s) => s.slug === u.slug)
           ),
-        ].sort((a, b) => a.name.localeCompare(b.name, "fr", { sensitivity: "base" }))} />
-
-        {/* 3. Lien « Voir tous les styles » */}
-        <div className="sty-viewall" id="sty-explorer">
-          <a href="#sty-explorer" className="sty-viewall-link">
-            Voir tous les styles <span aria-hidden="true">→</span>
-          </a>
-        </div>
-
-      </section>
+        ].sort((a, b) => a.name.localeCompare(b.name, "fr", { sensitivity: "base" }))}
+        stylesCount={danceStyles.length}
+        episodesCount={episodes.length}
+      />
 
       {/* ════════════════════════════════════════
-          VALEURS — bande bleu-gris éditoriale
+          VALEURS — même structure que « La mission de Dance Lab » (À propos)
       ════════════════════════════════════════ */}
-      <section className="sty-values" data-reveal>
-        <div className="sty-values-circles" aria-hidden="true" />
-        <div className="container">
-          <div className="sty-values-grid">
+      <section className="about-mission">
 
-            <div className="sty-value-col">
-              <div className="sty-value-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                </svg>
-              </div>
-              <p className="sty-value-num">01</p>
-              <h3>Des origines précises</h3>
-              <p>
-                Chaque fiche situe le style dans son époque, son territoire et ses
-                communautés d&apos;origine. Pas de formules vagues&nbsp;: des villes,
-                des quartiers, des personnes.
-              </p>
-            </div>
+        {/* Fond abstrait — halos lumineux diffus, identiques à ceux de la page À propos */}
+        <div className="about-mission-bg" aria-hidden="true">
+          <div className="about-mission-halo about-mission-halo-1" />
+          <div className="about-mission-halo about-mission-halo-2" />
+          <div className="about-mission-halo about-mission-halo-3" />
+        </div>
 
-            <div className="sty-value-sep" aria-hidden="true" />
+        <div className="about-mission-inner">
 
-            <div className="sty-value-col">
-              <div className="sty-value-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                </svg>
-              </div>
-              <p className="sty-value-num">02</p>
-              <h3>Des ressources vérifiées</h3>
-              <p>
-                Livres, documentaires, archives, sites institutionnels. Chaque
-                ressource est vérifiée et sourcée. Aucun faux titre, aucun lien
-                inventé.
-              </p>
-            </div>
-
-            <div className="sty-value-sep" aria-hidden="true" />
-
-            <div className="sty-value-col">
-              <div className="sty-value-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <circle cx="12" cy="12" r="3"/>
-                  <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
-                </svg>
-              </div>
-              <p className="sty-value-num">03</p>
-              <h3>Reliée au podcast</h3>
-              <p>
-                Chaque style est connecté aux épisodes Dance Lab correspondants
-                pour aller plus loin avec les praticiens qui le font vivre.
-              </p>
-            </div>
-
+          <div className="about-mission-heading">
+            <span className="about-mission-chapter-num">Explorer · Styles de danse</span>
+            <h2>
+              La démarche <span>Dance Lab</span>
+            </h2>
+            <h3>
+              Comprendre un style, c&apos;est aussi comprendre l&apos;histoire et les cultures qui l&apos;ont fait naître.
+            </h3>
+            <div className="about-mission-rule" />
           </div>
+
+          <MissionReveal>
+
+            <div className="mission-card">
+              <span className="mission-card-number">01</span>
+              <div className="mission-card-body">
+                <h4>Des origines précises</h4>
+                <p>
+                  Chaque fiche situe le style dans son époque, son territoire et ses communautés d&apos;origine.
+                </p>
+              </div>
+            </div>
+
+            <div className="mission-card">
+              <span className="mission-card-number">02</span>
+              <div className="mission-card-body">
+                <h4>Des ressources vérifiées</h4>
+                <p>
+                  Livres, documentaires, archives, sites institutionnels. Chaque ressource est vérifiée et sourcée.
+                </p>
+              </div>
+            </div>
+
+            <div className="mission-card">
+              <span className="mission-card-number">03</span>
+              <div className="mission-card-body">
+                <h4>Reliée au podcast</h4>
+                <p>
+                  Chaque style est connecté aux épisodes Dance Lab correspondants pour aller plus loin avec les personnes qui le font vivre.
+                </p>
+              </div>
+            </div>
+
+          </MissionReveal>
+
         </div>
       </section>
 
@@ -170,13 +129,15 @@ export default function StylesDeDansePage() {
                 Approfondir, s&apos;inspirer, aller plus loin.
               </p>
             </div>
-            <Link href="/ecouter" className="sty-seeall">
+            <Link href="/decouvrir/articles-culture" className="sty-seeall">
               Voir tous les articles →
             </Link>
           </div>
 
           <div className="sty-mag-grid">
-            <div
+            {/* ── Break — article publié ── */}
+            <Link
+              href="/decouvrir/articles/pourquoi-le-breakdance-est-devenu-olympique"
               className="sty-mag-card"
               style={{ "--i": 0 } as React.CSSProperties}
               data-reveal
@@ -187,16 +148,13 @@ export default function StylesDeDansePage() {
               <div className="sty-mag-body">
                 <span className="sty-mag-badge">Article</span>
                 <h3>Le break, de la rue aux Jeux olympiques</h3>
-                <Link
-                  href="/explorer/styles-de-danse/break"
-                  className="sty-mag-cta"
-                >
-                  Lire l&apos;article →
-                </Link>
+                <span className="sty-mag-cta">Lire l&apos;article →</span>
               </div>
-            </div>
+            </Link>
 
-            <div
+            {/* ── Waacking — article publié ── */}
+            <Link
+              href="/decouvrir/articles/comprendre-le-waacking-histoire-culture-influences"
               className="sty-mag-card"
               style={{ "--i": 1 } as React.CSSProperties}
               data-reveal
@@ -207,17 +165,13 @@ export default function StylesDeDansePage() {
               <div className="sty-mag-body">
                 <span className="sty-mag-badge">Article</span>
                 <h3>Waacking&nbsp;: une danse née dans les clubs underground</h3>
-                <Link
-                  href="/explorer/styles-de-danse/waacking"
-                  className="sty-mag-cta"
-                >
-                  Lire l&apos;article →
-                </Link>
+                <span className="sty-mag-cta">Lire l&apos;article →</span>
               </div>
-            </div>
+            </Link>
 
+            {/* ── Voguing — pas encore d'article dédié : carte non cliquable ── */}
             <div
-              className="sty-mag-card"
+              className="sty-mag-card sty-mag-card--soon"
               style={{ "--i": 2 } as React.CSSProperties}
               data-reveal
             >
@@ -227,12 +181,7 @@ export default function StylesDeDansePage() {
               <div className="sty-mag-body">
                 <span className="sty-mag-badge">Article</span>
                 <h3>Le voguing et la culture ballroom en France</h3>
-                <Link
-                  href="/explorer/styles-de-danse/voguing"
-                  className="sty-mag-cta"
-                >
-                  Lire l&apos;article →
-                </Link>
+                <span className="sty-mag-cta sty-mag-cta--soon">Bientôt disponible</span>
               </div>
             </div>
           </div>

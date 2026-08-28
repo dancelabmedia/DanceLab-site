@@ -5,16 +5,25 @@ import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 
 import EpisodeAnimations from "./EpisodeAnimations";
+import EpisodeInstagramReel from "../../../components/EpisodeInstagramReel";
 import EpisodeShare from "../../../components/EpisodeShare";
 import HistoryBackLink from "../../../components/HistoryBackLink";
 import { episodes, type Episode } from "../../../data/episodes";
+import { EPISODE_SERIES, EPISODE_CLUSTERS, SAME_GUEST_GROUPS } from "../../../data/episode-relations";
 import { SITE_URL } from "../../../data/site";
 import {
+  getEpisodes,
   getEpisodeBySlug as getUnifiedEpisodeBySlug,
   getEpisodeYoutubeUrl,
   type UnifiedEpisode,
 } from "@/lib/episodes";
 import { youtubeUrl, youtubeThumbnail } from "@/lib/youtube-rss";
+import {
+  TAG_TAXONOMY,
+  TAG_LABEL,
+  getEpisodeTags,
+  keyToSlug,
+} from "@/lib/episode-themes";
 
 // ISR : les nouveaux épisodes (≥ 122) sont rendus dynamiquement et mis en cache 1h
 export const revalidate = 3600;
@@ -246,88 +255,167 @@ function renderInlineEditorialText(text: string) {
   );
 }
 
-// ─── Similarity algorithm ──────────────────────────────────────────────────
-// Tags are empty in the data, so we derive themes from free text fields.
-// Each cluster is [themeKey, keywords[]]. A keyword match anywhere in the
-// combined episode text scores one point for that theme.
-const THEME_CLUSTERS: [string, string[]][] = [
-  ['heels',         ['heels', 'talons', 'féminité', 'féminin', 'sensualité', 'sensuel']],
-  ['transmission',  ['transmission', 'transmet', 'enseign', 'pédagogie', 'cours de danse', 'professeur', 'apprendre', 'formation']],
-  ['sante_mentale', ['santé mentale', 'burn-out', 'burnout', 'dépression', 'anxiété', 'bien-être', 'résilience', 'reconstruction']],
-  ['harcelement',   ['harcèlement', 'toxicité', 'toxique', 'manipulation', 'hypocrisie', 'bully', 'violenc']],
-  ['blessures',     ['blessure', 'kiné', 'kinésithérapeute', 'blesser', 'récupération', 'échauffement', 'prévention', 'blessé']],
-  ['corps',         ['corps', 'physique', 'athlète', 'préparation physique', 'anatomie', 'proprioception']],
-  ['carriere',      ['carrière', 'contrat', 'droits', 'agent', 'casting', 'intermittence', 'vivre de la danse', 'gagner sa vie', 'précarité']],
-  ['maternite',     ['maternité', 'mère', 'grossesse', 'maternel', 'enfant']],
-  ['krump',         ['krump', 'krumper', 'krumping']],
-  ['hip_hop',       ['hip-hop', 'hip hop', 'battle', 'breakdance', 'breaking', 'b-boy', 'b-girl', 'popping', 'locking', 'urbain']],
-  ['waacking',      ['waacking', 'waack', 'punking']],
-  ['contemporain',  ['contemporain', 'danse contemporaine', 'ballet contemporain']],
-  ['entrepreneuriat',['entreprise', 'créer une école', 'école de danse', 'lancer', 'studio', 'structure', 'projet entrepreneurial']],
-  ['argent',        ['argent', 'salaire', 'revenu', 'financement', 'économi', 'pauvreté', 'richesse']],
-  ['reseaux',       ['réseaux sociaux', 'instagram', 'tiktok', 'youtube', 'contenu', 'communauté', 'audience', 'visibilité']],
-  ['identite',      ['identité', 'légitimité', 'confiance en soi', 'valeur', 'qui suis-je', 'se définir']],
-  ['musicalite',    ['musicalité', 'groove', 'rythme', 'ressentir la musique', 'écoute musicale']],
-  ['scene',         ['scène', 'spectacle', 'plateau', 'représentation', 'performance scénique']],
-  ['international', ['international', 'tour du monde', 'pays', 'étranger', 'tournée internationale']],
-  ['choreo',        ['chorégraphe', 'chorégraphie', 'composition', 'écriture chorégraphique']],
-  ['jazz',          ['jazz', 'jazz funk', 'comédie musicale']],
-  ['afro',          ['afro', 'afrodance', 'afrobeats']],
-  ['classique',     ['classique', 'ballet', 'danse classique']],
-  ['longevite',     ['longévité', 'durer', 'reconversion', 'vieillir en danse', 'fin de carrière']],
-  ['creation',      ['création', 'créativité', 'processus créatif', 'expérimentation']],
-  ['droits',        ['droits des artistes', 'statut d\'artiste', 'protection sociale', 'syndicat']],
-  ['confiance',     ['confiance en soi', 'doute', 'estime de soi', 'imposture', 'syndrome de l\'imposteur']],
-  ['inclusion',     ['inclusion', 'diversité', 'représentation', 'minorité', 'discrimination']],
-]
+// ─── Détection de thèmes (similarity + affichage) ─────────────────────────
+// Utilise le référentiel centralisé lib/episode-themes.ts.
+// getEpisodeTags() retourne jusqu'à N clés de tags, triées par pertinence.
 
+/** Thèmes d'un épisode statique (description complète disponible) */
 function getEpisodeThemes(episode: Episode): Set<string> {
-  const text = [
-    episode.title,
-    episode.excerpt,
-    episode.description,
-    episode.seoDescription,
-    episode.role,
-    episode.category,
-    ...(episode.tags ?? []),
-  ].join(' ').toLowerCase()
-
-  const themes = new Set<string>()
-  for (const [theme, keywords] of THEME_CLUSTERS) {
-    if (keywords.some((kw) => text.includes(kw.toLowerCase()))) {
-      themes.add(theme)
-    }
-  }
-  return themes
+  const text = [episode.title, episode.excerpt, episode.description].join(' ')
+  // max=99 → toutes les correspondances, pour le scoring de similarité
+  return new Set(getEpisodeTags(text, 99))
 }
 
+/**
+ * Retourne jusqu'à 3 épisodes similaires par pertinence éditoriale.
+ *
+ * Hiérarchie de scoring :
+ *   +10  Même série formelle (CND, Soprano…)
+ *   + 7  Même invité récurrent
+ *   + 5  Même cluster thématique éditorial (par cluster, cumulatif)
+ *   + 1  Thème textuel partagé (détection automatique, cumulatif)
+ *
+ * Tri : score décroissant — aucun tri secondaire par recency.
+ * Fallback : si moins de 3 résultats, complète avec les meilleurs chevauchements
+ *   de thèmes textuels parmi les épisodes restants (jamais par recency).
+ */
 function getSimilarEpisodes(currentSlug: string): Episode[] {
   const current = episodes.find((ep) => ep.slug === currentSlug)
   if (!current) return []
 
   const currentThemes = getEpisodeThemes(current)
 
+  // Séries auxquelles appartient l'épisode courant
+  const currentSeriesKeys = Object.entries(EPISODE_SERIES)
+    .filter(([, nums]) => nums.includes(current.number))
+    .map(([key]) => key)
+
+  // Clusters thématiques auxquels appartient l'épisode courant
+  const currentClusterKeys = Object.entries(EPISODE_CLUSTERS)
+    .filter(([, nums]) => nums.includes(current.number))
+    .map(([key]) => key)
+
+  // Groupe d'invité récurrent de l'épisode courant (au plus un)
+  const guestGroup = SAME_GUEST_GROUPS.find((g) => g.includes(current.number)) ?? []
+
   const scored = episodes
     .filter((ep) => ep.slug !== currentSlug)
     .map((ep) => {
-      const epThemes = getEpisodeThemes(ep)
       let score = 0
+
+      // Même série formelle : +10 pts par série partagée
+      for (const key of currentSeriesKeys) {
+        if (EPISODE_SERIES[key].includes(ep.number)) score += 10
+      }
+
+      // Même invité récurrent : +7 pts
+      if (guestGroup.includes(ep.number)) score += 7
+
+      // Même cluster thématique éditorial : +5 pts par cluster partagé
+      for (const key of currentClusterKeys) {
+        if (EPISODE_CLUSTERS[key].includes(ep.number)) score += 5
+      }
+
+      // Thèmes textuels partagés : +1 pt chacun
+      const epThemes = getEpisodeThemes(ep)
+      for (const theme of currentThemes) {
+        if (epThemes.has(theme)) score++
+      }
+
+      return { episode: ep, score }
+    })
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score)   // Tri par pertinence, sans recency
+
+  const result = scored.slice(0, 3).map(({ episode }) => episode)
+
+  // Fallback thématique (jamais par recency) : complète si moins de 3 résultats
+  if (result.length < 3 && currentThemes.size > 0) {
+    const needed = 3 - result.length
+    const existing = new Set(result.map((e) => e.slug))
+
+    const themeMatches = episodes
+      .filter((ep) => ep.slug !== currentSlug && !existing.has(ep.slug))
+      .map((ep) => {
+        const epThemes = getEpisodeThemes(ep)
+        let overlap = 0
+        for (const theme of currentThemes) {
+          if (epThemes.has(theme)) overlap++
+        }
+        return { episode: ep, overlap }
+      })
+      .filter(({ overlap }) => overlap > 0)
+      .sort((a, b) => b.overlap - a.overlap)
+      .slice(0, needed)
+      .map(({ episode }) => episode)
+
+    result.push(...themeMatches)
+  }
+
+  return result
+}
+
+// ─── Épisodes similaires pour les pages RSS (≥ 122) ───────────────────────────
+// Même logique de scoring que getSimilarEpisodes, mais opère sur UnifiedEpisode
+// afin de couvrir tous les épisodes (legacy + RSS) dans les deux sens.
+
+function getUnifiedEpisodeThemes(ep: UnifiedEpisode): Set<string> {
+  const text = [ep.title, ep.excerpt, ep.description].join(' ')
+  return new Set(getEpisodeTags(text, 99))
+}
+
+function getSimilarUnifiedEpisodes(
+  current: UnifiedEpisode,
+  allEpisodes: UnifiedEpisode[],
+): UnifiedEpisode[] {
+  const currentThemes     = getUnifiedEpisodeThemes(current)
+  const currentSeriesKeys = Object.entries(EPISODE_SERIES)
+    .filter(([, nums]) => nums.includes(current.number))
+    .map(([key]) => key)
+  const currentClusterKeys = Object.entries(EPISODE_CLUSTERS)
+    .filter(([, nums]) => nums.includes(current.number))
+    .map(([key]) => key)
+  const guestGroup = SAME_GUEST_GROUPS.find((g) => g.includes(current.number)) ?? []
+
+  const scored = allEpisodes
+    .filter((ep) => ep.slug !== current.slug)
+    .map((ep) => {
+      let score = 0
+      for (const key of currentSeriesKeys) {
+        if (EPISODE_SERIES[key].includes(ep.number)) score += 10
+      }
+      if (guestGroup.includes(ep.number)) score += 7
+      for (const key of currentClusterKeys) {
+        if (EPISODE_CLUSTERS[key].includes(ep.number)) score += 5
+      }
+      const epThemes = getUnifiedEpisodeThemes(ep)
       for (const theme of currentThemes) {
         if (epThemes.has(theme)) score++
       }
       return { episode: ep, score }
     })
     .filter(({ score }) => score > 0)
-    .sort((a, b) => b.score - a.score || b.episode.number - a.episode.number)
+    .sort((a, b) => b.score - a.score)
 
   const result = scored.slice(0, 3).map(({ episode }) => episode)
 
-  // Fallback: fill with recent episodes if not enough thematic matches
-  if (result.length < 3) {
-    const extra = episodes
-      .filter((ep) => ep.slug !== currentSlug && !result.some((r) => r.slug === ep.slug))
-      .slice(0, 3 - result.length)
-    result.push(...extra)
+  // Fallback : complète à 3 avec les meilleurs chevauchements thématiques
+  if (result.length < 3 && currentThemes.size > 0) {
+    const needed   = 3 - result.length
+    const existing = new Set(result.map((e) => e.slug))
+    const themeMatches = allEpisodes
+      .filter((ep) => ep.slug !== current.slug && !existing.has(ep.slug))
+      .map((ep) => {
+        const epThemes = getUnifiedEpisodeThemes(ep)
+        let overlap = 0
+        for (const theme of currentThemes) { if (epThemes.has(theme)) overlap++ }
+        return { episode: ep, overlap }
+      })
+      .filter(({ overlap }) => overlap > 0)
+      .sort((a, b) => b.overlap - a.overlap)
+      .slice(0, needed)
+      .map(({ episode }) => episode)
+    result.push(...themeMatches)
   }
 
   return result
@@ -403,36 +491,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-const THEME_DISPLAY: Record<string, string> = {
-  heels:          'Danse heels',
-  transmission:   'Transmission & pédagogie',
-  sante_mentale:  'Santé mentale',
-  harcelement:    'Harcèlement',
-  blessures:      'Blessures & prévention',
-  corps:          'Corps & physique',
-  carriere:       'Carrière artistique',
-  maternite:      'Maternité',
-  krump:          'Krump',
-  hip_hop:        'Hip-hop & battle',
-  waacking:       'Waacking',
-  contemporain:   'Danse contemporaine',
-  entrepreneuriat:'Entrepreneuriat',
-  argent:         'Argent & revenus',
-  reseaux:        'Réseaux sociaux',
-  identite:       'Identité & légitimité',
-  musicalite:     'Musicalité',
-  scene:          'Scène & performance',
-  international:  'International',
-  choreo:         'Chorégraphie',
-  jazz:           'Jazz & comédie musicale',
-  afro:           'Afro dance',
-  classique:      'Ballet classique',
-  longevite:      'Longévité & reconversion',
-  creation:       'Processus créatif',
-  droits:         'Droits des artistes',
-  confiance:      'Confiance en soi',
-  inclusion:      'Inclusion & diversité',
-}
+// THEME_DISPLAY remplacé par TAG_LABEL importé depuis lib/episode-themes.ts
 
 export default async function EpisodePage({ params }: PageProps) {
   const { slug } = await params;
@@ -460,10 +519,10 @@ export default async function EpisodePage({ params }: PageProps) {
     ? (episode.youtube || youtubeUrl(youtubeId))
     : null;
 
-  // Points abordés — union des tags éditoriaux et des thèmes détectés
-  const matchedThemes = getEpisodeThemes(episode);
-  const themeLabels = [...matchedThemes].map((t) => THEME_DISPLAY[t]).filter(Boolean);
-  const topicsList = [...new Set([...episode.tags, ...themeLabels])].slice(0, 10);
+  // Tags thématiques — détectés automatiquement depuis le texte de l'épisode (max 6)
+  const episodeTagKeys = getEpisodeTags(
+    [episode.title, episode.excerpt, episode.description].join(' '), 6
+  );
 
   return (
     <main className="ep-page">
@@ -636,12 +695,18 @@ export default async function EpisodePage({ params }: PageProps) {
                   })}
                 </div>
 
-                {topicsList.length > 0 ? (
+                {episodeTagKeys.length > 0 ? (
                   <div className="ep-topics-block">
-                    <p className="ep-topics-label">Points abordés</p>
+                    <p className="ep-topics-label">Dans cet épisode</p>
                     <div className="ep-topics-pills">
-                      {topicsList.map((topic) => (
-                        <span key={topic} className="ep-topic-pill">{topic}</span>
+                      {episodeTagKeys.map((key) => (
+                        <Link
+                          key={key}
+                          href={`/themes/${keyToSlug(key)}`}
+                          className="ep-topic-pill"
+                        >
+                          {TAG_LABEL[key] ?? key}
+                        </Link>
                       ))}
                     </div>
                   </div>
@@ -688,6 +753,9 @@ export default async function EpisodePage({ params }: PageProps) {
                   </div>
                 ) : null}
               </div>
+              {unified?.instagramReelUrl ? (
+                <EpisodeInstagramReel instagramReelUrl={unified.instagramReelUrl} />
+              ) : null}
             </aside>
 
             {/* ── [col1-2 row2] Lecteur audio ── */}
@@ -720,6 +788,10 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
   const youtubeHref = youtubeId ? youtubeUrl(youtubeId) : null;
   const episodeUrl  = new URL(`/episodes/${unified.slug}`, SITE_URL).toString();
 
+  // Épisodes similaires — même logique que les pages statiques
+  const allEpisodes     = await getEpisodes();
+  const similarEpisodes = getSimilarUnifiedEpisodes(unified, allEpisodes);
+
   // Hero image : priorité les-invites-header → les-invites → CDN Ausha
   const heroImage = (() => {
     // 1. Cherche dans les-invites-header (même convention de nommage)
@@ -736,6 +808,11 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
     // 3. Fallback CDN Ausha
     return unified.aushaImage || unified.image;
   })();
+
+  // Tags thématiques automatiques (max 6)
+  const rssTagKeys = getEpisodeTags(
+    [unified.title, unified.excerpt, unified.description].join(' '), 6
+  );
 
   // Description : texte complet depuis le RSS (fallback sur l'excerpt si absent)
   const descriptionParagraphs = getEpisodeDescriptionParagraphs(unified.description || unified.excerpt);
@@ -876,6 +953,23 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
                     );
                   })}
                 </div>
+
+                {rssTagKeys.length > 0 ? (
+                  <div className="ep-topics-block">
+                    <p className="ep-topics-label">Dans cet épisode</p>
+                    <div className="ep-topics-pills">
+                      {rssTagKeys.map((key) => (
+                        <Link
+                          key={key}
+                          href={`/themes/${keyToSlug(key)}`}
+                          className="ep-topic-pill"
+                        >
+                          {TAG_LABEL[key] ?? key}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </article>
             </div>
 
@@ -886,7 +980,27 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
                   <h3 className="ep-sidebar-h3">Partager</h3>
                   <EpisodeShare title={unified.title} url={episodeUrl} />
                 </div>
+                {similarEpisodes.length > 0 ? (
+                  <div className="ep-sidebar-section">
+                    <h3 className="ep-sidebar-h3">Épisodes similaires</h3>
+                    <div className="ep-sidebar-similar">
+                      {similarEpisodes.map((item) => (
+                        <Link key={item.slug} href={`/episodes/${item.slug}`} className="ep-sidebar-ep">
+                          <img src={item.image} alt={item.guest} className="ep-sidebar-ep-img" />
+                          <div className="ep-sidebar-ep-body">
+                            <span>Épisode {item.number}</span>
+                            <strong>{item.title}</strong>
+                            <p className="ep-sidebar-ep-guest">{item.guest}</p>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </div>
+              {unified.instagramReelUrl ? (
+                <EpisodeInstagramReel instagramReelUrl={unified.instagramReelUrl} />
+              ) : null}
             </aside>
 
             {/* Lecteur Spotify — même design que les épisodes statiques */}

@@ -1,5 +1,6 @@
 import AboutReveal from "../../components/AboutReveal";
 import MissionReveal from "../../components/MissionReveal";
+import AboutVideoCard from "../../components/AboutVideoCard";
 
 export default function AProposPage() {
   return (
@@ -340,6 +341,34 @@ export default function AProposPage() {
             </div>
 
           </MissionReveal>
+
+        </div>
+
+      </section>
+
+
+      {/* INTERVIEWS */}
+      <section className="section about-soft about-interviews about-chapter">
+
+        <div className="container">
+
+          <div className="about-interviews-header">
+            <span className="about-interviews-kicker">Pour aller plus loin</span>
+            <h2>Envie d&apos;en savoir plus&nbsp;?</h2>
+            <p className="about-interviews-intro">
+              Deux interviews pour découvrir ma vision de la danse, de l&apos;entrepreneuriat
+              et de la création de Dance Lab.
+            </p>
+          </div>
+
+          <div className="about-interviews-grid">
+            <AboutVideoCard
+              videoId="4SF21fx8IzE"
+            />
+            <AboutVideoCard
+              videoId="uEpARjK5O1c"
+            />
+          </div>
 
         </div>
 

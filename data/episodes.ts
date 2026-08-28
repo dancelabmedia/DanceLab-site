@@ -23,6 +23,7 @@ export type Episode = {
   guestLinks: string
   seoTitle: string
   seoDescription: string
+  instagramReelUrl?: string
 }
 
 export const episodes: Episode[] = [
