@@ -99,6 +99,7 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
     { label: 'Chorégraphes', href: '/explorer/choregraphes' },
     { label: 'Compagnies', href: '/explorer/compagnies' },
     { label: 'Métiers', href: '/explorer/metiers-de-la-danse' },
+    { label: 'Écoles', href: '/explorer/ecoles-de-danse' },
   ]
 
   const navGroups = [

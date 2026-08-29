@@ -58,6 +58,15 @@ export default function ExplorerPage() {
                 <small>Découvrir</small>
               </a>
             ))}
+            <a href="/explorer/ecoles-de-danse" className="explorer-card">
+              <span>Annuaire</span>
+              <h3>Écoles de danse</h3>
+              <p>
+                Studios, conservatoires, centres de formation et associations : une carte interactive
+                et un annuaire filtrable pour trouver où danser, se former et progresser à Paris.
+              </p>
+              <small>Découvrir</small>
+            </a>
           </div>
         </div>
       </section>
