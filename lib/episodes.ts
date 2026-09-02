@@ -195,7 +195,9 @@ function fromRss(
     description:  ep.description,
     // Citation : override manuel > question d'accroche en gras > vide
     quote:        extras?.quote ?? ep.quote,
-    link:         ep.link,
+    // Smartlink Ausha : permet à l'utilisateur de choisir sa plateforme d'écoute.
+    // Le flux RSS retourne podcast.ausha.co (player direct) — on convertit en smartlink.ausha.co
+    link:         `https://smartlink.ausha.co/dance-lab/${ep.aushaSlug}`,
     pubDate:      ep.pubDate,
     youtubeId,
     // Embed Spotify : override manuel (episode-extras) > détection auto (smartlink Ausha)

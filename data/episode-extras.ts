@@ -101,6 +101,10 @@ export const episodeExtras: Record<number, EpisodeExtra> = {
     youtubeId:      "s4RKHoun40k",
     instagramReelUrl: "https://www.instagram.com/reel/DceUKnrs3Zh/",
   },
+  126: {
+    quote:          "Du côté des artistes, c'est important de savoir dire non si on se sent mal dans un casting.",
+    youtubeId:      "4OoUKY9iXm8",
+  },
 
   // ── Reels Instagram — épisodes 70 à 121 ─────────────────────────────────────
   // Ajoutés ici car la logique extras s'applique à tous les épisodes,

@@ -271,65 +271,82 @@ export async function getEpisodesFromRSS(
   const xml = await res.text()
   const itemMatches = xml.match(/<item>[\s\S]*?<\/item>/g) ?? []
 
-  const episodes: RssEpisode[] = itemMatches
-    .map((item) => {
-      const rawTitle = extractTag(item, 'title')
-      const { number, title, guest, isExtrait } = parseTitle(rawTitle)
+  // Parse tous les items (épisodes complets + extraits) pour pouvoir
+  // utiliser le titre de l'extrait comme citation de fallback.
+  const allParsed = itemMatches.map((item) => {
+    const rawTitle = extractTag(item, 'title')
+    const { number, title, guest, isExtrait } = parseTitle(rawTitle)
 
-      const rawDuration = extractTag(item, 'itunes:duration')
-      const duration = formatDuration(rawDuration)
+    const rawDuration = extractTag(item, 'itunes:duration')
+    const duration = formatDuration(rawDuration)
 
-      const link = extractTag(item, 'link') || extractAttr(item, 'link', 'href')
-      const aushaSlug = link.split('/').filter(Boolean).pop() ?? ''
+    const link = extractTag(item, 'link') || extractAttr(item, 'link', 'href')
+    const aushaSlug = link.split('/').filter(Boolean).pop() ?? ''
 
-      const aushaImage =
-        extractAttr(item, 'itunes:image', 'href') ||
-        extractAttr(item, 'googleplay:image', 'href')
+    const aushaImage =
+      extractAttr(item, 'itunes:image', 'href') ||
+      extractAttr(item, 'googleplay:image', 'href')
 
-      const subtitle = extractTag(item, 'itunes:subtitle')
+    const subtitle = extractTag(item, 'itunes:subtitle')
 
-      // Description complète — préférer content:encoded, fallback description
-      const descRaw =
-        extractTag(item, 'content:encoded') ||
-        extractTag(item, 'description')
+    // Description complète — préférer content:encoded, fallback description
+    const descRaw =
+      extractTag(item, 'content:encoded') ||
+      extractTag(item, 'description')
 
-      // Citation = première phrase en <b>…</b> (question d'accroche)
-      const quote = extractBoldQuote(descRaw)
+    // Citation = première phrase en <b>…</b> (question d'accroche)
+    const quote = extractBoldQuote(descRaw)
 
-      // Texte brut complet, sans boilerplate Ausha
-      const description = cleanDescription(stripHtml(descRaw))
+    // Texte brut complet, sans boilerplate Ausha
+    const description = cleanDescription(stripHtml(descRaw))
 
-      // pubDate normalisé en YYYY-MM-DD dès le parsing RSS
-      // (le flux Ausha retourne du RFC 2822 : "Mon, 03 Aug 2026 22:26:50 +0000")
-      const pubDate = normalizeRssDate(extractTag(item, 'pubDate'))
+    // pubDate normalisé en YYYY-MM-DD dès le parsing RSS
+    const pubDate = normalizeRssDate(extractTag(item, 'pubDate'))
 
-      // Fichier audio direct (tag <enclosure>)
-      const audioUrl = extractAttr(item, 'enclosure', 'url')
+    // Fichier audio direct (tag <enclosure>)
+    const audioUrl = extractAttr(item, 'enclosure', 'url')
 
-      // Identifiant interne Ausha (tag <guid>)
-      const guid = extractTag(item, 'guid')
+    // Identifiant interne Ausha (tag <guid>)
+    const guid = extractTag(item, 'guid')
 
-      return {
-        number,
-        title,
-        guest,
-        duration,
-        pubDate,
-        link,
-        aushaSlug,
-        aushaImage,
-        subtitle,
-        description,
-        quote,
-        audioUrl,
-        guid,
-        // Spotify : rempli juste après en parallèle
-        spotifyId:       null,
-        spotifyEmbedUrl: '',
-        isExtrait,
-      } satisfies RssEpisode
-    })
+    return {
+      number,
+      title,
+      guest,
+      duration,
+      pubDate,
+      link,
+      aushaSlug,
+      aushaImage,
+      subtitle,
+      description,
+      quote,
+      audioUrl,
+      guid,
+      spotifyId:       null,
+      spotifyEmbedUrl: '',
+      isExtrait,
+    } satisfies RssEpisode
+  })
+
+  // Construit une map numéro d'épisode → citation extraite du titre de l'extrait.
+  // Format extrait : "126. EXTRAIT - "La citation ici", avec Invité"
+  // → après parseTitle, le champ `title` de l'extrait contient directement la citation.
+  const extraitQuoteMap = new Map<number, string>()
+  for (const ep of allParsed) {
+    if (ep.isExtrait && ep.number > 0 && ep.title) {
+      extraitQuoteMap.set(ep.number, ep.title)
+    }
+  }
+
+  const episodes: RssEpisode[] = allParsed
     .filter((ep) => ep.number > 0 && (includeExtraits || !ep.isExtrait))
+    .map((ep) => ({
+      ...ep,
+      // Si la description n'a pas de <b>…</b>, on utilise le titre de l'extrait
+      // correspondant comme citation — c'est la phrase clé prononcée dans l'épisode.
+      quote: ep.quote || extraitQuoteMap.get(ep.number) || '',
+    }))
     .sort((a, b) => b.number - a.number)
 
   // ── Détection Spotify en parallèle ──────────────────────────────────────────
