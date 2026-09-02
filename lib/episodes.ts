@@ -22,6 +22,11 @@ import { episodesList, type EpisodeListItem }                  from '@/data/epis
 import { episodeExtras }                                       from '@/data/episode-extras'
 import { getEpisodesFromRSS, type RssEpisode }                from '@/lib/ausha-rss'
 import { getYoutubeEpisodeMap, youtubeUrl }                    from '@/lib/youtube-rss'
+import {
+  getRecentInstagramReels,
+  matchReelToEpisode,
+  type InstagramReel,
+}                                                              from '@/lib/instagram-api'
 
 // ─── Type unifié ──────────────────────────────────────────────────────────────
 
@@ -139,11 +144,18 @@ function fromLegacy(
   ep: EpisodeListItem,
   youtubeMap: Map<number, { videoId: string }>,
   inviteImages: Map<number, string>,
+  recentReels: InstagramReel[],
 ): UnifiedEpisode {
   const extras    = episodeExtras[ep.number]
   const youtubeId = extras?.youtubeId ?? youtubeMap.get(ep.number)?.videoId ?? null
   // ep.image = chemin hérité (/episodes/… ou /images/les-invites/…) comme dernier fallback
   const image     = resolveCardImage(ep.number, extras, inviteImages, ep.image)
+
+  // Reel Instagram : override manuel > détection auto via Graph API
+  const instagramReelUrl =
+    extras?.instagramReelUrl ??
+    matchReelToEpisode(recentReels, ep.number, ep.guest) ??
+    undefined
 
   return {
     number:       ep.number,
@@ -161,7 +173,7 @@ function fromLegacy(
     youtubeId,
     spotifyEmbedUrl: '',       // legacy : lecteur Spotify géré séparément
     fromRSS:      false,
-    instagramReelUrl: extras?.instagramReelUrl,
+    instagramReelUrl,
   }
 }
 
@@ -169,6 +181,7 @@ function fromRss(
   ep: RssEpisode,
   youtubeMap: Map<number, { videoId: string }>,
   inviteImages: Map<number, string>,
+  recentReels: InstagramReel[],
 ): UnifiedEpisode {
   const extras    = episodeExtras[ep.number]
   const guest     = ep.guest || 'Invité·e'
@@ -177,6 +190,12 @@ function fromRss(
   const youtubeId = extras?.youtubeId ?? youtubeMap.get(ep.number)?.videoId ?? null
   // Fallback = CDN Ausha si aucune image locale trouvée
   const image     = resolveCardImage(ep.number, extras, inviteImages, ep.aushaImage)
+
+  // Reel Instagram : override manuel > détection auto via Graph API
+  const instagramReelUrl =
+    extras?.instagramReelUrl ??
+    matchReelToEpisode(recentReels, ep.number, guest) ??
+    undefined
 
   return {
     number:       ep.number,
@@ -205,7 +224,7 @@ function fromRss(
       ? `https://open.spotify.com/embed/episode/${extras.spotifyId}?utm_source=generator`
       : ep.spotifyEmbedUrl,
     fromRSS:      true,
-    instagramReelUrl: extras?.instagramReelUrl,
+    instagramReelUrl,
   }
 }
 
@@ -228,19 +247,21 @@ export function getEpisodeYoutubeUrl(ep: UnifiedEpisode): string | null {
 export async function getEpisodes(): Promise<UnifiedEpisode[]> {
   const maxLegacyNumber = Math.max(...episodesList.map((e) => e.number))
 
-  // Fetch parallèle : scan images + Ausha RSS + YouTube RSS
-  const [inviteImages, rssAll, youtubeMap] = await Promise.all([
+  // Fetch parallèle : scan images + Ausha RSS + YouTube RSS + Instagram Reels
+  const [inviteImages, rssAll, youtubeMap, recentReels] = await Promise.all([
     Promise.resolve(buildInviteImageMap()),
     getEpisodesFromRSS(false).catch((err) => {
       console.error('[getEpisodes] Échec RSS Ausha :', err)
       return [] as RssEpisode[]
     }),
     getYoutubeEpisodeMap(),
+    // Silencieusement désactivé si INSTAGRAM_ACCESS_TOKEN absent
+    getRecentInstagramReels(),
   ])
 
   const rssEpisodes = rssAll.filter((e) => e.number > maxLegacyNumber)
-  const legacy      = episodesList.map((ep) => fromLegacy(ep, youtubeMap, inviteImages))
-  const rss         = rssEpisodes.map((ep) => fromRss(ep, youtubeMap, inviteImages))
+  const legacy      = episodesList.map((ep) => fromLegacy(ep, youtubeMap, inviteImages, recentReels))
+  const rss         = rssEpisodes.map((ep) => fromRss(ep, youtubeMap, inviteImages, recentReels))
 
   return [...rss, ...legacy].sort((a, b) => b.number - a.number)
 }

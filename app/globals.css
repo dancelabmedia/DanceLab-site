@@ -17314,6 +17314,26 @@ a.ep-topic-pill:hover {
   background: var(--color-secondary);
 }
 
+/* Tuiles OSM — filtre pour un rendu proche du style CARTO Light :
+   désaturation + léger adoucissement du contraste */
+.ecoles-map .leaflet-tile-pane {
+  filter: saturate(0.45) contrast(0.9) brightness(1.08);
+}
+
+/* Message de repli si la carte ne peut pas se charger */
+.ecoles-map-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: var(--color-background-soft);
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 24px;
+}
+
 .ecole-marker {
   display: flex;
   align-items: center;
@@ -17563,5 +17583,562 @@ a.ep-topic-pill:hover {
     border-left: none;
     border-top: 1px solid var(--color-border);
     overflow-y: visible;
+  }
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════════
+   MÉTIERS DE LA DANSE  (/explorer/metiers-de-la-danse)
+   Hero éditorial typographique + grille de métiers par univers
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Base ───────────────────────────────────────────────────────────────── */
+.met-page {
+  min-height: 100vh;
+}
+
+/* ─── HERO ───────────────────────────────────────────────────────────────── */
+.met-hero {
+  position: relative;
+  overflow: hidden;
+  background: #0d1a1c;
+  padding: clamp(140px, 18vw, 230px) 0 clamp(72px, 10vw, 130px);
+}
+
+/* Décorations géométriques */
+.met-hero-deco {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.met-hero-deco-circle {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(193, 208, 223, 0.08);
+}
+.met-hero-deco-circle-1 {
+  width: min(80vw, 900px);
+  aspect-ratio: 1;
+  right: -20%;
+  top: -30%;
+  box-shadow: inset 0 0 0 60px rgba(193, 208, 223, 0.04);
+}
+.met-hero-deco-circle-2 {
+  width: min(50vw, 560px);
+  aspect-ratio: 1;
+  right: 8%;
+  top: 5%;
+}
+.met-hero-deco-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(193, 208, 223, 0.18) 20%,
+    rgba(193, 208, 223, 0.18) 80%,
+    transparent 100%
+  );
+}
+
+/* Layout deux colonnes */
+.met-hero-inner {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: clamp(40px, 6vw, 96px);
+  align-items: end;
+}
+
+/* ── Colonne gauche ── */
+.met-hero-kicker {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-primary-light);
+  margin-bottom: 36px;
+  animation: met-fade-up 540ms cubic-bezier(.25,.46,.45,.94) 0ms both;
+}
+
+.met-hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(48px, 6.8vw, 96px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.98;
+  color: #fff;
+  margin: 0 0 40px;
+  animation: met-fade-up 540ms cubic-bezier(.25,.46,.45,.94) 60ms both;
+}
+
+.met-hero-title em {
+  font-style: normal;
+  color: var(--color-primary-light);
+}
+
+.met-hero-desc {
+  max-width: 540px;
+  font-size: clamp(15px, 1.5vw, 18px);
+  line-height: 1.75;
+  color: rgba(255, 255, 255, 0.58);
+  margin: 0 0 48px;
+  animation: met-fade-up 540ms cubic-bezier(.25,.46,.45,.94) 130ms both;
+}
+
+.met-hero-stats {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  animation: met-fade-up 540ms cubic-bezier(.25,.46,.45,.94) 200ms both;
+}
+
+.met-hero-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.met-hero-stat strong {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 3vw, 42px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #fff;
+  line-height: 1;
+}
+.met-hero-stat span {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.40);
+}
+.met-hero-stat-divider {
+  width: 1px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.14);
+  flex-shrink: 0;
+}
+
+/* ── Colonne droite — index des univers ── */
+.met-hero-right {
+  padding-bottom: 6px;
+  animation: met-fade-up 540ms cubic-bezier(.25,.46,.45,.94) 160ms both;
+}
+
+.met-hero-index {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.met-hero-index-item {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.met-hero-index-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  text-decoration: none;
+  transition: gap 0.2s ease;
+}
+.met-hero-index-link:hover {
+  gap: 20px;
+}
+.met-hero-index-link:hover .met-hero-index-label {
+  color: #fff;
+}
+.met-hero-index-link:hover .met-hero-index-arrow {
+  color: var(--color-primary-light);
+  opacity: 1;
+}
+
+.met-hero-index-num {
+  font-family: var(--font-editorial);
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.30);
+  letter-spacing: 0.06em;
+  min-width: 22px;
+  flex-shrink: 0;
+}
+.met-hero-index-label {
+  font-family: var(--font-display);
+  font-size: clamp(14px, 1.4vw, 17px);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.65);
+  transition: color 0.2s ease;
+  flex: 1;
+}
+.met-hero-index-arrow {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.22);
+  opacity: 0.6;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+/* ─── SECTIONS PAR UNIVERS ───────────────────────────────────────────────── */
+.met-content {
+  background: var(--color-background);
+}
+
+.met-univers {
+  padding: clamp(72px, 9vw, 120px) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Alterner la couleur de fond sur les sections paires */
+.met-univers[data-index="1"],
+.met-univers[data-index="3"],
+.met-univers[data-index="5"] {
+  background: var(--color-background-soft);
+}
+
+/* En-tête de section */
+.met-univers-header {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  grid-template-rows: auto auto;
+  gap: 0 32px;
+  margin-bottom: clamp(40px, 5vw, 64px);
+}
+
+.met-univers-meta {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-top: 4px;
+  gap: 6px;
+}
+
+.met-univers-num {
+  font-family: var(--font-editorial);
+  font-size: clamp(36px, 4vw, 54px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-primary-light);
+  line-height: 1;
+}
+
+.met-univers-count {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.met-univers-title-wrap {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.met-univers-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 4vw, 3.8rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  color: var(--color-primary-dark);
+  margin: 0 0 12px;
+}
+
+.met-univers-desc {
+  font-size: clamp(14px, 1.4vw, 17px);
+  line-height: 1.65;
+  color: var(--color-text-muted);
+  margin: 0;
+  max-width: 560px;
+}
+
+.met-univers-rule {
+  grid-column: 2;
+  grid-row: 2;
+  height: 1px;
+  background: linear-gradient(90deg, var(--color-border) 0%, transparent 100%);
+  margin-top: 20px;
+  align-self: start;
+}
+
+/* ─── GRILLE DE CARTES ───────────────────────────────────────────────────── */
+.met-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--color-border);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* Carte standard */
+.met-card {
+  position: relative;
+  background: var(--color-background);
+  padding: clamp(24px, 3vw, 38px) clamp(24px, 2.8vw, 36px);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  transition: background 0.22s ease;
+  cursor: default;
+}
+.met-card:hover {
+  background: var(--color-background-soft);
+  z-index: 1;
+}
+
+/* Carte featured : occupe 2 colonnes, fond légèrement coloré */
+.met-card--featured {
+  grid-column: span 2;
+  background: #f4f7f8;
+}
+.met-card--featured:hover {
+  background: #ecf1f3;
+}
+
+/* Accent coloré haut de carte */
+.met-card-accent {
+  position: absolute;
+  top: 0;
+  left: clamp(24px, 2.8vw, 36px);
+  right: clamp(24px, 2.8vw, 36px);
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-primary-light), transparent);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+.met-card:hover .met-card-accent {
+  opacity: 1;
+}
+
+.met-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.met-card-univers {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.met-card-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.15rem, 2vw, 1.6rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  color: var(--color-primary-dark);
+  margin: 0;
+  transition: color 0.18s ease;
+}
+.met-card:hover .met-card-title {
+  color: var(--color-primary);
+}
+.met-card--featured .met-card-title {
+  font-size: clamp(1.35rem, 2.4vw, 2rem);
+}
+
+.met-card-desc {
+  font-size: clamp(13px, 1.1vw, 15px);
+  line-height: 1.68;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.met-card-foot {
+  margin-top: 4px;
+}
+
+.met-card-cta {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--color-primary);
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  display: inline-block;
+  transform: translateX(-6px);
+}
+.met-card:hover .met-card-cta {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ─── CTA PODCAST ────────────────────────────────────────────────────────── */
+.met-podcast-cta {
+  background: var(--color-primary-dark);
+  padding: clamp(60px, 8vw, 100px) 0;
+}
+
+.met-podcast-cta-inner {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 40px;
+  align-items: center;
+}
+
+.met-podcast-cta-text .section-label {
+  color: var(--color-primary-light);
+}
+
+.met-podcast-cta-text h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 3vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #fff;
+  margin: 14px 0 16px;
+  line-height: 1.1;
+}
+
+.met-podcast-cta-text p {
+  font-size: clamp(14px, 1.4vw, 16px);
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.55);
+  max-width: 540px;
+  margin: 0;
+}
+
+.met-podcast-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: 16px 32px;
+  background: var(--color-primary-light);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  border-radius: 999px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.met-podcast-cta-btn:hover {
+  background: #a8bfc9;
+  transform: translateY(-2px);
+}
+
+/* ─── ANIMATION D'ENTRÉE ─────────────────────────────────────────────────── */
+@keyframes met-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── RESPONSIVE ─────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .met-hero-inner {
+    grid-template-columns: 1fr;
+    gap: 56px;
+  }
+
+  .met-hero-right {
+    max-width: 480px;
+  }
+
+  .met-univers-header {
+    grid-template-columns: 56px 1fr;
+    gap: 0 20px;
+  }
+
+  .met-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .met-card--featured {
+    grid-column: span 2;
+  }
+
+  .met-podcast-cta-inner {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}
+
+@media (max-width: 768px) {
+  .met-hero-title {
+    font-size: clamp(40px, 9vw, 64px);
+  }
+
+  .met-hero-stats {
+    gap: 20px;
+  }
+
+  .met-univers-header {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+
+  .met-univers-meta {
+    grid-column: 1;
+    grid-row: 1;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 14px;
+    padding-top: 0;
+    margin-bottom: 16px;
+  }
+
+  .met-univers-num {
+    font-size: 28px;
+  }
+
+  .met-univers-title-wrap {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .met-univers-rule {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  .met-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .met-card--featured {
+    grid-column: span 1;
+  }
+
+  .met-card-cta {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .met-podcast-cta-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .met-hero-index-label {
+    font-size: 13px;
+  }
+
+  .met-univers-title {
+    font-size: 1.8rem;
   }
 }

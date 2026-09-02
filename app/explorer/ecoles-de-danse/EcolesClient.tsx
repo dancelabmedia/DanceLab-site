@@ -1,5 +1,5 @@
 'use client'
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import type { EcoleDanse } from './ecoles-data'
 
@@ -34,6 +34,7 @@ export default function EcolesClient({ ecoles }: Props) {
   const leafletRef = useRef<any>(null)
   const mapInstanceRef = useRef<any>(null)
   const markersRef = useRef<Map<string, any>>(new Map())
+  const [mapError, setMapError] = useState(false)
 
   // Filter logic
   const filteredEcoles = useMemo(() => {
@@ -64,10 +65,14 @@ export default function EcolesClient({ ecoles }: Props) {
       if (cancelled || !mapRef.current) return
       leafletRef.current = L
 
-      const link = document.createElement('link')
-      link.rel = 'stylesheet'
-      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
-      document.head.appendChild(link)
+      // CSS Leaflet — injecté une seule fois pour éviter les doublons
+      if (!document.querySelector('link[data-leaflet-css]')) {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
+        link.setAttribute('data-leaflet-css', '')
+        document.head.appendChild(link)
+      }
 
       const map = L.map(mapRef.current, {
         center: [48.8566, 2.3522],
@@ -77,13 +82,18 @@ export default function EcolesClient({ ecoles }: Props) {
 
       L.control.zoom({ position: 'topright' }).addTo(map)
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd',
+      // OpenStreetMap standard — gratuit, aucune clé API requise, stable en production.
+      // (CARTO basemaps.cartocdn.com nécessite désormais une inscription et une clé API.)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        subdomains: 'abc',
         maxZoom: 19,
+        detectRetina: true,
       }).addTo(map)
 
       mapInstanceRef.current = map
+    }).catch(() => {
+      if (!cancelled) setMapError(true)
     })
 
     return () => {
@@ -221,7 +231,13 @@ export default function EcolesClient({ ecoles }: Props) {
 
           {/* MAP */}
           <div className="ecoles-map-wrap">
-            <div ref={mapRef} className="ecoles-map" />
+            {mapError ? (
+              <div className="ecoles-map-fallback">
+                <p>La carte n&apos;a pas pu se charger.<br />Consulte la liste des établissements ci-dessous.</p>
+              </div>
+            ) : (
+              <div ref={mapRef} className="ecoles-map" />
+            )}
             {/* Selected school popup */}
             {selectedEcole && (
               <div className="ecoles-map-popup">

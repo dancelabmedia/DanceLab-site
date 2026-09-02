@@ -89,6 +89,7 @@ export const episodeExtras: Record<number, EpisodeExtra> = {
     quote: "Arrêtons de toujours se comparer, on disperse nos énergies, on ne les met pas à la bonne place.",
     instagramReelUrl: "https://www.instagram.com/reel/Db6NYLKsyG0/",
   },
+
   // ── Ajouter les prochains épisodes ici ──────────────────────────────────────
 
   124: {
