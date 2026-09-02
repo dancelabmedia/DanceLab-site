@@ -606,7 +606,7 @@ export default async function EpisodePage({ params }: PageProps) {
               {episode.tags[0] ? <span className="ep-meta-tag">{episode.tags[0]}</span> : null}
             </div>
             <div className="ep-actions">
-              {episode.link ? <a href={episode.link} target="_blank" rel="noopener noreferrer">Écouter</a> : null}
+              {episode.link ? <a href={episode.link} target="_blank" rel="noopener noreferrer">Choisis ta plateforme d&apos;écoute</a> : null}
             </div>
           </div>
         </section>
@@ -889,7 +889,7 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
               ) : null}
             </div>
             <div className="ep-actions">
-              <a href={unified.link} target="_blank" rel="noopener noreferrer">Écouter</a>
+              <a href={unified.link} target="_blank" rel="noopener noreferrer">Choisis ta plateforme d&apos;écoute</a>
             </div>
           </div>
         </section>
