@@ -6528,7 +6528,7 @@ transform:scale(1.05);
 /* ─── Hero ─── */
 .srt-hero {
   padding: 120px 0 72px;
-  background: #fff;
+  background: #fff url('/images/sorties/imagefond.png') center / cover no-repeat;
 }
 
 .srt-hero-inner {
