@@ -7,10 +7,14 @@ type PageProps = {
   }>
 }
 
+// Pages avec une route dédiée — exclues du [slug] dynamique pour éviter
+// un conflit de chunk webpack (deux handlers pour la même URL).
+const DEDICATED_PAGES = ['metiers-de-la-danse']
+
 export function generateStaticParams() {
-  return explorerSections.map((section) => ({
-    slug: section.slug,
-  }))
+  return explorerSections
+    .filter((section) => !DEDICATED_PAGES.includes(section.slug))
+    .map((section) => ({ slug: section.slug }))
 }
 
 export async function generateMetadata({ params }: PageProps) {

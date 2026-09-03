@@ -120,11 +120,11 @@ function resolveCardImage(
   number: number,
   extras: { image?: string } | undefined,
   inviteImages: Map<number, string>,
-  fallback: string,
+  fallback: string | undefined,
 ): string {
-  if (extras?.image)          return extras.image
+  if (extras?.image)            return extras.image
   if (inviteImages.has(number)) return inviteImages.get(number)!
-  return fallback
+  return fallback ?? ''
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

@@ -217,7 +217,7 @@ function getLatestEpisodeImage(episode: UnifiedEpisode): string {
  * Utilise le même nom de fichier que episode.image, avec fallback sur les-invites.
  */
 function getLatestEpisodeHeaderImage(episode: UnifiedEpisode): string {
-  const filename = episode.image.split('/').pop()?.replace(/\.png\.png$/i, '.png')
+  const filename = episode.image?.split('/').pop()?.replace(/\.png\.png$/i, '.png')
   return filename && filename !== 'logo.png'
     ? `/images/les-invites-header/${filename}`
     : getLatestEpisodeImage(episode)

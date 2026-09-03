@@ -15,6 +15,7 @@ const EPISODES_PAGE_SIZE = 12
  * Retourne l'image directe en fallback pour les nouveaux épisodes RSS.
  */
 function getGuestCardImage(episode: UnifiedEpisode) {
+  if (!episode.image) return '/images/les-invites/placeholder.png'
   const filename = episode.image
     .split("/")
     .pop()
@@ -30,6 +31,7 @@ function getGuestCardImage(episode: UnifiedEpisode) {
 }
 
 function getHeroHeaderImage(episode: UnifiedEpisode) {
+  if (!episode.image) return '/images/les-invites-header/imagetest.png'
   const filename = episode.image
     .split("/")
     .pop()
