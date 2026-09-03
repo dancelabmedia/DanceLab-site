@@ -47,7 +47,7 @@ function AccesPriveForm() {
   return (
     <main className="access-page">
       <div className="access-photo" aria-hidden="true">
-        <Image src="/images/styles-de-danse/jazz.png" alt="" fill priority sizes="(max-width: 760px) 100vw, 64vw" />
+        <Image src="/images/sorties/imagefond.png" alt="" fill priority sizes="100vw" />
       </div>
       <div className="access-wash" aria-hidden="true" />
       <span className="access-vertical" aria-hidden="true">Dance Lab</span>
@@ -131,11 +131,13 @@ function AccesPriveForm() {
           gap: clamp(42px, 5vw, 96px); align-items: center;
           color: var(--ink); background: #6f8792; box-sizing: border-box; isolation: isolate;
         }
-        .access-photo { position: absolute; z-index: 0; inset: var(--nav-h) 0 0 42%; }
-        .access-photo img { object-fit: cover; object-position: 48% 46%; filter: saturate(.56) contrast(1.05); }
+        .access-photo { position: absolute; z-index: 0; inset: var(--nav-h) 0 0; }
+        .access-photo img { object-fit: cover; object-position: center; filter: saturate(.76) contrast(1.03); }
         .access-wash {
           position: absolute; z-index: 1; inset: var(--nav-h) 0 0;
-          background: linear-gradient(90deg, rgba(204,218,226,.98) 0%, rgba(178,199,210,.94) 34%, rgba(66,91,103,.25) 54%, rgba(14,29,37,0) 72%);
+          background:
+            linear-gradient(90deg, rgba(194,210,220,.68) 0%, rgba(151,176,189,.42) 34%, rgba(54,81,94,.14) 64%, rgba(9,22,29,.22) 100%),
+            linear-gradient(180deg, rgba(16,35,44,.04) 0%, rgba(9,22,29,.2) 100%);
         }
         .access-editorial { align-self: stretch; display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 2; max-width: 650px; }
         .access-kicker, .access-panel-title { margin: 0; text-transform: uppercase; letter-spacing: .28em; font-size: 12px; font-weight: 700; }
@@ -190,9 +192,9 @@ function AccesPriveForm() {
         }
         @media (max-width: 760px) {
           .access-page { min-height: 100svh; display: block; padding: calc(var(--nav-h) + 44px) 22px 46px; overflow: hidden; color: #f6f8f9; background: #263e4b; }
-          .access-photo { inset: var(--nav-h) 0 0; height: 66vh; }
-          .access-photo img { object-position: 53% 38%; filter: saturate(.54) contrast(1.05); }
-          .access-wash { background: linear-gradient(180deg, rgba(26,50,63,.38) 0%, rgba(25,47,58,.7) 42%, #263e4b 68%, #263e4b 100%); }
+          .access-photo { inset: var(--nav-h) 0 0; height: auto; }
+          .access-photo img { object-position: center; filter: saturate(.72) contrast(1.04); }
+          .access-wash { background: linear-gradient(180deg, rgba(26,50,63,.24) 0%, rgba(25,47,58,.56) 48%, rgba(24,45,56,.78) 100%); }
           .access-editorial { min-height: 48vh; display: block; padding-right: 6vw; }
           .access-kicker { font-size: 10px; }
           .access-rule { margin: 18px 0 20px; background: rgba(255,255,255,.65); }
