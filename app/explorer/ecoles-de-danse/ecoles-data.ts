@@ -16,6 +16,10 @@ export type ParcoursFormation =
   | "Enseignement supérieur"
   | "Supérieur public"
   | "Supérieur privé"
+  | "Enseignement public"
+  | "Formation intensive"
+  | "Jeune compagnie"
+  | "Professionnalisation"
 
 export type EcoleStyle = string
 
