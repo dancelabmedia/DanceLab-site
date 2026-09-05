@@ -9,9 +9,21 @@ import { withDedicatedStyleImages } from "./style-image-resolver"
 import { getEpisodes } from "@/lib/episodes"
 
 export const metadata: Metadata = {
-  title: "Explorer les styles de danse | Dance Lab",
+  title: "Styles de danse - Histoire, cultures et ressources | Dance Lab",
   description:
-    "Une encyclopédie vivante des styles de danse : histoire, origines, vocabulaire, figures clés, musiques et ressources. Break, waacking, voguing, classique, contemporain et plus encore.",
+    "Découvre l'histoire, les origines et les codes des styles de danse : hip-hop, contemporain, classique, afro, waacking, krump, heels et bien plus encore.",
+  openGraph: {
+    title: "Styles de danse - Histoire, cultures et ressources | Dance Lab",
+    description:
+      "Découvre l'histoire, les origines et les codes des styles de danse : hip-hop, contemporain, classique, afro, waacking, krump, heels et bien plus encore.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Styles de danse - Histoire, cultures et ressources | Dance Lab",
+    description:
+      "Découvre l'histoire, les origines et les codes des styles de danse : hip-hop, contemporain, classique, afro, waacking, krump, heels et bien plus encore.",
+  },
 }
 
 // ISR : même cycle que la page Écouter — regénération automatique toutes les heures

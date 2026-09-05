@@ -443,10 +443,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     if (!unified) return { title: "Épisode introuvable | Dance Lab" };
     const imageUrl = unified.aushaImage || unified.image;
     return {
-      title: `${unified.title} — Dance Lab`,
+      title: `${unified.title} | Dance Lab`,
       description: unified.excerpt,
       openGraph: {
-        title: `${unified.title} — Dance Lab`,
+        title: `${unified.title} | Dance Lab`,
         description: unified.excerpt,
         url: new URL(`/episodes/${unified.slug}`, SITE_URL).toString(),
         images: [{ url: imageUrl, alt: `${unified.title} — ${unified.guest}` }],
@@ -454,7 +454,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       },
       twitter: {
         card: "summary_large_image",
-        title: `${unified.title} — Dance Lab`,
+        title: `${unified.title} | Dance Lab`,
         description: unified.excerpt,
         images: [imageUrl],
       },

@@ -2,9 +2,21 @@ import type { Metadata } from "next"
 import AgendaExperience from "../agenda/AgendaExperience"
 
 export const metadata: Metadata = {
-  title: "Sortir | Dance Lab",
+  title: "Spectacles, festivals et événements danse | Dance Lab",
   description:
-    "Spectacles, festivals, performances et événements danse à ne pas manquer en France, sélectionnés par Dance Lab.",
+    "Découvre les spectacles de danse, festivals, battles et événements à voir : une sélection Dance Lab pour vivre la danse sur scène et partout ailleurs.",
+  openGraph: {
+    title: "Spectacles, festivals et événements danse | Dance Lab",
+    description:
+      "Découvre les spectacles de danse, festivals, battles et événements à voir : une sélection Dance Lab pour vivre la danse sur scène et partout ailleurs.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Spectacles, festivals et événements danse | Dance Lab",
+    description:
+      "Découvre les spectacles de danse, festivals, battles et événements à voir : une sélection Dance Lab pour vivre la danse sur scène et partout ailleurs.",
+  },
 }
 
 export default function SortirPage() {

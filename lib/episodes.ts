@@ -20,7 +20,7 @@ import { readdirSync }                                          from 'node:fs'
 import path                                                    from 'node:path'
 import { episodesList, type EpisodeListItem }                  from '@/data/episodes-list'
 import { episodeExtras }                                       from '@/data/episode-extras'
-import { getEpisodesFromRSS, type RssEpisode }                from '@/lib/ausha-rss'
+import { getEpisodesFromRSS, isRediffusion, type RssEpisode } from '@/lib/ausha-rss'
 import { getYoutubeEpisodeMap, youtubeUrl }                    from '@/lib/youtube-rss'
 import {
   getRecentInstagramReels,
@@ -259,7 +259,11 @@ export async function getEpisodes(): Promise<UnifiedEpisode[]> {
     getRecentInstagramReels(),
   ])
 
-  const rssEpisodes = rssAll.filter((e) => e.number > maxLegacyNumber)
+  // Filet de sécurité : exclure toute rediffusion qui aurait échappé au filtre RSS.
+  // (Cas théorique : titre de la forme "45. REDIFFUSION - …" qui passe parseTitle.)
+  const rssEpisodes = rssAll
+    .filter((e) => e.number > maxLegacyNumber)
+    .filter((e) => !isRediffusion(e.title))
   const legacy      = episodesList.map((ep) => fromLegacy(ep, youtubeMap, inviteImages, recentReels))
   const rss         = rssEpisodes.map((ep) => fromRss(ep, youtubeMap, inviteImages, recentReels))
 

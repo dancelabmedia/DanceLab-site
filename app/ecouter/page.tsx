@@ -15,9 +15,21 @@ import EcouterClient from './EcouterClient'
 export const revalidate = 3600
 
 export const metadata = {
-  title: 'Tous les épisodes — Podcast Dance Lab',
+  title: 'Dance Lab Podcast - Interviews et conversations sur la danse',
   description:
-    "Conversations, parcours et réflexions autour de la danse, du métier d\u2019artiste et de tout ce qui se cache derrière la scène.",
+    'Écoute les épisodes de Dance Lab et découvre les parcours, expériences et réflexions des danseurs, chorégraphes et professionnels qui font vivre la danse.',
+  openGraph: {
+    title: 'Dance Lab Podcast - Interviews et conversations sur la danse',
+    description:
+      'Écoute les épisodes de Dance Lab et découvre les parcours, expériences et réflexions des danseurs, chorégraphes et professionnels qui font vivre la danse.',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Dance Lab Podcast - Interviews et conversations sur la danse',
+    description:
+      'Écoute les épisodes de Dance Lab et découvre les parcours, expériences et réflexions des danseurs, chorégraphes et professionnels qui font vivre la danse.',
+  },
 }
 
 export default async function EcouterPage() {

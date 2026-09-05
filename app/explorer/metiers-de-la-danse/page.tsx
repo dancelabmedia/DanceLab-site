@@ -10,9 +10,21 @@ import {
 } from './metiers-data'
 
 export const metadata: Metadata = {
-  title: 'Métiers de la danse | Explorer | Dance Lab',
+  title: 'Métiers de la danse - Carrières et professions | Dance Lab',
   description:
-    'Danseur, chorégraphe, régisseur, agent, kinésithérapeute… Découvrez les métiers qui font exister la danse — sur scène et en dehors.',
+    'Découvre les métiers de la danse, les parcours professionnels et celles et ceux qui créent, interprètent, transmettent, produisent et accompagnent la danse.',
+  openGraph: {
+    title: 'Métiers de la danse - Carrières et professions | Dance Lab',
+    description:
+      'Découvre les métiers de la danse, les parcours professionnels et celles et ceux qui créent, interprètent, transmettent, produisent et accompagnent la danse.',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Métiers de la danse - Carrières et professions | Dance Lab',
+    description:
+      'Découvre les métiers de la danse, les parcours professionnels et celles et ceux qui créent, interprètent, transmettent, produisent et accompagnent la danse.',
+  },
 }
 
 export default function MetiersDeLaDansePage() {

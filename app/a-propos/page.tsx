@@ -1,6 +1,25 @@
+import type { Metadata } from "next"
 import AboutReveal from "../../components/AboutReveal";
 import MissionReveal from "../../components/MissionReveal";
 import AboutVideoCard from "../../components/AboutVideoCard";
+
+export const metadata: Metadata = {
+  title: "À propos de Dance Lab - Le média de référence de la danse",
+  description:
+    "Découvre Dance Lab, le média consacré à celles et ceux qui font, pensent et transforment la danse à travers podcasts, articles, interviews et ressources.",
+  openGraph: {
+    title: "À propos de Dance Lab - Le média de référence de la danse",
+    description:
+      "Découvre Dance Lab, le média consacré à celles et ceux qui font, pensent et transforment la danse à travers podcasts, articles, interviews et ressources.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "À propos de Dance Lab - Le média de référence de la danse",
+    description:
+      "Découvre Dance Lab, le média consacré à celles et ceux qui font, pensent et transforment la danse à travers podcasts, articles, interviews et ressources.",
+  },
+};
 
 export default function AProposPage() {
   return (

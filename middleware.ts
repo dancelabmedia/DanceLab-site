@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-const PROTECTED_PATHS = ["/sortir", "/apprendre"]
+const PROTECTED_PATHS = ["/sortir", "/apprendre", "/explorer/artistes", "/explorer/choregraphes", "/explorer/compagnies"]
 const ADMIN_PATHS     = ["/admin"]
 const COOKIE_NAME = "preview_access"
 
@@ -59,5 +59,16 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/sortir/:path*", "/apprendre/:path*", "/admin/:path*", "/admin"],
+  matcher: [
+    "/sortir/:path*",
+    "/apprendre/:path*",
+    "/admin/:path*",
+    "/admin",
+    "/explorer/artistes/:path*",
+    "/explorer/artistes",
+    "/explorer/choregraphes/:path*",
+    "/explorer/choregraphes",
+    "/explorer/compagnies/:path*",
+    "/explorer/compagnies",
+  ],
 }

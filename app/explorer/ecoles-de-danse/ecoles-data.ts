@@ -1,4 +1,21 @@
-export type EcoleType = "Studio" | "École" | "Conservatoire" | "Centre de formation" | "Association"
+import { formationsProfessionnelles } from './formations-data'
+
+export type EcoleType = "Studio" | "École" | "Conservatoire" | "Centre de formation" | "Association" | "Établissement supérieur" | "Compagnie" | "Université"
+
+export type ParcoursFormation =
+  | "Formation professionnelle"
+  | "Préprofessionnel"
+  | "CPES / COP"
+  | "Danse-études"
+  | "Jeune Ballet / Junior Ballet"
+  | "Insertion professionnelle"
+  | "Danseur interprète"
+  | "DNSP"
+  | "EAT"
+  | "DE"
+  | "Enseignement supérieur"
+  | "Supérieur public"
+  | "Supérieur privé"
 
 export type EcoleStyle = string
 
@@ -6,10 +23,13 @@ export type EcoleDanse = {
   id: string
   nom: string
   type: EcoleType
-  adresse: string
-  arrondissement: number
-  lat: number
-  lng: number
+  adresse?: string
+  ville?: string
+  departement?: string
+  region?: string
+  arrondissement?: number
+  lat?: number
+  lng?: number
   styles: string[]
   stylesSlugs?: string[]
   niveaux: ("Débutant" | "Intermédiaire" | "Avancé" | "Professionnel")[]
@@ -18,9 +38,14 @@ export type EcoleDanse = {
   siteWeb?: string
   instagram?: string
   featured?: boolean
+  categorie?: "Se former professionnellement"
+  parcours?: ParcoursFormation[]
+  programmes?: string[]
+  duree?: string
+  statut?: "Public" | "Privé"
 }
 
-export const ecolesDanse: EcoleDanse[] = [
+const ecolesExistantes: EcoleDanse[] = [
   {
     id: "centre-danse-marais",
     nom: "Centre de Danse du Marais",
@@ -442,6 +467,22 @@ export const ecolesDanse: EcoleDanse[] = [
     featured: false
   }
 ]
+
+export const ecolesDanse: EcoleDanse[] = Array.from(
+  [...ecolesExistantes, ...formationsProfessionnelles].reduce((ecoles, ecole) => {
+    const precedente = ecoles.get(ecole.id)
+    ecoles.set(ecole.id, precedente ? {
+      ...precedente,
+      ...ecole,
+      styles: [...new Set([...precedente.styles, ...ecole.styles])],
+      niveaux: [...new Set([...precedente.niveaux, ...ecole.niveaux])],
+      pratiques: [...new Set([...precedente.pratiques, ...ecole.pratiques])],
+      parcours: [...new Set([...(precedente.parcours ?? []), ...(ecole.parcours ?? [])])],
+      programmes: [...new Set([...(precedente.programmes ?? []), ...(ecole.programmes ?? [])])],
+    } : ecole)
+    return ecoles
+  }, new Map<string, EcoleDanse>()).values()
+)
 
 export function getEcoleById(id: string): EcoleDanse | undefined {
   return ecolesDanse.find(e => e.id === id)

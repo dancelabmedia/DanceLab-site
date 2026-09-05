@@ -11,6 +11,67 @@ const Arrow = () => (
   </svg>
 )
 
+// ── Contenu éditorial par rubrique ────────────────────────────────────────────
+type SectionConfig = {
+  kicker: string
+  titleLine1: string
+  titleLine2: string
+  intro: string
+  image: string
+  imageAlt: string
+  number: string
+}
+
+const SECTION_CONFIGS: Record<string, SectionConfig> = {
+  "/sortir": {
+    kicker: "Bientôt sur Dance Lab",
+    titleLine1: "Cette rubrique",
+    titleLine2: "se prépare.",
+    intro: "On travaille encore sur cette partie du média. Elle sera bientôt accessible.",
+    image: "/images/sorties/imagefond.png",
+    imageAlt: "",
+    number: "02",
+  },
+  "/explorer/artistes": {
+    kicker: "Bientôt sur Dance Lab",
+    titleLine1: "Les portraits qui",
+    titleLine2: "font la danse.",
+    intro: "Interprètes, pédagogues, créateurs et performeurs : une galerie éditoriale consacrée à celles et ceux qui font vivre la danse.",
+    image: "/images/styles-de-danse/break.png",
+    imageAlt: "",
+    number: "03",
+  },
+  "/explorer/choregraphes": {
+    kicker: "Bientôt sur Dance Lab",
+    titleLine1: "Celles et ceux",
+    titleLine2: "qui écrivent la danse.",
+    intro: "Signatures, processus de création, œuvres clés : un espace éditorial pour lire la danse à travers ses auteurs.",
+    image: "/images/styles-de-danse/danseclassique.png",
+    imageAlt: "",
+    number: "04",
+  },
+  "/explorer/compagnies": {
+    kicker: "Bientôt sur Dance Lab",
+    titleLine1: "Les collectifs qui",
+    titleLine2: "donnent corps à la danse.",
+    intro: "Répertoires, esthétiques, structures de production : un annuaire éditorial des compagnies qui font vivre le plateau.",
+    image: "/images/styles-de-danse/claquettes.png",
+    imageAlt: "",
+    number: "05",
+  },
+}
+
+// Config par défaut (Sortir, Apprendre, et tout autre chemin)
+const DEFAULT_CONFIG: SectionConfig = {
+  kicker: "Bientôt sur Dance Lab",
+  titleLine1: "Cette rubrique",
+  titleLine2: "se prépare.",
+  intro: "On travaille encore sur cette partie du média. Elle sera bientôt accessible.",
+  image: "/images/sorties/imagefond.png",
+  imageAlt: "",
+  number: "02",
+}
+
 function AccesPriveForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -19,6 +80,10 @@ function AccesPriveForm() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+
+  // Normalise le chemin redirect pour matcher exactement (sans trailing slash ni query)
+  const redirectPath = redirect.split("?")[0].replace(/\/$/, "")
+  const section = SECTION_CONFIGS[redirectPath] ?? DEFAULT_CONFIG
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
@@ -47,21 +112,21 @@ function AccesPriveForm() {
   return (
     <main className="access-page">
       <div className="access-photo" aria-hidden="true">
-        <Image src="/images/sorties/imagefond.png" alt="" fill priority sizes="100vw" />
+        <Image src={section.image} alt={section.imageAlt} fill priority sizes="(max-width: 760px) 100vw, 64vw" />
       </div>
       <div className="access-wash" aria-hidden="true" />
       <span className="access-vertical" aria-hidden="true">Dance Lab</span>
 
       <section className="access-editorial" aria-labelledby="access-title">
-        <p className="access-kicker">Bientôt sur Dance Lab</p>
+        <p className="access-kicker">{section.kicker}</p>
         <span className="access-rule" aria-hidden="true" />
-        <h1 id="access-title">Cette rubrique<em>se prépare.</em></h1>
+        <h1 id="access-title">{section.titleLine1}<em>{section.titleLine2}</em></h1>
         <span className="access-rule access-rule--light" aria-hidden="true" />
-        <p className="access-intro">On travaille encore sur cette partie du média.<br />Elle sera bientôt accessible.</p>
-        <div className="access-number" aria-hidden="true">02</div>
+        <p className="access-intro">{section.intro}</p>
+        <div className="access-number" aria-hidden="true">{section.number}</div>
         <div className="access-waiting">
           <span>En attendant</span>
-          <Link href="/explorer"><Arrow />Découvrir les autres rubriques</Link>
+          <Link href="/ecouter"><Arrow />Découvrir les autres rubriques</Link>
         </div>
         <div className="access-stats" aria-label="Dance Lab en quelques chiffres">
           <div><strong>+ 120</strong><span>Conversations<br />publiées</span></div>
@@ -136,8 +201,8 @@ function AccesPriveForm() {
         .access-wash {
           position: absolute; z-index: 1; inset: var(--nav-h) 0 0;
           background:
-            linear-gradient(90deg, rgba(194,210,220,.68) 0%, rgba(151,176,189,.42) 34%, rgba(54,81,94,.14) 64%, rgba(9,22,29,.22) 100%),
-            linear-gradient(180deg, rgba(16,35,44,.04) 0%, rgba(9,22,29,.2) 100%);
+            linear-gradient(90deg, rgba(194,210,220,.48) 0%, rgba(162,188,202,.30) 36%, rgba(54,81,94,.08) 62%, rgba(9,22,29,.20) 100%),
+            linear-gradient(180deg, rgba(16,35,44,.02) 0%, rgba(9,22,29,.16) 100%);
         }
         .access-editorial { align-self: stretch; display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 2; max-width: 650px; }
         .access-kicker, .access-panel-title { margin: 0; text-transform: uppercase; letter-spacing: .28em; font-size: 12px; font-weight: 700; }

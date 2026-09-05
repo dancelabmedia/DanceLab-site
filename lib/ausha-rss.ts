@@ -255,6 +255,31 @@ async function fetchSpotifyId(aushaSlug: string): Promise<string | null> {
   }
 }
 
+// ─── Détection des rediffusions ───────────────────────────────────────────────
+
+/**
+ * Indique si un titre d'épisode (brut ou nettoyé) est une rediffusion.
+ *
+ * Règle : le titre commence par le mot exact "REDIFFUSION" (insensible à la
+ * casse, tolérant aux espaces en début de chaîne), suivi d'une limite de mot
+ * (\b) — ce qui exclut "REDIFFUSIONS".
+ *
+ * Exemples EXCLUS (retourne true) :
+ *   "REDIFFUSION - 45. Titre"   → true
+ *   "Rediffusion : Titre"        → true
+ *   "rediffusion Titre"          → true
+ *   "  REDIFFUSION - Titre"      → true   (espaces en tête tolérés)
+ *
+ * Exemples NON exclus (retourne false) :
+ *   "REDIFFUSIONS Titre"         → false  (mot différent : "REDIFFUSIONS")
+ *   "45. REDIFFUSION - Titre"    → false  (ne commence pas par "REDIFFUSION")
+ *   "Nouvel épisode - Titre"     → false
+ *   ""                           → false
+ */
+export function isRediffusion(title: string): boolean {
+  return /^\s*REDIFFUSION\b/i.test(title)
+}
+
 // ─── Fetcher principal ────────────────────────────────────────────────────────
 
 export async function getEpisodesFromRSS(
@@ -271,9 +296,18 @@ export async function getEpisodesFromRSS(
   const xml = await res.text()
   const itemMatches = xml.match(/<item>[\s\S]*?<\/item>/g) ?? []
 
-  // Parse tous les items (épisodes complets + extraits) pour pouvoir
+  // ── Filtre rediffusions (sur le titre brut, avant tout parsing) ─────────────
+  // Un titre commençant par "REDIFFUSION" correspond à un épisode déjà publié
+  // sur le site. On l'élimine ici — le plus tôt possible — pour qu'il ne
+  // pénètre dans aucun composant du site (liste, carrousel, dernier épisode…).
+  const nonRediffusionItems = itemMatches.filter((item) => {
+    const rawTitle = extractTag(item, 'title')
+    return !isRediffusion(rawTitle)
+  })
+
+  // Parse tous les items restants (épisodes complets + extraits) pour pouvoir
   // utiliser le titre de l'extrait comme citation de fallback.
-  const allParsed = itemMatches.map((item) => {
+  const allParsed = nonRediffusionItems.map((item) => {
     const rawTitle = extractTag(item, 'title')
     const { number, title, guest, isExtrait } = parseTitle(rawTitle)
 
@@ -340,7 +374,7 @@ export async function getEpisodesFromRSS(
   }
 
   const episodes: RssEpisode[] = allParsed
-    .filter((ep) => ep.number > 0 && (includeExtraits || !ep.isExtrait))
+    .filter((ep) => ep.number > 0 && (includeExtraits || !ep.isExtrait) && !isRediffusion(ep.title))
     .map((ep) => ({
       ...ep,
       // Si la description n'a pas de <b>…</b>, on utilise le titre de l'extrait

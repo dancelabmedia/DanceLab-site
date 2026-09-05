@@ -9,9 +9,21 @@ import { getPublishedArticles } from "./articles-data"
 export const revalidate = 3600
 
 export const metadata: Metadata = {
-  title: "Magazine | Dance Lab",
+  title: "Magazine Dance Lab - Actualités, culture et décryptages danse",
   description:
-    "Comprendre la danse autrement. Décryptages, culture, parcours, histoire et ressources pour regarder la danse au-delà de la scène.",
+    "Articles, analyses, culture, tendances et décryptages : le magazine Dance Lab explore la danse, ses artistes, ses pratiques et les évolutions du secteur.",
+  openGraph: {
+    title: "Magazine Dance Lab - Actualités, culture et décryptages danse",
+    description:
+      "Articles, analyses, culture, tendances et décryptages : le magazine Dance Lab explore la danse, ses artistes, ses pratiques et les évolutions du secteur.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Magazine Dance Lab - Actualités, culture et décryptages danse",
+    description:
+      "Articles, analyses, culture, tendances et décryptages : le magazine Dance Lab explore la danse, ses artistes, ses pratiques et les évolutions du secteur.",
+  },
 }
 
 export default function DecouvrirPage() {

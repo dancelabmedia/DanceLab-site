@@ -84,6 +84,8 @@ async function fetchAushaData(targetNumber) {
 
   for (const item of items) {
     const rawTitle = extractTag(item, 'title')
+    // Ignorer les rediffusions — elles ne doivent pas être importées sur le site
+    if (/^\s*REDIFFUSION\b/i.test(rawTitle)) continue
     const parsed = parseAushaTitle(rawTitle)
     if (parsed.number === 0) continue
     if (parsed.isExtrait) extraits.push(parsed)

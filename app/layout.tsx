@@ -30,13 +30,22 @@ import { SITE_URL } from '../data/site'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: 'Dance Lab - Le média qui fait découvrir, comprendre et vivre la danse',
+  title: 'Dance Lab - Le podcast et média de référence de la danse',
   description:
-    'Dance Lab est le média de référence pour découvrir, comprendre et vivre la danse.',
+    'Dance Lab est le podcast et média de référence sur la danse : podcast, interviews, articles, culture, métiers, écoles de danse, conseils, spectacles et ressources pour découvrir, comprendre et vivre la danse.',
   openGraph: {
-    title: 'Dance Lab',
-    description: 'Le média qui fait découvrir, comprendre et vivre la danse.',
+    title: 'Dance Lab - Le podcast et média de référence de la danse',
+    description:
+      'Podcast, interviews, articles, culture, métiers, écoles, spectacles et ressources : découvre celles et ceux qui font, pensent et transforment la danse.',
     type: 'website',
+    siteName: 'Dance Lab',
+    locale: 'fr_FR',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Dance Lab - Le podcast et média de référence de la danse',
+    description:
+      'Podcast, interviews, articles, culture, métiers, écoles, spectacles et ressources : découvre celles et ceux qui font, pensent et transforment la danse.',
   },
 }
 
