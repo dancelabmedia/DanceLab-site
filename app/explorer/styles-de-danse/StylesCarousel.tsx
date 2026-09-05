@@ -18,21 +18,21 @@ type CarouselStyle = {
 /* ── Dégradés par famille (pour les styles sans photo) ─────────── */
 const FAMILY_GRADIENTS: Record<string, string> = {
   "Danses urbaines":
-    "linear-gradient(145deg, #0f1b2d 0%, #152640 45%, #1a3a5c 100%)",
+    "linear-gradient(145deg, #050505 0%, #233033 45%, #425659 100%)",
   "Danses académiques":
-    "linear-gradient(145deg, #1c2331 0%, #253047 50%, #1e3a52 100%)",
+    "linear-gradient(145deg, #233033 0%, #425659 50%, #5B7377 100%)",
   "Danses contemporaines et expérimentales":
-    "linear-gradient(145deg, #0f2420 0%, #1a3d35 50%, #0d2e28 100%)",
+    "linear-gradient(145deg, #425659 0%, #5B7377 50%, #233033 100%)",
   "Danses scéniques":
-    "linear-gradient(145deg, #2a1020 0%, #3d1530 50%, #2e1128 100%)",
+    "linear-gradient(145deg, #050505 0%, #233033 55%, #5B7377 100%)",
   "Danses sociales":
-    "linear-gradient(145deg, #1e1530 0%, #2d1e47 50%, #231638 100%)",
+    "linear-gradient(145deg, #233033 0%, #5B7377 48%, #425659 100%)",
   "Danses traditionnelles":
-    "linear-gradient(145deg, #2a1a08 0%, #3d2810 50%, #2e1f0a 100%)",
+    "linear-gradient(145deg, #425659 0%, #233033 55%, #050505 100%)",
   "Danses de club":
-    "linear-gradient(145deg, #180828 0%, #2a0f40 50%, #1f0a35 100%)",
+    "linear-gradient(145deg, #050505 0%, #425659 52%, #233033 100%)",
   "Danses issues des cultures afro-descendantes":
-    "linear-gradient(145deg, #0e2218 0%, #1a3828 50%, #102a1e 100%)",
+    "linear-gradient(145deg, #233033 0%, #425659 50%, #050505 100%)",
 }
 
 type Props = {
