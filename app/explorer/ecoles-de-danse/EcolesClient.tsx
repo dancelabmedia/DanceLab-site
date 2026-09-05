@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { EcoleDanse, EcoleType, ParcoursFormation } from './ecoles-data'
+import { AnimatedStats } from '../styles-de-danse/StylesStats'
 
 interface Props { ecoles: EcoleDanse[] }
 
@@ -127,18 +128,30 @@ export default function EcolesClient({ ecoles }: Props) {
     <main className="ecoles-page">
       <section className="ecoles-hero">
         <div className="ecoles-hero-deco" aria-hidden="true"><div className="ecoles-hero-deco-circle ecoles-hero-deco-circle--lg" /><div className="ecoles-hero-deco-circle ecoles-hero-deco-circle--sm" /><div className="ecoles-hero-deco-line" /></div>
-        <div className="container ecoles-hero-inner">
+        <div className="ecoles-hero-inner">
           <div className="ecoles-hero-content">
-            <span className="ecoles-hero-kicker">Explorer · Écoles de danse</span>
-            <h1 className="ecoles-hero-title">Trouver où danser,<br /><em>se former et progresser</em><br />en France.</h1>
-            <p className="ecoles-hero-desc">Studios, écoles, conservatoires ou centres de formation — explorez des établissements qui partagent votre passion et trouvez le cadre qui correspond à vos ambitions.</p>
-            <div className="ecoles-hero-stats">
-              <div className="ecoles-hero-stat"><span className="ecoles-hero-stat-number">{ecoles.length}</span><span className="ecoles-hero-stat-label">établissements</span></div>
-              <div className="ecoles-hero-stat"><span className="ecoles-hero-stat-number">5</span><span className="ecoles-hero-stat-label">types de structures</span></div>
-              <div className="ecoles-hero-stat"><span className="ecoles-hero-stat-number">{regions.length}</span><span className="ecoles-hero-stat-label">régions</span></div>
+            <span className="ecoles-hero-kicker sty-kicker">Explorer · Écoles de danse</span>
+            <h1 className="ecoles-hero-title sty-hero-title">Trouver où danser,<br /><em>se former et progresser</em><br />en France.</h1>
+            <p className="ecoles-hero-desc sty-hero-desc">Studios, écoles, conservatoires ou centres de formation — explorez des établissements qui partagent votre passion et trouvez le cadre qui correspond à vos ambitions.</p>
+            <AnimatedStats items={[
+              { target: ecoles.length, label: 'Établissements' },
+              { target: 5, label: 'Types de structures' },
+              { target: regions.length, label: 'Régions' },
+            ]} />
+            <div className="ecoles-hero-search sty-hero-search">
+              <label className="styles-search-field">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6.5" stroke="currentColor" strokeWidth="1.4"/><path d="m14 14 4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+                <input type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="Rechercher un établissement, une ville, un style..." />
+              </label>
+              <label className={`sty-filter-btn ecoles-hero-type-select${activeType ? ' sty-filter-btn--has-value' : ''}`}>
+                <select value={activeType ?? ''} onChange={event => setActiveType((event.target.value || null) as EcoleType | null)} aria-label="Filtrer par type d’établissement">
+                  <option value="">Tous les établissements</option>
+                  {TYPES.map(({ type, label }) => <option key={type} value={type}>{label}</option>)}
+                </select>
+                <svg className="sty-filter-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </label>
             </div>
           </div>
-          <p className="ecoles-hero-manifesto">La danse<br />ouvre<br />des horizons.</p>
         </div>
       </section>
 
@@ -150,11 +163,6 @@ export default function EcolesClient({ ecoles }: Props) {
 
         <div className="ecoles-workspace">
           <div className={`ecoles-results-panel${mobileView === 'carte' ? ' is-mobile-hidden' : ''}`}>
-            <label className="ecoles-search-box">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6.5" stroke="currentColor" strokeWidth="1.4"/><path d="m14 14 4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
-              <input type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher un établissement, une ville, un style…" />
-            </label>
-
             <div className="ecoles-primary-filters">
               <label><span>Région</span><select value={region} onChange={e => { setRegion(e.target.value); setVille('') }}><option value="">Toutes</option>{regions.map(value => <option key={value}>{value}</option>)}</select></label>
               <label><span>Ville</span><select value={ville} onChange={e => setVille(e.target.value)}><option value="">Toutes</option>{villes.map(value => <option key={value}>{value}</option>)}</select></label>

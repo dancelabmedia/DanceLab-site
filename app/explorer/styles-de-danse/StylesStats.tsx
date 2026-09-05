@@ -84,7 +84,13 @@ type Props = {
   episodesCount: number
 }
 
-export default function StylesStats({ stylesCount, episodesCount }: Props) {
+type AnimatedStat = {
+  target: number
+  label: string
+  suffix?: string
+}
+
+export function AnimatedStats({ items }: { items: AnimatedStat[] }) {
   const [active, setActive] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -99,7 +105,6 @@ export default function StylesStats({ stylesCount, episodesCount }: Props) {
           observer.disconnect()
         }
       },
-      // Se déclenche dès que la moitié de la zone est visible
       { threshold: 0.5 }
     )
 
@@ -109,27 +114,28 @@ export default function StylesStats({ stylesCount, episodesCount }: Props) {
 
   return (
     <div className="sty-stats" ref={ref}>
-      <StatCounter
-        target={stylesCount}
-        label="Styles documentés"
-        delayMs={0}
-        active={active}
-      />
-      <div className="sty-stat-sep" aria-hidden="true" />
-      <StatCounter
-        target={27}
-        suffix="+"
-        label="Styles à venir"
-        delayMs={200}
-        active={active}
-      />
-      <div className="sty-stat-sep" aria-hidden="true" />
-      <StatCounter
-        target={episodesCount}
-        label="Épisodes reliés"
-        delayMs={400}
-        active={active}
-      />
+      {items.map((item, index) => (
+        <div key={item.label} style={{ display: "contents" }}>
+          {index > 0 && <div className="sty-stat-sep" aria-hidden="true" />}
+          <StatCounter
+            target={item.target}
+            suffix={item.suffix}
+            label={item.label}
+            delayMs={index * 200}
+            active={active}
+          />
+        </div>
+      ))}
     </div>
+  )
+}
+
+export default function StylesStats({ stylesCount, episodesCount }: Props) {
+  return (
+    <AnimatedStats items={[
+      { target: stylesCount, label: "Styles documentés" },
+      { target: 27, suffix: "+", label: "Styles à venir" },
+      { target: episodesCount, label: "Épisodes reliés" },
+    ]} />
   )
 }

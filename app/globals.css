@@ -18091,9 +18091,44 @@ a.ep-topic-pill:hover {
 
 
 /* ── Écoles de danse — expérience éditoriale liste + carte ── */
-.ecoles-hero { padding: clamp(92px, 10vw, 142px) 0 clamp(54px, 7vw, 86px); }
-.ecoles-hero-inner { grid-template-columns: minmax(0, 760px) 1fr; align-items: end; }
-.ecoles-hero-title { font-size: clamp(2.65rem, 5vw, 4.55rem); }
+.ecoles-hero { min-height: 78vh; display: flex; align-items: flex-end; padding: 0; }
+.ecoles-hero-inner {
+  display: block;
+  width: 100%;
+  max-width: none;
+  padding: calc(var(--nav-h) + 48px) 56px 60px max(48px, calc((100vw - 1280px) / 2 + 48px));
+}
+.ecoles-hero-content { max-width: 720px; }
+.ecoles-hero-title { max-width: 680px; margin-bottom: 30px; }
+.ecoles-hero-title em { font-family: var(--font-display); color: var(--color-primary-light); }
+.ecoles-hero-desc { max-width: 560px; margin-bottom: 40px; }
+.ecoles-hero .sty-stats { margin-bottom: 32px; }
+.ecoles-hero .sty-stat:first-child { padding-left: 0; }
+.ecoles-hero-search { max-width: 540px; }
+.ecoles-hero-search .styles-search-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 56px;
+  padding: 0 24px;
+  border: 1.5px solid rgba(255,255,255,.22);
+  border-radius: 50px;
+}
+.ecoles-hero-search .styles-search-field input { width: 100%; border: 0; outline: 0; background: transparent; font: 400 15px var(--font-body); }
+.ecoles-hero-type-select { position: relative; align-self: flex-start; padding: 0; }
+.ecoles-hero-type-select select {
+  appearance: none;
+  min-height: 36px;
+  padding: 0 38px 0 16px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.ecoles-hero-type-select .sty-filter-chevron { position: absolute; right: 15px; pointer-events: none; }
 .ecoles-hero-manifesto {
   justify-self: end;
   margin: 0 20px 12px 0;
@@ -18229,9 +18264,18 @@ a.ep-topic-pill:hover {
 }
 
 @media (max-width: 768px) {
-  .ecoles-hero-inner { grid-template-columns: 1fr; }
+  .ecoles-hero { min-height: auto; }
+  .ecoles-hero-inner { padding: calc(var(--nav-h) + 40px) 24px 52px; }
+  .ecoles-hero-content { max-width: none; }
+  .ecoles-hero-title { font-size: clamp(2.35rem, 11vw, 3.75rem); }
   .ecoles-hero-manifesto { display: none; }
-  .ecoles-hero-stats { flex-direction: row; }
+  .ecoles-hero .sty-stats { flex-wrap: nowrap; }
+  .ecoles-hero .sty-stat { padding: 0 18px; }
+  .ecoles-hero .sty-stat:first-child { padding-left: 0; }
+  .ecoles-hero .sty-stat strong { font-size: 2rem; }
+  .ecoles-hero-search { max-width: 100%; }
+  .ecoles-hero-type-select { align-self: stretch; }
+  .ecoles-hero-type-select select { width: 100%; }
   .ecoles-tabs { min-height: 58px; padding: 0 20px; gap: 28px; }
   .ecoles-workspace { display: block; min-height: auto; }
   .ecoles-results-panel { padding: 18px 18px 0; border-right: 0; }
@@ -18256,7 +18300,10 @@ a.ep-topic-pill:hover {
 }
 
 @media (max-width: 480px) {
-  .ecoles-hero-stats { gap: 16px; }
+  .ecoles-hero .sty-stats { align-items: stretch; }
+  .ecoles-hero .sty-stat { flex: 1; padding: 0 10px; }
+  .ecoles-hero .sty-stat span { font-size: .55rem; line-height: 1.35; }
+  .ecoles-hero .sty-stat-sep { height: auto; min-height: 42px; }
   .ecoles-hero-stat-number { font-size: 1.6rem; }
   .ecoles-hero-stat-label { font-size: .56rem; }
   .ecole-result-card { grid-template-columns: 70px minmax(0, 1fr) 24px; }
