@@ -132,7 +132,7 @@ export default function EcolesClient({ ecoles }: Props) {
           <div className="ecoles-hero-content">
             <span className="ecoles-hero-kicker sty-kicker">Explorer · Écoles de danse</span>
             <h1 className="ecoles-hero-title sty-hero-title">Trouver où danser,<br /><em>se former et progresser</em><br />en France.</h1>
-            <p className="ecoles-hero-desc sty-hero-desc">Studios, écoles, conservatoires ou centres de formation — explorez des établissements qui partagent votre passion et trouvez le cadre qui correspond à vos ambitions.</p>
+            <p className="ecoles-hero-desc sty-hero-desc">Studios, écoles, conservatoires ou centres de formation : explorez des établissements qui partagent votre passion et trouvez le cadre qui correspond à vos ambitions.</p>
             <AnimatedStats items={[
               { target: ecoles.length, label: 'Établissements' },
               { target: 5, label: 'Types de structures' },
@@ -156,13 +156,13 @@ export default function EcolesClient({ ecoles }: Props) {
       </section>
 
       <section className="ecoles-directory">
-        <nav className="ecoles-tabs" aria-label="Type d’établissement">
-          <button className={!activeType ? 'is-active' : ''} onClick={() => setActiveType(null)}>Tous les établissements</button>
-          {TYPES.map(({ type, label }) => <button key={type} className={activeType === type ? 'is-active' : ''} onClick={() => setActiveType(type)}>{label}</button>)}
-        </nav>
+        <div className="ecoles-directory-inner">
+          <nav className="ecoles-tabs" aria-label="Type d’établissement">
+            <button className={!activeType ? 'is-active' : ''} onClick={() => setActiveType(null)}>Tous les établissements</button>
+            {TYPES.map(({ type, label }) => <button key={type} className={activeType === type ? 'is-active' : ''} onClick={() => setActiveType(type)}>{label}</button>)}
+          </nav>
 
-        <div className="ecoles-workspace">
-          <div className={`ecoles-results-panel${mobileView === 'carte' ? ' is-mobile-hidden' : ''}`}>
+          <div className="ecoles-directory-toolbar">
             <div className="ecoles-primary-filters">
               <label><span>Région</span><select value={region} onChange={e => { setRegion(e.target.value); setVille('') }}><option value="">Toutes</option>{regions.map(value => <option key={value}>{value}</option>)}</select></label>
               <label><span>Ville</span><select value={ville} onChange={e => setVille(e.target.value)}><option value="">Toutes</option>{villes.map(value => <option key={value}>{value}</option>)}</select></label>
@@ -181,32 +181,37 @@ export default function EcolesClient({ ecoles }: Props) {
               <span><strong>{filteredEcoles.length}</strong> établissement{filteredEcoles.length > 1 ? 's' : ''}</span>
               <div>{hasFilters && <button onClick={resetFilters}>Effacer les filtres</button>}<label>Trier par : <select value={sort} onChange={e => setSort(e.target.value as typeof sort)}><option value="pertinence">Pertinence</option><option value="alphabetique">A–Z</option></select></label></div>
             </div>
-
-            <div className="ecoles-mobile-toggle" aria-label="Choisir la vue"><button className="is-active" onClick={() => setMobileView('liste')}>Liste</button><button onClick={() => setMobileView('carte')}>Carte</button></div>
-
-            <div className="ecoles-cards">
-              {filteredEcoles.map((ecole, index) => {
-                const tags = [...(ecole.parcours || []), ...ecole.styles]
-                return <article key={ecole.id} id={`ecole-${ecole.id}`} className={`ecole-result-card${selectedEcole?.id === ecole.id ? ' is-selected' : ''}`} onMouseEnter={() => selectEcole(ecole)} onClick={() => selectEcole(ecole)}>
-                  <div className={`ecole-result-visual ecole-result-visual--${index % 4}`} aria-hidden="true"><span>{ecole.type.slice(0, 2)}</span></div>
-                  <div className="ecole-result-content">
-                    <span className="ecole-result-type">{ecole.type}</span><h2>{ecole.nom}</h2><p className="ecole-result-place">{lieu(ecole)}</p>
-                    <div className="ecole-result-tags">{tags.slice(0, 3).map(tag => <span key={tag}>{tag}</span>)}{tags.length > 3 && <span>+{tags.length - 3}</span>}</div>
-                    {ecole.description && <p className="ecole-result-desc">{ecole.description}</p>}
-                    {ecole.siteWeb && <a href={ecole.siteWeb} target="_blank" rel="noopener noreferrer" onClick={event => event.stopPropagation()} aria-label={`Voir le site officiel de ${ecole.nom}`}>Voir le site officiel <span>↗</span></a>}
-                  </div><span className="ecole-result-arrow" aria-hidden="true">→</span>
-                </article>
-              })}
-              {!filteredEcoles.length && <div className="ecoles-empty"><p>Aucun établissement ne correspond à ces critères.</p><button onClick={resetFilters}>Réinitialiser les filtres</button></div>}
-            </div>
           </div>
 
-          <div className={`ecoles-map-panel${mobileView === 'liste' ? ' is-mobile-hidden' : ''}`}>
-            <div className="ecoles-map-toggle" aria-hidden="true"><span className="is-active">Carte</span><span>Liste</span></div>
-            {mapError ? <div className="ecoles-map-fallback"><p>La carte n’a pas pu se charger.<br />La liste reste disponible.</p></div> : <div ref={mapRef} className="ecoles-map" />}
-            {selectedEcole && <aside className="ecoles-map-popup"><button onClick={() => setSelectedEcole(null)} aria-label="Fermer">×</button><span>{selectedEcole.type}</span><h3>{selectedEcole.nom}</h3><p>{lieu(selectedEcole)}</p>{selectedEcole.siteWeb && <a href={selectedEcole.siteWeb} target="_blank" rel="noopener noreferrer">Voir le site officiel ↗</a>}</aside>}
-            <div className="ecoles-map-legend"><span><i /> Établissement géolocalisé</span><span><i /> Établissement sans coordonnées</span></div>
-            <div className="ecoles-mobile-toggle ecoles-mobile-toggle--map"><button onClick={() => setMobileView('liste')}>Liste</button><button className="is-active" onClick={() => setMobileView('carte')}>Carte</button></div>
+          <div className="ecoles-workspace">
+            <div className={`ecoles-results-panel${mobileView === 'carte' ? ' is-mobile-hidden' : ''}`}>
+
+              <div className="ecoles-mobile-toggle" aria-label="Choisir la vue"><button className="is-active" onClick={() => setMobileView('liste')}>Liste</button><button onClick={() => setMobileView('carte')}>Carte</button></div>
+
+              <div className="ecoles-cards">
+                {filteredEcoles.map((ecole, index) => {
+                  const tags = [...(ecole.parcours || []), ...ecole.styles]
+                  return <article key={ecole.id} id={`ecole-${ecole.id}`} className={`ecole-result-card${selectedEcole?.id === ecole.id ? ' is-selected' : ''}`} onMouseEnter={() => selectEcole(ecole)} onClick={() => selectEcole(ecole)}>
+                    <div className={`ecole-result-visual ecole-result-visual--${index % 4}`} aria-hidden="true"><span>{ecole.type.slice(0, 2)}</span></div>
+                    <div className="ecole-result-content">
+                      <span className="ecole-result-type">{ecole.type}</span><h2>{ecole.nom}</h2><p className="ecole-result-place">{lieu(ecole)}</p>
+                      <div className="ecole-result-tags">{tags.slice(0, 3).map(tag => <span key={tag}>{tag}</span>)}{tags.length > 3 && <span>+{tags.length - 3}</span>}</div>
+                      {ecole.description && <p className="ecole-result-desc">{ecole.description}</p>}
+                      {ecole.siteWeb && <a href={ecole.siteWeb} target="_blank" rel="noopener noreferrer" onClick={event => event.stopPropagation()} aria-label={`Voir le site officiel de ${ecole.nom}`}>Voir le site officiel <span>↗</span></a>}
+                    </div><span className="ecole-result-arrow" aria-hidden="true">→</span>
+                  </article>
+                })}
+                {!filteredEcoles.length && <div className="ecoles-empty"><p>Aucun établissement ne correspond à ces critères.</p><button onClick={resetFilters}>Réinitialiser les filtres</button></div>}
+              </div>
+            </div>
+
+            <div className={`ecoles-map-panel${mobileView === 'liste' ? ' is-mobile-hidden' : ''}`}>
+              <div className="ecoles-map-toggle" aria-hidden="true"><span className="is-active">Carte</span><span>Liste</span></div>
+              {mapError ? <div className="ecoles-map-fallback"><p>La carte n’a pas pu se charger.<br />La liste reste disponible.</p></div> : <div ref={mapRef} className="ecoles-map" />}
+              {selectedEcole && <aside className="ecoles-map-popup"><button onClick={() => setSelectedEcole(null)} aria-label="Fermer">×</button><span>{selectedEcole.type}</span><h3>{selectedEcole.nom}</h3><p>{lieu(selectedEcole)}</p>{selectedEcole.siteWeb && <a href={selectedEcole.siteWeb} target="_blank" rel="noopener noreferrer">Voir le site officiel ↗</a>}</aside>}
+              <div className="ecoles-map-legend"><span><i /> Établissement géolocalisé</span><span><i /> Établissement sans coordonnées</span></div>
+              <div className="ecoles-mobile-toggle ecoles-mobile-toggle--map"><button onClick={() => setMobileView('liste')}>Liste</button><button className="is-active" onClick={() => setMobileView('carte')}>Carte</button></div>
+            </div>
           </div>
         </div>
       </section>
