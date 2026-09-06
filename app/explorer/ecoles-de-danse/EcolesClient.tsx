@@ -106,8 +106,13 @@ export default function EcolesClient({ ecoles }: Props) {
     markersRef.current.forEach(marker => marker.remove()); markersRef.current.clear()
     filteredEcoles.filter(e => e.lat != null && e.lng != null).forEach(ecole => {
       const selected = selectedEcole?.id === ecole.id
-      const icon = L.divIcon({ className: '', html: `<div class="ecole-marker${selected ? ' ecole-marker--active' : ''}"><span></span></div>`, iconSize: [24, 30], iconAnchor: [12, 26] })
-      const marker = L.marker([ecole.lat!, ecole.lng!], { icon }).addTo(map).on('click', () => {
+      const icon = L.divIcon({ className: '', html: `<div class="ecole-marker${selected ? ' ecole-marker--active' : ''}"><span></span></div>`, iconSize: [52, 52], iconAnchor: [26, 42] })
+      const marker = L.marker([ecole.lat!, ecole.lng!], {
+        icon,
+        riseOnHover: true,
+        riseOffset: 600,
+        zIndexOffset: selected ? 1000 : 0,
+      }).addTo(map).on('click', () => {
         setSelectedEcole(ecole)
         document.getElementById(`ecole-${ecole.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
       })
@@ -121,7 +126,13 @@ export default function EcolesClient({ ecoles }: Props) {
 
   function selectEcole(ecole: EcoleDanse) {
     setSelectedEcole(ecole)
-    if (ecole.lat != null && ecole.lng != null) mapInstanceRef.current?.flyTo([ecole.lat, ecole.lng], 13, { duration: .7 })
+    if (ecole.lat != null && ecole.lng != null) {
+      mapInstanceRef.current?.panInside([ecole.lat, ecole.lng], {
+        padding: [72, 72],
+        animate: true,
+        duration: .35,
+      })
+    }
   }
 
   return (
@@ -191,7 +202,7 @@ export default function EcolesClient({ ecoles }: Props) {
               <div className="ecoles-cards">
                 {filteredEcoles.map((ecole, index) => {
                   const tags = [...(ecole.parcours || []), ...ecole.styles]
-                  return <article key={ecole.id} id={`ecole-${ecole.id}`} className={`ecole-result-card${selectedEcole?.id === ecole.id ? ' is-selected' : ''}`} onMouseEnter={() => selectEcole(ecole)} onClick={() => selectEcole(ecole)}>
+                  return <article key={ecole.id} id={`ecole-${ecole.id}`} className={`ecole-result-card${selectedEcole?.id === ecole.id ? ' is-selected' : ''}`} onClick={() => selectEcole(ecole)}>
                     <div className={`ecole-result-visual ecole-result-visual--${index % 4}`} aria-hidden="true"><span>{ecole.type.slice(0, 2)}</span></div>
                     <div className="ecole-result-content">
                       <span className="ecole-result-type">{ecole.type}</span><h2>{ecole.nom}</h2><p className="ecole-result-place">{lieu(ecole)}</p>
