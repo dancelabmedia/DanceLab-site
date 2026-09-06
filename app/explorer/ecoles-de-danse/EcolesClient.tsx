@@ -20,6 +20,16 @@ const TYPES: { type: EcoleType; label: string; desc: string }[] = [
   { type: 'Association', label: 'Associations', desc: 'Structures ancrées dans la vie locale, accessibles et animées par une dynamique collective.' },
 ]
 
+const PARIS_LANDMARKS = [
+  { name: 'Tour Eiffel', position: [48.85837, 2.29448] as [number, number], symbol: '🗼' },
+  { name: 'Arc de Triomphe', position: [48.87379, 2.29503] as [number, number], symbol: '⊓' },
+  { name: 'Sacré-Cœur', position: [48.8867, 2.3431] as [number, number], symbol: '⛪' },
+  { name: 'Opéra Garnier', position: [48.87197, 2.3316] as [number, number], symbol: '♦' },
+  { name: 'Notre-Dame', position: [48.853, 2.3499] as [number, number], symbol: '⛪' },
+  { name: 'Louvre', position: [48.8606, 2.3376] as [number, number], symbol: '△' },
+  { name: 'Panthéon', position: [48.8462, 2.346] as [number, number], symbol: '▱' },
+]
+
 function lieu(ecole: EcoleDanse) {
   return [ecole.ville, ecole.region].filter(Boolean).join(' · ') || ecole.adresse || 'France'
 }
@@ -44,6 +54,7 @@ export default function EcolesClient({ ecoles }: Props) {
   const mapInstanceRef = useRef<any>(null)
   const leafletRef = useRef<any>(null)
   const markersRef = useRef<Map<string, any>>(new Map())
+  const landmarksLayerRef = useRef<any>(null)
 
   const regions = useMemo(() => [...new Set(ecoles.map(e => e.region).filter(Boolean) as string[])].sort(), [ecoles])
   const villes = useMemo(() => [...new Set(ecoles.filter(e => !region || e.region === region).map(e => e.ville).filter(Boolean) as string[])].sort(), [ecoles, region])
@@ -90,12 +101,37 @@ export default function EcolesClient({ ecoles }: Props) {
       }
       const map = L.map(mapRef.current, { center: [46.6, 2.4], zoom: 5, zoomControl: false, attributionControl: false })
       L.control.zoom({ position: 'topright' }).addTo(map)
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { subdomains: 'abc', maxZoom: 19, detectRetina: true }).addTo(map)
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+        subdomains: 'abcd', maxZoom: 20, detectRetina: true,
+      }).addTo(map)
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
+        subdomains: 'abcd', maxZoom: 20, detectRetina: true, pane: 'shadowPane',
+      }).addTo(map)
+
+      const landmarks = L.layerGroup(PARIS_LANDMARKS.map(landmark => L.marker(landmark.position, {
+        interactive: false,
+        keyboard: false,
+        zIndexOffset: -1000,
+        icon: L.divIcon({
+          className: '',
+          html: `<div class="ecole-landmark"><span aria-hidden="true">${landmark.symbol}</span><small>${landmark.name}</small></div>`,
+          iconSize: [104, 58],
+          iconAnchor: [52, 29],
+        }),
+      })))
+      landmarksLayerRef.current = landmarks
+      const syncLandmarks = () => {
+        if (map.getZoom() >= 12) {
+          if (!map.hasLayer(landmarks)) landmarks.addTo(map)
+        } else if (map.hasLayer(landmarks)) map.removeLayer(landmarks)
+      }
+      map.on('zoomend', syncLandmarks)
+      syncLandmarks()
       mapInstanceRef.current = map
     }).catch(() => { if (!cancelled) setMapError(true) })
     return () => {
       cancelled = true
-      mapInstanceRef.current?.remove(); mapInstanceRef.current = null; markersRef.current.clear()
+      mapInstanceRef.current?.remove(); mapInstanceRef.current = null; markersRef.current.clear(); landmarksLayerRef.current = null
     }
   }, [])
 

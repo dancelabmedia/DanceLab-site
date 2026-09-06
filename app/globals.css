@@ -18240,7 +18240,37 @@ a.ep-topic-pill:hover {
 
 .ecoles-map-panel { position: sticky; top: calc(var(--nav-h, 64px) + 20px); height: 680px; min-height: 600px; overflow: hidden; border: 1px solid var(--color-border); border-radius: 10px; background: var(--color-secondary); box-shadow: 0 8px 30px rgba(35,48,51,.055); }
 .ecoles-map-panel .ecoles-map { position: absolute; inset: 0; width: 100%; height: 100%; }
-.ecoles-map-panel .leaflet-tile-pane { filter: grayscale(.2) saturate(.5) contrast(.86) brightness(1.1) hue-rotate(155deg); }
+.ecoles-map-panel .leaflet-tile-pane { filter: saturate(.72) contrast(.91) brightness(1.035) hue-rotate(160deg); }
+.ecoles-map-panel .leaflet-shadow-pane { z-index: 350; pointer-events: none; opacity: .72; }
+.ecole-landmark {
+  display: grid;
+  justify-items: center;
+  width: 104px;
+  color: rgba(48,65,69,.68);
+  filter: drop-shadow(0 1px 0 rgba(255,255,255,.95));
+  pointer-events: none;
+}
+.ecole-landmark span {
+  display: grid;
+  place-items: center;
+  min-width: 30px;
+  height: 34px;
+  color: rgba(65,84,88,.7);
+  font-family: Georgia, serif;
+  font-size: 25px;
+  line-height: 1;
+}
+.ecole-landmark small {
+  margin-top: 2px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(248,250,250,.72);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  line-height: 1.25;
+  white-space: nowrap;
+}
 .ecoles-map-toggle { position: absolute; z-index: 700; top: 18px; left: 18px; display: flex; padding: 3px; border: 1px solid rgba(91,115,119,.18); border-radius: 24px; background: rgba(255,255,255,.94); box-shadow: 0 4px 14px rgba(35,48,51,.08); backdrop-filter: blur(8px); }
 .ecoles-map-toggle span { padding: 8px 17px; border-radius: 20px; color: var(--color-text-muted); font-size: .7rem; }
 .ecoles-map-toggle span.is-active { background: var(--color-text-dark); color: white; }
