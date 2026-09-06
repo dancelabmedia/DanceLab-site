@@ -49,6 +49,7 @@ export default function EcolesClient({ ecoles }: Props) {
   const [mobileView, setMobileView] = useState<'liste' | 'carte'>('liste')
   const [selectedEcole, setSelectedEcole] = useState<EcoleDanse | null>(null)
   const [mapError, setMapError] = useState(false)
+  const [mapReady, setMapReady] = useState(false)
 
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)
@@ -99,13 +100,13 @@ export default function EcolesClient({ ecoles }: Props) {
         link.rel = 'stylesheet'; link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; link.dataset.leafletCss = ''
         document.head.appendChild(link)
       }
-      const map = L.map(mapRef.current, { center: [46.6, 2.4], zoom: 5, zoomControl: false, attributionControl: false })
+      const map = L.map(mapRef.current, { center: [48.8566, 2.3522], zoom: 12, zoomControl: false, attributionControl: false })
       L.control.zoom({ position: 'topright' }).addTo(map)
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
-        subdomains: 'abcd', maxZoom: 20, detectRetina: true,
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 16,
       }).addTo(map)
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
-        subdomains: 'abcd', maxZoom: 20, detectRetina: true, pane: 'shadowPane',
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 16, pane: 'shadowPane',
       }).addTo(map)
 
       const landmarks = L.layerGroup(PARIS_LANDMARKS.map(landmark => L.marker(landmark.position, {
@@ -128,6 +129,7 @@ export default function EcolesClient({ ecoles }: Props) {
       map.on('zoomend', syncLandmarks)
       syncLandmarks()
       mapInstanceRef.current = map
+      setMapReady(true)
     }).catch(() => { if (!cancelled) setMapError(true) })
     return () => {
       cancelled = true
@@ -154,7 +156,7 @@ export default function EcolesClient({ ecoles }: Props) {
       })
       markersRef.current.set(ecole.id, marker)
     })
-  }, [filteredEcoles, selectedEcole])
+  }, [filteredEcoles, selectedEcole, mapReady])
 
   useEffect(() => {
     if (mobileView === 'carte') setTimeout(() => mapInstanceRef.current?.invalidateSize(), 50)
