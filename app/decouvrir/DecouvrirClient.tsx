@@ -5,6 +5,7 @@ import { useState, useMemo, useRef, useEffect, useCallback } from "react"
 import type { MagazineArticle } from "./articles-data"
 import MagHeroSlider, { type MagHeroSliderHandle, type SlideArticle } from "./MagHeroSlider"
 import PhotoCredit from "@/components/PhotoCredit"
+import MagazineEditorial from "./MagazineEditorial"
 
 // ─── Données statiques ─────────────────────────────────────────────────────────
 
@@ -275,6 +276,8 @@ export default function DecouvrirClient({ articles }: Props) {
 
       ) : featuredArticle ? (
         <>
+          <MagazineEditorial articles={articles} />
+          {false && (<>
           {/* ══ À LA UNE ════════════════════════════════════════════════════ */}
           <section className="mag-une">
             <div className="container">
@@ -432,6 +435,7 @@ export default function DecouvrirClient({ articles }: Props) {
 
             </div>
           </section>
+          </>)}
         </>
       ) : null}
 
