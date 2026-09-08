@@ -75,6 +75,11 @@ export type UnifiedEpisode = {
    * Undefined si aucun Reel n'a été associé → la section n'est pas affichée.
    */
   instagramReelUrl?: string
+  /**
+   * true si la vidéo YouTube associée est un Short (format vertical 9:16).
+   * Modifie l'affichage de la vignette dans le header et le lien généré.
+   */
+  isYoutubeShort?: boolean
 }
 
 // ─── Résolution d'image centralisée ───────────────────────────────────────────
@@ -174,6 +179,7 @@ function fromLegacy(
     spotifyEmbedUrl: '',       // legacy : lecteur Spotify géré séparément
     fromRSS:      false,
     instagramReelUrl,
+    isYoutubeShort: extras?.isYoutubeShort,
   }
 }
 
@@ -225,6 +231,7 @@ function fromRss(
       : ep.spotifyEmbedUrl,
     fromRSS:      true,
     instagramReelUrl,
+    isYoutubeShort: extras?.isYoutubeShort,
   }
 }
 

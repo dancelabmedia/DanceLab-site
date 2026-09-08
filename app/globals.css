@@ -14626,6 +14626,22 @@ a.sty-mag-card {
   overflow: hidden;
   background: #000;
 }
+
+/* ── YouTube Short (format vertical 9:16) ── */
+.ep-hero-youtube--short {
+  /* Moins large que la vignette classique : le format vertical est plus haut */
+  width: min(210px, 19%);
+  /* Recentrer verticalement en tenant compte de la hauteur accrue */
+  transform: translateY(calc(-50% + 20px));
+}
+.ep-hero-youtube--short.ep-yt-active {
+  pointer-events: auto;
+}
+.ep-youtube-thumb-wrap--short {
+  aspect-ratio: 9 / 16;
+  /* Limiter la hauteur pour ne pas déborder du hero sur les petits écrans */
+  max-height: min(370px, 52vh);
+}
 .ep-youtube-thumb {
   width: 100%;
   height: 100%;
@@ -15259,6 +15275,14 @@ a.ep-topic-pill:hover {
     left: 16px;
     width: calc(100% - 32px);
     transform: translateY(0) !important;
+  }
+  /* Short vertical : garder une largeur réduite sur mobile */
+  .ep-hero-youtube--short {
+    width: min(150px, 38%);
+    transform: translateY(0) !important;
+  }
+  .ep-youtube-thumb-wrap--short {
+    max-height: min(267px, 44vh);
   }
   .ep-back,
   .ep-kicker,
