@@ -49,6 +49,12 @@ export type EpisodeExtra = {
    */
   youtubeId?: string
   /**
+   * true si la vidéo est un YouTube Short (format vertical 9:16).
+   * Modifie l'affichage de la vignette dans le header (ratio vertical, largeur réduite)
+   * et génère un lien vers youtube.com/shorts/ au lieu de youtube.com/watch.
+   */
+  isYoutubeShort?: boolean
+  /**
    * ID Spotify de l'épisode — uniquement si la détection automatique échoue.
    *
    * La détection automatique récupère cet ID depuis la smartlink Ausha
@@ -105,6 +111,12 @@ export const episodeExtras: Record<number, EpisodeExtra> = {
   126: {
     quote:          "Du côté des artistes, c'est important de savoir dire non si on se sent mal dans un casting.",
     youtubeId:      "4OoUKY9iXm8",
+  },
+  127: {
+    title:          "Ce qu’un danseur ressent juste avant un battle, avec WaaBee",
+    image:          "/images/les-invites/waabee127.png",
+    youtubeId:      "ox0jLHudd34",
+    isYoutubeShort: true,
   },
 
   // ── Reels Instagram — épisodes 70 à 121 ─────────────────────────────────────

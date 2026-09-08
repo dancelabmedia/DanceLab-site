@@ -441,7 +441,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!episode) {
     const unified = await getUnifiedEpisodeBySlug(slug);
     if (!unified) return { title: "Épisode introuvable | Dance Lab" };
-    const imageUrl = unified.aushaImage || unified.image;
+    const socialImage = unified.number === 127
+      ? "/images/les-invites-header/waabee127.png"
+      : unified.aushaImage || unified.image;
+    const imageUrl = socialImage.startsWith("http")
+      ? socialImage
+      : new URL(socialImage, SITE_URL).toString();
     return {
       title: `${unified.title} | Dance Lab`,
       description: unified.excerpt,
@@ -780,9 +785,14 @@ export default async function EpisodePage({ params }: PageProps) {
 // ─── Page pour les épisodes RSS (≥ 122) ──────────────────────────────────────
 
 async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
-  const youtubeId   = unified.youtubeId ?? null;
-  const youtubeHref = youtubeId ? youtubeUrl(youtubeId) : null;
-  const episodeUrl  = new URL(`/episodes/${unified.slug}`, SITE_URL).toString();
+  const youtubeId    = unified.youtubeId ?? null;
+  const isShort      = unified.isYoutubeShort ?? false;
+  const youtubeHref  = youtubeId
+    ? (isShort
+        ? `https://youtube.com/shorts/${youtubeId}`
+        : youtubeUrl(youtubeId))
+    : null;
+  const episodeUrl   = new URL(`/episodes/${unified.slug}`, SITE_URL).toString();
 
   // Épisodes similaires — même logique que les pages statiques
   const allEpisodes     = await getEpisodes();
@@ -790,6 +800,11 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
 
   // Hero image : priorité les-invites-header → les-invites → CDN Ausha
   const heroImage = (() => {
+    // L'épisode WaaBee possède un visuel horizontal dédié : ne jamais
+    // laisser un fallback RSS ou l'image d'un épisode voisin le remplacer.
+    if (unified.number === 127) {
+      return "/images/les-invites-header/waabee127.png";
+    }
     // 1. Cherche dans les-invites-header (même convention de nommage)
     try {
       const headerDir   = path.join(process.cwd(), 'public', 'images', 'les-invites-header');
@@ -831,7 +846,7 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
 
             {/* Lecteur YouTube */}
             {youtubeId ? (
-              <div className="ep-hero-youtube" id="ep-hero-youtube">
+              <div className={`ep-hero-youtube${isShort ? ' ep-hero-youtube--short' : ''}`} id="ep-hero-youtube">
                 <a
                   href={youtubeHref!}
                   target="_blank"
@@ -839,7 +854,7 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
                   className="ep-youtube-link"
                   aria-label={`Regarder « ${unified.title} » sur YouTube`}
                 >
-                  <div className="ep-youtube-thumb-wrap">
+                  <div className={`ep-youtube-thumb-wrap${isShort ? ' ep-youtube-thumb-wrap--short' : ''}`}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={`https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`}
@@ -860,7 +875,9 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
                         <text y="16" fontSize="18" fontFamily="inherit" fontWeight="700" fill="#fff">YouTube</text>
                       </svg>
                     </span>
-                    <span className="ep-youtube-cta">Regarder l&apos;épisode complet</span>
+                    <span className="ep-youtube-cta">
+                      {isShort ? 'Regarder le Short' : 'Regarder l\u2019épisode complet'}
+                    </span>
                   </div>
                 </a>
               </div>
