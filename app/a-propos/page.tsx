@@ -375,7 +375,7 @@ export default function AProposPage() {
             <span className="about-interviews-kicker">Pour aller plus loin</span>
             <h2>Envie d&apos;en savoir plus&nbsp;?</h2>
             <p className="about-interviews-intro">
-              Deux interviews pour découvrir ma vision de la danse, de l&apos;entrepreneuriat
+              Des interviews pour découvrir ma vision de la danse, de l&apos;entrepreneuriat
               et de la création de Dance Lab.
             </p>
           </div>
@@ -386,6 +386,15 @@ export default function AProposPage() {
             />
             <AboutVideoCard
               videoId="uEpARjK5O1c"
+            />
+            <AboutVideoCard
+              instagramReel={{
+                url: "https://www.instagram.com/reel/DHJk8fQoCUz/",
+                // Miniature officielle du Reel (og:image), conservée sans retouche.
+                thumbnailSrc: "/images/reel-DHJk8fQoCUz.jpg",
+                thumbnailWidth: 360,
+                thumbnailHeight: 640,
+              }}
             />
           </div>
 

@@ -1,0 +1,54 @@
+{
+  "episodeNumber": 25,
+  "episodeSlug": "25-danser-pour-survivre-avec-angelina-bruno",
+  "status": "draft",
+  "generatedAt": "2026-09-15T14:14:00.026045Z",
+  "scheduledFor": "2024-10-08T00:01:00+00:00",
+  "article": {
+    "slug": "25-danser-pour-survivre-avec-angelina-bruno",
+    "status": "draft",
+    "publishedAt": "2024-10-08T00:01:00Z",
+    "category": "Portrait",
+    "title": "Danser pour Survivre : De l'Achondroplasie à la Thérapie",
+    "chapo": "Angelina Bruno, danseuse hip-hop, thérapeute corporelle et auteure, a transformé son achondroplasie en force créative. Elle révèle comment le hip-hop a été son refuge, comment elle a étudié la psychologie pour mieux comprendre l'impact de la danse, et comment elle s'est préparée pour danser à la cérémonie d'ouverture des Jeux Paralympiques de Paris 2024.",
+    "meta": "25.04.24 · 5 min de lecture",
+    "publishedDate": "25.04.24",
+    "episodeSlug": "25-danser-pour-survivre-avec-angelina-bruno",
+    "episodeNumber": "#25",
+    "guest": "Angelina Bruno",
+    "image": "https://image.ausha.co/onMfa53A1WBp3KrvBqoFOG3N6USlVA6ij7ZTFgsn_1400x1400.jpeg?t=1784110492",
+    "readTime": "3 min",
+    "tags": [
+      "portrait",
+      "dancelab",
+      "podcast"
+    ],
+    "metaDescription": "Écoutez le parcours et la vision de Angelina Bruno dans ce nouvel épisode du podcast Dance Lab.",
+    "sections": [
+      {
+        "heading": "Le Hip-Hop Comme Refuge et Transformation",
+        "paragraphs": [
+          "Angelina découvre le hip-hop à un moment critique de sa vie, et c'est une révélation. Dans ce qu'elle dégageait et véhiculait, elle se reconnaît profondément. Le hip-hop n'était pas un jugement de ses limites physiques, mais une célébration de sa présence, de son attitude, de son authenticité.",
+          "Elle explique comment cette danse urbaine a sauvé sa vie, comment elle lui a permis de transcender la narration restrictive qu'on imposait à son corps. Le hip-hop est devenu son langage de liberté, son espace d'autodétermination."
+        ]
+      },
+      {
+        "heading": "Psychologie et Danse : Comprendre le Corps comme Thérapie",
+        "paragraphs": [
+          "Angelina a poursuivi ses études en psychologie, reconnaissant que la danse était aussi une pratique thérapeutique. Elle combine sa formation académique avec son expérience de danseuse pour créer une approche holistique du mouvement corporel.",
+          "Elle utilise la dance thérapie pour accompagner d'autres personnes dans leur propre guérison. Son travail reconnaît que le trauma se stocke dans le corps, et que la danse est un outil puissant pour le libérer. Elle a écrit un livre, 'Danser pour survivre', qui raconte cette transformation intime."
+        ]
+      },
+      {
+        "heading": "Paris 2024 : Danser sur la Plus Grande Scène Paralympique",
+        "paragraphs": [
+          "Angelina a participé à la cérémonie d'ouverture des Jeux Paralympiques de Paris 2024, réalisant un rêve qui semblait impossible quelques années auparavant. Cette performance représente plus qu'une danse : c'est une affirmation de présence, une déclaration que les corps handicapés appartiennent à tous les espaces, y compris les plus prestigieux.",
+          "Son parcours inspire une nouvelle génération de danseurs et danseuses handicapés. Elle prouve que l'achondroplasie n'est pas une limite, mais une perspective unique qui enrichit l'art de la danse."
+        ]
+      }
+    ],
+    "conclusion": [
+      "Angelina Bruno redéfinit le possible. Son histoire est une célébration de la résilience, de la créativité, et de la puissance transformatrice de la danse."
+    ]
+  }
+}

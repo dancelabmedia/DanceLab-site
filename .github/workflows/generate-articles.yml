@@ -1,0 +1,104 @@
+##
+## .github/workflows/generate-articles.yml
+## Génération automatique des articles du podcast Dance Lab.
+##
+## Déclenchement :
+##   - Tous les lundis à 7h00 UTC (9h00 Paris en été)
+##   - Manuellement depuis l'onglet "Actions" de GitHub
+##
+## Fonctionnement :
+##   1. Installe les dépendances du projet
+##   2. Vérifie les épisodes Ausha sans article
+##   3. Génère les articles manquants via l'API Claude (Anthropic)
+##   4. Commit les fichiers JSON dans data/podcast-articles/
+##   5. Vercel détecte le commit et redéploie automatiquement
+##
+## Secrets requis dans GitHub → Settings → Secrets and variables → Actions :
+##   ANTHROPIC_API_KEY   — Clé API Anthropic
+##   (Le GITHUB_TOKEN est fourni automatiquement par GitHub Actions)
+##
+## Note : Les articles sont générés en statut "brouillon".
+## Ils ne sont pas visibles sur le site public.
+## Tu peux les valider depuis /admin/articles sur localhost ou en production.
+##
+
+name: Génération automatique des articles podcast
+
+on:
+  # Déclenche tous les lundis à 7h UTC (9h Paris en été)
+  # → L'épisode sort généralement en début de semaine
+  # → L'article est prêt à être validé et programmé pour le mardi suivant
+  schedule:
+    - cron: '0 7 * * 1'
+
+  # Permet de lancer manuellement depuis l'onglet Actions
+  workflow_dispatch:
+    inputs:
+      episode_number:
+        description: 'Numéro d''épisode spécifique à générer (optionnel — laisse vide pour auto)'
+        required: false
+        type: string
+      force_regenerate:
+        description: 'Regénérer même si un article existe déjà'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  generate-articles:
+    name: Générer les articles manquants
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write   # Pour committer les fichiers JSON générés
+
+    steps:
+      # ── 1. Checkout du dépôt ────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── 2. Setup Node.js ────────────────────────────────────────────────────
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # ── 3. Installation des dépendances ─────────────────────────────────────
+      - name: Installer les dépendances
+        run: npm ci
+
+      # ── 4. Génération des articles ──────────────────────────────────────────
+      - name: Générer les articles
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          EPISODE_NUMBER: ${{ github.event.inputs.episode_number }}
+          FORCE_REGENERATE: ${{ github.event.inputs.force_regenerate }}
+        run: |
+          npx tsx scripts/generate-articles.ts \
+            ${EPISODE_NUMBER:+--episode $EPISODE_NUMBER} \
+            ${FORCE_REGENERATE:+--force}
+
+      # ── 5. Commit des fichiers générés ──────────────────────────────────────
+      - name: Vérifier s'il y a des fichiers à committer
+        id: check_changes
+        run: |
+          git diff --quiet data/podcast-articles/ || echo "has_changes=true" >> $GITHUB_OUTPUT
+
+      - name: Commit et push des articles générés
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "Dance Lab Bot"
+          git add data/podcast-articles/
+          git commit -m "✨ Articles podcast générés automatiquement [skip ci]
+
+          Générés le $(date -u '+%d/%m/%Y à %H:%M UTC') par GitHub Actions.
+          Statut : brouillon — en attente de validation éditoriale.
+
+          Pour valider : /admin/articles"
+          git push
+
+      - name: Aucun article à générer
+        if: steps.check_changes.outputs.has_changes != 'true'
+        run: echo "✅ Tous les épisodes ont déjà un article généré — rien à committer."

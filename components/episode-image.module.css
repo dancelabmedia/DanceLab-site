@@ -1,0 +1,33 @@
+/* Opt-in only: images without presentation data keep all existing CSS rules. */
+.image[data-episode-image="framed"] {
+  object-position: var(--epi-position-desktop);
+  object-fit: var(--epi-fit-desktop);
+  aspect-ratio: var(--epi-ratio-desktop);
+  height: var(--epi-height-desktop);
+  max-height: 100%;
+  mask-image: var(--epi-mask-desktop);
+}
+
+.heroCanvas {
+  background: #080808;
+}
+
+@media (max-width: 1060px) {
+  .image[data-episode-image="framed"] {
+    object-position: var(--epi-position-tablet);
+    object-fit: var(--epi-fit-tablet);
+    aspect-ratio: var(--epi-ratio-tablet);
+    height: var(--epi-height-tablet);
+    mask-image: var(--epi-mask-tablet);
+  }
+}
+
+@media (max-width: 620px) {
+  .image[data-episode-image="framed"] {
+    object-position: var(--epi-position-mobile);
+    object-fit: var(--epi-fit-mobile);
+    aspect-ratio: var(--epi-ratio-mobile);
+    height: var(--epi-height-mobile);
+    mask-image: var(--epi-mask-mobile);
+  }
+}

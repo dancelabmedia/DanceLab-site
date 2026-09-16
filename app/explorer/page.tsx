@@ -3,7 +3,7 @@ import { explorerSections } from "./explorer-data"
 export default function ExplorerPage() {
   return (
     <main className="explorer-page">
-      <section className="explorer-hero">
+      <section className="explorer-hero explorer-hero--explorer">
         <div className="container">
           <span className="section-label">Explorer</span>
           <h1>Entrer dans l'univers de la danse par ses langages, ses artistes et ses métiers.</h1>

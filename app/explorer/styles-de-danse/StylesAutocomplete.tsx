@@ -19,19 +19,13 @@ type ResultItem = {
 
 type Props = {
   styles: DanceStyle[]
+  /** Appelé à chaque changement de requête — permet au parent de filtrer la grille */
+  onQueryChange?: (query: string) => void
 }
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
 const HINTS = ["Break", "Waacking", "Années 1970", "États-Unis", "Danses urbaines"]
-
-const MATCH_ICONS: Record<MatchType, string> = {
-  name:     "💃",
-  alias:    "↪",
-  family:   "✦",
-  location: "📍",
-  era:      "🕐",
-}
 
 const MATCH_LABELS: Record<MatchType, string> = {
   name:     "Style",
@@ -54,7 +48,7 @@ function scoreNorm(haystack: string, needle: string): number {
 
 // ── Component ──────────────────────────────────────────────────────────────
 
-export default function StylesAutocomplete({ styles }: Props) {
+export default function StylesAutocomplete({ styles, onQueryChange }: Props) {
   const router = useRouter()
   const [query, setQuery] = useState("")
   const [open, setOpen] = useState(false)
@@ -218,9 +212,11 @@ export default function StylesAutocomplete({ styles }: Props) {
           aria-activedescendant={activeIdx >= 0 ? `${listId}-item-${activeIdx}` : undefined}
           value={query}
           onChange={(e) => {
-            setQuery(e.target.value)
+            const val = e.target.value
+            setQuery(val)
             setOpen(true)
             setActiveIdx(-1)
+            onQueryChange?.(val)
           }}
           onFocus={() => { if (query.trim()) setOpen(true) }}
           onKeyDown={onKeyDown}
@@ -239,6 +235,7 @@ export default function StylesAutocomplete({ styles }: Props) {
               setQuery("")
               setOpen(false)
               setActiveIdx(-1)
+              onQueryChange?.("")
               inputRef.current?.focus()
             }}
           >
@@ -258,33 +255,40 @@ export default function StylesAutocomplete({ styles }: Props) {
           className={`sac-dropdown${showDropdown ? " sac-open" : ""}`}
         >
           {results.length > 0 ? (
-            results.map((item, i) => (
-              <li
-                key={item.slug}
-                id={`${listId}-item-${i}`}
-                role="option"
-                aria-selected={i === activeIdx}
-                className={`sac-item${i === activeIdx ? " sac-item--active" : ""}`}
-                onPointerDown={(e) => {
-                  e.preventDefault() // don't blur input
-                  navigate(item)
-                }}
-                onMouseEnter={() => setActiveIdx(i)}
-              >
-                <span className="sac-item-icon" aria-hidden="true">
-                  {MATCH_ICONS[item.matchType]}
-                </span>
-                <span className="sac-item-body">
-                  <span className="sac-item-name">{item.name}</span>
-                  <span className="sac-item-meta">{item.matchLabel}</span>
-                </span>
-                <span className="sac-item-badge">{MATCH_LABELS[item.matchType]}</span>
-                <span className="sac-item-arrow" aria-hidden="true">→</span>
-              </li>
-            ))
+            results.map((item, i) => {
+              const sourceStyle = styles.find((style) => style.slug === item.slug)
+              const matchedKeywords = sourceStyle?.keywords.filter((keyword) =>
+                normalizeSearchText(keyword).includes(normalizeSearchText(query))
+              ).slice(0, 2) ?? []
+              const detail = item.matchLabel !== sourceStyle?.family
+                ? item.matchLabel
+                : (matchedKeywords.length > 0 ? matchedKeywords : sourceStyle?.aliases?.slice(0, 2))?.join(" · ")
+
+              return (
+                <li
+                  key={item.slug}
+                  id={`${listId}-item-${i}`}
+                  role="option"
+                  aria-selected={i === activeIdx}
+                  className={`sac-item${i === activeIdx ? " sac-item--active" : ""}`}
+                  onPointerDown={(e) => {
+                    e.preventDefault() // don't blur input
+                    navigate(item)
+                  }}
+                  onMouseEnter={() => setActiveIdx(i)}
+                >
+                  <span className="sac-item-body">
+                    <span className="sac-item-name">{item.name}</span>
+                    <span className="sac-item-category">{sourceStyle?.family}</span>
+                    {detail && <span className="sac-item-meta">{detail}</span>}
+                  </span>
+                  <span className="sac-item-badge">{MATCH_LABELS[item.matchType]}</span>
+                  <span className="sac-item-arrow" aria-hidden="true">→</span>
+                </li>
+              )
+            })
           ) : (
             <li className="sac-empty" role="option" aria-selected={false}>
-              <span className="sac-empty-icon" aria-hidden="true">🔍</span>
               <span className="sac-empty-body">
                 <strong>Aucun résultat pour « {query} »</strong>
                 <span>Essayez&nbsp;: {HINTS.map((h, i) => (

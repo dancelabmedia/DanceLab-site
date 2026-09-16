@@ -1,0 +1,61 @@
+{
+  "episodeNumber": 31,
+  "episodeSlug": "31-entre-passion-et-reseaux-sociaux-comment-se-reinventer-sa",
+  "status": "draft",
+  "generatedAt": "2026-09-15T14:14:00.031628Z",
+  "scheduledFor": "2024-11-19T00:01:00+00:00",
+  "article": {
+    "slug": "31-entre-passion-et-reseaux-sociaux-comment-se-reinventer-sa",
+    "status": "draft",
+    "publishedAt": "2024-11-19T00:01:00Z",
+    "category": "Portrait",
+    "title": "Polyvalence Créative : Quand la Danse Rencontre le Vidéo et le Doute",
+    "chapo": "Manuela, danseuse, chorégraphe et vidéographe, navigue l'intersection complexe de multiples passions créatives. Elle révèle comment elle gère l'anxiété de performance, le poids de l'imposter syndrome, et comment la création vidéo devient à la fois un exutoire créatif et un refuge face à l'hyperactivité chronique.",
+    "meta": "25.04.24 · 5 min de lecture",
+    "publishedDate": "25.04.24",
+    "episodeSlug": "31-entre-passion-et-reseaux-sociaux-comment-se-reinventer-sa",
+    "episodeNumber": "#31",
+    "guest": "Manuela",
+    "image": "https://image.ausha.co/AdRb8tngNIfrIrrH8ipkBhQErh3h07dSuTL9LjEF_1400x1400.jpeg?t=1784120967",
+    "readTime": "3 min",
+    "tags": [
+      "portrait",
+      "dancelab",
+      "podcast"
+    ],
+    "metaDescription": "Écoutez le parcours et la vision de Manuela dans ce nouvel épisode du podcast Dance Lab.",
+    "sections": [
+      {
+        "heading": "Hyperactivité Créative : Trop de Passions, Pas Assez de Temps",
+        "paragraphs": [
+          "Manuela est quelqu'un d'assez hyper active, qui aime faire énormément de choses, et elle ne se voit pas que danser. Cette multiplicité des intérêts est à la fois une force et une source de tension. Elle doit négocier constamment entre ses différentes passions.",
+          "Elle explique comment jongler entre la danse, la chorégraphie, et la vidéo. Chacune de ces disciplines demande une attention complète, une maîtrise technique, une investissement émotionnel. Mais elle refuse de se limiter."
+        ]
+      },
+      {
+        "heading": "Vidéo Comme Refuge Thérapeutique",
+        "paragraphs": [
+          "La création vidéo devient pour Manuela un espace thérapeutique. Quand l'anxiété de performance la paralyse pour danser, la vidéo lui permet de créer sans cette pression directe. Elle contrôle l'espace, le temps, les retakes.",
+          "Mais elle reconnaît aussi que ce refuge peut devenir une échappatoire. La vidéo produit, elle te donne du feedback immédiat, elle t'affirme. Danser en direct demand une vulnérabilité plus grande, une acceptation du moment présent et de l'imperfection."
+        ]
+      },
+      {
+        "heading": "Algorithmes et Pression Social Media : L'Ombre de la Visibilité",
+        "paragraphs": [
+          "Manuela discute l'impact psychologique des réseaux sociaux. Les algoritmes de recommandation créent une pression inhérente : pour rester visible, pour être pertinente, il faut produire constamment, adapter son contenu aux tendances.",
+          "Elle partage comment cette pression externe nourrit son hyperactivité interne, créant une boucle où elle ne peut jamais véritablement s'arrêter, où le repos est perçu comme une forme de stagnation."
+        ]
+      },
+      {
+        "heading": "Syndrome de l'Imposteur et Affirmation de Valeur",
+        "paragraphs": [
+          "Malgré ses accomplissements multiples, Manuela lutte avec l'imposter syndrome. Elle se demande si sa polyvalence est une force ou une forme de dilution de son talent. Est-elle vraiment bonne danseuse ? Vraiment bonne vidéographe ?",
+          "Elle apprend graduellement que cette multiplicité est sa signature unique. Elle n'est pas prisonnière de faire du choix entre ses passions, elle peut les intégrer dans une vision cohérente. C'est son processus de se affirmer malgré les doutes."
+        ]
+      }
+    ],
+    "conclusion": [
+      "Manuela inspire tous ceux qui se demandent s'ils peuvent vraiment poursuivre leurs multiples passions. Sa réponse : oui, mais avec de la conscience, de la strategy, et beaucoup d'auto-compassion."
+    ]
+  }
+}

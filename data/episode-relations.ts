@@ -2,16 +2,33 @@
  * data/episode-relations.ts
  * Groupes éditoriaux manuels pour la section « Épisodes similaires ».
  *
- * Ces données complètent la détection automatique par mots-clés (THEME_CLUSTERS)
- * en capturant des liens que les textes libres ne permettent pas d'inférer :
- * séries d'épisodes, même invité récurrent, univers thématique précis, etc.
- *
- * Hiérarchie de scoring (voir getSimilarEpisodes dans page.tsx) :
- *   1. Même série (EPISODE_SERIES)      → +10 pts
- *   2. Même invité récurrent            → +7  pts
- *   3. Même cluster thématique          → +5  pts (cumulatif si plusieurs clusters)
- *   4. Thème textuel partagé            → +1  pt  (cumulatif, depuis THEME_CLUSTERS)
+ * Les rapprochements explicitement validés ci-dessous précèdent l'automatique.
+ * Les séries, groupes de styles et invités récurrents ne sont pas des preuves
+ * qu'un sujet est abordé : ils ne doivent jamais supplanter les sujets de fond.
+ * Moteur commun aux pages historiques et RSS : lib/episode-recommendations.ts.
  */
+
+export type EditorialRecommendation = {
+  episode: number
+  reason: string
+  themes: string[]
+}
+
+/** Numéros stables, indépendants des slugs RSS. L'ordre est éditorial. */
+export const EDITORIAL_RECOMMENDATIONS: Record<number, EditorialRecommendation[]> = {
+  128: [
+    {
+      episode: 22,
+      reason: 'Wilfried Bernard / The Pack → Ilies Pidzy : handicap, inclusion et accès au métier de danseur.',
+      themes: ['handicap', 'inclusion', 'accessibilite'],
+    },
+    {
+      episode: 25,
+      reason: 'Wilfried Bernard / The Pack → Angelina Bruno : inclusion et normalisation des corps différents dans la danse.',
+      themes: ['handicap', 'inclusion', 'diversite_corps'],
+    },
+  ],
+}
 
 // ─── Séries formelles ──────────────────────────────────────────────────────────
 // Episodes appartenant à une même série éditoriale (même univers / même concept).
@@ -26,8 +43,8 @@ export const EPISODE_SERIES: Record<string, number[]> = {
 }
 
 // ─── Clusters thématiques éditoriaux ──────────────────────────────────────────
-// Groupes éditoriaux pour des styles, pratiques ou sujets non couverts (ou mal
-// couverts) par la détection automatique de THEME_CLUSTERS dans page.tsx.
+// Anciens regroupements conservés comme repères éditoriaux. Ils n'attribuent
+// plus de points : l'appartenance à un univers ne prouve pas un sujet commun.
 
 export const EPISODE_CLUSTERS: Record<string, number[]> = {
   /** Voguing & Ball culture */
@@ -37,7 +54,7 @@ export const EPISODE_CLUSTERS: Record<string, number[]> = {
   club: [86, 95, 97, 107],
 
   /** Battles de danse */
-  battles: [6, 88, 103],
+  battles: [6, 88, 103, 127],
 
   /** Danse Avec Les Stars (DALS) */
   dals: [62, 72],
@@ -78,7 +95,7 @@ export const EPISODE_CLUSTERS: Record<string, number[]> = {
 
 // ─── Invités récurrents ────────────────────────────────────────────────────────
 // Chaque tableau regroupe les numéros d'épisodes d'un même invité.
-// Les épisodes CND sont inclus ici aussi (cumul de score justifié).
+// Un invité récurrent ne constitue qu'un lien secondaire, pas un sujet de fond.
 
 export const SAME_GUEST_GROUPS: number[][] = [
   [63, 65, 67, 75, 77, 79, 81], // Samuela Berdah & Raphaëlle Petitperrin

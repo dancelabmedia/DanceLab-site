@@ -1,0 +1,57 @@
+{
+  "episodeNumber": 65,
+  "episodeSlug": "samuela-berdah-et-raphaëlle-petitperrin-cn-d-comment-protege",
+  "status": "brouillon",
+  "article": {
+    "episodeNumber": 65,
+    "episodeSlug": "samuela-berdah-et-raphaëlle-petitperrin-cn-d-comment-protege",
+    "guest": "CN D",
+    "category": "Portrait",
+    "status": "draft",
+    "image": "https://image.ausha.co/tO9fba0en3OnRUT0t5NOPLwHCC1syRM0T2O2xjA3_1400x1400.jpeg?t=1784116865",
+    "slug": "65-samuela-berdah-et-raphaëlle-petitperrin-cn-d-comment-protege",
+    "title": "Droit d'auteur et chorégraphie : Protéger votre création artistique",
+    "chapo": "Raphaëlle Petitperrin et Samuela Berdah du Centre National de la Danse expliquent comment les chorégraphies sont protégées légalement. Entre inspiration légitime et plagiat, découvrez vos droits et obligations en tant que créateur.",
+    "sections": [
+      {
+        "heading": "Ce qui est protégé : la chorégraphie comme œuvre",
+        "paragraphs": [
+          "Une chorégraphie, dès sa création, est automatiquement protégée par le droit d'auteur. Contrairement à certaines idées reçues, nul besoin de dépôt ou d'enregistrement officiel : la création elle-même confère la protection légale. Cette œuvre appartient au chorégraphe, même si elle est créée dans le cadre d'un contrat de travail. Cette protection s'étend à la composition de la danse, aux mouvements caractéristiques et à leur enchaînement."
+        ]
+      },
+      {
+        "heading": "Inspiration vs plagiat : où tracer la ligne ?",
+        "paragraphs": [
+          "S'inspirer est légitime et créatif ; plagier est illégal et contraire à l'éthique artistique. L'inspiration signifie prendre une idée générale et la retravailler, la transformer, la faire sienne. Le plagiat, c'est reprendre intégralement une création sans modification substancielle. Les procédures légales permettent de démontrer la différence et, si nécessaire, d'obtenir réparation. Mais cette démonstration exige une documentation rigoureuse de votre création originale."
+        ]
+      },
+      {
+        "heading": "Procédures légales et protection concrète",
+        "paragraphs": [
+          "En cas de violation de droits d'auteur, plusieurs recours existent : mise en demeure, médiation, ou procédure judiciaire. Documenter sa création (vidéos datées, témoignages, droits d'enregistrement) renforce considérablement votre position. Les procédures judiciaires en droit d'auteur peuvent être coûteuses mais nécessaires pour défendre votre travail. La jurisprudence en France reconnaît de plus en plus l'originalité de la chorégraphie comme critère central."
+        ]
+      },
+      {
+        "heading": "Contrats, clauses et transfert de droits",
+        "paragraphs": [
+          "Avant toute collaboration créative, un contrat clair est essentiel. Qui détient les droits d'auteur ? La chorégraphie peut-elle être modifiée ? Qui perçoit les revenus en cas de représentation ultérieure ? Ces questions demandent une rédaction précise. Même lorsqu'un danseur interprète devient chorégraphe, les droits restent clairs si le contrat initial était bien structuré. C'est un élément contractuel fondamental souvent négligé."
+        ]
+      }
+    ],
+    "conclusion": "Comprendre et défendre ses droits d'auteur c'est reconnaître la valeur intellectuelle et créative de la chorégraphie. C'est investir dans l'avenir de votre travail artistique.",
+    "tags": [
+      "portrait",
+      "dancelab",
+      "podcast",
+      "artiste",
+      "danse"
+    ],
+    "metaDescription": "Découvrez CN D dans Dance Lab : son parcours, ses défis, sa vision artistique. Un épisode riche qui explore la danse contemporaine en profondeur.",
+    "readTime": "3 min",
+    "publishedDate": "15.07.25",
+    "publishedAt": "2025-07-15T00:01:00Z",
+    "meta": "15.07.25 · 5 min de lecture"
+  },
+  "generatedAt": "2026-09-15T16:23:33.866360Z",
+  "scheduledFor": "2025-07-15T00:01:00Z"
+}

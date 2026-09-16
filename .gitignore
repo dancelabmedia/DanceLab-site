@@ -10,3 +10,4 @@ dancelab.db
 dancelab.db-shm
 dancelab.db-wal
 *.numbers
+data/podcast-articles/*.tmp

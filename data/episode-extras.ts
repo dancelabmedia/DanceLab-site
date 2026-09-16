@@ -32,6 +32,8 @@
  * ─── Clé = numéro d'épisode ─────────────────────────────────────────────────
  */
 
+import type { EpisodeImagePresentation } from '../lib/episode-image-presentation'
+
 export type EpisodeExtra = {
   /** Citation mise en avant */
   quote?: string
@@ -42,6 +44,10 @@ export type EpisodeExtra = {
   title?: string
   /** Chemin image personnalisé (ex : "/episodes/mylene-amboka.jpg") */
   image?: string
+  /** Existing horizontal asset used in the episode hero (not a generated image). */
+  headerImage?: string
+  /** Per source image, with independent desktop/tablet/mobile framing. */
+  imagePresentations?: Record<string, EpisodeImagePresentation>
   /**
    * ID YouTube (11 caractères) si la correspondance automatique échoue.
    * Utilisé aussi pour les épisodes trop anciens pour figurer dans le flux RSS YouTube.
@@ -115,8 +121,44 @@ export const episodeExtras: Record<number, EpisodeExtra> = {
   127: {
     title:          "Ce qu’un danseur ressent juste avant un battle, avec WaaBee",
     image:          "/images/les-invites/waabee127.png",
+    headerImage:    "/images/les-invites-header/waabee127.png",
     youtubeId:      "ox0jLHudd34",
     isYoutubeShort: true,
+    quote:          "Un battle, ça définit pas ta danse, ton talent, ton niveau. Donc juste, amuse-toi.",
+  },
+
+  128: {
+    image: '/images/les-invites/128wilfriedbernard.png',
+    headerImage: '/images/les-invites-header/128wilfriedbernard.png',
+    imagePresentations: {
+      // 16:9 photograph: Wilfried occupies the right-hand third, not the centre.
+      '/images/les-invites-header/128wilfriedbernard.png': {
+        width: 1280, height: 720,
+        desktop: { objectPosition: '100% 35%', objectFit: 'cover' },
+        tablet: { objectPosition: '100% 40%' },
+        // Keep the face above the editorial text instead of magnifying a
+        // landscape photo to fill the entire tall mobile hero.
+        mobile: { objectPosition: '100% 20%', aspectRatio: '4 / 3', fadeBottom: true },
+      },
+      // Clean square portrait: the head sits slightly right and above centre.
+      '/images/les-invites/128wilfriedbernard.png': {
+        width: 1080, height: 1080,
+        desktop: { objectPosition: '55% 30%', objectFit: 'cover', aspectRatio: '1 / 1' },
+        tablet: { objectPosition: '55% 25%' },
+        mobile: { objectPosition: '55% 20%' },
+      },
+      // Branded cover: preserve the logo, name and frame as well as the face.
+      // Not added to the page; available if this exact source is rendered.
+      '/episodes/128wilfriedbernard.png': {
+        width: 1080, height: 1080,
+        desktop: { objectPosition: '50% 50%', objectFit: 'contain', aspectRatio: '1 / 1' },
+      },
+      // Actual YouTube thumbnail: two faces and typography near the edges.
+      'https://img.youtube.com/vi/GOx8Ku3kiGs/maxresdefault.jpg': {
+        width: 1280, height: 720,
+        desktop: { objectPosition: '50% 50%', objectFit: 'contain', aspectRatio: '16 / 9' },
+      },
+    },
   },
 
   // ── Reels Instagram — épisodes 70 à 121 ─────────────────────────────────────

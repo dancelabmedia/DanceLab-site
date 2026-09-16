@@ -40,6 +40,7 @@ export type MagazineArticle = {
   imageCredit?: string
   readTime: string
   tags: string[]
+  metaDescription?: string  // Meta description SEO (générée automatiquement pour les articles podcast)
   quote?: string
   sections: {
     heading: string

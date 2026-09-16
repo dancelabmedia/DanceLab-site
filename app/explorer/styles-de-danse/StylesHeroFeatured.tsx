@@ -3,9 +3,10 @@
 import { useMemo, useState, useRef, useEffect, useLayoutEffect, useCallback } from "react"
 import { createPortal } from "react-dom"
 import { STYLE_FAMILIES, type DanceStyle, type DanceStyleFamily } from "./styles-data"
+import { normalizeSearchText } from "../../../data/search"
 import StylesStats from "./StylesStats"
 import StylesAutocomplete from "./StylesAutocomplete"
-import StylesCarousel from "./StylesCarousel"
+import StylesGrid from "./StylesGrid"
 
 const ALL = "Tous les styles"
 
@@ -18,12 +19,13 @@ type AnyStyle = {
   summary?: string
   image?: string
   available?: boolean
+  keywords?: string[]
 }
 
 type Props = {
-  /** Styles disponibles (fiches complètes) — pour la recherche et les filtres */
+  /** Styles disponibles (fiches complètes) — pour l'autocomplétion */
   availableStyles: DanceStyle[]
-  /** Tous les styles y compris "à venir" — passés au carrousel */
+  /** Tous les styles y compris "à venir" — passés à la grille */
   allStyles: AnyStyle[]
   stylesCount: number
   episodesCount: number
@@ -36,11 +38,12 @@ export default function StylesHeroFeatured({
   episodesCount,
 }: Props) {
   const [activeFamily, setActiveFamily] = useState<string>(ALL)
-  const [isOpen, setIsOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
-  const [menuPos, setMenuPos] = useState<React.CSSProperties>({})
-  const btnRef = useRef<HTMLButtonElement>(null)
-  const menuRef = useRef<HTMLUListElement>(null)
+  const [searchQuery, setSearchQuery]   = useState("")
+  const [isOpen, setIsOpen]             = useState(false)
+  const [mounted, setMounted]           = useState(false)
+  const [menuPos, setMenuPos]           = useState<React.CSSProperties>({})
+  const btnRef      = useRef<HTMLButtonElement>(null)
+  const menuRef     = useRef<HTMLUListElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   /* ── Hydratation côté client ─────────────────────────────────── */
@@ -103,11 +106,29 @@ export default function StylesHeroFeatured({
     return [ALL, ...STYLE_FAMILIES.filter((f) => present.includes(f as DanceStyleFamily))]
   }, [availableStyles])
 
-  /* ── Filtrage du carrousel ────────────────────────────────────── */
+  /* ── Filtrage pour la grille (famille + recherche textuelle) ─── */
   const filteredStyles = useMemo(() => {
-    if (activeFamily === ALL) return allStyles
-    return allStyles.filter((s) => s.family === activeFamily)
-  }, [allStyles, activeFamily])
+    let result = allStyles
+
+    // Filtre famille
+    if (activeFamily !== ALL) {
+      result = result.filter((s) => s.family === activeFamily)
+    }
+
+    // Filtre recherche textuelle (simple includes — l'autocomplétion fait le travail fin)
+    const norm = normalizeSearchText(searchQuery)
+    if (norm) {
+      result = result.filter((s) => {
+        if (normalizeSearchText(s.name).includes(norm)) return true
+        if (s.aliases?.some((a) => normalizeSearchText(a).includes(norm))) return true
+        if (normalizeSearchText(s.family).includes(norm)) return true
+        if ((s.keywords ?? []).some((k) => normalizeSearchText(k).includes(norm))) return true
+        return false
+      })
+    }
+
+    return result
+  }, [allStyles, activeFamily, searchQuery])
 
   return (
     <>
@@ -119,7 +140,7 @@ export default function StylesHeroFeatured({
         {/* Image de fond plein cadre */}
         <div className="sty-hero-bg" aria-hidden="true">
           <img
-            src="/images/styles-de-danse/break.png"
+            src="/images/fond2.png"
             alt=""
             className="sty-hero-bg-img"
           />
@@ -147,10 +168,13 @@ export default function StylesHeroFeatured({
             episodesCount={episodesCount}
           />
 
-          {/* ── Recherche + filtres — intégrés dans le header ──────── */}
+          {/* ── Recherche + filtres ──────────────────────────────── */}
           <div className="sty-hero-search">
             {/* Barre de recherche avec autocomplétion */}
-            <StylesAutocomplete styles={availableStyles} />
+            <StylesAutocomplete
+              styles={availableStyles}
+              onQueryChange={setSearchQuery}
+            />
 
             {/* Filtre par famille — bouton déroulant (menu via portal) */}
             <div
@@ -223,19 +247,13 @@ export default function StylesHeroFeatured({
       </section>
 
       {/* ════════════════════════════════════════
-          CARROUSEL — filtré par la famille active
+          GRILLE UNIQUE — tous les styles
+          (filtrée par famille + recherche)
       ════════════════════════════════════════ */}
-      <section className="sty-featured">
-
-        <StylesCarousel styles={filteredStyles} />
-
-        <div className="sty-viewall" id="sty-explorer">
-          <a href="#sty-explorer" className="sty-viewall-link">
-            Voir tous les styles <span aria-hidden="true">→</span>
-          </a>
-        </div>
-
-      </section>
+      <StylesGrid
+        styles={filteredStyles}
+        totalCount={allStyles.length}
+      />
     </>
   )
 }

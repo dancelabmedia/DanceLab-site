@@ -2,7 +2,6 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import StylesHeroFeatured from "./StylesHeroFeatured"
 import StylesReveal from "./StylesReveal"
-import StylesScrollGallery from "./StylesScrollGallery"
 import MissionReveal from "../../../components/MissionReveal"
 import { danceStyles, upcomingStyles } from "./styles-data"
 import { withDedicatedStyleImages } from "./style-image-resolver"
@@ -30,37 +29,39 @@ export const metadata: Metadata = {
 export const revalidate = 3600
 
 export default async function StylesDeDansePage() {
-  const resolvedDanceStyles = withDedicatedStyleImages(danceStyles)
+  const resolvedDanceStyles    = withDedicatedStyleImages(danceStyles)
   const resolvedUpcomingStyles = withDedicatedStyleImages(upcomingStyles)
 
   // Source de vérité : même données que la page Écouter (legacy + RSS Ausha)
   const episodes = await getEpisodes()
 
+  // Tous les styles (disponibles + à venir), triés alphabétiquement
+  const allStyles = [
+    ...resolvedDanceStyles,
+    ...resolvedUpcomingStyles.filter(
+      (u) => !resolvedDanceStyles.some((s) => s.slug === u.slug)
+    ),
+  ].sort((a, b) => a.name.localeCompare(b.name, "fr", { sensitivity: "base" }))
+
   return (
     <main className="sty-page">
 
       {/* ════════════════════════════════════════
-          HERO + RECHERCHE / FILTRES + CARROUSEL
-          (état partagé via StylesHeroFeatured)
+          1. HERO + RECHERCHE / FILTRES + GRILLE UNIQUE
       ════════════════════════════════════════ */}
       <StylesHeroFeatured
         availableStyles={resolvedDanceStyles}
-        allStyles={[
-          ...resolvedDanceStyles,
-          ...resolvedUpcomingStyles.filter(
-            (u) => !resolvedDanceStyles.some((s) => s.slug === u.slug)
-          ),
-        ].sort((a, b) => a.name.localeCompare(b.name, "fr", { sensitivity: "base" }))}
+        allStyles={allStyles}
         stylesCount={danceStyles.length}
         episodesCount={episodes.length}
       />
 
       {/* ════════════════════════════════════════
-          VALEURS — même structure que « La mission de Dance Lab » (À propos)
+          2. LA DÉMARCHE DANCE LAB
       ════════════════════════════════════════ */}
-      <section className="about-mission">
+      <section className="about-mission sty-demarche">
 
-        {/* Fond abstrait — halos lumineux diffus, identiques à ceux de la page À propos */}
+        {/* Fond abstrait — halos lumineux diffus */}
         <div className="about-mission-bg" aria-hidden="true">
           <div className="about-mission-halo about-mission-halo-1" />
           <div className="about-mission-halo about-mission-halo-2" />
@@ -118,19 +119,7 @@ export default async function StylesDeDansePage() {
       </section>
 
       {/* ════════════════════════════════════════
-          GALERIE SCROLL-DRIVEN — tous les styles
-      ════════════════════════════════════════ */}
-      <StylesScrollGallery
-        styles={[
-          ...resolvedDanceStyles,
-          ...resolvedUpcomingStyles.filter(
-            (u) => !resolvedDanceStyles.some((s) => s.slug === u.slug)
-          ),
-        ].sort((a, b) => a.name.localeCompare(b.name, "fr", { sensitivity: "base" }))}
-      />
-
-      {/* ════════════════════════════════════════
-          MAGAZINE — trois cartes articles
+          3. DANS LE MAGAZINE
       ════════════════════════════════════════ */}
       <section className="sty-magazine" data-reveal>
         <div className="container">
@@ -201,7 +190,7 @@ export default async function StylesDeDansePage() {
       </section>
 
       {/* ════════════════════════════════════════
-          PODCAST — grande bannière bleu nuit
+          4. PODCAST — grande bannière bleu nuit
       ════════════════════════════════════════ */}
       <section className="sty-podcast-wrap" data-reveal>
         <div className="container">

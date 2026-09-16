@@ -3,11 +3,11 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import HistoryBackLink from "../../../../components/HistoryBackLink"
 import {
-  getMagazineArticleBySlug,
   getPublishedArticles,
   isArticlePublished,
   type DocLink,
 } from "../../articles-data"
+import { getArticleBySlug, getAllPublishedSlugs } from "@/lib/all-articles"
 import CommentsSection from "../../../components/CommentsSection"
 import ArticleHeroSlider from "./ArticleHeroSlider"
 import ScrollReveal from "../../../../components/ScrollReveal"
@@ -69,14 +69,12 @@ export function generateStaticParams() {
   // Ne pré-génère que les articles déjà publiés au moment du build.
   // Les articles programmés dans le futur seront rendus à la demande
   // (dynamicParams = true par défaut) et mis en cache après leur first request.
-  return getPublishedArticles().map((article) => ({
-    slug: article.slug,
-  }))
+  return getAllPublishedSlugs().map((slug) => ({ slug }))
 }
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params
-  const article = getMagazineArticleBySlug(slug)
+  const article = getArticleBySlug(slug)
 
   if (!article || !isArticlePublished(article)) {
     return {
@@ -98,7 +96,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params
-  const article = getMagazineArticleBySlug(slug)
+  const article = getArticleBySlug(slug)
 
   // Guard : brouillons et articles programmés → 404 publique
   // Un visiteur qui connaîtrait l'URL en avance ne peut pas lire l'article

@@ -1,0 +1,58 @@
+{
+  "episodeNumber": 78,
+  "episodeSlug": "78-avec-nicolas-huchard",
+  "status": "brouillon",
+  "generatedAt": "2026-09-15T16:01:25.425785Z",
+  "scheduledFor": "2025-10-14T07:00:00Z",
+  "article": {
+    "slug": "78-78-avec-nicolas-huchard",
+    "status": "draft",
+    "publishedAt": "2025-10-14T07:00:00Z",
+    "category": "Portrait",
+    "title": "Nicolas Huchard : Chorégraphier au-Delà des Normes et Construire une Marque Authentique",
+    "chapo": "Nicolas Huchard révèle son processus créatif, ses angoisses face au casting, et sa vision d'une danse plus diverse et inclusive. Entre la pression de créer continuellement et la liberté d'innovér, découvrez comment il construit une marque artistique unique tout en naviguant les attentes de l'industrie.",
+    "meta": "14.10.25 · 7 min de lecture",
+    "publishedDate": "14.10.25",
+    "episodeSlug": "78-avec-nicolas-huchard",
+    "episodeNumber": "#78",
+    "guest": "Nicolas Huchard",
+    "image": "https://image.ausha.co/sF8pKz0QMnL7jHxY4ZvKwT2R8nUvWxZ9pQ5mJ3xK_1400x1400.jpeg?t=1784115890",
+    "readTime": "7 min",
+    "tags": ["portrait", "dancelab", "podcast", "chorégraphie", "danse", "diversité"],
+    "metaDescription": "Nicolas Huchard partage son processus chorégraphique, l'angoisse du casting, et sa volonté de transformer la danse contemporaine vers plus de diversité et d'inclusion.",
+    "sections": [
+      {
+        "heading": "Le Processus Créatif : Entre Vision Personnelle et Réalité de Production",
+        "paragraphs": [
+          "Nicolas Huchard décrit son processus chorégraphique comme intensément personnel et parfois chaotique. Il commence souvent par une image, une musique, ou une émotion plutôt qu'un concept intellectual défini. Cette approche intuitive crée des univers musicaux et kinesthétiques singuliers, mais elle pose aussi des défis pratiques : comment transmettre cette vision à des danseurs, à une équipe, à un public ?",
+          "Il explique comment il travaille avec ses danseurs pour transformer son intuition créative en mouvements concrets. C'est un processus dialogué où les danseursapportent leur propre corporéité et créativité. Nicolas ne cherche pas des exécutants parfaits de sa vision : il cherche des collaborateurs qui comprennent l'énergie et la direction générale de la pièce, et qui apportent leur propre contribution. Cette approche collaborative rendrait sa création plus riche mais aussi plus vulnérable aux interprétations divergentes."
+        ]
+      },
+      {
+        "heading": "L'Angoisse du Casting : Chercher les Bons Corps et les Bonnes Énergies",
+        "paragraphs": [
+          "Nicolas parle ouvertement de l'anxiété qu'il ressent lors des castings. Ce n'est pas seulement du stress technique : c'est une inquiétude profonde de ne pas trouver les danseurs capables de porter sa vision. Il décrit le casting comme une quête où chaque danseur testé le rapproche ou l'éloigne de ce qu'il cherche instinctivement.",
+          "Un problème récurrent : les casting mettent souvent l'accent sur la technique pure, laissant peu de place pour évaluer la présence, l'énergie, ou la personnalité du danseur. Nicolas a appris à regarder au-delà de la perfection technique pour identifier les danseurs ayant la qualité d'énergie qu'il cherche. Parfois, ce ne sont pas les techniquement les plus doués, mais ceux qui comprennent l'esprit de la pièce et qui apportent une présence scénique authentique."
+        ]
+      },
+      {
+        "heading": "La Diversité Comme Nécessité Créative et Éthique",
+        "paragraphs": [
+          "Nicolas affirme que la diversité dans son casting n'est pas une décision politique : c'est une nécessité créative. En incluant des corps différents, des origines diverses, des expériences variées, il crée des univers chorégraphiques plus riches et plus authentiques. Les monocultures corporelles, selon lui, produisent des pièces limitées et prévisibles.",
+          "Il critique l'industrie de la danse qui continue à valoriser un type de corps très spécifique : mince, généralement blanc, conformiste. Cette standardisation tue la créativité. Nicolas s'engage à chercher activement des danseurs issus de communautés sous-représentées, non pas par quota, mais par conviction que cela enrichit son travail. Il souligne que cette diversité commence au moment du casting et s'étend à toute la production : qui raconte les histoires ? Qui a le pouvoir créatif ? Qui en bénéficie ?"
+        ]
+      },
+      {
+        "heading": "Construire une Marque Artistique Authentique",
+        "paragraphs": [
+          "Nicolas parle de l'importance de construire une marque artistique cohérente sans devenir prisonnier de son propre style. Au début de sa carrière, il se sentait pressé de répéter les succès, de consolider une identité artistique reconnaissable. Maintenant, il voit l'importance d'évoluer tout en maintenant une cohérence de vision.",
+          "Il encourage les danseurs et chorégraphes à investir dans leur propre narration artistique. Comment souhaitez-vous être connus ? Qu'est-ce qui caractérise vraiment votre univers ? Nicolas a appris à refuser les projets qui ne correspondent pas à sa vision, même s'ils offrent une visibilité ou une rémunération attractives. Cette fidélité à soi-même demande du courage et de la clarté, mais elle est la base pour construire une carrière significative et durable."
+        ]
+      }
+    ],
+    "conclusion": [
+      "Nicolas Huchard nous propose une vision de la chorégraphie où la technique et la vision artistique se rencontrent, mais où l'essence reste la relation humaine entre les danseurs et la création collective.",
+      "Son parcours montre qu'il est possible de rester fidèle à sa vision tout en étant ouvert au changement. La danse contemporaine a besoin de plus de chorégraphes comme Nicolas, qui ont le courage de remettre en question les normes et de construire des univers vraiment inclusifs et innovants."
+    ]
+  }
+}

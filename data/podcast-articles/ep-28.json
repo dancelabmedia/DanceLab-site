@@ -1,0 +1,54 @@
+{
+  "episodeNumber": 28,
+  "episodeSlug": "28-doute-et-resilience-conditions-et-sante-mentale-avec-shir",
+  "status": "draft",
+  "generatedAt": "2026-09-15T14:14:00.028769Z",
+  "scheduledFor": "2024-10-29T00:01:00+00:00",
+  "article": {
+    "slug": "28-doute-et-resilience-conditions-et-sante-mentale-avec-shir",
+    "status": "draft",
+    "publishedAt": "2024-10-29T00:01:00Z",
+    "category": "Portrait",
+    "title": "Les Réalités Cachées : Travail Impayé, Précarité, et Santé Mentale",
+    "chapo": "Shirwann Jeammes, danseur hip-hop et danseur cascade, expose sans détour les réalités brutales du secteur danse. Au-delà de la passion, il parle du travail impayé, de la précarité économique, de l'absence de représentation syndicale, et du toll psychologique sur les artistes.",
+    "meta": "25.04.24 · 5 min de lecture",
+    "publishedDate": "25.04.24",
+    "episodeSlug": "28-doute-et-resilience-conditions-et-sante-mentale-avec-shir",
+    "episodeNumber": "#28",
+    "guest": "Shirwann Jeammes",
+    "image": "https://image.ausha.co/yeAhvkU4h5snJzyoiOb75dBTdHq3MgIKMKp5OBzB_1400x1400.jpeg?t=1784119087",
+    "readTime": "3 min",
+    "tags": [
+      "portrait",
+      "dancelab",
+      "podcast"
+    ],
+    "metaDescription": "Écoutez le parcours et la vision de Shirwann Jeammes dans ce nouvel épisode du podcast Dance Lab.",
+    "sections": [
+      {
+        "heading": "Travail Impayé et Économie de l'Exploitation",
+        "paragraphs": [
+          "Shirwann raconte l'expérience amère de danser gratuitement, de proposer son talent dans l'espoir que l'exposition mènera à des opportunités futures. Il énumère les conditions précaires : pas de contrat, pas de couverture sociale, pas de garant de paiement.",
+          "Il explique comment l'industrie a normalisé l'exploitation, enrobée dans le langage de la passion. Les producteurs disent : 'Vous devriez être honoré de danser pour notre production.' C'est une forme sophistiquée d'exploitation qui paralyse les danseurs, qui ont peur de se plaindre de peur de perdre des opportunités."
+        ]
+      },
+      {
+        "heading": "Le Tabou de la Négociation Salariale et l'Absence d'Union",
+        "paragraphs": [
+          "Shirwann soulève un sujet rarement discuté publiquement : combien devrait coûter une prestation de danse ? Dans la plupart des industries, ces questions sont réglées par des syndicats. Mais dans la danse, il n'existe pas de structure de protection collective.",
+          "Il parle du tabou de discuter d'argent, comment les danseurs sont conduits à croire que demander une compensation juste est une forme de mercantilisme qui dénaturerait leur art. Cette absence de représentation syndicale laisse les danseurs isolés, vulnérables à l'exploitation."
+        ]
+      },
+      {
+        "heading": "Santé Mentale et Charge Psychologique : Le Prix Caché",
+        "paragraphs": [
+          "Shirwann révèle le vrai coût émotionnel : l'incertitude constante, la peur du lendemain, l'impossibilité de planifier. Quand tu ne sais pas comment payer ton loyer le mois prochain, la danse devient un luxe de réflexion émotionnelle.",
+          "Il appelle à une réévaluation radicale : la chance doit aussi se provoquer, on doit aller chercher les choses qu'on veut avoir. Mais il ne faut pas le faire seul, sans protection, sans filet de sécurité. Son message est clair : le système est brisé, et il faut le restructurer pour respecter la dignité des artistes."
+        ]
+      }
+    ],
+    "conclusion": [
+      "Shirwann Jeammes force une reckoning avec les injustices économiques du secteur danse. Son courage de parler est un acte politique, un plaidoyer pour une danse juste et durable."
+    ]
+  }
+}

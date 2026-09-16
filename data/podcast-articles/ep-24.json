@@ -1,0 +1,54 @@
+{
+  "episodeNumber": 24,
+  "episodeSlug": "24-partager-sa-vision-et-transmettre-son-savoir-faire-avec-p",
+  "status": "draft",
+  "generatedAt": "2026-09-15T14:14:00.025210Z",
+  "scheduledFor": "2024-10-01T00:01:00+00:00",
+  "article": {
+    "slug": "24-partager-sa-vision-et-transmettre-son-savoir-faire-avec-p",
+    "status": "draft",
+    "publishedAt": "2024-10-01T00:01:00Z",
+    "category": "Portrait",
+    "title": "Du Spectacle à l'Enseignement : Transmettre l'Âme de la Danse",
+    "chapo": "Priscilla Villa, professionnelle de la danse avec une carrière impressionnante (Alizée, Shy'm, Star 80), nous révèle comment elle a transformé son expérience de scène en philosophie pédagogique. Elle casse les codes du studio en introduisant le silence comme outil créatif et en collaborant avec les plus grandes marques de haute couture.",
+    "meta": "25.04.24 · 5 min de lecture",
+    "publishedDate": "25.04.24",
+    "episodeSlug": "24-partager-sa-vision-et-transmettre-son-savoir-faire-avec-p",
+    "episodeNumber": "#24",
+    "guest": "Priscilla Villa",
+    "image": "https://image.ausha.co/AM1ACjhro7nuYSiI5zL95rEgL1LXDcYUCl0hbCZM_1400x1400.jpeg?t=1784110444",
+    "readTime": "3 min",
+    "tags": [
+      "portrait",
+      "dancelab",
+      "podcast"
+    ],
+    "metaDescription": "Écoutez le parcours et la vision de Priscilla Villa dans ce nouvel épisode du podcast Dance Lab.",
+    "sections": [
+      {
+        "heading": "Une Carrière de Scène Intensifiée : Du Spectacle au Raffinement",
+        "paragraphs": [
+          "Priscilla a participé à des productions spectaculaires pour des artistes majeures, dansant pour Alizée, Shy'm, et la production Star 80. Chaque expérience l'a enrichie, mais elle s'est rendu compte que la vraie satisfaction venait de la transmission de ce savoir-faire.",
+          "Son expérience avec le projet Dior Men pour le trend balletcore montre comment elle peut se réinventer, collaborer avec les univers les plus prestigieux. Mais c'est dans l'enseignement qu'elle trouve sa véritable mission."
+        ]
+      },
+      {
+        "heading": "Briser la Quatrième Mur : Une Nouvelle Pédagogie de l'Authentique",
+        "paragraphs": [
+          "Priscilla rompt avec la tradition du studio classique où l'enseignant regarde de haut le danseur. Elle introduit une approche différente, où elle casse délibérément ce qu'elle appelle la quatrième mur du studio de danse.",
+          "Elle crée un environnement où l'authenticité prime sur la perfection. Ses étudiants ne sont pas des exécutants d'une chorégraphie, mais des artistes en développement qui explorent leur propre langage créatif. C'est une révolution pédagogique qui valorise la connexion humaine."
+        ]
+      },
+      {
+        "heading": "Le Silence et l'Immobilité : Des Outils Créatifs Puissants",
+        "paragraphs": [
+          "Priscilla enseigne l'importance du silence et de l'immobilité comme éléments essentiels de la danse. Dans une industrie obsédée par le mouvement constant, elle pose une question radicale : qu'est-ce qui se passe quand on s'arrête ?",
+          "L'immobilité devient un espace d'introspection et de concentration. Elle explique comment le silence crée une tension créative, comment l'absence de mouvement peut dire plus que l'hyperkinésie. C'est une leçon de profondeur, d'intensité émotionnelle, qui change la compréhension de ce que signifie danser."
+        ]
+      }
+    ],
+    "conclusion": [
+      "Priscilla Villa prouve qu'il n'est jamais trop tard pour se réinventer. Son message transcendant : la danse n'est pas une compétition, c'est un langage de l'âme."
+    ]
+  }
+}

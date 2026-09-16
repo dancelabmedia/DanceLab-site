@@ -1,9 +1,13 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import Image from "next/image"
 import { notFound } from "next/navigation"
 import { getEpisodes, type UnifiedEpisode } from "@/lib/episodes"
+import { getAllPublishedArticles } from "@/lib/all-articles"
 import { danceStyles, getDanceStyle } from "../styles-data"
-import StylePageClient from "./StylePageClient"
+import { withDedicatedStyleImage } from "../style-image-resolver"
+import StyleEditorial from "./StyleEditorial"
+import css from "./style-editorial.module.css"
 
 export const revalidate = 3600
 
@@ -112,47 +116,67 @@ export default async function StylePage({ params }: PageProps) {
     .map((s) => getDanceStyle(s))
     .filter(Boolean) as NonNullable<ReturnType<typeof getDanceStyle>>[]
 
+  // Même photographie que dans la grille, sans modifier la source éditoriale.
+  const cover = withDedicatedStyleImage(style).image
+  const sentenceEnd = style.summary.search(/[.!?](?:\s|$)/)
+  const heroSummary = sentenceEnd < 0 ? style.summary : style.summary.slice(0, sentenceEnd + 1)
+  const summaryRest = sentenceEnd < 0 ? "" : style.summary.slice(sentenceEnd + 1).trim()
+
+  // Appellations entières dans le titre ou tag exact ; pas de mots-clés génériques.
+  const normalize = (value: string) => value.normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "").toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ").trim()
+  const names = [style.name, ...(style.aliases ?? [])].map(normalize).filter(Boolean)
+  const linkedArticles = getAllPublishedArticles().filter((article) => {
+    const title = ` ${normalize(article.title)} `
+    const tags = article.tags.map(normalize)
+    return names.some((name) => tags.includes(name) || title.includes(` ${name} `))
+  })
+
+  const orderedStyles = [...danceStyles].sort((a, b) => a.name.localeCompare(b.name, "fr", { sensitivity: "base" }))
+  const currentIndex = orderedStyles.findIndex((item) => item.slug === slug)
+
   return (
-    <main className="style-detail-page">
+    <main className={css.page}>
       {/* ── Hero ─────────────────────────────────────────────────── */}
-      <section className="style-hero">
-        {style.image && (
-          <>
-            <div className="style-hero-bg">
-              <img src={style.image} alt={style.name} />
-            </div>
-            <div className="style-hero-shade" />
-          </>
-        )}
-        <div className="container style-hero-content">
-          <nav className="style-breadcrumb" aria-label="Fil d'Ariane">
-            <Link href="/explorer">Explorer</Link>
-            <span>·</span>
-            <Link href="/explorer/styles-de-danse">Styles de danse</Link>
-            <span>·</span>
-            <span>{style.name}</span>
-          </nav>
-
-          <div className="style-hero-badges">
-            <span className="style-badge style-badge--family">{style.family}</span>
-            <span className="style-badge">{style.era}</span>
-            <span className="style-badge">{style.originCity}, {style.originCountry}</span>
+      <section className={css.hero} aria-labelledby="style-title">
+        {cover && (
+          <div className={css.heroImage}>
+            <Image src={cover} alt={style.name} fill priority sizes="100vw" />
           </div>
-
-          <h1>{style.name}</h1>
+        )}
+        <div className={css.heroShade} />
+        <div className={`container ${css.heroContent}`}>
+          <nav className={css.breadcrumb} aria-label="Fil d'Ariane">
+            <Link href="/explorer/styles-de-danse">Styles de danse</Link>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">{style.name}</span>
+          </nav>
+          <p className={css.kicker}>{style.family}</p>
+          <h1 id="style-title" className={css.heroTitle} data-long={style.name.length > 20}>{style.name}</h1>
           {style.aliases && style.aliases.length > 0 && (
-            <p className="style-hero-aliases">Aussi appelé : {style.aliases.join(", ")}</p>
+            <p className={css.aliases}>{style.aliases.join(" · ")}</p>
           )}
-          <p className="style-hero-summary">{style.summary}</p>
-
-          {style.imageCredit && (
-            <p className="style-hero-credit">{style.imageCredit}</p>
+          <p className={css.heroSummary}>{heroSummary}</p>
+          <Link href="#introduction" className={css.discover}>
+            <span aria-hidden="true">↓</span> Découvrir le style
+          </Link>
+          {cover === style.image && style.imageCredit && (
+            <p className={css.heroCredit}>{style.imageCredit}</p>
           )}
         </div>
       </section>
 
-      {/* ── Corps de page avec TOC (client) ─────────────────────── */}
-      <StylePageClient style={style} linkedEpisodes={linkedEpisodes} relatedStylesData={relatedStylesData} />
+      <StyleEditorial
+        style={style}
+        cover={cover}
+        summaryRest={summaryRest}
+        linkedEpisodes={linkedEpisodes}
+        linkedArticles={linkedArticles}
+        relatedStylesData={relatedStylesData}
+        previousStyle={orderedStyles[currentIndex - 1] ?? null}
+        nextStyle={orderedStyles[currentIndex + 1] ?? null}
+      />
     </main>
   )
 }

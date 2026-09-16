@@ -1,0 +1,56 @@
+{
+  "episodeNumber": 63,
+  "episodeSlug": "samuela-berdah-et-raphaëlle-petitperrin-cn-d-sa-vision-de-la",
+  "status": "brouillon",
+  "article": {
+    "episodeNumber": 63,
+    "episodeSlug": "samuela-berdah-et-raphaëlle-petitperrin-cn-d-sa-vision-de-la",
+    "guest": "Samuela Berdah et Raphaëlle Petitperrin - CN D",
+    "category": "Portrait",
+    "status": "draft",
+    "image": "https://image.ausha.co/HkX4ufXJ3cdQDpphcABN1HSDiolxNzYMxKi6hE2D_1400x1400.jpeg?t=1784116700",
+    "slug": "samuela-berdah-et-raphaëlle-petitperrin-cn-d-sa-vision-de-la",
+    "title": "Comprendre l'intermittence : Le guide juridique des danseurs",
+    "chapo": "Raphaëlle Petitperrin et Samuela Berdah, juristes au Centre National de la Danse, décryptent l'intermittence — ce régime complexe mais essentiel pour les danseurs français. Entre CDI et contrats discontinus, découvrez les mécanismes qui régissent votre statut professionnel.",
+    "sections": [
+      {
+        "heading": "Qu'est-ce que l'intermittence ?",
+        "paragraphs": [
+          "L'intermittence est un régime spécifique d'indemnisation du chômage conçu pour les professionnels du spectacle vivant. Contrairement aux salariés classiques, les danseurs alternent périodes d'emploi et de chômage. Pour accéder à ce régime, il faut justifier un minimum de 507 heures travaillées sur une année de référence. Ce système, unique en Europe, reconnaît la nature discontinue de l'emploi artistique et offre une couverture sociale adaptée."
+        ]
+      },
+      {
+        "heading": "CDI, contrats discontinus et régimes cumulatifs",
+        "paragraphs": [
+          "Le régime intermittent peut se combiner avec un CDI ou d'autres formes de contrats. Les heures de formation comptent différemment selon le contexte : maximum 338 heures d'action de formation peuvent être intégrées aux 507 heures requises. Pour un statut de président d'association, les règles se complexifient. La déclaration d'entrepreneur exige une vigilance particulière pour ne pas perdre ses droits à l'intermittence. Chaque situation demande une analyse spécifique."
+        ]
+      },
+      {
+        "heading": "Les rouages administratifs du système",
+        "paragraphs": [
+          "Le processus d'intermittence implique une déclaration mensuelle auprès de l'organisme collecteur. Ces déclarations alimentent le décompte des heures travaillées. Un licenciement peut interrompre l'accumulation et les droits, d'où l'importance de bien gérer les transitions entre contrats. Le système de caisse de chômage (Pôle Emploi pour le spectacle) dépend de la régularité de ces déclarations."
+        ]
+      },
+      {
+        "heading": "Stratégies et pièges à connaître",
+        "paragraphs": [
+          "Pour maintenir son statut d'intermittent, il faut vigilance constante. Les heures comptabilisées, les périodes de formation, les changements de statut : chaque élément compte. Une bonne compréhension de ces mécanismes permet d'optimiser sa situation professionnelle et de sécuriser ses revenus futurs. Il est recommandé de consulter régulièrement un conseil juridique spécialisé."
+        ]
+      }
+    ],
+    "conclusion": "L'intermittence est le socle de la protection sociale des danseurs français. Bien la comprendre c'est sécuriser son avenir professionnel et pouvoir créer sans craindre une précarité inadmissible.",
+    "tags": [
+      "danse",
+      "créativité",
+      "parcours",
+      "portrait"
+    ],
+    "metaDescription": "Samuela Berdah et Raphaëlle Petitperrin - CN D nous invite à explorer sa vision de la danse. Une conversation riche de sens qui redéfinit notre compréhension de",
+    "readTime": "3 min",
+    "publishedDate": "01.07.25",
+    "publishedAt": "2025-07-01T00:01:00Z",
+    "meta": "01.07.25 · 5 min de lecture"
+  },
+  "generatedAt": "2026-09-15T16:23:33.862894Z",
+  "scheduledFor": "2025-07-01T00:01:00Z"
+}

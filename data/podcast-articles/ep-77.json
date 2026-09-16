@@ -1,0 +1,58 @@
+{
+  "episodeNumber": 77,
+  "episodeSlug": "77-avec-cn-d-les-juristes",
+  "status": "brouillon",
+  "generatedAt": "2026-09-15T16:01:25.425107Z",
+  "scheduledFor": "2025-10-07T07:00:00Z",
+  "article": {
+    "slug": "77-77-avec-cn-d-les-juristes",
+    "status": "draft",
+    "publishedAt": "2025-10-07T07:00:00Z",
+    "category": "Portrait",
+    "title": "CN D : Connaître Vos Droits pour Défendre Votre Carrière Artistique",
+    "chapo": "CN D, collectif de juristes spécialisés dans les droits des artistes, révèle les pièges légaux qui guettent les danseurs professionnels. Des contrats discriminatoires aux pratiques d'embauche déloyales, découvrez comment naviguer les conventions collectives et affirmer vos droits dans un secteur souvent dépourvu de protections.",
+    "meta": "07.10.25 · 8 min de lecture",
+    "publishedDate": "07.10.25",
+    "episodeSlug": "77-avec-cn-d-les-juristes",
+    "episodeNumber": "#77",
+    "guest": "CN D (Collectif de juristes)",
+    "image": "https://image.ausha.co/b9FOH8FCNJnDM3ZOluQ2yMAzWiKQFTbNBacEp8bD_1400x1400.jpeg?t=1784115820",
+    "readTime": "8 min",
+    "tags": ["portrait", "dancelab", "podcast", "droits", "danse", "juridique"],
+    "metaDescription": "CN D explique les droits des danseurs professionnels, les conventions collectives, et comment se protéger légalement face aux pratiques discriminatoires du secteur.",
+    "sections": [
+      {
+        "heading": "Les Pièges des Contrats de Danse : Ce Qu'il Faut Savoir",
+        "paragraphs": [
+          "CN D souligne que beaucoup de danseurs signent des contrats sans comprendre leurs implications légales. Les contrats types proposés par les entreprises de spectacle incluent souvent des clauses de non-concurrence excessives, des durées de travail mal définies, et des conditions de rémunération vagues. Le problème ? La plupart des danseurs pensent qu'ils n'ont pas le choix et acceptent les conditions imposées.",
+          "Selon CN D, les points critiques à vérifier incluent : la durée exacte du contrat, les horaires de travail garantis, les conditions de pause et de repos, les modalités de compensation en cas d'annulation, et les clauses concernant les blessures ou l'incapacité temporaire de travail. Beaucoup de contrats laissent les danseurs vulnérables, sans protection en cas de maladie ou de blessure professionnelle."
+        ]
+      },
+      {
+        "heading": "La Discrimination Cachée : Auditions et Pratiques d'Embauche Déloyales",
+        "paragraphs": [
+          "CN D révèle un problème systémique dans les processus de casting et d'embauche. Les critères de sélection incluent souvent des demandes discriminatoires basées sur l'apparence physique, l'âge, ou même le genre. Des metteurs en scène exigent des photos de corps dénudés, des vidéos au format très spécifique, ou refusent systématiquement les danseurs au-delà d'un certain âge ou ne correspondant pas à un stéréotype physique particulier.",
+          "Ces pratiques violent les droits des danseurs mais restent souvent impunies. CN D encourage les artistes à documenter ces demandes discriminatoires et à signaler les violations. Le collectif a observé que les entreprises opérant dans le spectacle au sens large acceptent des niveaux de discriminations qu'elles n'oseraient jamais appliquer dans d'autres secteurs. L'excuse de l'« exigence artistique » est souvent utilisée pour contourner la loi."
+        ]
+      },
+      {
+        "heading": "Les Conventions Collectives : Un Levier Méconnu pour Vos Droits",
+        "paragraphs": [
+          "Il existe des conventions collectives qui s'appliquent aux danseurs professionnels, notamment la Convention Collective Nationale des Entreprises du Spectacle Vivant. Pourtant, beaucoup de danseurs ignorent l'existence de ces protections. Ces conventions établissent des minima en matière de salaire, de durée de travail, et de congés payés. Elles offrent aussi une protection en cas de litige.",
+          "CN D explique que connaître sa convention collective applicable est un droit fondamental. Elle permet aux danseurs de vérifier que leur contrat respecte au minimum les standards établis. Malheureusement, certains employeurs ne respectent pas ces normes, en comptant sur l'ignorance ou la vulnérabilité des artistes. CN D appelle les danseurs à se former à leurs droits et à les exercer activement."
+        ]
+      },
+      {
+        "heading": "Conseils Pratiques : Comment Négocier et Vous Protéger",
+        "paragraphs": [
+          "CN D offre des conseils concrets pour les danseurs en négociation de contrat. Premier conseil : ne jamais signer immédiatement. Prenez le temps de lire, de poser des questions, et si possible de faire relire par quelqu'un d'expert. Deuxième conseil : documentez tout en écrit. Les promesses verbales ont peu de valeur légale ; ce qui compte, c'est ce qui est écrit dans le contrat.",
+          "Troisième conseil : cherchez du soutien. Des syndicats, des associations de défense des artistes, et des collectifs comme CN D existent pour vous aider. Quatrième conseil : soyez conscient de vos alternatives. Un contrat exploitateur n'est pas une fatalité : il y a souvent d'autres opportunités. Enfin, CN D souligne l'importance de la solidarité entre artistes. Quand on refonde ensemble les standards de ce qui est acceptable, on crée du changement."
+        ]
+      }
+    ],
+    "conclusion": [
+      "CN D nous rappelle que les droits ne sont pas des faveurs : ce sont des protections légales qui existent pour vous. La danse professionnelle ne doit pas signifier renoncer à vos droits fondamentaux.",
+      "Le message central du collectif est que les danseurs méritent mieux. Mieux que la précarité, mieux que la discrimination, mieux que l'exploitation. En connaissant vos droits et en les réclamant, vous contribuez à transformer l'ensemble du secteur vers plus d'équité et de justice."
+    ]
+  }
+}

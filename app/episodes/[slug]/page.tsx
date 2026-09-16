@@ -5,25 +5,30 @@ import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 
 import EpisodeAnimations from "./EpisodeAnimations";
+import EpisodeImage from "../../../components/EpisodeImage";
+import imageStyles from "../../../components/episode-image.module.css";
+import { episodeExtras } from "../../../data/episode-extras";
+import { episodeNumberFromImageName, findImagePresentation } from "@/lib/episode-image-presentation";
 import EpisodeInstagramReel from "../../../components/EpisodeInstagramReel";
 import EpisodeShare from "../../../components/EpisodeShare";
 import HistoryBackLink from "../../../components/HistoryBackLink";
 import { episodes, type Episode } from "../../../data/episodes";
-import { EPISODE_SERIES, EPISODE_CLUSTERS, SAME_GUEST_GROUPS } from "../../../data/episode-relations";
+import {
+  getRecommendedEpisodes,
+  getRecommendationEpisodeBySlug as getUnifiedEpisodeBySlug,
+} from "@/lib/episode-recommendations.server";
 import { SITE_URL } from "../../../data/site";
 import {
-  getEpisodes,
-  getEpisodeBySlug as getUnifiedEpisodeBySlug,
   getEpisodeYoutubeUrl,
   type UnifiedEpisode,
 } from "@/lib/episodes";
 import { youtubeUrl, youtubeThumbnail } from "@/lib/youtube-rss";
 import {
-  TAG_TAXONOMY,
   TAG_LABEL,
   getEpisodeTags,
   keyToSlug,
 } from "@/lib/episode-themes";
+import { getPodcastArticleByEpisode } from "@/lib/podcast-articles";
 
 // ISR : les nouveaux épisodes (≥ 122) sont rendus dynamiquement et mis en cache 1h
 export const revalidate = 3600;
@@ -41,6 +46,8 @@ function getEpisodeCardImage(episode: Episode) {
 }
 
 function getEpisodeHeaderImage(episode: Episode) {
+  const configuredHeader = episodeExtras[episode.number]?.headerImage;
+  if (configuredHeader && publicFileExists(configuredHeader)) return configuredHeader;
   const imageName = episode.image.split("/").pop();
   const headerImage = imageName ? `${HEADER_IMAGE_DIR}/${imageName}` : null;
 
@@ -255,172 +262,6 @@ function renderInlineEditorialText(text: string) {
   );
 }
 
-// ─── Détection de thèmes (similarity + affichage) ─────────────────────────
-// Utilise le référentiel centralisé lib/episode-themes.ts.
-// getEpisodeTags() retourne jusqu'à N clés de tags, triées par pertinence.
-
-/** Thèmes d'un épisode statique (description complète disponible) */
-function getEpisodeThemes(episode: Episode): Set<string> {
-  const text = [episode.title, episode.excerpt, episode.description].join(' ')
-  // max=99 → toutes les correspondances, pour le scoring de similarité
-  return new Set(getEpisodeTags(text, 99))
-}
-
-/**
- * Retourne jusqu'à 3 épisodes similaires par pertinence éditoriale.
- *
- * Hiérarchie de scoring :
- *   +10  Même série formelle (CND, Soprano…)
- *   + 7  Même invité récurrent
- *   + 5  Même cluster thématique éditorial (par cluster, cumulatif)
- *   + 1  Thème textuel partagé (détection automatique, cumulatif)
- *
- * Tri : score décroissant — aucun tri secondaire par recency.
- * Fallback : si moins de 3 résultats, complète avec les meilleurs chevauchements
- *   de thèmes textuels parmi les épisodes restants (jamais par recency).
- */
-function getSimilarEpisodes(currentSlug: string): Episode[] {
-  const current = episodes.find((ep) => ep.slug === currentSlug)
-  if (!current) return []
-
-  const currentThemes = getEpisodeThemes(current)
-
-  // Séries auxquelles appartient l'épisode courant
-  const currentSeriesKeys = Object.entries(EPISODE_SERIES)
-    .filter(([, nums]) => nums.includes(current.number))
-    .map(([key]) => key)
-
-  // Clusters thématiques auxquels appartient l'épisode courant
-  const currentClusterKeys = Object.entries(EPISODE_CLUSTERS)
-    .filter(([, nums]) => nums.includes(current.number))
-    .map(([key]) => key)
-
-  // Groupe d'invité récurrent de l'épisode courant (au plus un)
-  const guestGroup = SAME_GUEST_GROUPS.find((g) => g.includes(current.number)) ?? []
-
-  const scored = episodes
-    .filter((ep) => ep.slug !== currentSlug)
-    .map((ep) => {
-      let score = 0
-
-      // Même série formelle : +10 pts par série partagée
-      for (const key of currentSeriesKeys) {
-        if (EPISODE_SERIES[key].includes(ep.number)) score += 10
-      }
-
-      // Même invité récurrent : +7 pts
-      if (guestGroup.includes(ep.number)) score += 7
-
-      // Même cluster thématique éditorial : +5 pts par cluster partagé
-      for (const key of currentClusterKeys) {
-        if (EPISODE_CLUSTERS[key].includes(ep.number)) score += 5
-      }
-
-      // Thèmes textuels partagés : +1 pt chacun
-      const epThemes = getEpisodeThemes(ep)
-      for (const theme of currentThemes) {
-        if (epThemes.has(theme)) score++
-      }
-
-      return { episode: ep, score }
-    })
-    .filter(({ score }) => score > 0)
-    .sort((a, b) => b.score - a.score)   // Tri par pertinence, sans recency
-
-  const result = scored.slice(0, 3).map(({ episode }) => episode)
-
-  // Fallback thématique (jamais par recency) : complète si moins de 3 résultats
-  if (result.length < 3 && currentThemes.size > 0) {
-    const needed = 3 - result.length
-    const existing = new Set(result.map((e) => e.slug))
-
-    const themeMatches = episodes
-      .filter((ep) => ep.slug !== currentSlug && !existing.has(ep.slug))
-      .map((ep) => {
-        const epThemes = getEpisodeThemes(ep)
-        let overlap = 0
-        for (const theme of currentThemes) {
-          if (epThemes.has(theme)) overlap++
-        }
-        return { episode: ep, overlap }
-      })
-      .filter(({ overlap }) => overlap > 0)
-      .sort((a, b) => b.overlap - a.overlap)
-      .slice(0, needed)
-      .map(({ episode }) => episode)
-
-    result.push(...themeMatches)
-  }
-
-  return result
-}
-
-// ─── Épisodes similaires pour les pages RSS (≥ 122) ───────────────────────────
-// Même logique de scoring que getSimilarEpisodes, mais opère sur UnifiedEpisode
-// afin de couvrir tous les épisodes (legacy + RSS) dans les deux sens.
-
-function getUnifiedEpisodeThemes(ep: UnifiedEpisode): Set<string> {
-  const text = [ep.title, ep.excerpt, ep.description].join(' ')
-  return new Set(getEpisodeTags(text, 99))
-}
-
-function getSimilarUnifiedEpisodes(
-  current: UnifiedEpisode,
-  allEpisodes: UnifiedEpisode[],
-): UnifiedEpisode[] {
-  const currentThemes     = getUnifiedEpisodeThemes(current)
-  const currentSeriesKeys = Object.entries(EPISODE_SERIES)
-    .filter(([, nums]) => nums.includes(current.number))
-    .map(([key]) => key)
-  const currentClusterKeys = Object.entries(EPISODE_CLUSTERS)
-    .filter(([, nums]) => nums.includes(current.number))
-    .map(([key]) => key)
-  const guestGroup = SAME_GUEST_GROUPS.find((g) => g.includes(current.number)) ?? []
-
-  const scored = allEpisodes
-    .filter((ep) => ep.slug !== current.slug)
-    .map((ep) => {
-      let score = 0
-      for (const key of currentSeriesKeys) {
-        if (EPISODE_SERIES[key].includes(ep.number)) score += 10
-      }
-      if (guestGroup.includes(ep.number)) score += 7
-      for (const key of currentClusterKeys) {
-        if (EPISODE_CLUSTERS[key].includes(ep.number)) score += 5
-      }
-      const epThemes = getUnifiedEpisodeThemes(ep)
-      for (const theme of currentThemes) {
-        if (epThemes.has(theme)) score++
-      }
-      return { episode: ep, score }
-    })
-    .filter(({ score }) => score > 0)
-    .sort((a, b) => b.score - a.score)
-
-  const result = scored.slice(0, 3).map(({ episode }) => episode)
-
-  // Fallback : complète à 3 avec les meilleurs chevauchements thématiques
-  if (result.length < 3 && currentThemes.size > 0) {
-    const needed   = 3 - result.length
-    const existing = new Set(result.map((e) => e.slug))
-    const themeMatches = allEpisodes
-      .filter((ep) => ep.slug !== current.slug && !existing.has(ep.slug))
-      .map((ep) => {
-        const epThemes = getUnifiedEpisodeThemes(ep)
-        let overlap = 0
-        for (const theme of currentThemes) { if (epThemes.has(theme)) overlap++ }
-        return { episode: ep, overlap }
-      })
-      .filter(({ overlap }) => overlap > 0)
-      .sort((a, b) => b.overlap - a.overlap)
-      .slice(0, needed)
-      .map(({ episode }) => episode)
-    result.push(...themeMatches)
-  }
-
-  return result
-}
-
 type PageProps = {
   params: Promise<{
     slug: string;
@@ -509,7 +350,7 @@ export default async function EpisodePage({ params }: PageProps) {
     return <RssEpisodePage unified={unified!} />;
   }
 
-  const similarEpisodes = getSimilarEpisodes(episode.slug);
+  const similarEpisodes = await getRecommendedEpisodes(episode.number);
   const episodeUrl = new URL(`/episodes/${episode.slug}`, SITE_URL).toString();
   const headerImage = getEpisodeHeaderImage(episode);
   const descriptionParagraphs = getEpisodeDescriptionParagraphs(episode.description);
@@ -520,6 +361,12 @@ export default async function EpisodePage({ params }: PageProps) {
   // 2. Auto-match YouTube RSS ou override manuel dans episode-extras.ts
   const unified = await getUnifiedEpisodeBySlug(slug);
   const youtubeId = getYouTubeId(episode.youtube) ?? unified?.youtubeId ?? null;
+
+  // Article magazine associé à cet épisode (généré automatiquement ou existant)
+  const associatedArticle = unified?.number ? getPodcastArticleByEpisode(unified.number) : null
+  const articleSlug = associatedArticle?.status === 'publie' || associatedArticle?.status === 'programme'
+    ? associatedArticle.article.slug
+    : null
   const youtubeHref = youtubeId
     ? (episode.youtube || youtubeUrl(youtubeId))
     : null;
@@ -537,8 +384,9 @@ export default async function EpisodePage({ params }: PageProps) {
         ══════════════════════════════════════ */}
         <section className="ep-hero">
           {/* Couche sticky : image + dégradé restent fixes pendant le scroll */}
-          <div className="ep-hero-sticky-bg">
-            <img
+          <div className={`ep-hero-sticky-bg ${findImagePresentation(episodeExtras[episode.number]?.imagePresentations, headerImage) ? imageStyles.heroCanvas : ''}`}>
+            <EpisodeImage
+              episodeNumber={episode.number}
               className="ep-hero-img"
               src={headerImage}
               alt={episode.guest}
@@ -557,7 +405,8 @@ export default async function EpisodePage({ params }: PageProps) {
                   aria-label={`Regarder « ${episode.title} » sur YouTube`}
                 >
                   <div className="ep-youtube-thumb-wrap">
-                    <img
+                    <EpisodeImage
+                      episodeNumber={episode.number}
                       src={`https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`}
                       alt={episode.title}
                       className="ep-youtube-thumb"
@@ -732,6 +581,22 @@ export default async function EpisodePage({ params }: PageProps) {
             {/* ── [col3 rows1+] Sidebar sticky ── */}
             <aside className="ep-col-sidebar" data-ep-reveal>
               <div className="ep-sidebar-card">
+                {/* Lien vers l'article magazine associé */}
+                {articleSlug && (
+                  <div className="ep-sidebar-section">
+                    <h3 className="ep-sidebar-h3">À lire aussi</h3>
+                    <Link
+                      href={`/decouvrir/articles/${articleSlug}`}
+                      className="ep-sidebar-article-link"
+                    >
+                      <span className="ep-sidebar-article-icon" aria-hidden="true">📖</span>
+                      <span>Lire l&apos;article sur cet épisode</span>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                      </svg>
+                    </Link>
+                  </div>
+                )}
                 <div className="ep-sidebar-section">
                   <h3 className="ep-sidebar-h3">Partager</h3>
                   <EpisodeShare title={episode.title} url={episodeUrl} />
@@ -742,7 +607,7 @@ export default async function EpisodePage({ params }: PageProps) {
                     <div className="ep-sidebar-similar">
                       {similarEpisodes.map((item) => (
                         <Link key={item.slug} href={`/episodes/${item.slug}`} className="ep-sidebar-ep">
-                          <img src={item.image} alt={item.guest} className="ep-sidebar-ep-img" />
+                          <EpisodeImage episodeNumber={item.number} src={item.image} alt={item.guest} className="ep-sidebar-ep-img" />
                           <div className="ep-sidebar-ep-body">
                             <span>Épisode {item.number}</span>
                             <strong>{item.title}</strong>
@@ -795,22 +660,18 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
   const episodeUrl   = new URL(`/episodes/${unified.slug}`, SITE_URL).toString();
 
   // Épisodes similaires — même logique que les pages statiques
-  const allEpisodes     = await getEpisodes();
-  const similarEpisodes = getSimilarUnifiedEpisodes(unified, allEpisodes);
+  const similarEpisodes = await getRecommendedEpisodes(unified.number);
 
   // Hero image : priorité les-invites-header → les-invites → CDN Ausha
   const heroImage = (() => {
-    // L'épisode WaaBee possède un visuel horizontal dédié : ne jamais
-    // laisser un fallback RSS ou l'image d'un épisode voisin le remplacer.
-    if (unified.number === 127) {
-      return "/images/les-invites-header/waabee127.png";
-    }
+    const configuredHeader = episodeExtras[unified.number]?.headerImage;
+    if (configuredHeader && publicFileExists(configuredHeader)) return configuredHeader;
     // 1. Cherche dans les-invites-header (même convention de nommage)
     try {
       const headerDir   = path.join(process.cwd(), 'public', 'images', 'les-invites-header');
       const headerFiles = readdirSync(headerDir);
       const headerMatch = headerFiles.find((f) =>
-        new RegExp(`${unified.number}\\.(png|jpg|jpeg|webp|avif)$`, 'i').test(f)
+        episodeNumberFromImageName(f) === unified.number
       );
       if (headerMatch) return `/images/les-invites-header/${headerMatch}`;
     } catch { /* dossier absent */ }
@@ -835,9 +696,10 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
 
         {/* HERO */}
         <section className="ep-hero">
-          <div className="ep-hero-sticky-bg">
+          <div className={`ep-hero-sticky-bg ${findImagePresentation(episodeExtras[unified.number]?.imagePresentations, heroImage) ? imageStyles.heroCanvas : ''}`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <EpisodeImage
+              episodeNumber={unified.number}
               className="ep-hero-img"
               src={heroImage}
               alt={unified.guest}
@@ -856,8 +718,13 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
                 >
                   <div className={`ep-youtube-thumb-wrap${isShort ? ' ep-youtube-thumb-wrap--short' : ''}`}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={`https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`}
+                    <EpisodeImage
+                      episodeNumber={unified.number}
+                      src={
+                        isShort
+                          ? `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`
+                          : `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`
+                      }
                       alt={unified.title}
                       className="ep-youtube-thumb"
                       loading="lazy"
@@ -998,7 +865,7 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
                     <div className="ep-sidebar-similar">
                       {similarEpisodes.map((item) => (
                         <Link key={item.slug} href={`/episodes/${item.slug}`} className="ep-sidebar-ep">
-                          <img src={item.image} alt={item.guest} className="ep-sidebar-ep-img" />
+                          <EpisodeImage episodeNumber={item.number} src={item.image} alt={item.guest} className="ep-sidebar-ep-img" />
                           <div className="ep-sidebar-ep-body">
                             <span>Épisode {item.number}</span>
                             <strong>{item.title}</strong>

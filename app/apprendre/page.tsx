@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 export default function ApprendrePage() {
   return (
     <main className="explorer-page">
-      <section className="explorer-hero">
+      <section className="explorer-hero explorer-hero--apprendre">
         <div className="container">
           <span className="section-label">Apprendre</span>
           <h1>Des ressources pour progresser, se structurer et faire évoluer son parcours.</h1>

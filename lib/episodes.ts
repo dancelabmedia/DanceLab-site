@@ -20,6 +20,7 @@ import { readdirSync }                                          from 'node:fs'
 import path                                                    from 'node:path'
 import { episodesList, type EpisodeListItem }                  from '@/data/episodes-list'
 import { episodeExtras }                                       from '@/data/episode-extras'
+import { episodeNumberFromImageName }                          from '@/lib/episode-image-presentation'
 import { getEpisodesFromRSS, isRediffusion, type RssEpisode } from '@/lib/ausha-rss'
 import { getYoutubeEpisodeMap, youtubeUrl }                    from '@/lib/youtube-rss'
 import {
@@ -100,10 +101,9 @@ function buildInviteImageMap(): Map<number, string> {
     const dir   = path.join(process.cwd(), 'public', 'images', 'les-invites')
     const files = readdirSync(dir)
     for (const file of files) {
-      // Extrait le numéro à la fin du nom (avant l'extension)
-      const match = file.match(/(\d+)\.(png|jpg|jpeg|webp|avif)$/i)
-      if (!match) continue
-      const num = parseInt(match[1], 10)
+      // Both guest128.png and 128guest.png are valid; exact episode number.
+      const num = episodeNumberFromImageName(file)
+      if (num === undefined) continue
       if (!map.has(num)) {
         // Premier fichier trouvé pour ce numéro = prioritaire
         map.set(num, `/images/les-invites/${file}`)

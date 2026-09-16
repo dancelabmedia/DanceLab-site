@@ -1,0 +1,61 @@
+{
+  "episodeNumber": 30,
+  "episodeSlug": "30-la-danse-classique-joies-sacrifices-tca-et-renouveau-avec",
+  "status": "draft",
+  "generatedAt": "2026-09-15T14:14:00.030521Z",
+  "scheduledFor": "2024-11-12T00:01:00+00:00",
+  "article": {
+    "slug": "30-la-danse-classique-joies-sacrifices-tca-et-renouveau-avec",
+    "status": "draft",
+    "publishedAt": "2024-11-12T00:01:00Z",
+    "category": "Portrait",
+    "title": "La Danse Classique au-Delà : TCA, Burnout, et Refondation",
+    "chapo": "Coraline Bucciacchio, formée à l'Opéra de Paris depuis l'âge de 9 ans, révèle une histoire de la danse classique rarement racontée. Elle expose les troubles de l'alimentation (TCA), le harcèlement d'instructeurs, le burnout, et sa décision courageuse de partir pour explorer d'autres formes de danse.",
+    "meta": "25.04.24 · 5 min de lecture",
+    "publishedDate": "25.04.24",
+    "episodeSlug": "30-la-danse-classique-joies-sacrifices-tca-et-renouveau-avec",
+    "episodeNumber": "#30",
+    "guest": "Coraline Bucciacchio",
+    "image": "https://image.ausha.co/YG0uTugfd2evReFq6VHCoAQEAdnxqs4ubnJDKHsQ_1400x1400.jpeg?t=1784121042",
+    "readTime": "3 min",
+    "tags": [
+      "portrait",
+      "dancelab",
+      "podcast"
+    ],
+    "metaDescription": "Écoutez le parcours et la vision de Coraline Bucciacchio dans ce nouvel épisode du podcast Dance Lab.",
+    "sections": [
+      {
+        "heading": "L'Opéra de Paris : Excellence et Sacrifice",
+        "paragraphs": [
+          "Coraline intègre l'Opéra de Paris à 9 ans, un accomplissement extraordinaire qui représente la porte d'entrée à l'élite dansant classique française. Pendant des années, elle navigue un environnement hautement compétitif où la perfection physique est un impératif absolu.",
+          "Elle décrit la formation à l'Opéra comme un creuset d'intensité extrême. Les standards sont inhumainement élevés, et les jeunes danseurs internalisent très tôt que leur valeur est déterminée par leur capacité à les atteindre."
+        ]
+      },
+      {
+        "heading": "TCA, Harcèlement et Burnout : Les Coûts Cachés de la Perfection",
+        "paragraphs": [
+          "Coraline révèle la présence de troubles de l'alimentation dans son environnement de formation. Elle parle de la pression intense autour de l'apparence corporelle, des commentaires blessants des instructeurs, de l'absence de support psychologique.",
+          "Elle détaille comment le harcèlement émotionnel s'est normalisé, comment les instructeurs utilisaient la honte et la peur comme outils pédagogiques. Elle explique comment tout cela a mené à un burnout profond, à une rupture psychologique qui l'a obligée à réévaluer sa vie entière."
+        ]
+      },
+      {
+        "heading": "Décider de Partir : Le Courage de Se Réinventer",
+        "paragraphs": [
+          "À un moment critique, Coraline prend la décision difficile de quitter. Pour quelqu'un formé depuis l'enfance pour la danse classique, c'est une rupture identitaire majeure. Mais c'est un acte de survie et d'autodéfense.",
+          "Elle explore d'autres styles de danse, retrouve le plaisir du mouvement sans la pression de la perfection. Elle découvre que danser peut être une joy, et non une prison."
+        ]
+      },
+      {
+        "heading": "Démystifier la Danse Classique : Sa Plateforme de Changement",
+        "paragraphs": [
+          "Après son départ, Coraline utilise les réseaux sociaux pour parler ouvertement de son expérience. Elle démystifie la danse classique, discute des troubles mentaux, du harcèlement, des inégalités systémiques.",
+          "Son plaidoyer : 'Si tes rêves ne te font pas assez peurs, c'est que tes rêves ne sont pas assez grands.' Mais elle inverse cette maxime : les rêves ne doivent pas être si grands qu'ils détruisent ta santé mentale. Elle appelle à une refondation de la danse classique, plus humaine, plus inclusive, plus consciente."
+        ]
+      }
+    ],
+    "conclusion": [
+      "Coraline Bucciacchio transforme son trauma en plaidoyer pour le changement systémique. Son courageuse transparence inspire une nouvelle génération à repenser les standards inhumains de la danse classique."
+    ]
+  }
+}
