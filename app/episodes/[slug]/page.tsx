@@ -13,6 +13,8 @@ import EpisodeInstagramReel from "../../../components/EpisodeInstagramReel";
 import EpisodeShare from "../../../components/EpisodeShare";
 import HistoryBackLink from "../../../components/HistoryBackLink";
 import { episodes, type Episode } from "../../../data/episodes";
+import { episodeTranslationsEN } from "../../../data/episode-translations-en";
+import { getLocalizedEpisode } from "@/lib/episode-l10n";
 import {
   getRecommendedEpisodes,
   getRecommendationEpisodeBySlug as getUnifiedEpisodeBySlug,
@@ -29,9 +31,12 @@ import {
   keyToSlug,
 } from "@/lib/episode-themes";
 import { getPodcastArticleByEpisode } from "@/lib/podcast-articles";
+import { requestLocale } from "@/lib/i18n/server";
+import { uiText } from "@/data/i18n/messages";
 
-// ISR : les nouveaux épisodes (≥ 122) sont rendus dynamiquement et mis en cache 1h
-export const revalidate = 3600;
+// Rendu dynamique par requête : nécessaire pour lire la locale (cookie EN/FR) à chaque visite.
+// Le cache des données RSS Ausha (fetch interne) reste actif 1h indépendamment.
+export const dynamic = 'force-dynamic';
 export const dynamicParams = true;
 
 const HEADER_IMAGE_DIR = "/images/les-invites-header";
@@ -276,12 +281,15 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
+  const locale = await requestLocale();
   const episode = getEpisodeBySlug(slug);
 
   // Épisode statique introuvable → essayer le flux RSS
   if (!episode) {
     const unified = await getUnifiedEpisodeBySlug(slug);
-    if (!unified) return { title: "Épisode introuvable | Dance Lab" };
+    if (!unified) return { title: "Episode not found | Dance Lab" };
+    const loc = getLocalizedEpisode(unified, locale);
+    const { title, excerpt, seoTitle, seoDescription: seoDesc } = loc;
     const socialImage = unified.number === 127
       ? "/images/les-invites-header/waabee127.png"
       : unified.aushaImage || unified.image;
@@ -289,49 +297,52 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       ? socialImage
       : new URL(socialImage, SITE_URL).toString();
     return {
-      title: `${unified.title} | Dance Lab`,
-      description: unified.excerpt,
+      title: seoTitle,
+      description: seoDesc,
       openGraph: {
-        title: `${unified.title} | Dance Lab`,
-        description: unified.excerpt,
+        title: seoTitle,
+        description: seoDesc,
         url: new URL(`/episodes/${unified.slug}`, SITE_URL).toString(),
-        images: [{ url: imageUrl, alt: `${unified.title} — ${unified.guest}` }],
+        images: [{ url: imageUrl, alt: `${title} — ${unified.guest}` }],
         type: "article",
       },
       twitter: {
         card: "summary_large_image",
-        title: `${unified.title} | Dance Lab`,
-        description: unified.excerpt,
+        title: seoTitle,
+        description: seoDesc,
         images: [imageUrl],
       },
     };
   }
 
+  const loc = getLocalizedEpisode({ ...episode, en: episodeTranslationsEN[episode.number] }, locale);
+  const { title, seoTitle, seoDescription: seoDesc } = loc;
+
   const episodeUrl = new URL(`/episodes/${episode.slug}`, SITE_URL).toString();
   const imageUrl = new URL(getEpisodeHeaderImage(episode), SITE_URL).toString();
 
   return {
-    title: episode.seoTitle,
-    description: episode.seoDescription,
+    title: seoTitle,
+    description: seoDesc,
     alternates: {
       canonical: episodeUrl,
     },
     openGraph: {
-      title: episode.seoTitle,
-      description: episode.seoDescription,
+      title: seoTitle,
+      description: seoDesc,
       url: episodeUrl,
       images: [
         {
           url: imageUrl,
-          alt: `${episode.title} — ${episode.guest}`,
+          alt: `${title} — ${episode.guest}`,
         },
       ],
       type: "article",
     },
     twitter: {
       card: "summary_large_image",
-      title: episode.seoTitle,
-      description: episode.seoDescription,
+      title: seoTitle,
+      description: seoDesc,
       images: [imageUrl],
     },
   };
@@ -341,6 +352,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function EpisodePage({ params }: PageProps) {
   const { slug } = await params;
+  const locale = await requestLocale();
+  const t = (text: string) => uiText(locale, text);
+  const isEN = locale === 'en';
   const episode = getEpisodeBySlug(slug);
 
   // ── Épisode RSS (nouveau, ≥ 122) ────────────────────────────────────────────
@@ -350,10 +364,14 @@ export default async function EpisodePage({ params }: PageProps) {
     return <RssEpisodePage unified={unified!} />;
   }
 
+  // ── Localisation centralisée (EN avec fallback FR) ───────────────────────────
+  const loc = getLocalizedEpisode({ ...episode, en: episodeTranslationsEN[episode.number] }, locale);
+  const { title: displayTitle, quote: displayQuote, description: displayDesc, chapters: displayChapters } = loc;
+
   const similarEpisodes = await getRecommendedEpisodes(episode.number);
   const episodeUrl = new URL(`/episodes/${episode.slug}`, SITE_URL).toString();
   const headerImage = getEpisodeHeaderImage(episode);
-  const descriptionParagraphs = getEpisodeDescriptionParagraphs(episode.description);
+  const descriptionParagraphs = getEpisodeDescriptionParagraphs(displayDesc);
   const descriptionBlocks = getEpisodeDescriptionBlocks(descriptionParagraphs);
 
   // Identifiant YouTube :
@@ -402,7 +420,7 @@ export default async function EpisodePage({ params }: PageProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="ep-youtube-link"
-                  aria-label={`Regarder « ${episode.title} » sur YouTube`}
+                  aria-label={isEN ? `Watch "${displayTitle}" on YouTube` : `Regarder « ${displayTitle} » sur YouTube`}
                 >
                   <div className="ep-youtube-thumb-wrap">
                     <EpisodeImage
@@ -430,7 +448,7 @@ export default async function EpisodePage({ params }: PageProps) {
                         <text y="16" fontSize="18" fontFamily="inherit" fontWeight="700" fill="#fff">YouTube</text>
                       </svg>
                     </span>
-                    <span className="ep-youtube-cta">Regarder l&apos;épisode complet</span>
+                    <span className="ep-youtube-cta">{t("Regarder l'épisode complet")}</span>
                   </div>
                 </a>
               </div>
@@ -439,12 +457,12 @@ export default async function EpisodePage({ params }: PageProps) {
           {/* Texte posé sur la partie gauche assombrie — défile normalement */}
           <div className="ep-hero-content">
             <HistoryBackLink className="ep-back" fallbackHref="/ecouter">
-              ← Tous les épisodes
+              {t('← Tous les épisodes')}
             </HistoryBackLink>
             <p className="ep-kicker">
-              Épisode {episode.number}
+              {t('Épisode')} {episode.number}
             </p>
-            <h1>{episode.title}</h1>
+            <h1>{displayTitle}</h1>
             <p className="ep-guest">
               {episode.guest}
             </p>
@@ -460,7 +478,7 @@ export default async function EpisodePage({ params }: PageProps) {
               {episode.tags[0] ? <span className="ep-meta-tag">{episode.tags[0]}</span> : null}
             </div>
             <div className="ep-actions">
-              {episode.link ? <a href={episode.link} target="_blank" rel="noopener noreferrer">Choisis ta plateforme d&apos;écoute</a> : null}
+              {episode.link ? <a href={episode.link} target="_blank" rel="noopener noreferrer">{t("Choisis ta plateforme d'écoute")}</a> : null}
             </div>
           </div>
         </section>
@@ -477,10 +495,10 @@ export default async function EpisodePage({ params }: PageProps) {
 
             {/* ── [col1 row1] Citation ── */}
             <div className="ep-col-quote" data-ep-reveal>
-              {episode.quote ? (
+              {displayQuote ? (
                 <blockquote className="ep-big-quote">
                   <span className="ep-big-quote-mark" aria-hidden="true">"</span>
-                  {episode.quote}
+                  {displayQuote}
                 </blockquote>
               ) : null}
             </div>
@@ -547,7 +565,7 @@ export default async function EpisodePage({ params }: PageProps) {
 
                 {episodeTagKeys.length > 0 ? (
                   <div className="ep-topics-block">
-                    <p className="ep-topics-label">Dans cet épisode</p>
+                    <p className="ep-topics-label">{t('Dans cet épisode')}</p>
                     <div className="ep-topics-pills">
                       {episodeTagKeys.map((key) => (
                         <Link
@@ -562,11 +580,11 @@ export default async function EpisodePage({ params }: PageProps) {
                   </div>
                 ) : null}
 
-                {episode.chapters.length > 0 ? (
+                {displayChapters.length > 0 ? (
                   <div className="ep-chapters">
-                    <h2 className="ep-section-h2">Chapitres</h2>
+                    <h2 className="ep-section-h2">{t('Chapitres')}</h2>
                     <ol className="ep-chapters-list">
-                      {episode.chapters.map((chapter) => (
+                      {displayChapters.map((chapter) => (
                         <li key={`${chapter.time}-${chapter.title}`}>
                           <span>{chapter.time}</span>
                           <strong>{chapter.title}</strong>
@@ -584,13 +602,13 @@ export default async function EpisodePage({ params }: PageProps) {
                 {/* Lien vers l'article magazine associé */}
                 {articleSlug && (
                   <div className="ep-sidebar-section">
-                    <h3 className="ep-sidebar-h3">À lire aussi</h3>
+                    <h3 className="ep-sidebar-h3">{t('À lire aussi')}</h3>
                     <Link
                       href={`/decouvrir/articles/${articleSlug}`}
                       className="ep-sidebar-article-link"
                     >
                       <span className="ep-sidebar-article-icon" aria-hidden="true">📖</span>
-                      <span>Lire l&apos;article sur cet épisode</span>
+                      <span>{t("Lire l'article sur cet épisode")}</span>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <path d="M5 12h14M12 5l7 7-7 7"/>
                       </svg>
@@ -598,18 +616,18 @@ export default async function EpisodePage({ params }: PageProps) {
                   </div>
                 )}
                 <div className="ep-sidebar-section">
-                  <h3 className="ep-sidebar-h3">Partager</h3>
+                  <h3 className="ep-sidebar-h3">{t('Partager')}</h3>
                   <EpisodeShare title={episode.title} url={episodeUrl} />
                 </div>
                 {similarEpisodes.length > 0 ? (
                   <div className="ep-sidebar-section">
-                    <h3 className="ep-sidebar-h3">Épisodes similaires</h3>
+                    <h3 className="ep-sidebar-h3">{t('Épisodes similaires')}</h3>
                     <div className="ep-sidebar-similar">
                       {similarEpisodes.map((item) => (
                         <Link key={item.slug} href={`/episodes/${item.slug}`} className="ep-sidebar-ep">
                           <EpisodeImage episodeNumber={item.number} src={item.image} alt={item.guest} className="ep-sidebar-ep-img" />
                           <div className="ep-sidebar-ep-body">
-                            <span>Épisode {item.number}</span>
+                            <span>{t('Épisode')} {item.number}</span>
                             <strong>{item.title}</strong>
                             <p className="ep-sidebar-ep-guest">{item.guest}</p>
                           </div>
@@ -650,6 +668,14 @@ export default async function EpisodePage({ params }: PageProps) {
 // ─── Page pour les épisodes RSS (≥ 122) ──────────────────────────────────────
 
 async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
+  const locale = await requestLocale();
+  const t = (text: string) => uiText(locale, text);
+  const isEN = locale === 'en';
+
+  // Localisation centralisée (EN avec fallback FR)
+  const loc = getLocalizedEpisode(unified, locale);
+  const { title: displayTitle, quote: displayQuote, description: displayDesc } = loc;
+
   const youtubeId    = unified.youtubeId ?? null;
   const isShort      = unified.isYoutubeShort ?? false;
   const youtubeHref  = youtubeId
@@ -681,13 +707,13 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
     return unified.aushaImage || unified.image;
   })();
 
-  // Tags thématiques automatiques (max 6)
+  // Tags thématiques automatiques (max 6) — toujours sur le texte FR (meilleur matching)
   const rssTagKeys = getEpisodeTags(
     [unified.title, unified.excerpt, unified.description].join(' '), 6
   );
 
-  // Description : texte complet depuis le RSS (fallback sur l'excerpt si absent)
-  const descriptionParagraphs = getEpisodeDescriptionParagraphs(unified.description || unified.excerpt);
+  // Description : EN si disponible, sinon texte complet RSS (fallback sur l'excerpt si absent)
+  const descriptionParagraphs = getEpisodeDescriptionParagraphs(displayDesc || unified.excerpt);
   const descriptionBlocks     = getEpisodeDescriptionBlocks(descriptionParagraphs);
 
   return (
@@ -714,7 +740,7 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="ep-youtube-link"
-                  aria-label={`Regarder « ${unified.title} » sur YouTube`}
+                  aria-label={isEN ? `Watch "${displayTitle}" on YouTube` : `Regarder « ${displayTitle} » sur YouTube`}
                 >
                   <div className={`ep-youtube-thumb-wrap${isShort ? ' ep-youtube-thumb-wrap--short' : ''}`}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -743,7 +769,7 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
                       </svg>
                     </span>
                     <span className="ep-youtube-cta">
-                      {isShort ? 'Regarder le Short' : 'Regarder l\u2019épisode complet'}
+                      {isShort ? t('Regarder le Short') : t("Regarder l'épisode complet")}
                     </span>
                   </div>
                 </a>
@@ -753,10 +779,10 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
 
           <div className="ep-hero-content">
             <HistoryBackLink className="ep-back" fallbackHref="/ecouter">
-              ← Tous les épisodes
+              {t('← Tous les épisodes')}
             </HistoryBackLink>
-            <p className="ep-kicker">Épisode {unified.number}</p>
-            <h1>{unified.title}</h1>
+            <p className="ep-kicker">{t('Épisode')} {unified.number}</p>
+            <h1>{displayTitle}</h1>
             <p className="ep-guest">{unified.guest}</p>
             <div className="ep-meta">
               <span className="ep-meta-duration">
@@ -773,7 +799,7 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
               ) : null}
             </div>
             <div className="ep-actions">
-              <a href={unified.link} target="_blank" rel="noopener noreferrer">Choisis ta plateforme d&apos;écoute</a>
+              <a href={unified.link} target="_blank" rel="noopener noreferrer">{t("Choisis ta plateforme d'écoute")}</a>
             </div>
           </div>
         </section>
@@ -784,10 +810,10 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
 
             {/* Citation */}
             <div className="ep-col-quote" data-ep-reveal>
-              {unified.quote ? (
+              {displayQuote ? (
                 <blockquote className="ep-big-quote">
                   <span className="ep-big-quote-mark" aria-hidden="true">&ldquo;</span>
-                  {unified.quote}
+                  {displayQuote}
                 </blockquote>
               ) : null}
             </div>
@@ -835,7 +861,7 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
 
                 {rssTagKeys.length > 0 ? (
                   <div className="ep-topics-block">
-                    <p className="ep-topics-label">Dans cet épisode</p>
+                    <p className="ep-topics-label">{t('Dans cet épisode')}</p>
                     <div className="ep-topics-pills">
                       {rssTagKeys.map((key) => (
                         <Link
@@ -856,18 +882,18 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
             <aside className="ep-col-sidebar" data-ep-reveal>
               <div className="ep-sidebar-card">
                 <div className="ep-sidebar-section">
-                  <h3 className="ep-sidebar-h3">Partager</h3>
+                  <h3 className="ep-sidebar-h3">{t('Partager')}</h3>
                   <EpisodeShare title={unified.title} url={episodeUrl} />
                 </div>
                 {similarEpisodes.length > 0 ? (
                   <div className="ep-sidebar-section">
-                    <h3 className="ep-sidebar-h3">Épisodes similaires</h3>
+                    <h3 className="ep-sidebar-h3">{t('Épisodes similaires')}</h3>
                     <div className="ep-sidebar-similar">
                       {similarEpisodes.map((item) => (
                         <Link key={item.slug} href={`/episodes/${item.slug}`} className="ep-sidebar-ep">
                           <EpisodeImage episodeNumber={item.number} src={item.image} alt={item.guest} className="ep-sidebar-ep-img" />
                           <div className="ep-sidebar-ep-body">
-                            <span>Épisode {item.number}</span>
+                            <span>{t('Épisode')} {item.number}</span>
                             <strong>{item.title}</strong>
                             <p className="ep-sidebar-ep-guest">{item.guest}</p>
                           </div>

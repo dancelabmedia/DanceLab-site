@@ -20,6 +20,7 @@ import { readdirSync }                                          from 'node:fs'
 import path                                                    from 'node:path'
 import { episodesList, type EpisodeListItem }                  from '@/data/episodes-list'
 import { episodeExtras }                                       from '@/data/episode-extras'
+import { episodeTranslationsEN, type EpisodeTranslationEN }   from '@/data/episode-translations-en'
 import { episodeNumberFromImageName }                          from '@/lib/episode-image-presentation'
 import { getEpisodesFromRSS, isRediffusion, type RssEpisode } from '@/lib/ausha-rss'
 import { getYoutubeEpisodeMap, youtubeUrl }                    from '@/lib/youtube-rss'
@@ -81,6 +82,12 @@ export type UnifiedEpisode = {
    * Modifie l'affichage de la vignette dans le header et le lien généré.
    */
   isYoutubeShort?: boolean
+  /**
+   * Traductions EN du contenu éditorial.
+   * Undefined si aucune traduction n'est encore disponible pour cet épisode.
+   * La page épisode utilise ces champs quand locale = 'en', avec fallback FR.
+   */
+  en?: EpisodeTranslationEN
 }
 
 // ─── Résolution d'image centralisée ───────────────────────────────────────────
@@ -180,6 +187,7 @@ function fromLegacy(
     fromRSS:      false,
     instagramReelUrl,
     isYoutubeShort: extras?.isYoutubeShort,
+    en:           episodeTranslationsEN[ep.number],
   }
 }
 
@@ -232,6 +240,9 @@ function fromRss(
     fromRSS:      true,
     instagramReelUrl,
     isYoutubeShort: extras?.isYoutubeShort,
+    // Traductions EN : depuis episode-translations-en.ts (épisodes ≥ 122 peuvent
+    // y être ajoutés au fur et à mesure — même mécanique que les épisodes legacy)
+    en:           episodeTranslationsEN[ep.number],
   }
 }
 
