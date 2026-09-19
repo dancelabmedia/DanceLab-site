@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  outputFileTracingIncludes: {
+    '/*': ['./data/translations/en/*.json'],
+  },
   images: {
     // Format de sortie préféré (WebP servi automatiquement aux navigateurs compatibles)
     formats: ['image/webp', 'image/avif'],
