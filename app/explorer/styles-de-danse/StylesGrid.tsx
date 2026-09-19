@@ -3,6 +3,8 @@
 import Link from "next/link"
 import { useState, useEffect, useRef, useCallback } from "react"
 import type { DanceStyleFamily } from "./styles-data"
+import { useLocale } from "@/components/LocaleProvider"
+import { uiText } from "@/data/i18n/messages"
 
 /* ── Constantes ──────────────────────────────────────────────── */
 const STEP    = 8   // cartes ajoutées / retirées à chaque clic
@@ -48,6 +50,8 @@ type Props = {
 
 /* ── Composant ───────────────────────────────────────────────── */
 export default function StylesGrid({ styles, totalCount }: Props) {
+  const locale = useLocale()
+  const t = (text: string) => uiText(locale, text)
   const [visibleCount, setVisibleCount] = useState(INITIAL)
   const controlsRef = useRef<HTMLDivElement>(null)
 
@@ -65,7 +69,7 @@ export default function StylesGrid({ styles, totalCount }: Props) {
 
   /* Compteur affiché dans l'en-tête */
   const countLabel = isFiltered
-    ? `${styles.length} résultat${styles.length > 1 ? "s" : ""} sur ${totalCount}`
+    ? `${styles.length} ${t(styles.length > 1 ? "résultats" : "résultat")} ${t("sur")} ${totalCount}`
     : `${totalCount}`
 
   /* ── Handlers ────────────────────────────────────────────── */
@@ -96,7 +100,7 @@ export default function StylesGrid({ styles, totalCount }: Props) {
 
       {/* En-tête */}
       <div className="stg-header container">
-        <h2 className="stg-title">Tous les styles</h2>
+        <h2 className="stg-title">{t("Tous les styles")}</h2>
         <span className="stg-count" aria-live="polite">{countLabel}</span>
       </div>
 
@@ -104,7 +108,7 @@ export default function StylesGrid({ styles, totalCount }: Props) {
       <div className="stg-grid container">
         {styles.length === 0 ? (
           <div className="stg-empty">
-            <p>Aucun style ne correspond à cette recherche.</p>
+            <p>{t("Aucun style ne correspond à cette recherche.")}</p>
           </div>
         ) : (
           visibleStyles.map((style, i) => {
@@ -167,7 +171,7 @@ export default function StylesGrid({ styles, totalCount }: Props) {
                         </svg>
                       </span>
                     ) : (
-                      <span className="stg-card-coming">À venir</span>
+                      <span className="stg-card-coming">{t("À venir")}</span>
                     )}
                   </div>
                 </div>
@@ -188,7 +192,7 @@ export default function StylesGrid({ styles, totalCount }: Props) {
                 key={style.slug}
                 className="stg-card stg-card--upcoming"
                 style={{ "--card-delay": delay } as React.CSSProperties}
-                aria-label={`${style.name} — contenu à venir`}
+                aria-label={locale === 'en' ? `${style.name} — content coming soon` : `${style.name} — contenu à venir`}
               >
                 {inner}
               </div>
@@ -205,9 +209,9 @@ export default function StylesGrid({ styles, totalCount }: Props) {
               type="button"
               className="btn btn-primary"
               onClick={handleLess}
-              aria-label="Afficher moins de styles"
+              aria-label={locale === 'en' ? 'Show fewer styles' : 'Afficher moins de styles'}
             >
-              Voir moins
+              {t("Voir moins")}
             </button>
           )}
           {canShowMore && (
@@ -215,9 +219,9 @@ export default function StylesGrid({ styles, totalCount }: Props) {
               type="button"
               className="btn btn-primary"
               onClick={handleMore}
-              aria-label={`Afficher ${Math.min(STEP, styles.length - visibleCount)} styles supplémentaires`}
+              aria-label={locale === 'en' ? `Show ${Math.min(STEP, styles.length - visibleCount)} more styles` : `Afficher ${Math.min(STEP, styles.length - visibleCount)} styles supplémentaires`}
             >
-              Voir plus
+              {t("Voir plus")}
             </button>
           )}
         </div>

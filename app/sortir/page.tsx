@@ -1,5 +1,7 @@
 import type { Metadata } from "next"
 import AgendaExperience from "../agenda/AgendaExperience"
+import { requestLocale } from "@/lib/i18n/server"
+import { uiText } from "@/data/i18n/messages"
 
 export const metadata: Metadata = {
   title: "Spectacles, festivals et événements danse | Dance Lab",
@@ -19,18 +21,22 @@ export const metadata: Metadata = {
   },
 }
 
-export default function SortirPage() {
+export default async function SortirPage() {
+  const locale = await requestLocale()
+  const t = (text: string) => uiText(locale, text)
+
   return (
     <main className="srt-page">
       <section className="srt-hero">
         <div className="container srt-hero-inner">
-          <span className="section-label">Sortir</span>
+          <span className="section-label">{t('Sortir')}</span>
           <h1>
-            Les rendez-vous danse<br />
-            à ne pas manquer.
+            {locale === 'en'
+              ? t('Les rendez-vous danse à ne pas manquer.')
+              : <>Les rendez-vous danse<br />à ne pas manquer.</>}
           </h1>
           <p className="srt-hero-sub">
-            Spectacles, festivals, performances et événements partout en France.
+            {t('Spectacles, festivals, performances et événements partout en France.')}
           </p>
         </div>
       </section>

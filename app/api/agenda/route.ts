@@ -576,7 +576,7 @@ function applyVenueFallback(event: AgendaEvent) {
 
 function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
   const properties = page.properties
-  const title = getText(findProperty(properties, ["title", "Titre", "Nom", "Name", "Événement", "Evenement", "Event", "Nom de l'événement", "Nom de l’événement"]))
+  const title = getText(findProperty(properties, ["title", "Titre", "Nom", "Name", "Événement", "Evenement", "Event", "Nom de l'événement", "Nom de l'événement"]))
 
   if (!title) return null
 

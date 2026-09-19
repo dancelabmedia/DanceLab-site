@@ -2,6 +2,8 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { searchIndex } from "../../data/search-index"
 import { searchContent } from "../../data/search"
+import { requestLocale } from "@/lib/i18n/server"
+import { uiText } from "@/data/i18n/messages"
 
 export const metadata: Metadata = {
   title: "Recherche | Dance Lab",
@@ -25,12 +27,15 @@ export default async function SearchResultsPage({
     }, new Map<string, typeof results>())
   )
 
+  const locale = await requestLocale()
+  const t = (text: string) => uiText(locale, text)
+
   return (
     <main className="search-results-page">
       <section className="search-results-hero">
         <div className="container">
-          <span className="section-label">Recherche</span>
-          <h1>Explorer Dance Lab</h1>
+          <span className="section-label">{t('Recherche')}</span>
+          <h1>{t('Explorer Dance Lab')}</h1>
           <form className="search-results-form" action="/recherche" role="search">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="11" cy="11" r="8" />
@@ -40,10 +45,10 @@ export default async function SearchResultsPage({
               type="search"
               name="q"
               defaultValue={query}
-              placeholder="Épisode, invité, thème, article…"
-              aria-label="Rechercher dans Dance Lab"
+              placeholder={t("Épisode, invité, thème, article…")}
+              aria-label={t("Rechercher dans Dance Lab")}
             />
-            <button type="submit">Rechercher</button>
+            <button type="submit">{t('Rechercher')}</button>
           </form>
         </div>
       </section>
@@ -53,13 +58,13 @@ export default async function SearchResultsPage({
           {query.trim() ? (
             <div className="search-results-heading">
               <p>
-                {results.length} résultat{results.length > 1 ? "s" : ""} pour
+                {results.length} {t(results.length > 1 ? 'résultats pour' : 'résultat pour')}
               </p>
               <h2>« {query.trim()} »</h2>
             </div>
           ) : (
             <p className="search-results-empty">
-              Saisissez un mot-clé, un nom, un thème ou un numéro d'épisode.
+              {t("Saisissez un mot-clé, un nom, un thème ou un numéro d'épisode.")}
             </p>
           )}
 
@@ -84,7 +89,7 @@ export default async function SearchResultsPage({
                             {item.episodeNumber ? ` ${item.episodeNumber}` : ""}
                           </small>
                           <strong>{item.title}</strong>
-                          {item.guest ? <span>Avec {item.guest}</span> : null}
+                          {item.guest ? <span>{locale === 'en' ? `With ${item.guest}` : `Avec ${item.guest}`}</span> : null}
                           <p>{item.summary}</p>
                         </span>
                         <span className="search-result-arrow" aria-hidden="true">→</span>
@@ -96,7 +101,7 @@ export default async function SearchResultsPage({
             </div>
           ) : query.trim() ? (
             <p className="search-results-empty">
-              Aucun résultat trouvé pour « {query.trim()} ». Essayez un autre mot-clé ou un thème plus large.
+              {t('Aucun résultat trouvé pour')} « {query.trim()} ». {t('Essayez un autre mot-clé ou un thème plus large.')}
             </p>
           ) : null}
         </div>

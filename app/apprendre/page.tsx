@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 import { SITE_URL } from "../../data/site"
 import { apprendreSections } from "./apprendre-data"
+import { requestLocale } from "@/lib/i18n/server"
+import { uiText } from "@/data/i18n/messages"
 
 const apprendreUrl = new URL("/apprendre", SITE_URL).toString()
 
@@ -20,29 +22,25 @@ export const metadata: Metadata = {
   },
 }
 
-export default function ApprendrePage() {
+export default async function ApprendrePage() {
+  const locale = await requestLocale()
+  const t = (text: string) => uiText(locale, text)
   return (
     <main className="explorer-page">
       <section className="explorer-hero explorer-hero--apprendre">
         <div className="container">
-          <span className="section-label">Apprendre</span>
-          <h1>Des ressources pour progresser, se structurer et faire évoluer son parcours.</h1>
-          <p>
-            Guides, conseils, formations et outils : un espace pensé pour accompagner
-            les artistes et les professionnels de la danse dans leur pratique et leurs projets.
-          </p>
+          <span className="section-label">{t('Apprendre')}</span>
+          <h1>{t('Des ressources pour progresser, se structurer et faire évoluer son parcours.')}</h1>
+          <p>{t("Guides, conseils, formations et outils : un espace pensé pour accompagner les artistes et les professionnels de la danse dans leur pratique et leurs projets.")}</p>
         </div>
       </section>
 
       <section className="explorer-index">
         <div className="container">
           <div className="explorer-section-heading">
-            <span className="section-label">Rubriques</span>
-            <h2>Des ressources organisées pour répondre aux besoins du terrain</h2>
-            <p>
-              Chaque rubrique accueillera progressivement des contenus pratiques,
-              accessibles et utiles à chaque étape d'un parcours dans la danse.
-            </p>
+            <span className="section-label">{t('Rubriques')}</span>
+            <h2>{t('Des ressources organisées pour répondre aux besoins du terrain')}</h2>
+            <p>{t("Chaque rubrique accueillera progressivement des contenus pratiques, accessibles et utiles à chaque étape d'un parcours dans la danse.")}</p>
           </div>
 
           <div className="explorer-grid">
@@ -55,7 +53,7 @@ export default function ApprendrePage() {
                 <span>{section.kicker}</span>
                 <h3>{section.label}</h3>
                 <p>{section.intro}</p>
-                <small>Découvrir</small>
+                <small>{t('Découvrir')}</small>
               </a>
             ))}
           </div>

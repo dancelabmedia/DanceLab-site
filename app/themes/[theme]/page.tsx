@@ -19,6 +19,8 @@ import {
   slugToKey,
 } from "@/lib/episode-themes";
 import { SITE_URL } from "@/data/site";
+import { requestLocale } from "@/lib/i18n/server";
+import { uiText } from "@/data/i18n/messages";
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -67,6 +69,8 @@ export default async function ThemePage({ params }: PageProps) {
   const key   = slugToKey(themeSlug);
   const label = TAG_LABEL[key];
   if (!label) notFound();
+  const locale = await requestLocale();
+  const t = (text: string) => uiText(locale, text);
 
   // ── Épisodes statiques (1–121) ─────────────────────────────────────────────
   const matchingStatic = episodes
@@ -121,17 +125,17 @@ export default async function ThemePage({ params }: PageProps) {
       {/* ── En-tête ── */}
       <header className="theme-header">
         <Link href="/ecouter" className="theme-back">
-          ← Tous les épisodes
+          {t('← Tous les épisodes')}
         </Link>
         <div className="theme-header-inner">
-          <p className="theme-eyebrow">Thème</p>
+          <p className="theme-eyebrow">{t('Thème')}</p>
           <h1 className="theme-title">{label}</h1>
           <p className="theme-count">
             {allMatching.length === 0
-              ? "Aucun épisode"
+              ? t('Aucun épisode')
               : allMatching.length === 1
-              ? "1 épisode"
-              : `${allMatching.length} épisodes`}
+              ? `1 ${t('épisode')}`
+              : `${allMatching.length} ${t('épisodes')}`}
           </p>
         </div>
       </header>
@@ -141,7 +145,7 @@ export default async function ThemePage({ params }: PageProps) {
         <div className="container">
           {allMatching.length === 0 ? (
             <p className="theme-empty">
-              Aucun épisode trouvé pour ce thème pour le moment.
+              {t('Aucun épisode trouvé pour ce thème pour le moment.')}
             </p>
           ) : (
             <div className="ep2-grid theme-ep-grid">
@@ -161,14 +165,14 @@ export default async function ThemePage({ params }: PageProps) {
                     />
                   </div>
                   <div className="ep2-card-content">
-                    <span className="ep2-card-number">Épisode {ep.number}</span>
+                    <span className="ep2-card-number">{t('Épisode')} {ep.number}</span>
                     <p className="ep2-card-title">{ep.title}</p>
-                    <p className="ep2-card-guest">Avec {ep.guest}</p>
+                    <p className="ep2-card-guest">{t('Avec')} {ep.guest}</p>
                     <span className="ep2-card-btn">
                       <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true" style={{ marginRight: 5 }}>
                         <polygon points="2,1 11,6 2,11" />
                       </svg>
-                      Écouter l&apos;épisode
+                      {t("Écouter l'épisode")}
                     </span>
                   </div>
                 </Link>
@@ -181,7 +185,7 @@ export default async function ThemePage({ params }: PageProps) {
       {/* ── Navigation vers les autres thèmes ── */}
       <section className="theme-nav-section">
         <div className="container">
-          <p className="theme-nav-label">Explorer d&apos;autres thèmes</p>
+          <p className="theme-nav-label">{t("Explorer d'autres thèmes")}</p>
           <div className="theme-nav-tags">
             {allTags.map((t) => (
               <Link

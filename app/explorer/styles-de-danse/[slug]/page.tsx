@@ -1,4 +1,6 @@
 import type { Metadata } from "next"
+import { requireExplorerAccess } from '@/lib/explorer-access'
+import { sectionVisibility } from '@/data/section-visibility'
 import Link from "next/link"
 import Image from "next/image"
 import { notFound } from "next/navigation"
@@ -8,17 +10,21 @@ import { danceStyles, getDanceStyle } from "../styles-data"
 import { withDedicatedStyleImage } from "../style-image-resolver"
 import StyleEditorial from "./StyleEditorial"
 import css from "./style-editorial.module.css"
+import { requestLocale } from '@/lib/i18n/server'
+import { uiText } from '@/data/i18n/messages'
 
 export const revalidate = 3600
 
 type PageProps = { params: Promise<{ slug: string }> }
 
 export function generateStaticParams() {
+  if (sectionVisibility.danceStyles === 'private') return []
   return danceStyles.map((s) => ({ slug: s.slug }))
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
+  await requireExplorerAccess('danceStyles', `/explorer/styles-de-danse/${slug}`)
   const style = getDanceStyle(slug)
   if (!style) return { title: "Style | Dance Lab" }
 
@@ -102,6 +108,9 @@ function buildLinkedEpisodes(
 
 export default async function StylePage({ params }: PageProps) {
   const { slug } = await params
+  await requireExplorerAccess('danceStyles', `/explorer/styles-de-danse/${slug}`)
+  const locale = await requestLocale()
+  const t = (text: string) => uiText(locale, text)
   const style = getDanceStyle(slug)
   if (!style) notFound()
 
@@ -147,8 +156,8 @@ export default async function StylePage({ params }: PageProps) {
         )}
         <div className={css.heroShade} />
         <div className={`container ${css.heroContent}`}>
-          <nav className={css.breadcrumb} aria-label="Fil d'Ariane">
-            <Link href="/explorer/styles-de-danse">Styles de danse</Link>
+          <nav className={css.breadcrumb} aria-label={t("Fil d'Ariane")}>
+            <Link href="/explorer/styles-de-danse">{t('Styles de danse')}</Link>
             <span aria-hidden="true">/</span>
             <span aria-current="page">{style.name}</span>
           </nav>
@@ -159,7 +168,7 @@ export default async function StylePage({ params }: PageProps) {
           )}
           <p className={css.heroSummary}>{heroSummary}</p>
           <Link href="#introduction" className={css.discover}>
-            <span aria-hidden="true">↓</span> Découvrir le style
+            <span aria-hidden="true">↓</span> {t('Découvrir le style')}
           </Link>
           {cover === style.image && style.imageCredit && (
             <p className={css.heroCredit}>{style.imageCredit}</p>

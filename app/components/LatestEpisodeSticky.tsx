@@ -21,6 +21,8 @@ import Link from 'next/link'
 import { type Episode } from '../../data/episodes'
 import { type UnifiedEpisode } from '@/lib/episodes'
 import IvwCarousel from './IvwCarousel'
+import { useLocale } from '@/components/LocaleProvider'
+import { uiText } from '@/data/i18n/messages'
 
 /* ── Icônes SVG ───────────────────────────────────────────────────── */
 const IconClock = () => (
@@ -75,6 +77,9 @@ export default function LatestEpisodeSticky({
   interviewPool,
   getGuestImage,
 }: Props) {
+  const locale = useLocale()
+  const t = (text: string) => uiText(locale, text)
+
   const sectionRef   = useRef<HTMLDivElement>(null)
   const compRef      = useRef<HTMLDivElement>(null)
   const leftColRef   = useRef<HTMLDivElement>(null)
@@ -205,12 +210,12 @@ export default function LatestEpisodeSticky({
               className="les-comp-left"
               style={{ opacity: 0, willChange: 'opacity, transform' }}
             >
-              <span className="les-comp-label">Dernier épisode</span>
+              <span className="les-comp-label">{t('Dernier épisode')}</span>
 
               <Link
                 href={`/episodes/${episode.slug}`}
                 className="les-ep-card"
-                aria-label={`Écouter l'épisode avec ${episode.guest}`}
+                aria-label={`${t('Écouter l\'épisode')} ${t('avec')} ${episode.guest}`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -227,7 +232,7 @@ export default function LatestEpisodeSticky({
 
                 {/* Badge + durée */}
                 <div className="les-ep-card-top">
-                  <span className="tag tag-accent">Nouveau</span>
+                  <span className="tag tag-accent">{t('Nouveau')}</span>
                   <span className="les-ep-card-dur">
                     <IconClock />&nbsp;{episode.duration}
                   </span>
@@ -237,14 +242,14 @@ export default function LatestEpisodeSticky({
                 <div className="les-ep-card-overlay">
                   <h3 className="les-ep-card-title">{episode.title}</h3>
                   <p className="les-ep-card-guest">
-                    Avec <strong>{episode.guest}</strong>
+                    {t('Avec')} <strong>{episode.guest}</strong>
                   </p>
                 </div>
               </Link>
 
               {/* CTA sous la carte */}
               <Link href={`/episodes/${episode.slug}`} className="les-ep-card-cta">
-                Écouter l&apos;épisode <IconArrow />
+                {t('Écouter l\'épisode')} <IconArrow />
               </Link>
             </div>
 
@@ -259,14 +264,14 @@ export default function LatestEpisodeSticky({
                 className="les-ivw-header"
                 style={{ opacity: 0, willChange: 'opacity, transform' }}
               >
-                <span className="les-comp-label">Interviews</span>
+                <span className="les-comp-label">{t('Interviews')}</span>
                 <a
                   ref={seeAllRef}
                   href="/ecouter"
                   className="les-ivw-seeall"
                   style={{ opacity: 0, pointerEvents: 'none' }}
                 >
-                  Voir toutes les interviews →
+                  {t('Voir toutes les interviews →')}
                 </a>
               </div>
 

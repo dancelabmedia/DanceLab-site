@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "../mentions-legales/mentions-legales.css";
 import "./gestion-cookies.css";
+import { requestLocale } from "@/lib/i18n/server";
+import { uiText } from "@/data/i18n/messages";
 
 export const metadata: Metadata = {
   title: "Gestion des cookies – Dance Lab",
@@ -9,7 +11,10 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function GestionCookiesPage() {
+export default async function GestionCookiesPage() {
+  const locale = await requestLocale();
+  const t = (text: string) => uiText(locale, text);
+
   return (
     <main className="gestion-cookies-page">
 
@@ -18,9 +23,9 @@ export default function GestionCookiesPage() {
         <div className="container">
           <div className="ml-hero-inner">
 
-            <span className="section-label">Transparence & contrôle</span>
+            <span className="section-label">{t('Transparence & contrôle')}</span>
 
-            <h1>Gestion des cookies</h1>
+            <h1>{t('Gestion des cookies')}</h1>
 
             <p className="ml-intro">
               Un cookie est un petit fichier déposé sur votre navigateur
@@ -31,7 +36,7 @@ export default function GestionCookiesPage() {
             </p>
 
             <span className="ml-last-update">
-              Dernière mise à jour : juillet 2025
+              {t('Dernière mise à jour')} : juillet 2025
             </span>
 
           </div>
@@ -44,7 +49,7 @@ export default function GestionCookiesPage() {
         <div className="container">
           <div className="ml-toc-inner">
 
-            <p>Sommaire</p>
+            <p>{t('Sommaire')}</p>
 
             <ol>
               <li><a href="#kesako">C'est quoi un cookie ?</a></li>

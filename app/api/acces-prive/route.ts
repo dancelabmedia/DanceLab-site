@@ -1,18 +1,10 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { hashPreviewPassword as hashPassword } from '@/lib/preview-session'
 
 const COOKIE_NAME = "preview_access"
 const COOKIE_MAX_AGE_PROD = 60 * 60 * 24 * 30 // 30 jours en production
-const COOKIE_MAX_AGE_DEV = 30                   // 30 secondes en local (mode test)
-
-async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder()
-  const data = encoder.encode(password + "dancelab-salt")
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data)
-  return Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("")
-}
+const COOKIE_MAX_AGE_DEV = 8 * 60 * 60 // Session de travail, sans expiration toutes les 30 secondes
 
 function isLocalhost(request: NextRequest): boolean {
   const host = request.headers.get("host") ?? ""

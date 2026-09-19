@@ -1,3 +1,8 @@
+'use client'
+import { localizedHref, type Locale } from '@/lib/i18n/routing'
+import { uiText } from '@/data/i18n/messages'
+import { useLocale } from './LocaleProvider'
+
 const IconInstagram = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
     <rect x="3" y="3" width="18" height="18" rx="5.2" />
@@ -29,7 +34,10 @@ const IconLinkedIn = () => (
   </svg>
 )
 
-export default function Footer() {
+export default function Footer({ locale: _initialLocale = 'fr' }: { locale?: Locale }) {
+  const locale = useLocale()
+  const t = (text: string) => uiText(locale, text)
+  const href = (path: string) => localizedHref(path, locale)
   const mainLinks = [
     { label: 'Découvrir', href: '/decouvrir' },
     { label: 'Écouter', href: '/ecouter' },
@@ -67,7 +75,7 @@ export default function Footer() {
       <div className="container">
         <div className="footer-grid">
           <div className="footer-brand">
-            <a href="/" className="logo footer-logo">
+            <a href={href('/')} className="logo footer-logo">
               <img
                 src="/logo-footer.png"
                 alt="Dance Lab"
@@ -77,28 +85,28 @@ export default function Footer() {
 
             <p className="footer-tagline">
               <span className="footer-tagline-line">
-                Le média qui ouvre les portes du monde de la danse
+                {t('Le média qui ouvre les portes du monde de la danse')}
               </span>
               <span className="footer-tagline-line">
-                pour les professionnels, les passionnés et les curieux.
+                {t('pour les professionnels, les passionnés et les curieux.')}
               </span>
             </p>
 
           </div>
 
-          <nav className="footer-main-nav" aria-label="Navigation du footer">
+          <nav className="footer-main-nav" aria-label={t('Navigation du footer')}>
             <p className="foot-col-title">Navigation</p>
             <ul className="foot-links">
               {mainLinks.map((item) => (
                 <li key={item.label}>
-                  <a href={item.href}>{item.label}</a>
+                  <a href={href(item.href)}>{t(item.label)}</a>
                 </li>
               ))}
             </ul>
           </nav>
 
           <div className="footer-actions">
-            <p className="foot-col-title">Suivre</p>
+            <p className="foot-col-title">{t('Suivre')}</p>
             <div className="socials">
               {socialLinks.map((item) => (
                 <a
@@ -113,7 +121,7 @@ export default function Footer() {
                 </a>
               ))}
             </div>
-            <a href="/#newsletter" className="footer-newsletter-link">
+            <a href={href('/#newsletter')} className="footer-newsletter-link">
               Newsletter
             </a>
           </div>
@@ -121,18 +129,18 @@ export default function Footer() {
 
         <div className="foot-bottom">
           <p className="foot-copy">
-            © 2026 Dance Lab - Tous droits réservés
+            © 2026 Dance Lab - {t('Tous droits réservés')}
           </p>
 
           <ul className="foot-legal">
             <li>
-              <a href="/mentions-legales">Mentions légales</a>
+              <a href={href('/mentions-legales')}>{t('Mentions légales')}</a>
             </li>
             <li>
-              <a href="/politique-de-confidentialite">Politique de confidentialité</a>
+              <a href={href('/politique-de-confidentialite')}>{t('Politique de confidentialité')}</a>
             </li>
             <li>
-              <a href="/gestion-cookies">Gestion des cookies</a>
+              <a href={href('/gestion-cookies')}>{t('Gestion des cookies')}</a>
             </li>
           </ul>
         </div>

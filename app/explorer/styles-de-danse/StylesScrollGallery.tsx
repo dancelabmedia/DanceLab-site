@@ -14,6 +14,8 @@
 import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 import type { DanceStyleFamily } from './styles-data'
+import { useLocale } from '@/components/LocaleProvider'
+import { uiText } from '@/data/i18n/messages'
 
 type GalleryStyle = {
   slug: string
@@ -50,6 +52,8 @@ interface Props {
 }
 
 export default function StylesScrollGallery({ styles }: Props) {
+  const locale = useLocale()
+  const t = (text: string) => uiText(locale, text)
   const sectionRef  = useRef<HTMLDivElement>(null)
   const trackRef    = useRef<HTMLDivElement>(null)
   const progressRef = useRef<HTMLDivElement>(null)
@@ -108,8 +112,8 @@ export default function StylesScrollGallery({ styles }: Props) {
 
         {/* En-tête */}
         <div className="ssg-intro">
-          <span className="ssg-intro-label">Explorer · Styles de danse</span>
-          <h2 className="ssg-intro-title">Tous les styles</h2>
+          <span className="ssg-intro-label">{t('Explorer · Styles de danse')}</span>
+          <h2 className="ssg-intro-title">{t('Tous les styles')}</h2>
         </div>
 
         {/* Piste de cartes */}
@@ -161,7 +165,7 @@ export default function StylesScrollGallery({ styles }: Props) {
                     </div>
                     {isAvailable ? (
                       <div className="ssg-card-cta">
-                        Découvrir
+                        {t('Découvrir')}
                         <svg
                           width="14"
                           height="14"
@@ -177,7 +181,7 @@ export default function StylesScrollGallery({ styles }: Props) {
                         </svg>
                       </div>
                     ) : (
-                      <span className="ssg-card-coming">À venir</span>
+                      <span className="ssg-card-coming">{t('À venir')}</span>
                     )}
                   </div>
                 </>
@@ -195,7 +199,7 @@ export default function StylesScrollGallery({ styles }: Props) {
                 <div
                   key={style.slug}
                   className="ssg-card ssg-card--upcoming"
-                  aria-label={`${style.name} — contenu à venir`}
+                  aria-label={`${style.name} — ${t('contenu à venir')}`}
                 >
                   {inner}
                 </div>
@@ -214,9 +218,9 @@ export default function StylesScrollGallery({ styles }: Props) {
           onClick={() => {
             document.querySelector('.sty-magazine')?.scrollIntoView({ behavior: 'smooth' })
           }}
-          aria-label="Passer la galerie et continuer vers la suite"
+          aria-label={t('Passer la galerie et continuer vers la suite')}
         >
-          Continuer ↓
+          {t('Continuer ↓')}
         </button>
       </div>
     </div>

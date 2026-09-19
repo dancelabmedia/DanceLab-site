@@ -1,6 +1,9 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
+import type { Locale } from '@/lib/i18n/routing'
+import { uiText } from '@/data/i18n/messages'
+import { useLocale } from './LocaleProvider'
 
 // ── Logique d'affichage (inchangée) ────────────────────────────────────────────
 const STORAGE_KEY   = "dl_newsletter_dismissed"
@@ -27,7 +30,9 @@ function markDismissed() {
 
 type Status = "idle" | "loading" | "success" | "invalid" | "error"
 
-export default function NewsletterModal() {
+export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { locale?: Locale }) {
+  const locale = useLocale()
+  const t = (text: string) => uiText(locale, text)
   const [visible,   setVisible]   = useState(false)
   const [animating, setAnimating] = useState(false)
   const [status,    setStatus]    = useState<Status>("idle")
@@ -117,15 +122,15 @@ export default function NewsletterModal() {
           </div>
 
           <div className="nl-headline">
-            <p className="nl-hl nl-hl-sm nl-hl-reg">La newsletter</p>
-            <p className="nl-hl nl-hl-md nl-hl-reg">qui garde</p>
-            <p className="nl-hl nl-hl-lg nl-hl-accent">la danse</p>
-            <p className="nl-hl nl-hl-sm nl-hl-reg">en mouvement.</p>
+            <p className="nl-hl nl-hl-sm nl-hl-reg">{t('La newsletter')}</p>
+            <p className="nl-hl nl-hl-md nl-hl-reg">{t('qui garde')}</p>
+            <p className="nl-hl nl-hl-lg nl-hl-accent">{t('la danse')}</p>
+            <p className="nl-hl nl-hl-sm nl-hl-reg">{t('en mouvement.')}</p>
           </div>
 
           <div className="nl-left-foot">
             <span className="nl-foot-rule" />
-            <span className="nl-foot-tags">Podcast&nbsp;·&nbsp;Culture&nbsp;·&nbsp;Carrière&nbsp;·&nbsp;Sorties</span>
+            <span className="nl-foot-tags">{locale === 'en' ? 'Podcast · Culture · Careers · Events' : 'Podcast · Culture · Carrière · Sorties'}</span>
           </div>
         </div>
 
@@ -133,7 +138,7 @@ export default function NewsletterModal() {
         <div className="nl-right">
 
           {/* Fermer */}
-          <button type="button" className="nl-close" onClick={close} aria-label="Fermer">
+          <button type="button" className="nl-close" onClick={close} aria-label={t('Fermer')}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <line x1="18" y1="6"  x2="6"  y2="18" />
               <line x1="6"  y1="6"  x2="18" y2="18" />
@@ -142,26 +147,25 @@ export default function NewsletterModal() {
 
           <div className="nl-right-inner">
 
-            <span className="nl-eyebrow">Newsletter hebdomadaire</span>
+            <span className="nl-eyebrow">{t('Newsletter hebdomadaire')}</span>
 
             <h2 id="nl-title" className="nl-title">
-              <span className="nl-title-bold">Le meilleur de la danse,</span>
-              <em className="nl-title-italic">directement dans ta boîte mail.</em>
+              <span className="nl-title-bold">{t('Le meilleur de la danse,')}</span>
+              <em className="nl-title-italic">{t('directement dans ta boîte mail.')}</em>
             </h2>
 
             <p className="nl-desc">
-              Chaque semaine, les nouveaux épisodes, nos meilleurs articles,
-              les événements à ne pas manquer et les ressources qui valent vraiment le détour.
+              {t('Chaque semaine, les nouveaux épisodes, nos meilleurs articles, les événements à ne pas manquer et les ressources qui valent vraiment le détour.')}
             </p>
 
-            <p className="nl-meta">5&nbsp;min de lecture&nbsp;&nbsp;·&nbsp;&nbsp;1×&nbsp;par semaine&nbsp;&nbsp;·&nbsp;&nbsp;Gratuit</p>
+            <p className="nl-meta">{locale === 'en' ? '5-minute read · Once a week · Free' : '5 min de lecture · 1× par semaine · Gratuit'}</p>
 
             {status === "success" ? (
               <div className="nl-success">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
-                <span>Bienvenue dans la communauté Dance Lab ✨</span>
+                <span>{t('Bienvenue dans la communauté Dance Lab')}</span>
               </div>
             ) : (
               <form
@@ -188,8 +192,8 @@ export default function NewsletterModal() {
                     ref={inputRef}
                     type="email"
                     name="email"
-                    placeholder="Ton adresse e-mail"
-                    aria-label="Ton adresse e-mail"
+                    placeholder={t('Ton adresse e-mail')}
+                    aria-label={t('Ton adresse e-mail')}
                     aria-invalid={status === "invalid"}
                     required
                     disabled={status === "loading"}
@@ -200,7 +204,7 @@ export default function NewsletterModal() {
                     className="nl-btn"
                     disabled={status === "loading"}
                   >
-                    <span>{status === "loading" ? "Envoi…" : "S'abonner"}</span>
+                    <span>{t(status === "loading" ? "Envoi…" : "S'abonner")}</span>
                     {status !== "loading" && (
                       <svg className="nl-btn-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                         <line x1="5" y1="12" x2="19" y2="12" />
@@ -211,13 +215,13 @@ export default function NewsletterModal() {
                 </div>
 
                 {status === "invalid" && (
-                  <p className="nl-hint-error" role="alert">Adresse e-mail invalide.</p>
+                  <p className="nl-hint-error" role="alert">{t('Adresse e-mail invalide.')}</p>
                 )}
                 {status === "error" && (
-                  <p className="nl-hint-error" role="alert">Une erreur est survenue. Réessaie.</p>
+                  <p className="nl-hint-error" role="alert">{t('Une erreur est survenue. Réessaie.')}</p>
                 )}
 
-                <p className="nl-legal">Aucun spam. Désinscription à tout moment.</p>
+                <p className="nl-legal">{t('Aucun spam. Désinscription à tout moment.')}</p>
               </form>
             )}
           </div>
@@ -225,14 +229,14 @@ export default function NewsletterModal() {
           {/* Signature bas */}
           <div className="nl-signature">
             <span className="nl-sig-rule" />
-            <span className="nl-sig-text">Dance Lab - Le média de référence de la danse</span>
+            <span className="nl-sig-text">{locale === 'en' ? 'Dance Lab — A media platform reference for dance' : 'Dance Lab - Le média référence de la danse'}</span>
           </div>
         </div>
 
         {/* iframe Substack silencieuse (inchangée) */}
         <iframe
           ref={frameRef}
-          title="Inscription newsletter"
+          title={t('Inscription newsletter')}
           name="nl-frame"
           className="nl-iframe"
           onLoad={handleFrameLoad}

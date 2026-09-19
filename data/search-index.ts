@@ -4,6 +4,7 @@ import { discoverSections } from "../app/decouvrir/discover-data"
 import { explorerSections } from "../app/explorer/explorer-data"
 import { episodes } from "./episodes"
 import { normalizeSearchText, type SearchItem } from "./search"
+import { isPrivateSectionPath } from './section-visibility'
 
 function searchable(parts: Array<string | number | undefined>) {
   return normalizeSearchText(parts.filter((part) => part !== undefined).join(" "))
@@ -205,4 +206,4 @@ export const searchIndex: SearchItem[] = [
   ...discoverItems,
   ...explorerItems,
   ...editorialItems,
-]
+].filter(item => !isPrivateSectionPath(item.href))

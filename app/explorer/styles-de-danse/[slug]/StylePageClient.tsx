@@ -2,11 +2,15 @@
 
 import { useEffect, useState } from "react"
 import css from "./style-editorial.module.css"
+import { useLocale } from "@/components/LocaleProvider"
+import { uiText } from "@/data/i18n/messages"
 
 export type StyleSection = { id: string; label: string }
 
 /** Seul le sommaire a besoin d'hydratation ; l'article reste rendu côté serveur. */
 export default function StylePageClient({ sections }: { sections: StyleSection[] }) {
+  const locale = useLocale()
+  const t = (text: string) => uiText(locale, text)
   const [activeSection, setActiveSection] = useState(sections[0]?.id)
 
   useEffect(() => {
@@ -22,7 +26,7 @@ export default function StylePageClient({ sections }: { sections: StyleSection[]
   }, [sections])
 
   return (
-    <nav className={css.navigation} aria-label="Sommaire du style">
+    <nav className={css.navigation} aria-label={t("Sommaire du style")}>
       <div className={`container ${css.navigationLinks}`}>
         {sections.map(({ id, label }) => (
           <a

@@ -22,6 +22,8 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { type Episode } from '../../data/episodes'
+import { useLocale } from '@/components/LocaleProvider'
+import { uiText } from '@/data/i18n/messages'
 
 /* ── Constantes ──────────────────────────────────────────────────── */
 const VISIBLE        = 3    // cartes simultanément visibles
@@ -82,6 +84,9 @@ interface Props {
 
 /* ── Composant ───────────────────────────────────────────────────── */
 export default function IvwCarousel({ pool, latestSlug, getGuestImage }: Props) {
+  const locale = useLocale()
+  const t = (text: string) => uiText(locale, text)
+
   const wrapRef  = useRef<HTMLDivElement>(null)
   const trackRef = useRef<HTMLDivElement>(null)
   const lockRef  = useRef(false)   // verrouillage flèches pendant transition
@@ -450,12 +455,12 @@ export default function IvwCarousel({ pool, latestSlug, getGuestImage }: Props) 
                   {/* Overlay info — visible par défaut, disparaît au survol */}
                   <div className="les-ivw-info" aria-hidden="true">
                     <div className="les-ivw-info-top">
-                      <span className="les-ivw-info-ep">Ép.&nbsp;{ep.number}</span>
+                      <span className="les-ivw-info-ep">{t('Ép.')}&nbsp;{ep.number}</span>
                       <span className="les-ivw-info-dur">{ep.duration}</span>
                     </div>
                     <div className="les-ivw-info-bottom">
                       <p className="les-ivw-info-title">{ep.title}</p>
-                      <p className="les-ivw-info-guest">Avec <strong>{ep.guest}</strong></p>
+                      <p className="les-ivw-info-guest">{t('Avec')} <strong>{ep.guest}</strong></p>
                     </div>
                   </div>
 
@@ -463,7 +468,7 @@ export default function IvwCarousel({ pool, latestSlug, getGuestImage }: Props) 
                   {ep.quote && (
                     <div className="les-ivw-overlay" aria-hidden="true">
                       <p className="les-ivw-quote">&ldquo;{ep.quote}&rdquo;</p>
-                      <span className="les-ivw-see">Voir l&apos;épisode →</span>
+                      <span className="les-ivw-see">{t("Voir l'épisode →")}</span>
                     </div>
                   )}
                 </div>
@@ -478,14 +483,14 @@ export default function IvwCarousel({ pool, latestSlug, getGuestImage }: Props) 
       <button
         className="les-ivw-arrow les-ivw-arrow--left"
         onClick={() => navigate(-1)}
-        aria-label="Interviews précédentes"
+        aria-label={t('Interviews précédentes')}
       >
         <IconArrowL />
       </button>
       <button
         className="les-ivw-arrow les-ivw-arrow--right"
         onClick={() => navigate(1)}
-        aria-label="Interviews suivantes"
+        aria-label={t('Interviews suivantes')}
       >
         <IconArrowR />
       </button>

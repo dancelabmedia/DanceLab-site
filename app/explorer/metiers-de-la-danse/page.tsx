@@ -1,5 +1,8 @@
 import type { Metadata } from 'next'
+import { requireExplorerAccess } from '@/lib/explorer-access'
 import Link from 'next/link'
+import { requestLocale } from '@/lib/i18n/server'
+import { uiText } from '@/data/i18n/messages'
 import {
   metiers,
   UNIVERS,
@@ -27,7 +30,10 @@ export const metadata: Metadata = {
   },
 }
 
-export default function MetiersDeLaDansePage() {
+export default async function MetiersDeLaDansePage() {
+  await requireExplorerAccess('jobs')
+  const locale = await requestLocale()
+  const t = (text: string) => uiText(locale, text)
   return (
     <main className="met-page">
 
@@ -47,12 +53,12 @@ export default function MetiersDeLaDansePage() {
 
           {/* — Colonne gauche : texte éditorial ————————— */}
           <div className="met-hero-left">
-            <span className="met-hero-kicker">Explorer · Métiers de la danse</span>
+            <span className="met-hero-kicker">{t('Explorer · Métiers de la danse')}</span>
 
             <h1 className="met-hero-title">
-              Les métiers<br />
-              qui font exister<br />
-              <em>la danse.</em>
+              {t('Les métiers')}<br />
+              {t('qui font exister')}<br />
+              <em>{t('la danse.')}</em>
             </h1>
 
             <p className="met-hero-desc">
@@ -65,18 +71,18 @@ export default function MetiersDeLaDansePage() {
             <div className="met-hero-stats">
               <div className="met-hero-stat">
                 <strong>{TOTAL_UNIVERS}</strong>
-                <span>univers</span>
+                <span>{t('univers')}</span>
               </div>
               <div className="met-hero-stat-divider" aria-hidden="true" />
               <div className="met-hero-stat">
                 <strong>{TOTAL_METIERS}+</strong>
-                <span>métiers référencés</span>
+                <span>{t('métiers référencés')}</span>
               </div>
             </div>
           </div>
 
           {/* — Colonne droite : table des matières ————— */}
-          <div className="met-hero-right" aria-label="Univers">
+          <div className="met-hero-right" aria-label={t('Univers')}>
             <ol className="met-hero-index">
               {UNIVERS_ORDER.map((id) => {
                 const u = UNIVERS[id]
@@ -141,7 +147,7 @@ export default function MetiersDeLaDansePage() {
                         <p className="met-card-desc">{metier.description}</p>
                       </div>
                       <div className="met-card-foot">
-                        <span className="met-card-cta">En savoir plus →</span>
+                        <span className="met-card-cta">{t('En savoir plus →')}</span>
                       </div>
                     </article>
                   ))}
@@ -156,7 +162,7 @@ export default function MetiersDeLaDansePage() {
                         <p className="met-card-desc">{metier.description}</p>
                       </div>
                       <div className="met-card-foot">
-                        <span className="met-card-cta">En savoir plus →</span>
+                        <span className="met-card-cta">{t('En savoir plus →')}</span>
                       </div>
                     </article>
                   ))}
@@ -174,8 +180,8 @@ export default function MetiersDeLaDansePage() {
       <section className="met-podcast-cta">
         <div className="container met-podcast-cta-inner">
           <div className="met-podcast-cta-text">
-            <span className="section-label">Podcast Dance Lab</span>
-            <h2>Des professionnels racontent leur métier</h2>
+            <span className="section-label">{t('Podcast Dance Lab')}</span>
+            <h2>{t('Des professionnels racontent leur métier')}</h2>
             <p>
               Plus de {metiers.filter(m => m.univers !== 'image').length * 3} conversations avec
               des danseurs, chorégraphes, agents, régisseurs et professeurs.
@@ -183,7 +189,7 @@ export default function MetiersDeLaDansePage() {
             </p>
           </div>
           <Link href="/ecouter" className="met-podcast-cta-btn">
-            Écouter les épisodes →
+            {t('Écouter les épisodes →')}
           </Link>
         </div>
       </section>

@@ -2,8 +2,12 @@
 
 import { useRef, useEffect } from 'react'
 import Link from 'next/link'
+import PublicExplorerLink from '@/components/PublicExplorerLink'
+import { isPrivateSectionPath } from '@/data/section-visibility'
 import type { MagazineArticle } from '../decouvrir/articles-data'
 import { formatAgendaDate, type AgendaEvent } from '../agenda/agenda-data'
+import { useLocale } from '@/components/LocaleProvider'
+import { uiText } from '@/data/i18n/messages'
 
 /* ─────────────────────────────────────────────────────────
    Props
@@ -105,6 +109,9 @@ function lerp(a: number, b: number, t: number) {
    Component
 ───────────────────────────────────────────────────────── */
 export default function MediaReveal({ article, event }: Props) {
+  const locale = useLocale()
+  const t = (text: string) => uiText(locale, text)
+
   const sectionRef = useRef<HTMLElement>(null)
   const card1Ref   = useRef<HTMLDivElement>(null)   // Magazine
   const card2Ref   = useRef<HTMLDivElement>(null)   // Explorer (2e à apparaître)
@@ -260,15 +267,15 @@ export default function MediaReveal({ article, event }: Props) {
                     />
                     <div className="mfr-card-gradient" />
                     <div className="mfr-card-body mfr-card-body--lower">
-                      <span className="mfr-badge mfr-badge--mag">Magazine</span>
+                      <span className="mfr-badge mfr-badge--mag">{t('Magazine')}</span>
                       <span className="mfr-card-cat">{article.category}</span>
                       <h2 className="mfr-card-title">{article.title}</h2>
                       <p className="mfr-card-chapo">{article.chapo}</p>
                       <div className="mfr-card-foot">
                         <span className="mfr-card-meta">
-                          {article.publishedDate}&thinsp;·&thinsp;{article.readTime} de lecture
+                          {article.publishedDate}&thinsp;·&thinsp;{article.readTime} {t('de lecture')}
                         </span>
-                        <span className="mfr-card-cta">Lire l&apos;article →</span>
+                        <span className="mfr-card-cta">{t("Lire l'article →")}</span>
                       </div>
                     </div>
                   </div>
@@ -283,20 +290,20 @@ export default function MediaReveal({ article, event }: Props) {
                         <span className="mfr-preview-image-credit">{article.imageCredit}</span>
                       ) : null}
                     </div>
-                    <span className="mfr-preview-kicker">Magazine · {article.category}</span>
+                    <span className="mfr-preview-kicker">{t('Magazine')} · {article.category}</span>
                     <h3 className="mfr-preview-title">{article.title}</h3>
                     <p className="mfr-preview-copy">{article.chapo}</p>
-                    <span className="mfr-preview-cta">Aperçu de l&apos;article →</span>
+                    <span className="mfr-preview-cta">{t("Aperçu de l'article →")}</span>
                   </div>
                 </>
               ) : (
                 <div className="mfr-card-face mfr-card-face--front">
                   <div className="mfr-card-gradient" />
                   <div className="mfr-card-body mfr-card-body--lower">
-                    <span className="mfr-badge mfr-badge--mag">Magazine</span>
-                    <h2 className="mfr-card-title">Dance Lab Magazine</h2>
-                    <p className="mfr-card-chapo">Décryptages, culture et ressources pour comprendre la danse autrement.</p>
-                    <span className="mfr-card-cta">Découvrir →</span>
+                    <span className="mfr-badge mfr-badge--mag">{t('Magazine')}</span>
+                    <h2 className="mfr-card-title">{t('Dance Lab Magazine')}</h2>
+                    <p className="mfr-card-chapo">{t('Décryptages, culture et ressources pour comprendre la danse autrement.')}</p>
+                    <span className="mfr-card-cta">{t('Découvrir →')}</span>
                   </div>
                 </div>
               )}
@@ -309,7 +316,7 @@ export default function MediaReveal({ article, event }: Props) {
               Apparaît en DEUXIÈME
           ════════════════════════════════════════ */}
           <div ref={card2Ref} className="mfr-card mfr-card--style">
-            <Link
+            <PublicExplorerLink
               href={explorerFeature.href}
               className="mfr-card-inner"
               aria-label={`Explorer — ${explorerFeature.title}`}
@@ -325,11 +332,11 @@ export default function MediaReveal({ article, event }: Props) {
                 />
                 <div className="mfr-card-gradient" />
                 <div className="mfr-card-body mfr-card-body--exp mfr-card-body--lower">
-                  <span className="mfr-badge mfr-badge--exp">Explorer</span>
+                  <span className="mfr-badge mfr-badge--exp">{t('Explorer')}</span>
                   <span className="mfr-card-cat">{explorerFeature.kicker}</span>
                   <h2 className="mfr-card-title">{explorerFeature.title}</h2>
                   <p className="mfr-card-chapo">{explorerFeature.chapo}</p>
-                  <span className="mfr-card-cta mfr-card-cta--exp">Découvrir →</span>
+                  <span className="mfr-card-cta mfr-card-cta--exp">{isPrivateSectionPath(explorerFeature.href) ? t('Bientôt') : t('Découvrir →')}</span>
                 </div>
               </div>
 
@@ -337,8 +344,8 @@ export default function MediaReveal({ article, event }: Props) {
               {explorerFeature.section === 'styles-de-danse' ? (
                 <div className="mfr-card-face mfr-card-face--back mfr-card-back mfr-card-back--styles">
                   <div className="mfr-style-preview-head">
-                    <span className="mfr-preview-kicker">Encyclopédie Dance Lab</span>
-                    <h3 className="mfr-preview-title">Explorer les styles</h3>
+                    <span className="mfr-preview-kicker">{t('Encyclopédie Dance Lab')}</span>
+                    <h3 className="mfr-preview-title">{t('Explorer les styles')}</h3>
                   </div>
                   <div className="mfr-style-preview" aria-hidden="true">
                     <div><img src="/images/styles-de-danse/jazz.png" alt="" /><span>Jazz</span></div>
@@ -351,7 +358,7 @@ export default function MediaReveal({ article, event }: Props) {
                     <div><img src="/images/styles-de-danse/danseclassique.png" alt="" /><span>Street jazz</span></div>
                     <div><img src="/images/sofiastanic.jpg" alt="" /><span>Hip-hop</span></div>
                   </div>
-                  <span className="mfr-preview-cta">Ouvrir l&apos;encyclopédie →</span>
+                  <span className="mfr-preview-cta">{isPrivateSectionPath(explorerFeature.href) ? t("Bientôt · contenu en cours de vérification") : t("Ouvrir l'encyclopédie →")}</span>
                 </div>
               ) : (
                 <div className="mfr-card-face mfr-card-face--back mfr-card-back mfr-card-back--styles">
@@ -362,13 +369,13 @@ export default function MediaReveal({ article, event }: Props) {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={explorerFeature.image} alt="" aria-hidden="true" loading="lazy" />
                   </div>
-                  <span className="mfr-preview-kicker">Explorer · {explorerFeature.label}</span>
+                  <span className="mfr-preview-kicker">{t('Explorer')} · {explorerFeature.label}</span>
                   <h3 className="mfr-preview-title">{explorerFeature.title}</h3>
                   <p className="mfr-preview-copy">{explorerFeature.quote}</p>
-                  <span className="mfr-preview-cta">Découvrir →</span>
+                  <span className="mfr-preview-cta">{isPrivateSectionPath(explorerFeature.href) ? t('Bientôt') : t('Découvrir →')}</span>
                 </div>
               )}
-            </Link>
+            </PublicExplorerLink>
           </div>
 
           {/* ════════════════════════════════════════
@@ -394,26 +401,26 @@ export default function MediaReveal({ article, event }: Props) {
                   />
                   <div className="mfr-card-gradient" />
                   <div className="mfr-card-body mfr-card-body--lower">
-                    <span className="mfr-badge mfr-badge--sort">Sortir</span>
+                    <span className="mfr-badge mfr-badge--sort">{t('Sortir')}</span>
                     <span className="mfr-card-cat">{event.category}&thinsp;·&thinsp;{event.city}</span>
                     <h2 className="mfr-card-title">{event.title}</h2>
                     <p className="mfr-card-chapo">{event.description}</p>
                     <div className="mfr-card-foot">
                       <span className="mfr-card-meta">{eventDates}</span>
-                      <span className="mfr-card-cta mfr-card-cta--sort">Voir l&apos;événement →</span>
+                      <span className="mfr-card-cta mfr-card-cta--sort">{t("Voir l'événement →")}</span>
                     </div>
                   </div>
                 </div>
                 <div className="mfr-card-face mfr-card-face--back mfr-card-back mfr-card-back--event">
-                  <span className="mfr-preview-kicker">Informations pratiques</span>
+                  <span className="mfr-preview-kicker">{t('Informations pratiques')}</span>
                   <h3 className="mfr-preview-title">{event.title}</h3>
                   <dl className="mfr-event-facts">
-                    <div><dt>Dates</dt><dd>{eventDates}</dd></div>
-                    {eventVenue && <div><dt>Lieu</dt><dd>{eventVenue}</dd></div>}
-                    {eventTimes ? <div><dt>Horaires</dt><dd>{eventTimes}</dd></div> : null}
-                    {eventPrice ? <div><dt>Tarifs</dt><dd>{eventPrice}</dd></div> : null}
+                    <div><dt>{t('Dates')}</dt><dd>{eventDates}</dd></div>
+                    {eventVenue && <div><dt>{t('Lieu')}</dt><dd>{eventVenue}</dd></div>}
+                    {eventTimes ? <div><dt>{t('Horaires')}</dt><dd>{eventTimes}</dd></div> : null}
+                    {eventPrice ? <div><dt>{t('Tarifs')}</dt><dd>{eventPrice}</dd></div> : null}
                   </dl>
-                  <span className="mfr-preview-cta">Voir l&apos;événement →</span>
+                  <span className="mfr-preview-cta">{t("Voir l'événement →")}</span>
                 </div>
               </Link>
             </div>
@@ -421,13 +428,13 @@ export default function MediaReveal({ article, event }: Props) {
 
           {/* ── Label de composition — apparaît en dernier ── */}
           <div ref={labelRef} className="mfr-label" aria-hidden="true">
-            <span className="mfr-label-tag mfr-label-tag--mag">Magazine</span>
+            <span className="mfr-label-tag mfr-label-tag--mag">{t('Magazine')}</span>
             <span className="mfr-label-sep">·</span>
-            <span className="mfr-label-tag mfr-label-tag--exp">Explorer</span>
+            <span className="mfr-label-tag mfr-label-tag--exp">{t('Explorer')}</span>
             {event && (
               <>
                 <span className="mfr-label-sep">·</span>
-                <span className="mfr-label-tag mfr-label-tag--sort">Sortir</span>
+                <span className="mfr-label-tag mfr-label-tag--sort">{t('Sortir')}</span>
               </>
             )}
           </div>

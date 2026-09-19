@@ -13,6 +13,8 @@ import ArticleHeroSlider from "./ArticleHeroSlider"
 import ScrollReveal from "../../../../components/ScrollReveal"
 import PhotoCredit from "../../../../components/PhotoCredit"
 import ReadingProgress from "../../../../components/ReadingProgress"
+import { requestLocale } from "@/lib/i18n/server"
+import { uiText } from "@/data/i18n/messages"
 
 // ── Revalidation ISR ────────────────────────────────────────────────────────
 // Re-génère la page au maximum toutes les heures.
@@ -21,7 +23,7 @@ import ReadingProgress from "../../../../components/ReadingProgress"
 export const revalidate = 3600
 
 // ── Encart documentaire ─────────────────────────────────────────────────────
-function DocCard({ doc }: { doc: DocLink }) {
+function DocCard({ doc, t }: { doc: DocLink; t: (s: string) => string }) {
   return (
     <a
       href={doc.url}
@@ -38,11 +40,11 @@ function DocCard({ doc }: { doc: DocLink }) {
       <div className="doc-card-body">
         <span className="doc-card-platform">
           {doc.platform}
-          {doc.free && <span className="doc-card-free">Gratuit</span>}
+          {doc.free && <span className="doc-card-free">{t('Gratuit')}</span>}
         </span>
         <span className="doc-card-title">{doc.title}</span>
         <span className="doc-card-cta">
-          Voir le documentaire
+          {t('Voir le documentaire')}
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M2 6h8M6 2l4 4-4 4"/>
           </svg>
@@ -96,6 +98,8 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params
+  const locale = await requestLocale()
+  const t = (text: string) => uiText(locale, text)
   const article = getArticleBySlug(slug)
 
   // Guard : brouillons et articles programmés → 404 publique
@@ -152,13 +156,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         <div className="container article-hero-content">
           <div className="article-hero-text">
             <HistoryBackLink fallbackHref="/decouvrir" className="article-back">
-              ← Retour au magazine
+              {t('← Retour au magazine')}
             </HistoryBackLink>
             <span className="article-hero-category">{article.category}</span>
             <h1>{article.title}</h1>
             <p className="article-hero-chapo">{article.chapo}</p>
             <p className="article-hero-meta">
-              {article.publishedDate}&thinsp;·&thinsp;{article.category}&thinsp;·&thinsp;{article.readTime} de lecture
+              {article.publishedDate}&thinsp;·&thinsp;{article.category}&thinsp;·&thinsp;{article.readTime} {t('de lecture')}
             </p>
           </div>
         </div>
@@ -199,7 +203,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                       />
                     </figure>
                   )}
-                  {docLink !== null && <DocCard doc={docLink} />}
+                  {docLink !== null && <DocCard doc={docLink} t={t} />}
                 </section>
               )
             })}
@@ -217,7 +221,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             {/* Encart épisodes personnalisé OU encart source par défaut */}
             {article.episodeLinks ? (
               <div className="article-panel article-panel--episodes">
-                <span>Épisodes à écouter pour aller plus loin</span>
+                <span>{t('Épisodes à écouter pour aller plus loin')}</span>
                 <ul className="article-episode-links">
                   {article.episodeLinks.map((ep) => (
                     <li key={ep.slug}>
@@ -226,7 +230,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                           <img src={ep.image} alt={ep.name} />
                         </div>
                         <div className="article-episode-info">
-                          <small>Épisode {ep.number}</small>
+                          <small>{t('Épisode')} {ep.number}</small>
                           <strong>{ep.name}</strong>
                         </div>
                         <svg className="article-episode-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -239,10 +243,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               </div>
             ) : (
               <div className="article-panel">
-                <span>Épisode source</span>
+                <span>{t('Épisode source')}</span>
                 <h2>{article.guest}</h2>
-                <p>Article construit à partir de l'épisode {article.episodeNumber} de Dance Lab.</p>
-                <Link href={`/episodes/${article.episodeSlug}`}>Écouter l'épisode</Link>
+                <p>{locale === 'en' ? `Article based on episode ${article.episodeNumber} of Dance Lab.` : `Article construit à partir de l'épisode ${article.episodeNumber} de Dance Lab.`}</p>
+                <Link href={`/episodes/${article.episodeSlug}`}>{t("Écouter l'épisode")}</Link>
               </div>
             )}
 
@@ -258,7 +262,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             ) : null}
 
             <div className="article-panel">
-              <span>Tags</span>
+              <span>{t('Tags')}</span>
               <div className="article-tags">
                 {article.tags.map((tag) => (
                   <small key={tag}>{tag}</small>
@@ -274,8 +278,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       <section className="article-related">
         <div className="container">
           <div className="discover-section-heading">
-            <span className="section-label">À lire aussi</span>
-            <h2>Prolonger l'écoute</h2>
+            <span className="section-label">{t('À lire aussi')}</span>
+            <h2>{t("Prolonger l'écoute")}</h2>
           </div>
           <div className="discover-grid discover-grid--compact">
             {relatedArticles.map((item) => (
@@ -295,7 +299,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   <span>{item.category}</span>
                   <h3>{item.title}</h3>
                   <p>{item.chapo}</p>
-                  <small>Lire l'article</small>
+                  <small>{t("Lire l'article")}</small>
                 </div>
               </Link>
             ))}

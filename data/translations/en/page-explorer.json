@@ -1,0 +1,203 @@
+{
+  "locale": "en",
+  "sourceId": "page-explorer",
+  "fields": {
+    "title": {
+      "text": "Discover the world of dance through its languages, artists and professions.",
+      "sourceHash": "f30578fb84d4a4c524eaf5ad17cfa1c461e613ffc9097d81ff1fa1023e87e482",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "intro": {
+      "text": "A space to explore the styles, scenes, journeys and communities that shape dance culture today.",
+      "sourceHash": "023b030d9d35dbcfeeb3adb7bf10334ea03605d87bec5d3e67b4aef5e19cdf6d",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "eyebrow": {
+      "text": "Mapping dance with Dance Lab",
+      "sourceHash": "655f02723ab6e5c18a8b69f0b21d4ede0cca44182f6894900ed298240a95916d",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "leadTitle": {
+      "text": "A gateway to the full spectrum of dance culture.",
+      "sourceHash": "7d513a14f8516cac8aba2ff66fee48fb96d3564ec3da0d0a80d9d31f62a3793c",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "lead": {
+      "text": "Designed as a living guide, this section connects aesthetics, people, collectives and expertise, offering clear reference points without putting dance into boxes.",
+      "sourceHash": "c5b333c07fd47f9d142fd380909c3aad5efe6a9f45be7d94cb4d235a93574c73",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "sections": {
+      "text": "Sections",
+      "sourceHash": "ae45bf013d53b2e6156edd3102dd80db8d1276313f27ad833e25876224967284",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "sectionsTitle": {
+      "text": "Pages ready to grow into a complete editorial collection",
+      "sourceHash": "7d0128e2fbd1de9ca6c8506087fa8cf81b61ab7113bd0416d9a45e23de371b34",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "sectionsIntro": {
+      "text": "Each section brings together reference points, collections and editorial spaces to enrich Dance Lab over time.",
+      "sourceHash": "eba920f8f489e9c96e8c61c6cc1d8598f6a8d727eccdc839a4e4ffa544946663",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "schoolsKicker": {
+      "text": "Directory",
+      "sourceHash": "43c2fad20a64550fc9903a4f8e86a3147601f937204ef86206511e3b82962435",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "schoolsTitle": {
+      "text": "Dance schools",
+      "sourceHash": "5d200d44edabb7d0b35dec9273a75241c06d7dd82afdebd932a52fd20d2ec50f",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "schoolsIntro": {
+      "text": "Studios, conservatoires, training centres and associations: an interactive map and searchable directory to find places to dance, train and grow in Paris.",
+      "sourceHash": "fe244f898772d585e6d529df65a239e6d5ed0fac7ea82fc6f495fbbdce2214db",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "seoTitle": {
+      "text": "Explore dance | Dance Lab",
+      "sourceHash": "87d828786b4df88e5cf3b8eb939db672cd0b8154a4b52827fd93e10e57dbbebc",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "seoDescription": {
+      "text": "Styles, artists, choreographers, companies, careers and schools: explore dance culture with Dance Lab.",
+      "sourceHash": "7933daeb8e0341d79644d63c43b0c9478922abc045f654c80d7d75430e935f73",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "section.styles-de-danse.label": {
+      "text": "Dance styles",
+      "sourceHash": "825d9c4bc85b3a30103961fa16bb9f60889dd4d0cc09b1a4600539e9b7cd06b5",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "section.styles-de-danse.kicker": {
+      "text": "Languages",
+      "sourceHash": "26e5b44ac115322031ede7107b2fcec2fa8bf9df40c8fa72b4700046137dd96a",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "section.styles-de-danse.intro": {
+      "text": "Hip-hop, contemporary, ballet, afro, waacking, krump or heels: every style has its own history, codes, energy and way of inhabiting the body.",
+      "sourceHash": "df42d8a366c8bbebc24239827009d4ba7acf6b2d6a9df3f59f53d4b46232345b",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "section.choregraphes.label": {
+      "text": "Choreographers",
+      "sourceHash": "6a0f349b138824b8f06597ee1289f5ca29ef3cca7bbf477def7311c2e9ade96f",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "section.choregraphes.kicker": {
+      "text": "Creation",
+      "sourceHash": "f1d7d97108d0517b32f91df7f7e4181c1ed531cb72e1631c32992d741e7f28d7",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "section.choregraphes.intro": {
+      "text": "Choreographers create worlds: they invent languages, direct performers, shift narratives and give ideas a tangible form.",
+      "sourceHash": "c66712427194a137f6c7e1272d94c78fb42ef882ebd18008f7143cb5b2438b3b",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "section.compagnies.label": {
+      "text": "Companies",
+      "sourceHash": "a3743b9be67772badf6467ed454be3a81b5aca83c01a246a65be69aa5277e7a0",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "section.compagnies.kicker": {
+      "text": "Stages",
+      "sourceHash": "ff53916fc420d56c7f43aaa4c4fa10d5fdc0dba80ee56aef1182b68a83112f77",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "section.compagnies.intro": {
+      "text": "A dance company is an ecosystem: artists, administrators, venues, tours, audiences and a shared vision of the stage.",
+      "sourceHash": "ccffb1813b17bbba103569351ece2dfe157bee7204c24f7bd66687aae37c1fcd",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "section.artistes.label": {
+      "text": "Artists",
+      "sourceHash": "c9f39af6d274555b8943776213e6cd454fa9329613527acc842ef3c5d3b59fab",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "section.artistes.kicker": {
+      "text": "Portraits",
+      "sourceHash": "16bd26d05ee0aa4850e95fcbf4d6182b04c2326d490b07acb8fae168f6c44338",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "section.artistes.intro": {
+      "text": "Performers, teachers, battle dancers, content creators and artists working across disciplines: individual journeys also tell the story of dance.",
+      "sourceHash": "dfc09cab8778610d0fb5b6cd4abe8b10230d82e57a59398faeb5f2a9e028853e",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "section.metiers-de-la-danse.label": {
+      "text": "Careers in dance",
+      "sourceHash": "04c78cb9de0028ed12d002948a805063b7e03b15097382ad605811d18886ca7f",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "section.metiers-de-la-danse.kicker": {
+      "text": "Professional life",
+      "sourceHash": "1bb934645ba06f68ea42ca6ac6a3583acfdcabcbb29efa0c5da8faa4e1299b63",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    },
+    "section.metiers-de-la-danse.intro": {
+      "text": "Dancer, choreographer, rehearsal director, stage manager, administrator, agent, physiotherapist, teacher: dance brings together a wide range of professions, skills and responsibilities.",
+      "sourceHash": "ad4bc96f1afdf021b0be610e45a3740c651ba3624954fe907e6aa29b4766bebf",
+      "origin": "editorial",
+      "locked": true,
+      "approved": true
+    }
+  }
+}
+

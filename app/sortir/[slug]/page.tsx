@@ -4,6 +4,8 @@ import { notFound } from "next/navigation"
 import HistoryBackLink from "../../../components/HistoryBackLink"
 import type { AgendaEvent } from "../../agenda/agenda-data"
 import { formatAgendaDateRange, resolveAgendaEventLocation } from "../../agenda/agenda-data"
+import { requestLocale } from "@/lib/i18n/server"
+import { uiText } from "@/data/i18n/messages"
 
 export const dynamic = "force-dynamic"
 
@@ -27,6 +29,8 @@ export default async function SortirEventPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
+  const locale = await requestLocale()
+  const t = (text: string) => uiText(locale, text)
   const events = await getAgendaEvents()
   const event = events.find((item) => item.slug === slug)
 
@@ -44,7 +48,7 @@ export default async function SortirEventPage({
         <div className="agenda-detail-hero-shade" />
         <div className="container agenda-detail-hero-content">
           <HistoryBackLink fallbackHref="/sortir" className="agenda-detail-back">
-            Retour aux sorties
+            {t('Retour aux sorties')}
           </HistoryBackLink>
           <span className="section-label">{event.category}</span>
           <h1>{event.title}</h1>
@@ -60,47 +64,47 @@ export default async function SortirEventPage({
 
       <section className="agenda-detail-body">
         <article className="agenda-detail-main">
-          <h2>À propos de l'événement</h2>
+          <h2>{t("À propos de l'événement")}</h2>
           <p>{event.description}</p>
 
           <div className="agenda-detail-info-grid">
             <div>
-              <span>Type</span>
+              <span>{t('Type')}</span>
               <strong>{event.category}</strong>
             </div>
             <div>
-              <span>Dates</span>
+              <span>{t('Dates')}</span>
               <strong>{formatAgendaDateRange(event)}</strong>
             </div>
             <div>
-              <span>Horaires</span>
-              <strong>{event.time || "À compléter"}</strong>
+              <span>{t('Horaires')}</span>
+              <strong>{event.time || t('À compléter')}</strong>
             </div>
             <div>
-              <span>Lieu</span>
+              <span>{t('Lieu')}</span>
               <strong>{event.venue}</strong>
             </div>
             <div>
-              <span>Adresse</span>
-              <strong>{location.label || "Adresse à compléter"}</strong>
+              <span>{t('Adresse')}</span>
+              <strong>{location.label || t('Adresse à compléter')}</strong>
             </div>
             <div>
-              <span>Ville</span>
+              <span>{t('Ville')}</span>
               <strong>{event.city}</strong>
             </div>
             <div>
-              <span>Prix</span>
+              <span>{t('Prix')}</span>
               <strong>{event.price}</strong>
             </div>
             <div>
-              <span>Statut</span>
+              <span>{t('Statut')}</span>
               <strong>{event.status}</strong>
             </div>
           </div>
 
           {event.additionalInfo && event.additionalInfo.length > 0 ? (
             <div className="agenda-detail-extra">
-              <h2>Informations complémentaires</h2>
+              <h2>{t('Informations complémentaires')}</h2>
               <div className="agenda-detail-info-grid">
                 {event.additionalInfo.map((item) => (
                   <div key={`${item.label}-${item.value}`}>
@@ -114,15 +118,15 @@ export default async function SortirEventPage({
         </article>
 
         <aside className="agenda-detail-side">
-          <h2>Réservation</h2>
+          <h2>{t('Réservation')}</h2>
           <p>{event.venue}</p>
-          <p>{location.label || "Adresse à compléter"}</p>
+          <p>{location.label || t('Adresse à compléter')}</p>
           {reservationUrl ? (
             <a href={reservationUrl} target="_blank" rel="noopener noreferrer">
-              Réserver
+              {t('Réserver')}
             </a>
           ) : (
-            <span>Billetterie à compléter</span>
+            <span>{t('Billetterie à compléter')}</span>
           )}
         </aside>
       </section>

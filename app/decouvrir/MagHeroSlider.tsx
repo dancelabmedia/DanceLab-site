@@ -18,6 +18,8 @@
 import Link from 'next/link'
 import { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react'
 import PhotoCredit from '@/components/PhotoCredit'
+import { useLocale } from '@/components/LocaleProvider'
+import { uiText } from '@/data/i18n/messages'
 
 export interface SlideArticle {
   slug: string
@@ -59,6 +61,7 @@ function shuffleAndPick<T>(arr: T[], n: number): T[] {
 
 const MagHeroSlider = forwardRef<MagHeroSliderHandle, Props>(
   function MagHeroSlider({ articles, onSlidesReady, onCurrentChange }, ref) {
+    const locale = useLocale()
     const [slides, setSlides]   = useState<SlideArticle[]>([])
     const [current, setCurrent] = useState(0)
     const [prev, setPrev]       = useState(-1)
@@ -186,7 +189,7 @@ const MagHeroSlider = forwardRef<MagHeroSliderHandle, Props>(
                 e.stopPropagation()  // empêche tout click parasite sur le Link parent
                 goTo(i)
               }}
-              aria-label={`Aller à la couverture ${i + 1}`}
+              aria-label={locale === 'en' ? `Go to cover ${i + 1}` : `Aller à la couverture ${i + 1}`}
             />
           ))}
         </div>

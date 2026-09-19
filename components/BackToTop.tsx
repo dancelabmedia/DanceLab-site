@@ -1,8 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import type { Locale } from '@/lib/i18n/routing'
+import { uiText } from '@/data/i18n/messages'
+import { useLocale } from './LocaleProvider'
 
-export default function BackToTop() {
+export default function BackToTop({ locale: _initialLocale = 'fr' }: { locale?: Locale }) {
+  const locale = useLocale()
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
@@ -33,8 +37,8 @@ export default function BackToTop() {
       type="button"
       className={`back-to-top${visible ? ' is-visible' : ''}`}
       onClick={handleClick}
-      aria-label="Retour en haut de la page"
-      title="Retour en haut"
+      aria-label={uiText(locale, 'Retour en haut de la page')}
+      title={uiText(locale, 'Retour en haut')}
     >
       <svg
         aria-hidden="true"

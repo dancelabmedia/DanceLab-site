@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import type { AgendaEvent } from "./agenda-data"
 import { formatAgendaDateRange, resolveAgendaEventLocation } from "./agenda-data"
+import { useLocale } from "@/components/LocaleProvider"
+import { uiText } from "@/data/i18n/messages"
 
 type AgendaMapProps = {
   events: AgendaEvent[]
@@ -79,7 +81,7 @@ function fitMapToEvents(L: LeafletModule, map: LeafletMap, events: AgendaEvent[]
   map.fitBounds(bounds.pad(0.22), { maxZoom: 7, animate })
 }
 
-function getPopupHtml(group: EventGroup) {
+function getPopupHtml(group: EventGroup, t: (s: string) => string, locale: string) {
   if (group.events.length === 1) {
     const event = group.events[0]
     const eventLink = `/sortir/${event.slug}`
@@ -97,16 +99,20 @@ function getPopupHtml(group: EventGroup) {
         <p>${escapeHtml(event.price)}</p>
         ${
           eventLink
-            ? `<a href="${escapeHtml(eventLink)}">Voir l'événement</a>`
-            : "<em>À compléter</em>"
+            ? `<a href="${escapeHtml(eventLink)}">${escapeHtml(t("Voir l'événement"))}</a>`
+            : `<em>${escapeHtml(t("À compléter"))}</em>`
         }
       </article>
     `
   }
 
+  const eventsLabel = locale === 'en'
+    ? `${group.events.length} event${group.events.length > 1 ? 's' : ''}`
+    : `${group.events.length} événement${group.events.length > 1 ? 's' : ''}`
+
   return `
     <article class="agenda-leaflet-popup agenda-leaflet-popup--cluster">
-      <span>${group.events.length} événements</span>
+      <span>${eventsLabel}</span>
       <strong>${escapeHtml(group.events[0].city)}</strong>
       <ul>
         ${group.events
@@ -149,6 +155,8 @@ function createMarkerIcon(L: LeafletModule, group: EventGroup) {
 }
 
 export default function AgendaMap({ events, activeSlug, onSelectEvent }: AgendaMapProps) {
+  const locale = useLocale()
+  const t = (text: string) => uiText(locale, text)
   const mapNodeRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<LeafletMap | null>(null)
   const layerRef = useRef<LeafletLayerGroup | null>(null)
@@ -227,11 +235,13 @@ export default function AgendaMap({ events, activeSlug, onSelectEvent }: AgendaM
           keyboard: true,
           title:
             group.events.length > 1
-              ? `${group.events.length} événements à ${group.events[0].city}`
+              ? locale === 'en'
+                ? `${group.events.length} event${group.events.length > 1 ? 's' : ''} in ${group.events[0].city}`
+                : `${group.events.length} événement${group.events.length > 1 ? 's' : ''} à ${group.events[0].city}`
               : group.events[0].title,
         })
 
-        marker.bindPopup(getPopupHtml(group), {
+        marker.bindPopup(getPopupHtml(group, t, locale), {
           closeButton: false,
           className: "agenda-leaflet-popup-shell",
           maxWidth: 320,
@@ -292,11 +302,10 @@ export default function AgendaMap({ events, activeSlug, onSelectEvent }: AgendaM
       <div className="container">
         <div className="agenda-map-grid">
           <div className="agenda-map-copy">
-            <span className="section-label">Cartographie</span>
-            <h2>Explorer les événements sur la carte</h2>
+            <span className="section-label">{t('Cartographie')}</span>
+            <h2>{t('Explorer les événements sur la carte')}</h2>
             <p>
-              Zoomez, déplacez la carte et cliquez sur les marqueurs pour repérer
-              rapidement les villes, les festivals et les grands rendez-vous à venir.
+              {t("Zoomez, déplacez la carte et cliquez sur les marqueurs pour repérer rapidement les villes, les festivals et les grands rendez-vous à venir.")}
             </p>
           </div>
 
@@ -304,7 +313,7 @@ export default function AgendaMap({ events, activeSlug, onSelectEvent }: AgendaM
             <div
               ref={mapNodeRef}
               className="agenda-leaflet-map"
-              aria-label="Carte interactive des événements danse"
+              aria-label={t('Carte interactive des événements danse')}
             />
           </div>
         </div>

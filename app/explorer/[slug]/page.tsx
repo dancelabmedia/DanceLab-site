@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation"
+import { isPrivateSectionPath } from '@/data/section-visibility'
 import { explorerSections, getExplorerSection } from "../explorer-data"
 
 type PageProps = {
@@ -9,7 +10,7 @@ type PageProps = {
 
 // Pages avec une route dédiée — exclues du [slug] dynamique pour éviter
 // un conflit de chunk webpack (deux handlers pour la même URL).
-const DEDICATED_PAGES = ['metiers-de-la-danse']
+const DEDICATED_PAGES = ['styles-de-danse', 'metiers-de-la-danse', 'ecoles-de-danse']
 
 export function generateStaticParams() {
   return explorerSections
@@ -41,7 +42,7 @@ export default async function ExplorerDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const relatedSections = explorerSections.filter((item) => item.slug !== section.slug).slice(0, 3)
+  const relatedSections = explorerSections.filter((item) => item.slug !== section.slug && !isPrivateSectionPath(`/explorer/${item.slug}`)).slice(0, 3)
 
   return (
     <main className="explorer-page">

@@ -1,6 +1,6 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 
 /**
@@ -11,7 +11,9 @@ import { useEffect, useState } from "react"
  */
 export default function DevLockButton() {
   const router = useRouter()
+  const pathname = usePathname()
   const [isLocal, setIsLocal] = useState(false)
+  const [localEditor, setLocalEditor] = useState(false)
 
   useEffect(() => {
     setIsLocal(
@@ -20,7 +22,15 @@ export default function DevLockButton() {
     )
   }, [])
 
-  if (!isLocal) return null
+  useEffect(() => {
+    if (!isLocal) return
+    let active = true
+    fetch('/api/explorer-access', { cache: 'no-store', credentials: 'same-origin' })
+      .then(response => response.json()).then(data => { if (active) setLocalEditor(data.localEditor === true) }).catch(() => {})
+    return () => { active = false }
+  }, [isLocal, pathname])
+
+  if (!isLocal || (localEditor && !pathname.startsWith('/admin'))) return null
 
   async function handleLock() {
     await fetch("/api/acces-prive", { method: "DELETE" })

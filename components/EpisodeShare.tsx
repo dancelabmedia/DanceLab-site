@@ -1,5 +1,7 @@
 "use client";
 
+import { useLocale } from "@/components/LocaleProvider";
+import { uiText } from "@/data/i18n/messages";
 import { useState } from "react";
 
 type EpisodeShareProps = {
@@ -53,6 +55,8 @@ function PlusIcon() {
 
 export default function EpisodeShare({ title, url }: EpisodeShareProps) {
   const [fallbackOpen, setFallbackOpen] = useState(false);
+  const locale = useLocale();
+  const t = (text: string) => uiText(locale, text);
   const [copied, setCopied] = useState(false);
   const encodedUrl = encodeURIComponent(url);
   const encodedTitle = encodeURIComponent(title);
@@ -99,7 +103,7 @@ export default function EpisodeShare({ title, url }: EpisodeShareProps) {
         href={`https://wa.me/?text=${encodedTitle}%20${encodedUrl}`}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Partager sur WhatsApp"
+        aria-label={t('Partager sur WhatsApp')}
         title="WhatsApp"
       >
         <WhatsAppIcon />
@@ -109,7 +113,7 @@ export default function EpisodeShare({ title, url }: EpisodeShareProps) {
         href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Partager sur LinkedIn"
+        aria-label={t('Partager sur LinkedIn')}
         title="LinkedIn"
       >
         <LinkedInIcon />
@@ -119,7 +123,7 @@ export default function EpisodeShare({ title, url }: EpisodeShareProps) {
         href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Partager sur X"
+        aria-label={t('Partager sur X')}
         title="X"
       >
         <XIcon />
@@ -129,7 +133,7 @@ export default function EpisodeShare({ title, url }: EpisodeShareProps) {
         href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Partager sur Facebook"
+        aria-label={t('Partager sur Facebook')}
         title="Facebook"
       >
         <FacebookIcon />
@@ -138,9 +142,9 @@ export default function EpisodeShare({ title, url }: EpisodeShareProps) {
         className="episode-share-button episode-share-more"
         type="button"
         onClick={openMoreOptions}
-        aria-label="Plus d’options de partage"
+        aria-label={t("Plus d'options de partage")}
         aria-expanded={fallbackOpen}
-        title="Plus d’options"
+        title={t("Plus d'options")}
       >
         <PlusIcon />
       </button>
@@ -162,7 +166,7 @@ export default function EpisodeShare({ title, url }: EpisodeShareProps) {
             Email
           </a>
           <button type="button" onClick={copyLink} role="menuitem">
-            {copied ? "Lien copié" : "Copier le lien"}
+            {copied ? t('Lien copié') : t('Copier le lien')}
           </button>
         </div>
       ) : null}

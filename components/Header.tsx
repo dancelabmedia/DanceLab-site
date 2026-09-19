@@ -1,10 +1,15 @@
 'use client'
 
 import Link from 'next/link'
+import { privateAccessScope, publicNavigationHref } from '@/data/private-navigation'
+import availability from './HeaderAvailability.module.css'
 import { usePathname, useRouter } from 'next/navigation'
 import { FormEvent, KeyboardEvent, MouseEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { searchContent, type SearchItem } from '../data/search'
+import { localizedHref, sourcePath, type Locale } from '@/lib/i18n/routing'
+import { uiText } from '@/data/i18n/messages'
+import { useLocale } from './LocaleProvider'
 
 const IconSearch = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -24,7 +29,11 @@ const IconMenu = () => (
 const popularSearches = ['Waacking', 'Breakdance', 'Intermittence', 'Chorégraphes', 'Danse contemporaine']
 const MAX_PREVIEW_RESULTS = 12
 
-export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
+export default function Header({ searchItems, locale: _initialLocale = 'fr' }: { searchItems: SearchItem[]; locale?: Locale }) {
+  // Read from context so locale updates instantly without page reload
+  const locale = useLocale()
+  const t = (text: string) => uiText(locale, text)
+  const href = (path: string) => localizedHref(path, locale)
   const router = useRouter()
   const pathname = usePathname()
   const [scrolled, setScrolled] = useState(false)
@@ -196,7 +205,7 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
   const handleNewsletterClick = (event: MouseEvent<HTMLAnchorElement>) => {
     closeMobileMenu()
 
-    if (pathname !== '/') return
+    if (sourcePath(pathname) !== '/') return
 
     const newsletter = document.getElementById('newsletter')
     if (!newsletter) return
@@ -247,7 +256,7 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
     const trimmedQuery = query.trim()
     if (!trimmedQuery) return
 
-    router.push(`/recherche?q=${encodeURIComponent(trimmedQuery)}`)
+    router.push(href(`/recherche?q=${encodeURIComponent(trimmedQuery)}`))
     closeSearch()
   }
 
@@ -304,7 +313,7 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
   return (
     <header className={`header${scrolled ? ' scrolled' : ''}`}>
       <nav className="nav">
-        <Link href="/" className="logo" onClick={closeMobileMenu}>
+        <Link href={href('/')} className="logo" onClick={closeMobileMenu}>
           <img src="/logo.png" alt="Dance Lab" className="logo-image" />
         </Link>
 
@@ -315,17 +324,19 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
               className={'directHref' in group ? undefined : 'nav-dropdown'}
             >
               {'directHref' in group ? (
-                <Link href={group.directHref}>{group.label}</Link>
+                <Link href={href(publicNavigationHref(group.directHref))} className={privateAccessScope(group.directHref) ? availability.available : undefined}>
+                  {t(group.label)}{privateAccessScope(group.directHref) && <small className={availability.badge}>{t('Bientôt')}</small>}
+                </Link>
               ) : (
                 <>
                   <button type="button" className="nav-dropdown-trigger">
-                    {group.label}
+                    {t(group.label)}
                   </button>
 
                   <div className="dropdown-menu">
                     {group.items.map((item) => (
-                      <Link key={item.label} href={item.href}>
-                        {item.label}
+                      <Link key={item.label} href={href(publicNavigationHref(item.href))} className={privateAccessScope(item.href) ? availability.available : undefined}>
+                        <span>{t(item.label)}</span>{privateAccessScope(item.href) && <small className={availability.badge}>{t('Bientôt')}</small>}
                       </Link>
                     ))}
                   </div>
@@ -335,7 +346,7 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
           ))}
 
           <li>
-            <Link href="/a-propos">À propos</Link>
+            <Link href={href('/a-propos')}>{t('À propos')}</Link>
           </li>
         </ul>
 
@@ -343,7 +354,7 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
           <button
             type="button"
             className="nav-icon-btn"
-            aria-label="Rechercher"
+            aria-label={t('Rechercher')}
             aria-haspopup="dialog"
             onClick={openSearch}
           >
@@ -351,7 +362,7 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
           </button>
 
           <Link
-            href="/#newsletter"
+            href={href('/#newsletter')}
             className="btn btn-primary"
             style={{ padding: '10px 20px', fontSize: '13px' }}
             onClick={handleNewsletterClick}
@@ -370,11 +381,11 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
       </nav>
 
       {mobileOpen ? createPortal(
-        <nav className="mobile-nav open" aria-label="Menu principal mobile">
+        <nav className="mobile-nav open" aria-label={t('Menu principal mobile')}>
           <button
             className="mobile-nav-close"
             onClick={closeMobileMenu}
-            aria-label="Fermer"
+            aria-label={t('Fermer')}
           >
             ✕
           </button>
@@ -383,11 +394,11 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
             'directHref' in group ? (
               <Link
                 key={group.label}
-                href={group.directHref}
+                href={href(publicNavigationHref(group.directHref))}
                 className="mobile-menu-title"
                 onClick={closeMobileMenu}
               >
-                {group.label}
+                {t(group.label)}{privateAccessScope(group.directHref) && <small className={availability.badge}>{t('Bientôt')}</small>}
               </Link>
             ) : (
               <div key={group.label} className="mobile-menu-group">
@@ -396,14 +407,14 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
                   className="mobile-menu-title"
                   onClick={() => setMobileSubOpen(mobileSubOpen === group.label ? null : group.label)}
                 >
-                  {group.label}
+                  {t(group.label)}
                 </button>
 
                 {mobileSubOpen === group.label ? (
                   <div className="mobile-submenu">
                     {group.items.map((item) => (
-                      <Link key={item.label} href={item.href} onClick={closeMobileMenu}>
-                        {item.label}
+                      <Link key={item.label} href={href(publicNavigationHref(item.href))} onClick={closeMobileMenu} className={privateAccessScope(item.href) ? availability.available : undefined}>
+                        <span>{t(item.label)}</span>{privateAccessScope(item.href) && <small className={availability.badge}>{t('Bientôt')}</small>}
                       </Link>
                     ))}
                   </div>
@@ -412,8 +423,8 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
             )
           )}
 
-          <Link href="/a-propos" className="mobile-menu-title" onClick={closeMobileMenu}>
-            À propos
+          <Link href={href('/a-propos')} className="mobile-menu-title" onClick={closeMobileMenu}>
+            {t('À propos')}
           </Link>
         </nav>,
         document.body
@@ -424,7 +435,7 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
           className="search-overlay open"
           role="dialog"
           aria-modal="true"
-          aria-label="Recherche sur Dance Lab"
+          aria-label={t('Recherche sur Dance Lab')}
           onKeyDown={handleDialogKeyDown}
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) closeSearch()
@@ -438,9 +449,9 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
                 className="search-input"
                 type="search"
                 value={query}
-                placeholder="Rechercher un épisode, un artiste, un style…"
+                placeholder={t('Rechercher un épisode, un artiste, un style…')}
                 autoComplete="off"
-                aria-label="Rechercher dans Dance Lab"
+                aria-label={t('Rechercher dans Dance Lab')}
                 aria-autocomplete="list"
                 aria-controls="search-suggestions"
                 aria-activedescendant={
@@ -453,18 +464,18 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
                 onKeyDown={handleSearchKeyDown}
               />
               <button className="search-submit-btn" type="submit">
-                Rechercher
+                {t('Rechercher')}
               </button>
-              <button className="search-close-btn" type="button" onClick={closeSearch} aria-label="Fermer la recherche">
+              <button className="search-close-btn" type="button" onClick={closeSearch} aria-label={t('Fermer la recherche')}>
                 ✕
               </button>
             </form>
 
             {!query.trim() ? (
               <div className="search-popular">
-                <p>Suggestions populaires</p>
+                <p>{locale === 'en' ? 'English search is being prepared. Browse Explore or switch to French for the full catalogue.' : t('Suggestions populaires')}</p>
                 <div className="search-chips">
-                  {popularSearches.map((search) => (
+                  {(locale === 'en' ? [] : popularSearches).map((search) => (
                     <button
                       key={search}
                       type="button"
@@ -504,7 +515,7 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
                                 <Link
                                   id={`search-result-${item.id}`}
                                   className={`search-suggestion${activeResult === itemIndex ? ' active' : ''}`}
-                                  href={item.href}
+                                  href={href(item.href)}
                                   role="option"
                                   aria-selected={activeResult === itemIndex}
                                   onClick={closeSearch}
@@ -522,7 +533,7 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
                                       {item.episodeNumber ? ` ${item.episodeNumber}` : ''}
                                     </small>
                                     <strong>{item.title}</strong>
-                                    {item.guest ? <span>Avec {item.guest}</span> : <span>{item.summary}</span>}
+                                    {item.guest ? <span>{t('Avec')} {item.guest}</span> : <span>{item.summary}</span>}
                                   </span>
                                   <span className="search-suggestion-arrow" aria-hidden="true">→</span>
                                 </Link>
@@ -534,12 +545,12 @@ export default function Header({ searchItems }: { searchItems: SearchItem[] }) {
                     ))}
                   </div>
                 ) : query === debouncedQuery ? (
-                  <p className="search-empty">Aucun résultat trouvé pour « {query.trim()} ».</p>
+                  <p className="search-empty">{locale === 'en' ? 'English search is not available yet.' : `${t('Aucun résultat trouvé pour')} « ${query.trim()} ».`}</p>
                 ) : null}
 
                 {hasMoreSuggestions ? (
                   <button className="search-all-results" type="button" onClick={goToSearchResults}>
-                    Voir tous les résultats ({allSuggestions.length})
+                    {t('Voir tous les résultats')} ({allSuggestions.length})
                   </button>
                 ) : null}
               </div>

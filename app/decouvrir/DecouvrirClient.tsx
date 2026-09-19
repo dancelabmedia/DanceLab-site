@@ -1,7 +1,10 @@
 'use client'
 
 import Link from "next/link"
+import { sectionVisibility } from '@/data/section-visibility'
 import { useState, useMemo, useRef, useEffect, useCallback } from "react"
+import { useLocale } from "@/components/LocaleProvider"
+import { uiText } from "@/data/i18n/messages"
 import type { MagazineArticle } from "./articles-data"
 import MagHeroSlider, { type MagHeroSliderHandle, type SlideArticle } from "./MagHeroSlider"
 import PhotoCredit from "@/components/PhotoCredit"
@@ -45,6 +48,8 @@ interface Props {
 // ─── Composant principal ───────────────────────────────────────────────────────
 
 export default function DecouvrirClient({ articles }: Props) {
+  const locale = useLocale()
+  const t = (text: string) => uiText(locale, text)
   const [search, setSearch]               = useState("")
   const [activeCategory, setActiveCategory] = useState("Tous")
   const heroRef = useRef<HTMLElement>(null)
@@ -111,7 +116,7 @@ export default function DecouvrirClient({ articles }: Props) {
     <main className="mag-page">
 
       {/* ══ HERO ══════════════════════════════════════════════════════════ */}
-      <section className="mag-hero" ref={heroRef} aria-label="Magazine — en-tête">
+      <section className="mag-hero" ref={heroRef} aria-label={t('Magazine — en-tête')}>
 
         {/* Slider éditorial — uniquement les articles publiés */}
         <MagHeroSlider
@@ -129,11 +134,10 @@ export default function DecouvrirClient({ articles }: Props) {
         <div className="mag-hero-fade" aria-hidden="true" />
 
         <div className="mag-hero-left">
-          <span className="mag-kicker">Magazine</span>
-          <h1 className="mag-hero-title">Comprendre la danse<br />autrement.</h1>
+          <span className="mag-kicker">{t('Magazine')}</span>
+          <h1 className="mag-hero-title">{t('Comprendre la danse autrement.')}</h1>
           <p className="mag-hero-desc">
-            Décryptages, culture, parcours, histoire et ressources
-            pour regarder la danse au-delà de la scène.
+            {t('Décryptages, culture, parcours, histoire et ressources pour regarder la danse au-delà de la scène.')}
           </p>
 
           {/* Barre de recherche */}
@@ -159,7 +163,7 @@ export default function DecouvrirClient({ articles }: Props) {
             <input
               className="el-search"
               type="search"
-              placeholder="Rechercher un article, une catégorie, un thème…"
+              placeholder={t("Rechercher un article, une catégorie, un thème…")}
               value={search}
               onChange={e => setSearch(e.target.value)}
               autoComplete="off"
@@ -169,7 +173,7 @@ export default function DecouvrirClient({ articles }: Props) {
                 className="el-search-clear"
                 type="button"
                 onClick={() => setSearch("")}
-                aria-label="Effacer la recherche"
+                aria-label={t("Effacer la recherche")}
               >
                 <svg
                   width="14"
@@ -192,7 +196,7 @@ export default function DecouvrirClient({ articles }: Props) {
             className="mag-chips el-anim"
             style={{ "--el-delay": "260ms" } as React.CSSProperties}
             role="group"
-            aria-label="Filtrer par catégorie"
+            aria-label={t("Filtrer par catégorie")}
           >
             {MAG_CATEGORIES.map(cat => (
               <button
@@ -202,7 +206,7 @@ export default function DecouvrirClient({ articles }: Props) {
                 onClick={() => setActiveCategory(cat)}
                 aria-pressed={activeCategory === cat}
               >
-                {cat}
+                {t(cat)}
               </button>
             ))}
           </div>
@@ -211,7 +215,7 @@ export default function DecouvrirClient({ articles }: Props) {
         {/* ── Navigation éditoriale — titres à droite ── */}
         {heroSlides.length > 0 && (
           <div className="mag-hero-right" aria-hidden="true">
-            <nav className="mag-slide-nav" aria-label="Navigation éditoriale">
+            <nav className="mag-slide-nav" aria-label={t("Navigation éditoriale")}>
               {heroSlides.map((slide, i) => (
                 <button
                   key={slide.slug}
@@ -238,9 +242,9 @@ export default function DecouvrirClient({ articles }: Props) {
           <div className="container">
             <p className="mag-filtered-count">
               {filtered.length === 0
-                ? "Aucun article trouvé"
-                : `${filtered.length} article${filtered.length > 1 ? "s" : ""}`}
-              {activeCategory !== "Tous" && ` · ${activeCategory}`}
+                ? t("Aucun article trouvé")
+                : `${filtered.length} ${t(filtered.length > 1 ? 'articles' : 'article')}`}
+              {activeCategory !== "Tous" && ` · ${t(activeCategory)}`}
             </p>
 
             {filtered.length > 0 ? (
@@ -268,7 +272,7 @@ export default function DecouvrirClient({ articles }: Props) {
               </div>
             ) : (
               <p className="mag-no-results">
-                Essayez un autre mot-clé ou effacez les filtres.
+                {t("Essayez un autre mot-clé ou effacez les filtres.")}
               </p>
             )}
           </div>
@@ -408,7 +412,7 @@ export default function DecouvrirClient({ articles }: Props) {
           </section>
 
           {/* ══ EXPLORER LES STYLES ══════════════════════════════════════════ */}
-          <section className="mag-styles">
+          {sectionVisibility.danceStyles === 'public' && <section className="mag-styles">
             <div className="container">
 
               <div className="mag-section-header">
@@ -434,7 +438,7 @@ export default function DecouvrirClient({ articles }: Props) {
               </div>
 
             </div>
-          </section>
+          </section>}
           </>)}
         </>
       ) : null}

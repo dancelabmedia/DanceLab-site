@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "../mentions-legales/mentions-legales.css";
+import { requestLocale } from "@/lib/i18n/server";
+import { uiText } from "@/data/i18n/messages";
 
 export const metadata: Metadata = {
   title: "Politique de confidentialité – Dance Lab",
@@ -8,7 +10,10 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function PolitiqueDeConfidentialitePage() {
+export default async function PolitiqueDeConfidentialitePage() {
+  const locale = await requestLocale();
+  const t = (text: string) => uiText(locale, text);
+
   return (
     <main className="politique-confidentialite-page">
 
@@ -17,9 +22,9 @@ export default function PolitiqueDeConfidentialitePage() {
         <div className="container">
           <div className="ml-hero-inner">
 
-            <span className="section-label">Données & vie privée</span>
+            <span className="section-label">{t('Données & vie privée')}</span>
 
-            <h1>Politique de confidentialité</h1>
+            <h1>{t('Politique de confidentialité')}</h1>
 
             <p className="ml-intro">
               Chez Dance Lab, la confiance de nos lecteurs et auditeurs est
@@ -31,7 +36,7 @@ export default function PolitiqueDeConfidentialitePage() {
             </p>
 
             <span className="ml-last-update">
-              Dernière mise à jour : juillet 2025
+              {t('Dernière mise à jour')} : juillet 2025
             </span>
 
           </div>
@@ -44,7 +49,7 @@ export default function PolitiqueDeConfidentialitePage() {
         <div className="container">
           <div className="ml-toc-inner">
 
-            <p>Sommaire</p>
+            <p>{t('Sommaire')}</p>
 
             <ol>
               <li><a href="#responsable">Responsable du traitement</a></li>

@@ -9,6 +9,9 @@ import Link from "next/link"
 import MediaReveal from "./components/MediaReveal"
 import LatestEpisodeSticky from "./components/LatestEpisodeSticky"
 import type { UnifiedEpisode } from '@/lib/episodes'
+import { useLocale } from '@/components/LocaleProvider'
+import { uiText } from '@/data/i18n/messages'
+import type { Locale } from '@/lib/i18n/routing'
 
 /* =====================================================
    SVG ICONS (réutilisables)
@@ -242,24 +245,32 @@ function getHomeGuestImage(episode: (typeof episodes)[number]) {
     : episode.image
 }
 
-const EXPLORE_ITEMS = [
-  { icon: 'movement', label: 'Styles de danse', sub: 'Hip-hop, contemporain, classique, afro, waacking et plus encore', href: '/explorer/styles-de-danse', delay: '' },
-  { icon: 'signature', label: 'Chorégraphes', sub: "Les créateurs qui façonnent l'art chorégraphique d'aujourd'hui", href: '/explorer/choregraphes', delay: 'd1' },
-  { icon: 'stage', label: 'Compagnies', sub: 'De la Comédie-Française au collectif underground', href: '/explorer/compagnies', delay: 'd2' },
-  { icon: 'portrait', label: 'Artistes', sub: 'Portraits, parcours et coulisses de ceux qui font la danse', href: '/explorer/artistes', delay: 'd3' },
-  { icon: 'career', label: 'Métiers', sub: 'Danseur, chorégraphe, répétiteur, régisseur, critique…', href: '/explorer/metiers-de-la-danse', delay: 'd4' },
-]
+function getExploreItems(t: (s: string) => string) {
+  return [
+    { icon: 'movement', label: t('Styles de danse'), sub: t('Hip-hop, contemporain, classique, afro, waacking et plus encore'), href: '/explorer/styles-de-danse', delay: '' },
+    { icon: 'signature', label: t('Chorégraphes'), sub: t("Les créateurs qui façonnent l'art chorégraphique d'aujourd'hui"), href: '/explorer/choregraphes', delay: 'd1' },
+    { icon: 'stage', label: t('Compagnies'), sub: t('De la Comédie-Française au collectif underground'), href: '/explorer/compagnies', delay: 'd2' },
+    { icon: 'portrait', label: t('Artistes'), sub: t('Portraits, parcours et coulisses de ceux qui font la danse'), href: '/explorer/artistes', delay: 'd3' },
+    { icon: 'career', label: t('Métiers'), sub: t('Danseur, chorégraphe, répétiteur, régisseur, critique…'), href: '/explorer/metiers-de-la-danse', delay: 'd4' },
+  ]
+}
 
-const RESOURCES = [
-  { icon: 'document', title: 'Contrats & juridique', desc: "Modèles de contrats, droits d'auteur, fiches pratiques pour comprendre vos obligations et protéger votre travail.", delay: '' },
-  { icon: 'status', title: 'Intermittence', desc: "Comprendre le régime, calculer ses heures, gérer l'administratif - un guide complet pour naviguer dans le système.", delay: 'd1' },
-  { icon: 'target', title: 'Auditions & casting', desc: "Préparer son book, rédiger un CV de danseur, réussir ses auditions - nos conseils et checklists pratiques.", delay: 'd2' },
-  { icon: 'network', title: 'Communication & réseaux', desc: "Construire sa marque personnelle, maîtriser Instagram, créer un site - outils et stratégies pour exister en ligne.", delay: '' },
-  { icon: 'idea', title: 'Entrepreneuriat artistique', desc: "Monter sa structure, trouver des financements, gérer la comptabilité - ressources pour les artistes entrepreneurs.", delay: 'd1' },
-  { icon: 'calendar', title: 'Organisation de carrière', desc: "Planifier sa saison, gérer ses projets, se fixer des objectifs - des outils pour prendre en main son parcours.", delay: 'd2' },
-]
+function getResources(t: (s: string) => string) {
+  return [
+    { icon: 'document', title: t('Contrats & juridique'), desc: t("Modèles de contrats, droits d'auteur, fiches pratiques pour comprendre vos obligations et protéger votre travail."), delay: '' },
+    { icon: 'status', title: t('Intermittence'), desc: t("Comprendre le régime, calculer ses heures, gérer l'administratif - un guide complet pour naviguer dans le système."), delay: 'd1' },
+    { icon: 'target', title: t('Auditions & casting'), desc: t("Préparer son book, rédiger un CV de danseur, réussir ses auditions - nos conseils et checklists pratiques."), delay: 'd2' },
+    { icon: 'network', title: t('Communication & réseaux'), desc: t("Construire sa marque personnelle, maîtriser Instagram, créer un site - outils et stratégies pour exister en ligne."), delay: '' },
+    { icon: 'idea', title: t('Entrepreneuriat artistique'), desc: t("Monter sa structure, trouver des financements, gérer la comptabilité - ressources pour les artistes entrepreneurs."), delay: 'd1' },
+    { icon: 'calendar', title: t('Organisation de carrière'), desc: t("Planifier sa saison, gérer ses projets, se fixer des objectifs - des outils pour prendre en main son parcours."), delay: 'd2' },
+  ]
+}
 
-const TICKER_ITEMS = ['Podcast', 'Articles', 'Agenda culturel', "Portraits d\'artistes", 'Ressources pro', 'Styles de danse', 'Festivals', 'Interviews', 'Compagnies', 'Spectacles']
+function getTickerItems(locale: Locale) {
+  return locale === 'en'
+    ? ['Podcast', 'Articles', 'Cultural agenda', 'Artist portraits', 'Pro resources', 'Dance styles', 'Festivals', 'Interviews', 'Companies', 'Shows']
+    : ['Podcast', 'Articles', 'Agenda culturel', "Portraits d'artistes", 'Ressources pro', 'Styles de danse', 'Festivals', 'Interviews', 'Compagnies', 'Spectacles']
+}
 
 const COLLAB_ITEMS = [
   'La Villette',
@@ -302,6 +313,12 @@ interface HomeClientProps {
 }
 
 export default function HomeClient({ latestEpisode, latestArticle }: HomeClientProps) {
+  const locale = useLocale()
+  const t = (text: string) => uiText(locale, text)
+  const EXPLORE_ITEMS = getExploreItems(t)
+  const RESOURCES = getResources(t)
+  const TICKER_ITEMS = getTickerItems(locale)
+
   const [scrolled, setScrolled]       = useState(false)
   const [progress, setProgress]       = useState(33)
   const [newsletterStatus, setNewsletterStatus] = useState<
@@ -657,36 +674,47 @@ export default function HomeClient({ latestEpisode, latestArticle }: HomeClientP
         <div className="hero-content">
           <div className="hero-eyebrow">
             <div className="hero-dot" />
-            <span className="hero-eyebrow-text">Le média de la danse</span>
+            <span className="hero-eyebrow-text">{t('Le média de la danse')}</span>
           </div>
 
           <h1 className="hero-title">
-            <span className="hero-title-line">
-              Le <span className="hero-rank" aria-label="premier"><span className="hero-rank-number">1</span><span className="hero-rank-suffix">er</span></span> média qui fait <em>découvrir,</em>
-            </span>{" "}
-            <span className="hero-title-line"><em>comprendre</em> et vivre la danse.</span>
+            {locale === 'en' ? (
+              <>
+                <span className="hero-title-line">
+                  The <span className="hero-rank" aria-label="number one"><span className="hero-rank-number">1</span><span className="hero-rank-suffix">st</span></span> platform that makes you <em>discover,</em>
+                </span>{" "}
+                <span className="hero-title-line"><em>understand</em> and experience dance.</span>
+              </>
+            ) : (
+              <>
+                <span className="hero-title-line">
+                  Le <span className="hero-rank" aria-label="premier"><span className="hero-rank-number">1</span><span className="hero-rank-suffix">er</span></span> média qui fait <em>découvrir,</em>
+                </span>{" "}
+                <span className="hero-title-line"><em>comprendre</em> et vivre la danse.</span>
+              </>
+            )}
           </h1>
 
           <p className="hero-desc">
-            Podcast, articles, portraits, recommandations culturelles et ressources :
-            Dance Lab ouvre les portes du monde de la danse pour celles et ceux qui
-            souhaitent la pratiquer, la créer, la découvrir ou mieux la comprendre.
+            {locale === 'en'
+              ? 'Podcast, articles, portraits, cultural recommendations and resources: Dance Lab opens the doors to the world of dance for those who want to practise, create, discover or better understand it.'
+              : 'Podcast, articles, portraits, recommandations culturelles et ressources : Dance Lab ouvre les portes du monde de la danse pour celles et ceux qui souhaitent la pratiquer, la créer, la découvrir ou mieux la comprendre.'}
           </p>
 
           <div className="hero-btns">
             <a href="/ecouter" className="btn btn-primary">
-              <IconPlay /> Écouter le podcast
+              <IconPlay /> {t('Écouter le podcast')}
             </a>
 
             <a href="/decouvrir" className="btn btn-outline-w">
-              Découvrir l&apos;univers Dance Lab <IconArrow />
+              {t("Découvrir l'univers Dance Lab")} <IconArrow />
             </a>
           </div>
         </div>
         </div>
 
         <div className="hero-scroll" aria-hidden="true">
-          <span>Scroll</span>
+          <span>{t('Scroll')}</span>
           <div className="scroll-line" />
         </div>
       </section>
@@ -706,7 +734,7 @@ export default function HomeClient({ latestEpisode, latestArticle }: HomeClientP
           RUBAN COLLABORATIONS
       ======================================== */}
       <div className="collabs-band" aria-label="Collaborations et partenaires">
-        <span className="collabs-band-label" aria-hidden="true">avec</span>
+        <span className="collabs-band-label" aria-hidden="true">{t('avec')}</span>
         <div className="collabs-band-track-wrapper">
           <div className="collabs-band-track">
             {[...COLLAB_ITEMS, ...COLLAB_ITEMS].map((name, i) => (
@@ -746,12 +774,11 @@ export default function HomeClient({ latestEpisode, latestArticle }: HomeClientP
         <div className="container">
           <div className="nl-inner fu">
             <span className="section-label">
-              Newsletter hebdomadaire
+              {t('Newsletter hebdomadaire')}
             </span>
-            <h2 className="nl-title">Recevez chaque semaine le meilleur de la danse.</h2>
+            <h2 className="nl-title">{t('Recevez chaque semaine le meilleur de la danse.')}</h2>
             <p className="nl-desc">
-              Interviews, spectacles à découvrir, conseils professionnels et actualités culturelles,
-              directement dans votre boîte mail. Gratuit, sans spam.
+              {t('Interviews, spectacles à découvrir, conseils professionnels et actualités culturelles, directement dans votre boîte mail. Gratuit, sans spam.')}
             </p>
             <div className="newsletter-watermark">
               <img
@@ -773,8 +800,8 @@ export default function HomeClient({ latestEpisode, latestArticle }: HomeClientP
                 className="nl-input"
                 type="email"
                 name="email"
-                placeholder="Adresse e-mail"
-                aria-label="Adresse e-mail"
+                placeholder={t('Adresse e-mail')}
+                aria-label={t('Adresse e-mail')}
                 aria-invalid={newsletterStatus === 'invalid'}
                 required
               />
@@ -791,30 +818,30 @@ export default function HomeClient({ latestEpisode, latestArticle }: HomeClientP
                 className="btn btn-primary"
                 disabled={newsletterStatus === 'loading'}
               >
-                Recevoir la newsletter
+                {t('Recevoir la newsletter')}
               </button>
             </form>
             <iframe
-              title="Inscription newsletter Substack"
+              title={t('Inscription newsletter Substack')}
               name="substack-newsletter-frame"
               className="nl-frame"
               onLoad={handleNewsletterFrameLoad}
             />
             <div className="nl-message" aria-live="polite">
               {newsletterStatus === 'loading' ? (
-                <p>Envoi en cours...</p>
+                <p>{t('Envoi en cours...')}</p>
               ) : null}
               {newsletterStatus === 'success' ? (
                 <p className="nl-message-success">
-                  Bienvenue dans l'univers Dance Lab ✨ Votre inscription est bien enregistrée.
+                  {t("Bienvenue dans l'univers Dance Lab ✨ Votre inscription est bien enregistrée.")}
                 </p>
               ) : null}
               {newsletterStatus === 'invalid' ? (
-                <p className="nl-message-error">Adresse e-mail invalide.</p>
+                <p className="nl-message-error">{t('Adresse e-mail invalide.')}</p>
               ) : null}
               {newsletterStatus === 'error' ? (
                 <p className="nl-message-error">
-                  Erreur de connexion. Merci de réessayer dans quelques instants.
+                  {t('Erreur de connexion. Merci de réessayer dans quelques instants.')}
                 </p>
               ) : null}
             </div>

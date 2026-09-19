@@ -3,6 +3,8 @@
 import Link from "next/link"
 import { useCallback, useEffect, useRef, useState } from "react"
 import type { DanceStyleFamily } from "./styles-data"
+import { useLocale } from "@/components/LocaleProvider"
+import { uiText } from "@/data/i18n/messages"
 
 /* ── Type minimal pour le carrousel — couvre fiches complètes et stubs ── */
 type CarouselStyle = {
@@ -40,6 +42,8 @@ type Props = {
 }
 
 export default function StylesCarousel({ styles }: Props) {
+  const locale = useLocale()
+  const t = (text: string) => uiText(locale, text)
   const trackRef = useRef<HTMLDivElement>(null)
   const drag = useRef({ active: false, moved: false, startX: 0, scrollLeft: 0 })
   const [showLeft, setShowLeft] = useState(false)
@@ -168,7 +172,7 @@ export default function StylesCarousel({ styles }: Props) {
                   <p className="sty-fcard-summary">
                     {style.summary
                       ? style.summary.slice(0, 130) + "…"
-                      : "Contenu à venir"}
+                      : t("Contenu à venir")}
                   </p>
                 </div>
                 <div className="sty-fcard-bottom">
@@ -185,7 +189,7 @@ export default function StylesCarousel({ styles }: Props) {
                       </svg>
                     </div>
                   ) : (
-                    <span className="sty-fcard-coming">À venir</span>
+                    <span className="sty-fcard-coming">{t("À venir")}</span>
                   )}
                 </div>
               </div>
@@ -208,7 +212,7 @@ export default function StylesCarousel({ styles }: Props) {
               className={cardClass}
               data-reveal
               style={cardStyle}
-              aria-label={`${style.name} — contenu à venir`}
+              aria-label={locale === 'en' ? `${style.name} — content coming soon` : `${style.name} — contenu à venir`}
             >
               {inner}
             </div>
@@ -220,7 +224,7 @@ export default function StylesCarousel({ styles }: Props) {
       <button
         className={`sty-nav-arrow sty-nav-arrow--left${showLeft ? "" : " sty-nav-arrow--hidden"}`}
         onClick={() => scrollBy(-1)}
-        aria-label="Styles précédents"
+        aria-label={t("Styles précédents")}
         tabIndex={showLeft ? 0 : -1}
       >
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -232,7 +236,7 @@ export default function StylesCarousel({ styles }: Props) {
       <button
         className={`sty-nav-arrow sty-nav-arrow--right${showRight ? "" : " sty-nav-arrow--hidden"}`}
         onClick={() => scrollBy(1)}
-        aria-label="Styles suivants"
+        aria-label={t("Styles suivants")}
         tabIndex={showRight ? 0 : -1}
       >
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./mentions-legales.css";
+import { requestLocale } from "@/lib/i18n/server";
+import { uiText } from "@/data/i18n/messages";
 
 export const metadata: Metadata = {
   title: "Mentions légales – Dance Lab",
@@ -7,7 +9,10 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function MentionsLegalesPage() {
+export default async function MentionsLegalesPage() {
+  const locale = await requestLocale();
+  const t = (text: string) => uiText(locale, text);
+
   return (
     <main className="mentions-legales-page">
 
@@ -16,19 +21,19 @@ export default function MentionsLegalesPage() {
         <div className="container">
           <div className="ml-hero-inner">
 
-            <span className="section-label">Informations légales</span>
+            <span className="section-label">{t('Informations légales')}</span>
 
-            <h1>Mentions légales</h1>
+            <h1>{t('Mentions légales')}</h1>
 
             <p className="ml-intro">
               Conformément aux dispositions de la loi n° 2004-575 du 21 juin 2004
-              pour la confiance dans l'économie numérique (LCEN), les présentes
-              mentions légales précisent l'identité des responsables du site
-              Dance Lab et les conditions d'utilisation du service.
+              pour la confiance dans l&apos;économie numérique (LCEN), les présentes
+              mentions légales précisent l&apos;identité des responsables du site
+              Dance Lab et les conditions d&apos;utilisation du service.
             </p>
 
             <span className="ml-last-update">
-              Dernière mise à jour : juillet 2025
+              {t('Dernière mise à jour')} : juillet 2025
             </span>
 
           </div>
@@ -41,7 +46,7 @@ export default function MentionsLegalesPage() {
         <div className="container">
           <div className="ml-toc-inner">
 
-            <p>Sommaire</p>
+            <p>{t('Sommaire')}</p>
 
             <ol>
               <li><a href="#editeur">Éditeur du site</a></li>

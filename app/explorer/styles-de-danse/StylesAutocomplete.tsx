@@ -4,6 +4,8 @@ import { useEffect, useId, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import type { DanceStyle } from "./styles-data"
 import { normalizeSearchText } from "../../../data/search"
+import { useLocale } from "@/components/LocaleProvider"
+import { uiText } from "@/data/i18n/messages"
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -27,14 +29,6 @@ type Props = {
 
 const HINTS = ["Break", "Waacking", "Années 1970", "États-Unis", "Danses urbaines"]
 
-const MATCH_LABELS: Record<MatchType, string> = {
-  name:     "Style",
-  alias:    "Synonyme",
-  family:   "Catégorie",
-  location: "Origine",
-  era:      "Époque",
-}
-
 // ── Score helpers ──────────────────────────────────────────────────────────
 
 function scoreNorm(haystack: string, needle: string): number {
@@ -49,6 +43,17 @@ function scoreNorm(haystack: string, needle: string): number {
 // ── Component ──────────────────────────────────────────────────────────────
 
 export default function StylesAutocomplete({ styles, onQueryChange }: Props) {
+  const locale = useLocale()
+  const t = (text: string) => uiText(locale, text)
+
+  const MATCH_LABELS: Record<MatchType, string> = {
+    name:     t("Style"),
+    alias:    t("Synonyme"),
+    family:   t("Catégorie"),
+    location: t("Origine"),
+    era:      t("Époque"),
+  }
+
   const router = useRouter()
   const [query, setQuery] = useState("")
   const [open, setOpen] = useState(false)
@@ -220,8 +225,8 @@ export default function StylesAutocomplete({ styles, onQueryChange }: Props) {
           }}
           onFocus={() => { if (query.trim()) setOpen(true) }}
           onKeyDown={onKeyDown}
-          placeholder="Rechercher un style, une époque, un pays…"
-          aria-label="Rechercher un style de danse"
+          placeholder={t("Rechercher un style, une époque, un pays\u2026")}
+          aria-label={t("Rechercher un style de danse")}
           autoComplete="off"
           spellCheck={false}
         />
@@ -230,7 +235,7 @@ export default function StylesAutocomplete({ styles, onQueryChange }: Props) {
           <button
             type="button"
             className="sac-clear"
-            aria-label="Effacer la recherche"
+            aria-label={t("Effacer la recherche")}
             onClick={() => {
               setQuery("")
               setOpen(false)
@@ -251,7 +256,7 @@ export default function StylesAutocomplete({ styles, onQueryChange }: Props) {
         <ul
           id={listId}
           role="listbox"
-          aria-label="Suggestions de styles de danse"
+          aria-label={t("Suggestions de styles de danse")}
           className={`sac-dropdown${showDropdown ? " sac-open" : ""}`}
         >
           {results.length > 0 ? (
@@ -263,6 +268,9 @@ export default function StylesAutocomplete({ styles, onQueryChange }: Props) {
               const detail = item.matchLabel !== sourceStyle?.family
                 ? item.matchLabel
                 : (matchedKeywords.length > 0 ? matchedKeywords : sourceStyle?.aliases?.slice(0, 2))?.join(" · ")
+              const detailLabel = item.matchLabel !== sourceStyle?.family
+                ? MATCH_LABELS[item.matchType]
+                : (matchedKeywords.length > 0 ? t("Mots-clés") : t("Appellations"))
 
               return (
                 <li
@@ -280,9 +288,14 @@ export default function StylesAutocomplete({ styles, onQueryChange }: Props) {
                   <span className="sac-item-body">
                     <span className="sac-item-name">{item.name}</span>
                     <span className="sac-item-category">{sourceStyle?.family}</span>
-                    {detail && <span className="sac-item-meta">{detail}</span>}
+                    {detail && (
+                      <span className="sac-item-meta">
+                        <span className="sac-item-meta-label">{detailLabel} : </span>
+                        {detail}
+                      </span>
+                    )}
                   </span>
-                  <span className="sac-item-badge">{MATCH_LABELS[item.matchType]}</span>
+                  <span className="sac-item-badge">{t("Style")}</span>
                   <span className="sac-item-arrow" aria-hidden="true">→</span>
                 </li>
               )
@@ -290,8 +303,8 @@ export default function StylesAutocomplete({ styles, onQueryChange }: Props) {
           ) : (
             <li className="sac-empty" role="option" aria-selected={false}>
               <span className="sac-empty-body">
-                <strong>Aucun résultat pour « {query} »</strong>
-                <span>Essayez&nbsp;: {HINTS.map((h, i) => (
+                <strong>{locale === 'en' ? `No results for "${query}"` : `Aucun résultat pour « ${query} »`}</strong>
+                <span>{t("Essayez :")}&nbsp;{HINTS.map((h, i) => (
                   <button
                     key={h}
                     type="button"

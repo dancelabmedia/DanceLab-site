@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { useLocale } from '@/components/LocaleProvider'
+import { uiText } from '@/data/i18n/messages'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -20,10 +22,10 @@ type CommentData = {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function formatDate(iso: string): string {
+function formatDate(iso: string, locale: string): string {
   try {
     const d = new Date(iso)
-    return d.toLocaleDateString('fr-FR', {
+    return d.toLocaleDateString(locale === 'en' ? 'en-GB' : 'fr-FR', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
@@ -46,6 +48,9 @@ function CommentItem({
   depth?: number
   onReplyPosted: () => void
 }) {
+  const locale = useLocale()
+  const t = (text: string) => uiText(locale, text)
+
   const [replying, setReplying] = useState(false)
   const [replyAuthor, setReplyAuthor] = useState('')
   const [replyBody, setReplyBody] = useState('')
@@ -74,7 +79,7 @@ function CommentItem({
 
       if (!res.ok) {
         const data = await res.json()
-        setError(data.error ?? 'Une erreur est survenue.')
+        setError(data.error ?? t('Une erreur est survenue.'))
       } else {
         setReplyAuthor('')
         setReplyBody('')
@@ -82,7 +87,7 @@ function CommentItem({
         onReplyPosted()
       }
     } catch {
-      setError('Impossible d\'envoyer la réponse.')
+      setError(t("Impossible d'envoyer la réponse."))
     } finally {
       setSubmitting(false)
     }
@@ -99,7 +104,7 @@ function CommentItem({
       <div className="cmt-bubble">
         <div className="cmt-meta">
           <span className="cmt-author">{comment.author}</span>
-          <span className="cmt-date">{formatDate(comment.created_at)}</span>
+          <span className="cmt-date">{formatDate(comment.created_at, locale)}</span>
         </div>
         <p className="cmt-body">{comment.body}</p>
 
@@ -112,7 +117,7 @@ function CommentItem({
             }}
             aria-expanded={replying}
           >
-            {replying ? 'Annuler' : 'Répondre'}
+            {replying ? t('Annuler') : t('Répondre')}
           </button>
         )}
 
@@ -132,7 +137,7 @@ function CommentItem({
             <input
               className="cmt-input"
               type="text"
-              placeholder="Prénom ou pseudo"
+              placeholder={t('Prénom ou pseudo')}
               value={replyAuthor}
               onChange={(e) => setReplyAuthor(e.target.value)}
               maxLength={60}
@@ -142,7 +147,7 @@ function CommentItem({
             <textarea
               ref={textareaRef}
               className="cmt-textarea"
-              placeholder={`Répondre à ${comment.author}…`}
+              placeholder={locale === 'en' ? `Reply to ${comment.author}…` : `Répondre à ${comment.author}…`}
               value={replyBody}
               onChange={(e) => setReplyBody(e.target.value)}
               rows={3}
@@ -156,7 +161,7 @@ function CommentItem({
               type="submit"
               disabled={submitting || !replyAuthor.trim() || !replyBody.trim()}
             >
-              {submitting ? 'Envoi…' : 'Publier la réponse'}
+              {submitting ? t('Envoi…') : t('Publier la réponse')}
             </button>
           </form>
         )}
@@ -183,6 +188,9 @@ function CommentItem({
 // ── Composant principal CommentsSection ──────────────────────────────────────
 
 export default function CommentsSection({ slug }: { slug: string }) {
+  const locale = useLocale()
+  const t = (text: string) => uiText(locale, text)
+
   const [data, setData] = useState<CommentData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -226,7 +234,7 @@ export default function CommentsSection({ slug }: { slug: string }) {
 
       if (!res.ok) {
         const data = await res.json()
-        setError(data.error ?? 'Une erreur est survenue.')
+        setError(data.error ?? t('Une erreur est survenue.'))
       } else {
         setAuthor('')
         setBody('')
@@ -235,7 +243,7 @@ export default function CommentsSection({ slug }: { slug: string }) {
         setTimeout(() => setSuccess(false), 4000)
       }
     } catch {
-      setError('Impossible de publier le commentaire.')
+      setError(t('Impossible de publier le commentaire.'))
     } finally {
       setSubmitting(false)
     }
@@ -244,20 +252,20 @@ export default function CommentsSection({ slug }: { slug: string }) {
   const count = data?.count ?? 0
 
   return (
-    <section className="cmt-section" aria-label="Commentaires">
+    <section className="cmt-section" aria-label={t('Commentaires')}>
       <div className="container">
       {/* En-tête */}
       <div className="cmt-header">
-        <h2 className="cmt-heading">Rejoindre la discussion</h2>
+        <h2 className="cmt-heading">{t('Rejoindre la discussion')}</h2>
         {count > 0 && (
           <span className="cmt-count" aria-live="polite">
-            {count} {count === 1 ? 'commentaire' : 'commentaires'}
+            {count} {t(count === 1 ? 'commentaire' : 'commentaires')}
           </span>
         )}
       </div>
 
       {/* Invitation */}
-      <p className="cmt-invite">Et toi, qu&rsquo;est-ce que tu en penses&nbsp;?</p>
+      <p className="cmt-invite">{t("Et toi, qu'est-ce que tu en penses ?")}</p>
 
       {/* Formulaire */}
       <form className="cmt-form" onSubmit={handleSubmit} noValidate>
@@ -275,12 +283,12 @@ export default function CommentsSection({ slug }: { slug: string }) {
 
         <div className="cmt-fields">
           <div className="cmt-field-group">
-            <label className="cmt-label" htmlFor="cmt-author">Prénom ou pseudo</label>
+            <label className="cmt-label" htmlFor="cmt-author">{t('Prénom ou pseudo')}</label>
             <input
               id="cmt-author"
               className="cmt-input"
               type="text"
-              placeholder="Ex : Marie"
+              placeholder={locale === 'en' ? 'E.g. Marie' : 'Ex : Marie'}
               value={author}
               onChange={(e) => setAuthor(e.target.value)}
               maxLength={60}
@@ -290,11 +298,11 @@ export default function CommentsSection({ slug }: { slug: string }) {
           </div>
 
           <div className="cmt-field-group cmt-field-group--full">
-            <label className="cmt-label" htmlFor="cmt-body">Votre commentaire</label>
+            <label className="cmt-label" htmlFor="cmt-body">{t('Votre commentaire')}</label>
             <textarea
               id="cmt-body"
               className="cmt-textarea"
-              placeholder="Partage ton avis, une recommandation, une réaction…"
+              placeholder={t('Partage ton avis, une recommandation, une réaction…')}
               value={body}
               onChange={(e) => setBody(e.target.value)}
               rows={4}
@@ -310,7 +318,7 @@ export default function CommentsSection({ slug }: { slug: string }) {
         )}
         {success && (
           <p className="cmt-success" role="status">
-            Commentaire publié — merci pour ta participation&nbsp;!
+            {t('Commentaire publié — merci pour ta participation !')}
           </p>
         )}
 
@@ -319,15 +327,15 @@ export default function CommentsSection({ slug }: { slug: string }) {
           type="submit"
           disabled={submitting || !author.trim() || !body.trim()}
         >
-          {submitting ? 'Publication…' : 'Publier'}
+          {submitting ? t('Publication…') : t('Publier')}
         </button>
       </form>
 
       {/* Liste des commentaires */}
       {loading ? (
-        <div className="cmt-loading" aria-busy="true">Chargement…</div>
+        <div className="cmt-loading" aria-busy="true">{t('Chargement…')}</div>
       ) : data && data.comments.length > 0 ? (
-        <div className="cmt-list" aria-label={`${count} commentaires`}>
+        <div className="cmt-list" aria-label={`${count} ${t(count === 1 ? 'commentaire' : 'commentaires')}`}>
           {data.comments.map((comment) => (
             <CommentItem
               key={comment.id}
@@ -339,7 +347,7 @@ export default function CommentsSection({ slug }: { slug: string }) {
           ))}
         </div>
       ) : (
-        <p className="cmt-empty">Sois le premier à laisser un commentaire.</p>
+        <p className="cmt-empty">{t('Sois le premier à laisser un commentaire.')}</p>
       )}
       </div>
     </section>

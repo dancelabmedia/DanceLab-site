@@ -1101,13 +1101,7 @@ button {
   right: clamp(-180px, -6vw, -40px);
   width: min(62vw, 820px);
   aspect-ratio: 1;
-  transform:
-    translate3d(
-      calc(var(--hero-parallax-x) * 18px),
-      calc(-50% + (var(--hero-parallax-y) * 16px)),
-      0
-    );
-  transition: transform .18s ease-out;
+  transform: translate3d(0, -50%, 0);
   opacity: 0.92;
   pointer-events: none;
   mix-blend-mode: normal;
@@ -11431,11 +11425,7 @@ p,
   width: 100%;
   aspect-ratio: 1;
   justify-self: start;
-  transform: translate3d(
-    calc(var(--hero-parallax-x) * 8px),
-    calc(var(--hero-parallax-y) * 8px),
-    0
-  );
+  transform: translate3d(0, 0, 0);
   opacity: 1;
   border-radius: 6px;
   box-shadow:
@@ -13146,6 +13136,8 @@ a.sty-mag-card {
   /* Le menu reste un contexte clair, même lorsqu'il est placé dans un hero sombre. */
   --color-text-secondary: var(--color-primary-dark);
   --color-heading: var(--color-text-dark);
+  color-scheme: light;
+  font-family: var(--font-body);
   position: absolute;
   top: 100%;
   left: 0;
@@ -13185,13 +13177,13 @@ a.sty-mag-card {
   grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 0 14px;
-  padding: 15px 18px;
+  padding: 17px 20px;
   cursor: pointer;
   transition: background .12s;
 }
 
 .sac-item + .sac-item {
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--color-secondary);
 }
 
 .sac-item:hover,
@@ -13208,7 +13200,7 @@ a.sty-mag-card {
 
 .sac-item-name {
   font-family: var(--font-display);
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   line-height: 1.4;
   color: var(--color-text-dark);
@@ -13217,16 +13209,21 @@ a.sty-mag-card {
 
 .sac-item-category,
 .sac-item-meta {
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: 13px;
+  line-height: 1.55;
   color: var(--color-primary-dark);
   overflow-wrap: anywhere;
 }
 
-.sac-item-category { font-weight: 500; }
+.sac-item-category {
+  color: var(--color-text-dark);
+  font-weight: 500;
+}
+
+.sac-item-meta-label { font-weight: 600; }
 
 .sac-item-badge {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: .08em;
@@ -13265,12 +13262,12 @@ a.sty-mag-card {
 
 .sac-empty-body strong {
   font-family: var(--font-display);
-  font-size: 13.5px;
+  font-size: 14px;
   color: var(--color-text-dark);
 }
 
 .sac-empty-body > span {
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--color-primary-dark);
   line-height: 1.5;
 }
@@ -13296,7 +13293,7 @@ a.sty-mag-card {
   .sac-item {
     grid-template-columns: minmax(0,1fr) auto;
     gap: 0 10px;
-    padding: 14px;
+    padding: 16px 14px;
   }
   .sac-item-arrow { display: none; }
   .sac-empty { padding: 16px 14px; }

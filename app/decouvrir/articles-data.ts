@@ -450,7 +450,7 @@ export const magazineArticles: MagazineArticle[] = [
     readTime: "7 min",
     tags: ["Santé", "Prévention", "Corps"],
     quote:
-      "La douleur c’est le premier signal du corps pour te dire qu’il y a quelque chose qui ne va pas.",
+      "La douleur c'est le premier signal du corps pour te dire qu'il y a quelque chose qui ne va pas.",
     sections: [
       {
         heading: "La douleur n'est pas un détail",

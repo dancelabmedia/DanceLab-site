@@ -5,7 +5,11 @@
     "start": "next start",
     "generate": "tsx scripts/generate-articles.ts",
     "generate:episode": "tsx scripts/generate-articles.ts --episode",
-    "generate:check": "tsx scripts/generate-articles.ts --dry-run"
+    "generate:check": "tsx scripts/generate-articles.ts --dry-run",
+    "translations:status": "node --require ./scripts/register-typescript.cjs scripts/translations.ts status",
+    "translations:queue": "node --require ./scripts/register-typescript.cjs scripts/translations.ts queue",
+    "translations:import": "node --require ./scripts/register-typescript.cjs scripts/translations.ts import",
+    "translations:edit": "node --require ./scripts/register-typescript.cjs scripts/translations.ts edit"
   },
   "dependencies": {
     "@fontsource-variable/hanken-grotesk": "^5.3.0",

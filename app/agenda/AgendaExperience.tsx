@@ -5,6 +5,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import AgendaMap from "./AgendaMap"
 import type { AgendaEvent } from "./agenda-data"
 import { formatAgendaDateRange } from "./agenda-data"
+import { useLocale } from "@/components/LocaleProvider"
+import { uiText } from "@/data/i18n/messages"
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
@@ -170,11 +172,13 @@ interface DropdownProps {
   options: string[]
   onChange: (v: string) => void
   align?: "left" | "right"
+  translate?: (opt: string) => string
 }
 
-function Dropdown({ label, value, options, onChange, align = "left" }: DropdownProps) {
+function Dropdown({ label, value, options, onChange, align = "left", translate }: DropdownProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const display = translate ?? ((s: string) => s)
 
   useEffect(() => {
     function onClickOut(e: MouseEvent) {
@@ -198,7 +202,7 @@ function Dropdown({ label, value, options, onChange, align = "left" }: DropdownP
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
       >
-        <span>{isActive ? value : label}</span>
+        <span>{isActive ? display(value) : label}</span>
         <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
           <path d="M2 4.5l4 4 4-4" stroke="currentColor" strokeWidth="1.7"
                 strokeLinecap="round" strokeLinejoin="round" />
@@ -216,7 +220,7 @@ function Dropdown({ label, value, options, onChange, align = "left" }: DropdownP
               className={`srt-dd-item${opt === value ? " srt-dd-item--active" : ""}`}
               onClick={() => { onChange(opt); setOpen(false) }}
             >
-              {opt}
+              {display(opt)}
             </button>
           ))}
         </div>
@@ -231,17 +235,19 @@ function EventCard({
   event,
   onMap,
   animDelay = 0,
+  t = (s: string) => s,
 }: {
   event: AgendaEvent
   onMap: (slug: string) => void
   animDelay?: number
+  t?: (s: string) => string
 }) {
   const isOngoing = event.status === "En cours"
   const color = CATEGORY_COLORS[event.category] ?? "#5B7377"
   const priceDisplay = isFree(event)
-    ? "Gratuit"
+    ? t("Gratuit")
     : event.price === "À compléter"
-    ? "À compléter"
+    ? t("À compléter")
     : event.price
 
   return (
@@ -259,7 +265,7 @@ function EventCard({
         )}
         <span className="srt-badge srt-badge--cat">{event.category}</span>
         <span className={`srt-badge srt-badge--status${isOngoing ? " srt-badge--on" : " srt-badge--soon"}`}>
-          {isOngoing ? "EN COURS" : "À VENIR"}
+          {isOngoing ? t("EN COURS") : t("À VENIR")}
         </span>
       </div>
 
@@ -295,20 +301,20 @@ function EventCard({
 
         <div className="srt-card-actions">
           <Link href={getEventPageUrl(event)} className="srt-btn-primary">
-            Voir l'événement
+            {t("Voir l'événement")}
           </Link>
           <button
             type="button"
             className="srt-btn-map"
             onClick={() => onMap(event.slug)}
-            aria-label="Voir sur la carte"
+            aria-label={t("Voir sur la carte")}
           >
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
               <path d="M7 1C4.79 1 3 2.79 3 5c0 3 4 8 4 8s4-5 4-8c0-2.21-1.79-4-4-4z"
                 stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
               <circle cx="7" cy="5" r="1.2" fill="currentColor" />
             </svg>
-            Carte
+            {t("Carte")}
           </button>
         </div>
       </div>
@@ -325,11 +331,13 @@ function EventCluster({
   subtitle,
   events,
   onMap,
+  t = (s: string) => s,
 }: {
   title: string
   subtitle: string
   events: AgendaEvent[]
   onMap: (slug: string) => void
+  t?: (s: string) => string
 }) {
   const [expanded, setExpanded] = useState(false)
   const visible = expanded ? events : events.slice(0, CLUSTER_INITIAL)
@@ -346,24 +354,24 @@ function EventCluster({
         </div>
         {hasMore && !expanded && (
           <button type="button" className="srt-see-all" onClick={() => setExpanded(true)}>
-            Voir tous ({events.length})
+            {t('Voir tous')} ({events.length})
           </button>
         )}
         {hasMore && expanded && (
           <button type="button" className="srt-see-all" onClick={() => setExpanded(false)}>
-            Réduire
+            {t('Réduire')}
           </button>
         )}
         {!hasMore && (
           <span className="srt-count-tag">
-            {events.length} événement{events.length > 1 ? "s" : ""}
+            {events.length} {t(events.length > 1 ? 'événements' : 'événement')}
           </span>
         )}
       </div>
 
       <div className="srt-grid">
         {visible.map((ev, i) => (
-          <EventCard key={ev.slug} event={ev} onMap={onMap} animDelay={i * 45} />
+          <EventCard key={ev.slug} event={ev} onMap={onMap} animDelay={i * 45} t={t} />
         ))}
       </div>
     </div>
@@ -375,6 +383,8 @@ function EventCluster({
 type AgendaExperienceProps = { events: AgendaEvent[] }
 
 export default function AgendaExperience({ events }: AgendaExperienceProps) {
+  const locale = useLocale()
+  const t = (text: string) => uiText(locale, text)
 
   // ── Données live ──
   const [agendaEvents, setAgendaEvents] = useState<AgendaEvent[]>(events)
@@ -502,16 +512,16 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
   function getEmptySuggestions() {
     const suggestions: { label: string; action: () => void }[] = []
     if (dateFilter !== ALL_DATES) {
-      if (dateFilter === "Aujourd'hui") suggestions.push({ label: "Voir ce week-end", action: () => setDateFilter("Ce week-end") })
-      else if (dateFilter === "Ce week-end") suggestions.push({ label: "Voir cette semaine", action: () => setDateFilter("Cette semaine") })
-      else if (dateFilter === "Cette semaine") suggestions.push({ label: "Voir ce mois-ci", action: () => setDateFilter("Ce mois-ci") })
-      else suggestions.push({ label: "Toutes les dates", action: () => setDateFilter(ALL_DATES) })
+      if (dateFilter === "Aujourd'hui") suggestions.push({ label: t("Voir ce week-end"), action: () => setDateFilter("Ce week-end") })
+      else if (dateFilter === "Ce week-end") suggestions.push({ label: t("Voir cette semaine"), action: () => setDateFilter("Cette semaine") })
+      else if (dateFilter === "Cette semaine") suggestions.push({ label: t("Voir ce mois-ci"), action: () => setDateFilter("Ce mois-ci") })
+      else suggestions.push({ label: t("Toutes les dates"), action: () => setDateFilter(ALL_DATES) })
     }
     if (cityFilter !== ALL_CITIES) {
-      suggestions.push({ label: "Toutes les villes", action: () => setCityFilter(ALL_CITIES) })
+      suggestions.push({ label: t("Toutes les villes"), action: () => setCityFilter(ALL_CITIES) })
     }
     if (priceFilter !== ALL_PRICES && priceFilter !== "Gratuit") {
-      suggestions.push({ label: "Tous les tarifs", action: () => setPriceFilter(ALL_PRICES) })
+      suggestions.push({ label: t("Tous les tarifs"), action: () => setPriceFilter(ALL_PRICES) })
     }
     return suggestions
   }
@@ -536,7 +546,7 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
                 id="srt-search"
                 type="search"
                 className="srt-search"
-                placeholder="Rechercher une ville, un spectacle, un festival…"
+                placeholder={t("Rechercher une ville, un spectacle, un festival…")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 autoComplete="off"
@@ -546,7 +556,7 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
                   type="button"
                   className="srt-search-clear"
                   onClick={() => setSearch("")}
-                  aria-label="Effacer la recherche"
+                  aria-label={t("Effacer la recherche")}
                 >
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
                        stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
@@ -570,40 +580,40 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
                 <path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" strokeWidth="1.6"
                       strokeLinecap="round" />
               </svg>
-              Filtres
+              {t('Filtres')}
               {activeFilterCount > 0 && (
                 <span className="srt-filter-count">{activeFilterCount}</span>
               )}
             </button>
             <div className="srt-mobile-sort">
-              <Dropdown label={SORT_RECENT} value={sortValue} options={SORT_OPTIONS}
-                        onChange={setSortValue} align="right" />
+              <Dropdown label={t(SORT_RECENT)} value={sortValue} options={SORT_OPTIONS}
+                        onChange={setSortValue} align="right" translate={t} />
             </div>
           </div>
 
           {/* ── Desktop + mobile (ouvert) : ligne filtres ── */}
           <div className={`srt-filter-row${filtersOpen ? " srt-filter-row--open" : ""}`}>
             <div className="srt-filters">
-              <Dropdown label="Type"  value={typeFilter}  options={typeOptions}  onChange={setTypeFilter} />
-              <Dropdown label="Ville" value={cityFilter}  options={cityOptions}  onChange={setCityFilter} />
-              <Dropdown label="Date"  value={dateFilter}  options={DATE_OPTIONS} onChange={setDateFilter} />
-              <Dropdown label="Prix"  value={priceFilter} options={PRICE_OPTIONS} onChange={setPriceFilter} />
+              <Dropdown label={t("Type")}  value={typeFilter}  options={typeOptions}  onChange={setTypeFilter} translate={t} />
+              <Dropdown label={t("Ville")} value={cityFilter}  options={cityOptions}  onChange={setCityFilter} />
+              <Dropdown label={t("Date")}  value={dateFilter}  options={DATE_OPTIONS} onChange={setDateFilter} translate={t} />
+              <Dropdown label={t("Prix")}  value={priceFilter} options={PRICE_OPTIONS} onChange={setPriceFilter} translate={t} />
               {hasActiveFilter && (
                 <button type="button" className="srt-clear-btn" onClick={clearFilters}>
-                  ✕ Réinitialiser
+                  {t('✕ Réinitialiser')}
                 </button>
               )}
             </div>
             {/* Tri — visible uniquement en desktop (caché sur mobile via CSS) */}
             <div className="srt-desktop-sort">
-              <Dropdown label={SORT_RECENT} value={sortValue} options={SORT_OPTIONS}
-                        onChange={setSortValue} align="right" />
+              <Dropdown label={t(SORT_RECENT)} value={sortValue} options={SORT_OPTIONS}
+                        onChange={setSortValue} align="right" translate={t} />
             </div>
           </div>
 
           {/* ── Chips filtres actifs ── */}
           {hasActiveFilter && (
-            <div className="srt-chips-row" role="group" aria-label="Filtres actifs">
+            <div className="srt-chips-row" role="group" aria-label={t('Filtres actifs') ?? 'Filtres actifs'}>
               {search.trim() && (
                 <button className="srt-chip" type="button" onClick={() => setSearch("")}>
                   <svg width="10" height="10" viewBox="0 0 18 18" fill="none" aria-hidden="true">
@@ -616,7 +626,7 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
               )}
               {typeFilter !== ALL_TYPES && (
                 <button className="srt-chip" type="button" onClick={() => setTypeFilter(ALL_TYPES)}>
-                  {typeFilter}
+                  {t(typeFilter)}
                   <span className="srt-chip-x" aria-hidden="true">×</span>
                 </button>
               )}
@@ -628,19 +638,19 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
               )}
               {dateFilter !== ALL_DATES && (
                 <button className="srt-chip" type="button" onClick={() => setDateFilter(ALL_DATES)}>
-                  {dateFilter}
+                  {t(dateFilter)}
                   <span className="srt-chip-x" aria-hidden="true">×</span>
                 </button>
               )}
               {priceFilter !== ALL_PRICES && (
                 <button className="srt-chip" type="button" onClick={() => setPriceFilter(ALL_PRICES)}>
-                  {priceFilter}
+                  {t(priceFilter)}
                   <span className="srt-chip-x" aria-hidden="true">×</span>
                 </button>
               )}
               {activeFilterCount > 1 && (
                 <button className="srt-chips-clear" type="button" onClick={clearFilters}>
-                  Tout effacer
+                  {t('Tout effacer')}
                 </button>
               )}
             </div>
@@ -656,12 +666,12 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
         <div className="container">
 
           {isLoading && (
-            <div className="srt-state-msg">Chargement des événements…</div>
+            <div className="srt-state-msg">{t('Chargement des événements…')}</div>
           )}
 
           {!isLoading && hasNotionError && (
             <p className="srt-sync-note">
-              Agenda momentanément indisponible. Les événements seront affichés dès que la connexion sera rétablie.
+              {t('Agenda momentanément indisponible. Les événements seront affichés dès que la connexion sera rétablie.')}
             </p>
           )}
 
@@ -679,13 +689,15 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
                         strokeOpacity=".4" />
                 </svg>
               </div>
-              <p className="srt-empty-title">Aucun événement trouvé</p>
+              <p className="srt-empty-title">{t('Aucun événement trouvé')}</p>
               <p className="srt-empty-desc">
                 {dateFilter !== ALL_DATES && dateFilter !== "En cours" && dateFilter !== "À venir"
-                  ? `Aucun événement ne correspond à « ${dateFilter} » avec ces critères.`
+                  ? locale === 'en'
+                    ? `No events match "${t(dateFilter)}" with these criteria.`
+                    : `Aucun événement ne correspond à « ${dateFilter} » avec ces critères.`
                   : hasActiveFilter
-                  ? "Aucun événement ne correspond à votre sélection."
-                  : "Aucun événement n'est disponible pour le moment."}
+                  ? t("Aucun événement ne correspond à votre sélection.")
+                  : t("Aucun événement n'est disponible pour le moment.")}
               </p>
               {getEmptySuggestions().length > 0 && (
                 <div className="srt-empty-actions">
@@ -704,7 +716,7 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
               {hasActiveFilter && (
                 <button type="button" className="srt-clear-btn" style={{ marginTop: 8 }}
                         onClick={clearFilters}>
-                  Réinitialiser tous les filtres
+                  {t('Réinitialiser tous les filtres')}
                 </button>
               )}
             </div>
@@ -713,23 +725,25 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
           {/* ── Compteur de résultats ── */}
           {!isLoading && filtered.length > 0 && (
             <p className="srt-results-count">
-              {filtered.length} événement{filtered.length > 1 ? "s" : ""}
-              {hasActiveFilter ? ` trouvé${filtered.length > 1 ? "s" : ""}` : ""}
+              {filtered.length} {t(filtered.length > 1 ? 'événements' : 'événement')}
+              {hasActiveFilter ? ` ${t(filtered.length > 1 ? 'trouvés' : 'trouvé')}` : ""}
             </p>
           )}
 
           <EventCluster
-            title="En cours"
-            subtitle="Des rendez-vous déjà ouverts au public ou actuellement actifs."
+            title={t('En cours')}
+            subtitle={t('Des rendez-vous déjà ouverts au public ou actuellement actifs.')}
             events={ongoingEvents}
             onMap={handleMap}
+            t={t}
           />
 
           <EventCluster
-            title="À venir"
-            subtitle="Les événements à ne pas manquer prochainement."
+            title={t('À venir')}
+            subtitle={t('Les événements à ne pas manquer prochainement.')}
             events={upcomingEvents}
             onMap={handleMap}
+            t={t}
           />
 
         </div>

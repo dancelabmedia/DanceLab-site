@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { useLocale } from "@/components/LocaleProvider"
+import { uiText } from "@/data/i18n/messages"
 
 /* ── Hook compteur ─────────────────────────────────────────────── */
 function useCounter(
@@ -131,11 +133,13 @@ export function AnimatedStats({ items }: { items: AnimatedStat[] }) {
 }
 
 export default function StylesStats({ stylesCount, episodesCount }: Props) {
+  const locale = useLocale()
+  const t = (text: string) => uiText(locale, text)
   return (
     <AnimatedStats items={[
-      { target: stylesCount, label: "Styles documentés" },
-      { target: 27, suffix: "+", label: "Styles à venir" },
-      { target: episodesCount, label: "Épisodes reliés" },
+      { target: stylesCount, label: t("Styles documentés") },
+      { target: 27, suffix: "+", label: t("Styles à venir") },
+      { target: episodesCount, label: t("Épisodes reliés") },
     ]} />
   )
 }

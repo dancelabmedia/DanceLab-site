@@ -7,8 +7,10 @@ import { normalizeSearchText } from "../../../data/search"
 import StylesStats from "./StylesStats"
 import StylesAutocomplete from "./StylesAutocomplete"
 import StylesGrid from "./StylesGrid"
+import { useLocale } from "@/components/LocaleProvider"
+import { uiText } from "@/data/i18n/messages"
 
-const ALL = "Tous les styles"
+const ALL_KEY = "Tous les styles"
 
 /** Type minimal commun aux fiches complètes (DanceStyle) et aux stubs (UpcomingStyle) */
 type AnyStyle = {
@@ -37,7 +39,9 @@ export default function StylesHeroFeatured({
   stylesCount,
   episodesCount,
 }: Props) {
-  const [activeFamily, setActiveFamily] = useState<string>(ALL)
+  const locale = useLocale()
+  const t = (text: string) => uiText(locale, text)
+  const [activeFamily, setActiveFamily] = useState<string>(ALL_KEY)
   const [searchQuery, setSearchQuery]   = useState("")
   const [isOpen, setIsOpen]             = useState(false)
   const [mounted, setMounted]           = useState(false)
@@ -103,7 +107,7 @@ export default function StylesHeroFeatured({
   /* ── Familles présentes dans les styles disponibles ──────────── */
   const families = useMemo(() => {
     const present = Array.from(new Set(availableStyles.map((s) => s.family)))
-    return [ALL, ...STYLE_FAMILIES.filter((f) => present.includes(f as DanceStyleFamily))]
+    return [ALL_KEY, ...STYLE_FAMILIES.filter((f) => present.includes(f as DanceStyleFamily))]
   }, [availableStyles])
 
   /* ── Filtrage pour la grille (famille + recherche textuelle) ─── */
@@ -111,7 +115,7 @@ export default function StylesHeroFeatured({
     let result = allStyles
 
     // Filtre famille
-    if (activeFamily !== ALL) {
+    if (activeFamily !== ALL_KEY) {
       result = result.filter((s) => s.family === activeFamily)
     }
 
@@ -150,17 +154,14 @@ export default function StylesHeroFeatured({
         <div className="sty-hero-fade" aria-hidden="true" />
 
         <div className="sty-hero-left">
-          <span className="sty-kicker">Explorer · Styles de danse</span>
+          <span className="sty-kicker">{t('Explorer · Styles de danse')}</span>
 
           <h1 className="sty-hero-title">
-            Comprendre les styles de danse.
+            {t('Comprendre les styles de danse.')}
           </h1>
 
           <p className="sty-hero-desc">
-            Les cultures, les histoires et les codes qui ont fait naître le Hip-hop,
-            le contemporain, le classique, l&apos;afro, le waacking, le krump ou encore
-            le heels. Bienvenue dans l&apos;encyclopédie de référence pour découvrir,
-            comprendre et vivre la danse.
+            {t("Les cultures, les histoires et les codes qui ont fait naître le Hip-hop, le contemporain, le classique, l'afro, le waacking, le krump ou encore le heels. Bienvenue dans l'encyclopédie de référence pour découvrir, comprendre et vivre la danse.")}
           </p>
 
           <StylesStats
@@ -184,13 +185,13 @@ export default function StylesHeroFeatured({
               <button
                 ref={btnRef}
                 type="button"
-                className={`sty-filter-btn${isOpen ? ' sty-filter-btn--open' : ''}${activeFamily !== ALL ? ' sty-filter-btn--has-value' : ''}`}
+                className={`sty-filter-btn${isOpen ? ' sty-filter-btn--open' : ''}${activeFamily !== ALL_KEY ? ' sty-filter-btn--has-value' : ''}`}
                 onClick={() => setIsOpen(o => !o)}
                 aria-haspopup="listbox"
                 aria-expanded={isOpen}
-                aria-label="Filtrer par famille de danse"
+                aria-label={t('Filtrer par famille de danse')}
               >
-                <span className="sty-filter-btn-label">{activeFamily}</span>
+                <span className="sty-filter-btn-label">{activeFamily === ALL_KEY ? t('Tous les styles') : activeFamily}</span>
                 <svg
                   className="sty-filter-chevron"
                   width="12"
@@ -208,7 +209,7 @@ export default function StylesHeroFeatured({
                   ref={menuRef}
                   className="sty-filter-menu"
                   role="listbox"
-                  aria-label="Famille de danse"
+                  aria-label={t('Famille de danse')}
                   style={menuPos}
                 >
                   {families.map((family) => (
@@ -234,7 +235,7 @@ export default function StylesHeroFeatured({
                           <path d="M2 6L5 9L10 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
                       )}
-                      {family}
+                      {family === ALL_KEY ? t('Tous les styles') : family}
                     </li>
                   ))}
                 </ul>,

@@ -26,9 +26,12 @@ import DevLockButton from '../components/DevLockButton'
 import NewsletterModal from '../components/NewsletterModal'
 import ScrollReveal from './components/ScrollReveal'
 import { SITE_URL } from '../data/site'
+import { requestLocale, requestPath, languageAlternates } from '@/lib/i18n/server'
+import LocaleProvider from '@/components/LocaleProvider'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
 
 
-export const metadata: Metadata = {
+const frenchMetadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: 'Dance Lab - Le podcast et média de référence de la danse',
   description:
@@ -50,9 +53,17 @@ export const metadata: Metadata = {
 }
 
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await requestLocale()
+  const title = locale === 'en' ? 'Dance Lab — Dance, culture and conversations' : frenchMetadata.title
+  const description = locale === 'en' ? 'Dance Lab explores dance through interviews, culture and resources for professionals, enthusiasts and curious minds.' : frenchMetadata.description
+  return { ...frenchMetadata, title, description, alternates: languageAlternates(await requestPath(), locale), openGraph: { ...frenchMetadata.openGraph, title: title as string, description: description as string, locale: locale === 'en' ? 'en_GB' : 'fr_FR' }, twitter: { ...frenchMetadata.twitter, title: title as string, description: description as string } }
+}
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await requestLocale()
   return (
-    <html lang="fr">
+    <html lang={locale}>
       <head>
         <link
           rel="icon"
@@ -88,12 +99,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="theme-color" content="#050505" />
       </head>
       <body>
-        <SiteLayout>
+        <LocaleProvider locale={locale}>
+        <SiteLayout locale={locale}>
           {children}
         </SiteLayout>
-        <NewsletterModal />
+        <NewsletterModal locale={locale} />
         <DevLockButton />
         <ScrollReveal />
+        <LanguageSwitcher locale={locale} />
+        </LocaleProvider>
       </body>
     </html>
   )

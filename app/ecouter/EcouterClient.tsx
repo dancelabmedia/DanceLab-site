@@ -4,6 +4,8 @@ import type { UnifiedEpisode } from "@/lib/episodes"
 import Link from "next/link"
 import { useState, useMemo, useRef, useEffect, useLayoutEffect, useCallback } from "react"
 import { createPortal } from "react-dom"
+import { useLocale } from '@/components/LocaleProvider'
+import { uiText } from '@/data/i18n/messages'
 import AnimatedCounter from "../components/AnimatedCounter"
 
 const EPISODES_PAGE_SIZE = 12
@@ -201,6 +203,9 @@ interface Props {
 }
 
 export default function EcouterClient({ episodes }: Props) {
+  const locale = useLocale()
+  const t = (text: string) => uiText(locale, text)
+
   const [search, setSearch] = useState("")
   const [thematique, setThematique] = useState("Toutes")
   const [duree, setDuree] = useState("Toutes")
@@ -347,7 +352,7 @@ export default function EcouterClient({ episodes }: Props) {
   return (
     <main id="episodes" className="episodes-page ep2">
 
-      <section className="el-hero" ref={heroRef} aria-label="En-tête — Tous les épisodes">
+      <section className="el-hero" ref={heroRef} aria-label={t('En-tête — Tous les épisodes')}>
         <div className="el-hero-img-wrap" ref={heroImgRef} aria-hidden="true">
           {latestEpisode && (
             <img
@@ -372,10 +377,10 @@ export default function EcouterClient({ episodes }: Props) {
 
         <div className="el-hero-left">
           <span className="el-kicker el-anim" style={{ "--el-delay": "0ms" } as React.CSSProperties}>
-            Podcast Dance Lab
+            {t('Podcast Dance Lab')}
           </span>
           <h1 className="el-hero-title el-anim" style={{ "--el-delay": "70ms" } as React.CSSProperties}>
-            Tous les épisodes
+            {t('Tous les épisodes')}
           </h1>
 
           <div className="el-stats el-anim" style={{ "--el-delay": "140ms" } as React.CSSProperties}>
@@ -383,26 +388,26 @@ export default function EcouterClient({ episodes }: Props) {
               <strong>
                 <AnimatedCounter value={episodes.length} duration={1200} />
               </strong>
-              <span>conversations</span>
+              <span>{t('conversations')}</span>
             </div>
             <div className="el-stat-sep" aria-hidden="true" />
             <div className="el-stat">
               <strong>
                 <AnimatedCounter prefix="+" value={100} suffix={"\u00a0000"} duration={1600} />
               </strong>
-              <span>écoutes cumulées</span>
+              <span>{t('écoutes cumulées')}</span>
             </div>
             <div className="el-stat-sep" aria-hidden="true" />
             <div className="el-stat">
               <strong>
                 <AnimatedCounter prefix="+" value={2} suffix={"\u00a0MILLIONS"} duration={1800} />
               </strong>
-              <span>vues cumulées</span>
+              <span>{t('vues cumulées')}</span>
             </div>
           </div>
 
           <p className="el-hero-desc el-anim" style={{ "--el-delay": "200ms" } as React.CSSProperties}>
-            Celles et ceux qui font, pensent et transforment la danse. Des conversations sur les parcours, la création, les carrières, les corps et la culture.
+            {t('Celles et ceux qui font, pensent et transforment la danse. Des conversations sur les parcours, la création, les carrières, les corps et la culture.')}
           </p>
 
           <label className="el-search-wrap el-anim" style={{ "--el-delay": "260ms" } as React.CSSProperties}>
@@ -413,13 +418,13 @@ export default function EcouterClient({ episodes }: Props) {
             <input
               className="el-search"
               type="search"
-              placeholder="Rechercher un épisode, un invité, un métier, un thème…"
+              placeholder={t('Rechercher un épisode, un invité, un métier, un thème…')}
               value={search}
               onChange={e => setSearch(e.target.value)}
               autoComplete="off"
             />
             {search && (
-              <button className="el-search-clear" type="button" onClick={() => setSearch("")} aria-label="Effacer la recherche">
+              <button className="el-search-clear" type="button" onClick={() => setSearch("")} aria-label={t('Effacer la recherche')}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
@@ -429,33 +434,33 @@ export default function EcouterClient({ episodes }: Props) {
           </label>
 
           <div className="el-chips el-anim" style={{ "--el-delay": "310ms" } as React.CSSProperties}>
-            <Dropdown label="Tous les invités" value={inviteFilter} options={guestOptions} onChange={setInviteFilter} />
-            <Dropdown label="Tous les thèmes" value={thematique} options={THEMATIQUES.map(t => ({ label: t, value: t }))} onChange={setThematique} />
+            <Dropdown label={t('Tous les invités')} value={inviteFilter} options={guestOptions} onChange={setInviteFilter} />
+            <Dropdown label={t('Tous les thèmes')} value={thematique} options={THEMATIQUES.map(th => ({ label: t(th), value: th }))} onChange={setThematique} />
             <Dropdown
-              label="Toutes les durées"
+              label={t('Toutes les durées')}
               value={duree}
               options={[
-                { label: "Toutes les durées", value: "Toutes" },
-                { label: "Moins de 30 min", value: "court" },
-                { label: "30 min – 1 h", value: "moyen" },
-                { label: "Plus d'1 heure", value: "long" },
+                { label: t('Toutes les durées'), value: "Toutes" },
+                { label: t('Moins de 30 min'), value: "court" },
+                { label: t('30 min – 1 h'), value: "moyen" },
+                { label: t("Plus d'1 heure"), value: "long" },
               ]}
               onChange={setDuree}
             />
             <Dropdown
-              label="Les plus récents"
+              label={t('Les plus récents')}
               value={sort}
               options={[
-                { label: "Les plus récents", value: "recent" },
-                { label: "Les plus anciens", value: "ancien" },
-                { label: "A → Z", value: "az" },
+                { label: t('Les plus récents'), value: "recent" },
+                { label: t('Les plus anciens'), value: "ancien" },
+                { label: t('A → Z'), value: "az" },
               ]}
               onChange={setSort}
               align="right"
             />
             {hasActiveFilters && (
               <button className="el-chip-clear" type="button" onClick={clearFilters}>
-                ✕ Réinitialiser
+                {t('✕ Réinitialiser')}
               </button>
             )}
           </div>
@@ -468,9 +473,9 @@ export default function EcouterClient({ episodes }: Props) {
         <div className="container">
           {visibleEpisodes.length === 0 ? (
             <div className="ep2-empty">
-              <p>Aucun épisode ne correspond à votre recherche.</p>
+              <p>{t('Aucun épisode ne correspond à votre recherche')}</p>
               <button className="ep2-clear-btn" onClick={clearFilters} type="button">
-                Réinitialiser les filtres
+                {t('Réinitialiser les filtres')}
               </button>
             </div>
           ) : (
@@ -501,9 +506,9 @@ export default function EcouterClient({ episodes }: Props) {
                     />
                   </div>
                   <div className="ep2-card-content">
-                    <span className="ep2-card-number">Épisode {episode.number}</span>
+                    <span className="ep2-card-number">{t('Épisode')} {episode.number}</span>
                     <p className="ep2-card-title">{episode.title}</p>
-                    <p className="ep2-card-guest">Avec {episode.guest}</p>
+                    <p className="ep2-card-guest">{t('Avec')} {episode.guest}</p>
                     <p className="ep2-card-duration">
                       <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ verticalAlign: "middle", marginRight: 4 }}>
                         <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.3"/>
@@ -515,7 +520,7 @@ export default function EcouterClient({ episodes }: Props) {
                       <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true" style={{ marginRight: 5 }}>
                         <polygon points="2,1 11,6 2,11"/>
                       </svg>
-                      Écouter l&apos;épisode
+                      {t('Écouter l\'épisode')}
                     </span>
                   </div>
                 </Link>
@@ -525,7 +530,7 @@ export default function EcouterClient({ episodes }: Props) {
 
           {totalPages > 1 && (
             <nav className="ep2-pagination" aria-label="Pagination">
-              <button className="ep2-page-btn ep2-page-arrow" onClick={() => goToPage(Math.max(1, safeCurrentPage - 1))} disabled={safeCurrentPage === 1} aria-label="Page précédente">←</button>
+              <button className="ep2-page-btn ep2-page-arrow" onClick={() => goToPage(Math.max(1, safeCurrentPage - 1))} disabled={safeCurrentPage === 1} aria-label={t('Page précédente')}>←</button>
               {pageRange.map((p, i) =>
                 p === "..." ? (
                   <span key={`dots-${i}`} className="ep2-page-dots">…</span>
@@ -534,19 +539,19 @@ export default function EcouterClient({ episodes }: Props) {
                     key={p}
                     className={`ep2-page-btn${p === safeCurrentPage ? " ep2-page-btn--active" : ""}`}
                     onClick={() => goToPage(p as number)}
-                    aria-label={`Page ${p}`}
+                    aria-label={`${t('Page')} ${p}`}
                     aria-current={p === safeCurrentPage ? "page" : undefined}
                   >{p}</button>
                 )
               )}
-              <button className="ep2-page-btn ep2-page-arrow" onClick={() => goToPage(Math.min(totalPages, safeCurrentPage + 1))} disabled={safeCurrentPage === totalPages} aria-label="Page suivante">→</button>
+              <button className="ep2-page-btn ep2-page-arrow" onClick={() => goToPage(Math.min(totalPages, safeCurrentPage + 1))} disabled={safeCurrentPage === totalPages} aria-label={t('Page suivante')}>→</button>
             </nav>
           )}
 
           <p className="ep2-count">
             {filtered.length === 0
-              ? "Aucun résultat"
-              : `${startIndex + 1}–${Math.min(startIndex + EPISODES_PAGE_SIZE, filtered.length)} sur ${filtered.length} épisode${filtered.length > 1 ? "s" : ""}`}
+              ? t('Aucun résultat')
+              : `${startIndex + 1}–${Math.min(startIndex + EPISODES_PAGE_SIZE, filtered.length)} ${t('sur')} ${filtered.length} ${t('épisode')}${filtered.length > 1 ? t('s') : ""}`}
           </p>
         </div>
       </section>
