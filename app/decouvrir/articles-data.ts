@@ -41,7 +41,7 @@ export type MagazineArticle = {
   heroAspectRatio?: string      // force aspect-ratio sur le conteneur hero (ex: "16/9" pour une miniature paysage)
   useHeroSlider?: boolean       // si true : le hero affiche un slider des miniatures de chaque section (docLink.thumbnail)
   imageCredit?: string
-  readTime: string
+  readTime?: string   // facultatif : calculé automatiquement via getReadTime() si absent
   tags: string[]
   metaDescription?: string  // Meta description SEO (générée automatiquement pour les articles podcast)
   quote?: string
@@ -575,48 +575,48 @@ export const magazineArticles: MagazineArticle[] = [
     title: "Construire une carrière durable : compétences, valeurs et choix humains",
     chapo:
       "À travers les épisodes avec Yasmine Habib, Tatiana Seguin, Julien Ramade et Rose Otentick, une même question revient : qu'est-ce qui permet vraiment de tenir dans le métier ?",
-    meta: "11.07.26 · 9 min de lecture",
+    meta: "11.07.26 · 2 min de lecture",
     publishedDate: "11.07.26",
     episodeSlug: "118-yasmine-habib",
     episodeNumber: "118",
     guest: "Yasmine Habib",
     image: "/images/les-invites-header/yasminehabib118.png",  // 1400×787 — image header 16:9 conçue pour ce cadrage
     heroImageType: 'portrait',
-    readTime: "9 min",
+    // readTime calculé automatiquement par getReadTime() — ~450 mots → 2 min
     tags: ["Carrière", "Formation", "Contrats"],
     quote: "Avant de faire un choix carriériste, je fais un choix humain",
     sections: [
       {
         heading: "La technique ne suffit plus",
         paragraphs: [
-          "Les épisodes récents de Dance Lab dessinent un constat clair : être danseur ne se limite plus à bien danser. Il faut comprendre les contrats, traverser les castings, défendre ses valeurs, apprendre à se présenter et construire des relations professionnelles solides.",
-          "Rose Otentick aborde cette idée à travers les compétences qui font la différence. Julien Ramade rappelle, lui, l'importance des fondations et de la formation. Ces deux angles ne s'opposent pas : ils se complètent."
+          "Bien danser, c'est évidemment la base. En encore, ça veut dire quoi « bien danser » ?",
+          "Mais aujourd'hui, construire une carrière de danseur ou de danseuse demande beaucoup plus que ça.",
+          "Il faut savoir passer un casting, comprendre ce qu'on signe, connaître ses droits, apprendre à parler de son travail, créer des relations professionnelles solides, etc. Bref, développer tout un tas de compétences qu'on n'apprend pas forcément dans un studio de danse.",
+          "C'est notamment ce qui ressort de plusieurs conversations de Dance Lab.",
+          "Avec Rose Otentick, on parle de toutes ces compétences qui peuvent faire la différence dans une carrière. De son côté, Julien Ramade revient davantage sur les bases, la formation et l'importance de construire des fondations solides.",
+          "Deux sujets différents, mais qui racontent finalement la même chose : la technique est essentielle, mais elle ne fait pas tout.",
         ],
       },
       {
         heading: "Les valeurs comme boussole professionnelle",
         paragraphs: [
-          "Dans l'épisode avec Tatiana Seguin, la notion de choix humain prend une place forte. La carrière n'est pas seulement une accumulation d'opportunités : elle se construit aussi par les renoncements, les fidélités et les cadres que l'on accepte ou non.",
-          "Cette dimension rejoint l'épisode avec Yasmine Habib, qui aborde les valeurs, les droits des artistes, les contrats et la nécessité de protéger sa place dans un milieu parfois traversé par l'hypocrisie ou la toxicité."
+          "Et puis il y a quelque chose dont on parle peut-être moins : avec qui et dans quelles conditions on a envie de travailler ?",
+          "Oui il est très important en 2026 de se poser ces questions.",
+          "Dans l'épisode avec Tatiana Seguin, cette question prend une vraie place parce qu'une carrière ne se construit pas uniquement avec les opportunités qu'on accepte. Elle se construit aussi avec celles qu'on refuse, les personnes avec lesquelles on choisit de travailler et les limites qu'on décide de poser.",
+          "Un sujet qui fait aussi écho à ma conversation avec Yasmine Habib autour des droits des artistes, des contrats, des valeurs, mais aussi de certaines réalités moins jolies du milieu : l'hypocrisie, les rapports de pouvoir ou encore les environnements de travail toxiques.",
+          "Parce que vouloir travailler ne veut pas dire devoir tout accepter. Oh que non ! Ne vous faites pas avoir par les jobs qui ont l'air bien sur le papier et dans un feed Instagram, mais dans lesquels on vous manquerait de considération...",
         ],
       },
       {
         heading: "Apprendre à se protéger",
         paragraphs: [
-          "Construire une carrière durable, c'est aussi savoir lire ce qui se joue autour de soi : les rapports de pouvoir, les conditions de travail, les promesses floues, les contrats absents ou les attentes implicites.",
-          "À compléter : ajouter des conseils juridiques précis ou des ressources professionnelles lorsque Dance Lab disposera de contenus validés sur les contrats, l'intermittence et les droits des artistes."
+          "On parle beaucoup de savoir saisir les opportunités, mais peut-être pas assez de savoir les analyser.",
+          "Est-ce que les conditions sont claires ? Est-ce qu'il y a un contrat ? Est-ce que la rémunération correspond réellement au travail demandé ? Qu'est-ce qu'on attend de moi ? Et surtout : est-ce que j'ai réellement envie d'être là ?",
+          "Construire une carrière qui dure, c'est aussi apprendre à repérer les promesses floues, les attentes implicites, les rapports de pouvoir ou les situations dans lesquelles quelque chose ne nous semble simplement pas juste.",
+          "Et ça aussi, ça s'apprend.",
         ],
       },
     ],
-    aside: {
-      title: "Les piliers qui émergent des épisodes",
-      items: [
-        "Une formation solide.",
-        "Des valeurs claires.",
-        "Une meilleure connaissance des droits et contrats.",
-        "Des choix professionnels qui restent humains."
-      ],
-    },
     episodeLinks: [
       {
         name: "Yasmine Habib",
@@ -643,8 +643,11 @@ export const magazineArticles: MagazineArticle[] = [
         image: "/episodes/roseotentick114.png",
       },
     ],
-    conclusion:
-      "La carrière d'un danseur ne se joue pas seulement dans le studio. Elle se construit dans une somme de décisions : comment apprendre, avec qui travailler, quoi accepter, quand dire non et comment rester aligné sans s'isoler.",
+    conclusion: [
+      "Finalement, une carrière de danseur ou de danseuse se construit autant dans le studio qu'en dehors.",
+      "Dans notre manière de nous former, de choisir nos projets, de comprendre nos droits, de nous entourer, de dire oui mais aussi de savoir dire non.",
+      "« Bien danser » peut ouvrir des portes, mais savoir naviguer dans le métier permet peut-être de ne pas les voir se refermer juste derrière.",
+    ],
   },
   {
     slug: "5-documentaires-danse-a-regarder",
@@ -1024,6 +1027,56 @@ export function getMagazineArticleBySlug(slug: string) {
 export function isArticlePublished(article: MagazineArticle): boolean {
   if (article.status === "draft") return false
   return new Date(article.publishedAt).getTime() <= Date.now()
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ── Temps de lecture — calcul automatique ────────────────────────────────────
+//
+// Vitesse de lecture standard : 225 mots/min.
+// Le champ `readTime` est facultatif dans MagazineArticle.
+// Toujours utiliser `getReadTime(article)` dans les templates —
+// jamais `article.readTime` directement — afin d'avoir un calcul
+// automatique et cohérent pour les articles qui n'ont pas de valeur manuelle.
+// ─────────────────────────────────────────────────────────────────────────────
+
+function stripHtml(text: string): string {
+  return text.replace(/<[^>]+>/g, ' ')
+}
+
+function wordCount(text: string): number {
+  return stripHtml(text).trim().split(/\s+/).filter(Boolean).length
+}
+
+/**
+ * Calcule le temps de lecture d'un article (225 mots/min).
+ * Prend en compte le chapo, tous les paragraphes, items et conclusion.
+ * Renvoie une chaîne du type "2 min".
+ */
+export function computeReadTime(article: MagazineArticle): string {
+  const parts: string[] = [
+    article.chapo ?? '',
+    ...article.sections.flatMap(s => [
+      s.heading ?? '',
+      ...s.paragraphs,
+      ...(s.items ?? []),
+      s.itemConclusion ?? '',
+    ]),
+    ...(typeof article.conclusion === 'string'
+      ? [article.conclusion]
+      : (article.conclusion ?? [])),
+  ]
+  const total = parts.reduce((sum, t) => sum + wordCount(t), 0)
+  const minutes = Math.max(1, Math.round(total / 225))
+  return `${minutes} min`
+}
+
+/**
+ * Retourne `article.readTime` si renseigné manuellement,
+ * sinon calcule automatiquement via `computeReadTime()`.
+ * À utiliser dans tous les templates à la place de `article.readTime`.
+ */
+export function getReadTime(article: MagazineArticle): string {
+  return article.readTime ?? computeReadTime(article)
 }
 
 /**

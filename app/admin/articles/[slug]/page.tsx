@@ -32,7 +32,7 @@ type ArticleFull = {
     episodeNumber: string
     episodeSlug: string
     quote?: string
-    readTime: string
+    readTime?: string
     publishedDate: string
     sections: { heading: string; paragraphs: string[] }[]
     conclusion: string | string[]
@@ -412,7 +412,7 @@ export default function ArticlePreviewPage() {
                 </MetaRow>
                 <MetaRow label="Invité(e)" value={article.guest} />
                 <MetaRow label="Épisode" value={article.episodeNumber} />
-                <MetaRow label="Temps de lecture" value={article.readTime} />
+                <MetaRow label="Temps de lecture" value={article.readTime ?? '(calculé auto)'} />
                 <MetaRow label="Généré le" value={formatDate(data.generatedAt)} />
               </div>
             </div>

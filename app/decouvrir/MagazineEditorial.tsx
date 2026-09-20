@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { sectionVisibility } from '@/data/section-visibility'
 import PhotoCredit from '@/components/PhotoCredit'
 import type { MagazineArticle } from './articles-data'
+import { getReadTime } from './articles-data'
 import { useLocale } from '@/components/LocaleProvider'
 import { uiText } from '@/data/i18n/messages'
 import type { UnifiedEpisode } from '@/lib/episodes'
@@ -46,7 +47,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function ArticleMeta({ article }: { article: MagazineArticle }) {
-  return <span className="magx-meta">{article.publishedDate} · {article.readTime}</span>
+  return <span className="magx-meta">{article.publishedDate} · {getReadTime(article)}</span>
 }
 
 function ArticleImage({ article }: { article: MagazineArticle }) {

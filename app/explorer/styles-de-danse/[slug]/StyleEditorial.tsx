@@ -1,6 +1,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import type { MagazineArticle } from "@/app/decouvrir/articles-data"
+import { getReadTime } from "@/app/decouvrir/articles-data"
 import type { DanceStyle } from "../styles-data"
 import type { LinkedEpisode } from "./page"
 import StylePageClient, { type StyleSection } from "./StylePageClient"
@@ -269,7 +270,7 @@ export default async function StyleEditorial({ style, cover, summaryRest, linked
                     <img src={article.image} alt="" loading="lazy" style={{ objectPosition: article.imageObjectPosition }} />
                   </div>
                   <div className={css.contentCardBody}>
-                    <span className={css.eyebrow}>{t("Article Magazine")} · {article.readTime}</span>
+                    <span className={css.eyebrow}>{t("Article Magazine")} · {getReadTime(article)}</span>
                     <h3>{article.title}</h3>
                     <p>{article.chapo}</p>
                     <span className={css.cardLink}>{t("Lire l'article")} <span aria-hidden="true">→</span></span>

@@ -5,6 +5,7 @@ import HistoryBackLink from "../../../../components/HistoryBackLink"
 import {
   getPublishedArticles,
   isArticlePublished,
+  getReadTime,
   type DocLink,
 } from "../../articles-data"
 import { getArticleBySlug, getAllPublishedSlugs } from "@/lib/all-articles"
@@ -162,7 +163,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             <h1>{article.title}</h1>
             <p className="article-hero-chapo">{article.chapo}</p>
             <p className="article-hero-meta">
-              {article.publishedDate}&thinsp;·&thinsp;{article.category}&thinsp;·&thinsp;{article.readTime} {t('de lecture')}
+              {article.publishedDate}&thinsp;·&thinsp;{article.category}&thinsp;·&thinsp;{getReadTime(article)} {t('de lecture')}
             </p>
           </div>
         </div>

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import PublicExplorerLink from '@/components/PublicExplorerLink'
 import { isPrivateSectionPath } from '@/data/section-visibility'
 import type { MagazineArticle } from '../decouvrir/articles-data'
+import { getReadTime } from '../decouvrir/articles-data'
 import { formatAgendaDate, type AgendaEvent } from '../agenda/agenda-data'
 import { useLocale } from '@/components/LocaleProvider'
 import { uiText } from '@/data/i18n/messages'
@@ -273,7 +274,7 @@ export default function MediaReveal({ article, event }: Props) {
                       <p className="mfr-card-chapo">{article.chapo}</p>
                       <div className="mfr-card-foot">
                         <span className="mfr-card-meta">
-                          {article.publishedDate}&thinsp;·&thinsp;{article.readTime} {t('de lecture')}
+                          {article.publishedDate}&thinsp;·&thinsp;{getReadTime(article)} {t('de lecture')}
                         </span>
                         <span className="mfr-card-cta">{t("Lire l'article →")}</span>
                       </div>

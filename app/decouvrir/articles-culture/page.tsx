@@ -1,6 +1,6 @@
 import Link from "next/link"
 import type { Metadata } from "next"
-import { getPublishedArticles } from "../articles-data"
+import { getPublishedArticles, getReadTime } from "../articles-data"
 import { requestLocale } from "@/lib/i18n/server"
 import { uiText } from "@/data/i18n/messages"
 
@@ -65,7 +65,7 @@ export default async function ArticlesCulturePage() {
 
                 <div className="mag-card-foot">
                   <span className="mag-card-date">{article.publishedDate}</span>
-                  <span className="mag-card-read">{article.readTime}</span>
+                  <span className="mag-card-read">{getReadTime(article)}</span>
                 </div>
               </Link>
             ))}

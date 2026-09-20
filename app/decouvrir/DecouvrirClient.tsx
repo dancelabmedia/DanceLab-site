@@ -6,6 +6,7 @@ import { useState, useMemo, useRef, useEffect, useCallback } from "react"
 import { useLocale } from "@/components/LocaleProvider"
 import { uiText } from "@/data/i18n/messages"
 import type { MagazineArticle } from "./articles-data"
+import { getReadTime } from "./articles-data"
 import MagHeroSlider, { type MagHeroSliderHandle, type SlideArticle } from "./MagHeroSlider"
 import PhotoCredit from "@/components/PhotoCredit"
 import MagazineEditorial from "./MagazineEditorial"
@@ -270,7 +271,7 @@ export default function DecouvrirClient({ articles, latestEpisode, carouselEpiso
                     </div>
                     <div className="mag-card-foot">
                       <span className="mag-card-date">{article.publishedDate}</span>
-                      <span className="mag-card-read">{article.readTime}</span>
+                      <span className="mag-card-read">{getReadTime(article)}</span>
                     </div>
                   </Link>
                 ))}
@@ -312,7 +313,7 @@ export default function DecouvrirClient({ articles, latestEpisode, carouselEpiso
                   <h2 className="mag-une-title">{featuredArticle.title}</h2>
                   <p className="mag-une-chapo">{featuredArticle.chapo}</p>
                   <p className="mag-une-meta">
-                    {featuredArticle.publishedDate}&thinsp;·&thinsp;{featuredArticle.readTime} de lecture
+                    {featuredArticle.publishedDate}&thinsp;·&thinsp;{getReadTime(featuredArticle)} de lecture
                   </p>
                   <span className="mag-une-cta" aria-hidden="true">Lire l&apos;article →</span>
                 </div>
@@ -354,7 +355,7 @@ export default function DecouvrirClient({ articles, latestEpisode, carouselEpiso
                         <h3 className="mag-card-h-title">{recentArticles[0].title}</h3>
                         <p className="mag-card-h-chapo">{recentArticles[0].chapo}</p>
                         <p className="mag-card-h-meta">
-                          {recentArticles[0].publishedDate}&thinsp;·&thinsp;{recentArticles[0].readTime} de lecture
+                          {recentArticles[0].publishedDate}&thinsp;·&thinsp;{getReadTime(recentArticles[0])} de lecture
                         </p>
                         <span className="mag-card-h-cta" aria-hidden="true">Lire l&apos;article →</span>
                       </div>
@@ -384,7 +385,7 @@ export default function DecouvrirClient({ articles, latestEpisode, carouselEpiso
                           </div>
                           <div className="mag-card-foot">
                             <span className="mag-card-date">{article.publishedDate}</span>
-                            <span className="mag-card-read">{article.readTime}</span>
+                            <span className="mag-card-read">{getReadTime(article)}</span>
                           </div>
                         </Link>
                       ))}
