@@ -15740,6 +15740,11 @@ a.ep-topic-pill:hover {
               var(--color-background);
 }
 
+/* Aucun commentaire : réduit le padding bas pour éviter le grand vide */
+.cmt-section--empty {
+  padding-bottom: clamp(40px, 5vw, 64px);
+}
+
 /* ── En-tête éditorial ─────────────────────────────────────── */
 
 .cmt-header {

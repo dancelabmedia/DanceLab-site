@@ -259,8 +259,10 @@ export default function CommentsSection({ slug }: { slug: string }) {
 
   const count = data?.count ?? 0
 
+  const isEmpty = !loading && (!data || data.comments.length === 0)
+
   return (
-    <section className="cmt-section" aria-label={t('Commentaires')}>
+    <section className={`cmt-section${isEmpty ? ' cmt-section--empty' : ''}`} aria-label={t('Commentaires')}>
       <div className="container">
 
         {/* ── En-tête éditorial ── */}
