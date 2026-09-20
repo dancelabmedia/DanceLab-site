@@ -15729,14 +15729,14 @@ a.ep-topic-pill:hover {
 
 /* ============================================================
    COMMENTS SECTION — Dance Lab
-   Design éditorial premium — identité magazine.
+   Design éditorial magazine pleine largeur.
    Apparaît sous le contenu de chaque article.
    ============================================================ */
 
 .cmt-section {
-  padding: clamp(80px, 10vw, 128px) 0 clamp(96px, 12vw, 160px);
+  padding: clamp(80px, 10vw, 132px) 0 clamp(100px, 12vw, 168px);
   border-top: 1px solid rgba(35, 48, 51, 0.10);
-  background: linear-gradient(180deg, rgba(236,246,255,0.22) 0%, transparent 55%),
+  background: linear-gradient(180deg, rgba(236,246,255,0.20) 0%, transparent 50%),
               var(--color-background);
 }
 
@@ -15746,72 +15746,85 @@ a.ep-topic-pill:hover {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0;
-  margin-bottom: clamp(40px, 5vw, 60px);
+  margin-bottom: clamp(44px, 6vw, 72px);
 }
 
 .cmt-eyebrow {
-  display: block;
-  font-size: 0.74rem;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--color-primary);
-  margin-bottom: 14px;
+  color: rgba(35, 48, 51, 0.55);
+  margin-bottom: 18px;
+}
+
+/* La petite ligne horizontale après le surtitre */
+.cmt-eyebrow::after {
+  content: '';
+  display: inline-block;
+  width: 48px;
+  height: 1px;
+  background: rgba(35, 48, 51, 0.30);
+  flex-shrink: 0;
 }
 
 .cmt-heading-row {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 14px;
+  gap: 16px 24px;
+  margin-bottom: 16px;
 }
 
 .cmt-heading {
   font-family: var(--font-display);
-  font-size: clamp(2.6rem, 5vw, 5.4rem);
+  font-size: clamp(3rem, 6.5vw, 6.8rem);
   font-weight: 600;
-  line-height: 0.95;
+  line-height: 0.93;
   color: var(--color-primary-dark);
   margin: 0;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
 }
 
 .cmt-count {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 700;
   color: var(--color-text-muted);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
-  background: rgba(193, 208, 223, 0.25);
-  padding: 4px 11px;
+  background: rgba(193, 208, 223, 0.28);
+  padding: 4px 13px;
   border-radius: 100px;
   flex-shrink: 0;
+  align-self: center;
 }
 
 .cmt-invite {
-  font-size: clamp(1rem, 1.2vw, 1.12rem);
-  color: rgba(35, 48, 51, 0.56);
+  font-size: clamp(1rem, 1.3vw, 1.14rem);
+  color: rgba(35, 48, 51, 0.52);
   margin: 0;
   line-height: 1.7;
 }
 
-/* ── Bloc formulaire délimité ──────────────────────────────── */
+/* ── Bloc formulaire — pleine largeur éditoriale ───────────── */
 
 .cmt-form-wrap {
-  max-width: 680px;
-  border: 1px solid rgba(35, 48, 51, 0.10);
-  border-radius: 4px;
-  padding: clamp(28px, 4vw, 48px) clamp(24px, 3.5vw, 44px);
-  margin-bottom: clamp(56px, 8vw, 88px);
-  background: rgba(255, 255, 255, 0.55);
+  width: 100%;
+  border: 1px solid rgba(35, 48, 51, 0.09);
+  border-radius: 3px;
+  padding: clamp(32px, 4.5vw, 60px) clamp(28px, 4vw, 56px);
+  margin-bottom: clamp(48px, 7vw, 80px);
+  background: rgba(255, 255, 255, 0.50);
+  box-sizing: border-box;
 }
 
 .cmt-form {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 32px;
 }
 
 /* ── Champs ────────────────────────────────────────────────── */
@@ -15819,94 +15832,103 @@ a.ep-topic-pill:hover {
 .cmt-field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .cmt-label {
-  font-size: 0.72rem;
+  font-size: 0.70rem;
   font-weight: 700;
-  color: var(--color-primary-dark);
-  letter-spacing: 0.11em;
+  color: rgba(35, 48, 51, 0.70);
+  letter-spacing: 0.13em;
   text-transform: uppercase;
 }
 
 /* Input classique (utilisé dans les formulaires réponse) */
 .cmt-input {
   font-family: var(--font-body, inherit);
-  font-size: 0.97rem;
+  font-size: 1rem;
   color: var(--color-text-dark);
   background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(35, 48, 51, 0.18);
-  border-radius: 4px;
-  padding: 0.72rem 0.9rem;
+  border: 1px solid rgba(35, 48, 51, 0.16);
+  border-radius: 3px;
+  padding: 0.7rem 0.9rem;
   outline: none;
   transition: border-color 0.18s, box-shadow 0.18s;
   line-height: 1.6;
   width: 100%;
+  box-sizing: border-box;
 }
 
 /* Variante : soulignement seul — champ prénom principal */
+/* Largeur ~43 % du formulaire, comme sur la maquette */
 .cmt-input--line {
   background: transparent;
   border: none;
-  border-bottom: 1.5px solid rgba(35, 48, 51, 0.22);
+  border-bottom: 1px solid rgba(35, 48, 51, 0.22);
   border-radius: 0;
-  padding: 0.5rem 0;
+  padding: 0.55rem 0;
+  width: 43%;
+  min-width: 200px;
 }
 
 .cmt-input--line:focus {
   border-bottom-color: var(--color-primary);
   box-shadow: none;
+  outline: none;
 }
 
 .cmt-input:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(91, 115, 119, 0.10);
+  box-shadow: 0 0 0 3px rgba(91, 115, 119, 0.09);
+  outline: none;
 }
 
 .cmt-input::placeholder,
 .cmt-textarea::placeholder {
-  color: rgba(35, 48, 51, 0.35);
+  color: rgba(35, 48, 51, 0.32);
 }
 
 .cmt-textarea {
   font-family: var(--font-body, inherit);
-  font-size: 0.97rem;
+  font-size: 1rem;
   color: var(--color-text-dark);
   background: transparent;
-  border: 1px solid rgba(35, 48, 51, 0.14);
+  border: 1px solid rgba(35, 48, 51, 0.13);
   border-radius: 2px;
-  padding: 0.72rem 0.9rem;
+  padding: 0.9rem 1rem;
   outline: none;
   transition: border-color 0.18s;
   resize: vertical;
   line-height: 1.7;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .cmt-textarea:focus {
   border-color: var(--color-primary);
+  outline: none;
 }
 
-/* ── Pied de formulaire ────────────────────────────────────── */
+/* ── Pied de formulaire : bouton à gauche, disclaimer à droite ─ */
 
 .cmt-form-footer {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   flex-wrap: wrap;
-  gap: 16px 24px;
-  margin-top: 4px;
+  gap: 14px 24px;
+  margin-top: -8px;
 }
 
 .cmt-submit {
   flex-shrink: 0;
-  padding: 0.68rem 1.9rem;
+  padding: 0.72rem 2.2rem;
   background: var(--color-primary-dark);
   color: #fff;
   border: none;
   border-radius: 100px;
   font-family: var(--font-body, inherit);
-  font-size: 0.88rem;
+  font-size: 0.90rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   cursor: pointer;
@@ -15915,7 +15937,7 @@ a.ep-topic-pill:hover {
 
 .cmt-submit:hover:not(:disabled) {
   background: var(--color-primary);
-  box-shadow: 0 4px 20px rgba(35, 48, 51, 0.22);
+  box-shadow: 0 4px 22px rgba(35, 48, 51, 0.20);
   transform: translateY(-1px);
 }
 
@@ -15925,75 +15947,36 @@ a.ep-topic-pill:hover {
 }
 
 .cmt-submit:disabled {
-  opacity: 0.36;
+  opacity: 0.34;
   cursor: not-allowed;
 }
 
 .cmt-submit--small {
   font-size: 0.82rem;
-  padding: 0.52rem 1.3rem;
+  padding: 0.52rem 1.5rem;
 }
 
 .cmt-disclaimer {
-  font-size: 0.78rem;
-  color: rgba(35, 48, 51, 0.42);
+  font-size: 0.80rem;
+  color: rgba(35, 48, 51, 0.38);
   line-height: 1.5;
+  text-align: right;
 }
 
 /* ── Messages ──────────────────────────────────────────────── */
 
 .cmt-error {
-  font-size: 0.87rem;
+  font-size: 0.88rem;
   color: #b91c1c;
   margin: 0;
   line-height: 1.5;
 }
 
 .cmt-success {
-  font-size: 0.87rem;
+  font-size: 0.88rem;
   color: var(--color-primary);
   font-weight: 600;
   margin: 0;
-}
-
-/* ── État vide — séparateur éditorial ─────────────────────── */
-
-.cmt-empty-state {
-  max-width: 680px;
-  text-align: center;
-  padding: clamp(32px, 5vw, 56px) 0 clamp(16px, 3vw, 32px);
-}
-
-.cmt-empty-divider {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  margin-bottom: 18px;
-}
-
-.cmt-empty-divider::before,
-.cmt-empty-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: rgba(35, 48, 51, 0.13);
-}
-
-.cmt-empty-divider span {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(35, 48, 51, 0.38);
-  white-space: nowrap;
-}
-
-.cmt-empty-text {
-  font-size: 0.94rem;
-  color: rgba(35, 48, 51, 0.45);
-  font-style: italic;
-  margin: 0;
-  line-height: 1.7;
 }
 
 /* ── Chargement ────────────────────────────────────────────── */
@@ -16002,13 +15985,52 @@ a.ep-topic-pill:hover {
   font-size: 0.94rem;
   color: var(--color-text-muted);
   font-style: italic;
-  max-width: 680px;
+}
+
+/* ── État vide — séparateur éditorial pleine largeur ──────── */
+
+.cmt-empty-state {
+  width: 100%;
+  text-align: center;
+  padding: clamp(28px, 4vw, 48px) 0 clamp(12px, 2vw, 24px);
+}
+
+.cmt-empty-divider {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-bottom: 20px;
+}
+
+.cmt-empty-divider::before,
+.cmt-empty-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(35, 48, 51, 0.12);
+}
+
+.cmt-empty-divider span {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(35, 48, 51, 0.36);
+  white-space: nowrap;
+}
+
+.cmt-empty-text {
+  font-size: 0.95rem;
+  color: rgba(35, 48, 51, 0.42);
+  font-style: italic;
+  margin: 0;
+  line-height: 1.7;
 }
 
 /* ── Liste de commentaires ─────────────────────────────────── */
 
 .cmt-list {
-  max-width: 760px;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -16020,9 +16042,9 @@ a.ep-topic-pill:hover {
   display: grid;
   grid-template-columns: 38px 1fr;
   grid-template-rows: auto auto;
-  column-gap: 14px;
+  column-gap: 16px;
   row-gap: 0;
-  padding: 28px 0;
+  padding: 30px 0;
   border-bottom: 1px solid rgba(35, 48, 51, 0.08);
 }
 
@@ -16120,10 +16142,10 @@ a.ep-topic-pill:hover {
   flex-direction: column;
   gap: 16px;
   margin-top: 16px;
-  padding: 20px;
-  background: rgba(236, 246, 255, 0.22);
+  padding: 20px 24px;
+  background: rgba(236, 246, 255, 0.18);
   border: 1px solid rgba(35, 48, 51, 0.09);
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 /* Réponses imbriquées ─────────────────────────────────────────── */
@@ -16140,26 +16162,31 @@ a.ep-topic-pill:hover {
 
 /* ── Mobile ────────────────────────────────────────────────── */
 
-@media (max-width: 680px) {
+@media (max-width: 768px) {
   .cmt-heading {
-    font-size: clamp(2rem, 9vw, 3.2rem);
-    letter-spacing: -0.015em;
+    font-size: clamp(2.4rem, 9.5vw, 3.6rem);
+    letter-spacing: -0.018em;
+    line-height: 0.96;
   }
 
   .cmt-form-wrap {
-    padding: 24px 20px;
-    border-left: none;
-    border-right: none;
-    border-radius: 0;
-    margin-left: calc(var(--container-padding, 20px) * -1);
-    margin-right: calc(var(--container-padding, 20px) * -1);
-    max-width: none;
+    padding: 28px 24px;
+  }
+
+  .cmt-input--line {
+    width: 100%;
+    min-width: 0;
   }
 
   .cmt-form-footer {
+    justify-content: flex-start;
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+  }
+
+  .cmt-disclaimer {
+    text-align: left;
   }
 
   .cmt-replies {
@@ -16179,8 +16206,8 @@ a.ep-topic-pill:hover {
   }
 
   .cmt-empty-divider span {
-    font-size: 0.65rem;
-    letter-spacing: 0.08em;
+    font-size: 0.62rem;
+    letter-spacing: 0.09em;
   }
 }
 
