@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import DecouvrirClient from "./DecouvrirClient"
 import { getPublishedArticles } from "./articles-data"
-import { getLatestEpisode, getRecentEpisodes } from "@/lib/episodes"
+import { getLatestEpisode, getEpisodes } from "@/lib/episodes"
 
 // ── Revalidation ISR ──────────────────────────────────────────────────────────
 // La page est re-rendue au maximum toutes les heures sur Vercel.
@@ -31,10 +31,10 @@ export default async function DecouvrirPage() {
   // Filtrage côté serveur : seuls les articles publiés atteignent le client.
   const publishedArticles = getPublishedArticles()
 
-  // Épisodes pour la section podcast : dernier épisode + carrousel (8 récents)
+  // Épisodes pour la section podcast : dernier épisode + catalogue complet pour le carrousel
   const [latestEpisode, carouselEpisodes] = await Promise.all([
     getLatestEpisode(),
-    getRecentEpisodes(8),
+    getEpisodes(),
   ])
 
   return (

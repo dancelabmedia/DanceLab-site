@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { sectionVisibility } from '@/data/section-visibility'
 import PhotoCredit from '@/components/PhotoCredit'
 import type { MagazineArticle } from './articles-data'
@@ -35,6 +35,16 @@ const STYLES = [
   { name: 'Jazz',       slug: 'jazz',            image: '/images/styles-de-danse/jazz.png' },
 ]
 
+// ── Utilitaire : mélange Fisher-Yates ─────────────────────────────────────
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
 function ArticleMeta({ article }: { article: MagazineArticle }) {
   return <span className="magx-meta">{article.publishedDate} · {article.readTime}</span>
 }
@@ -56,17 +66,62 @@ export default function MagazineEditorial({
   const t = (text: string) => uiText(locale, text)
   const THEMES = getThemes(locale)
 
-  // ── Carrousel automatique ──────────────────────────────────────────────────
+  // ── Carrousel aléatoire — 2 slots en crossfade ────────────────────────────
   const slides = carouselEpisodes && carouselEpisodes.length > 0 ? carouselEpisodes : null
-  const [activeIdx, setActiveIdx] = useState(0)
 
+  type Slide = { src: string; alt: string }
+  const [slotA, setSlotA] = useState<Slide | null>(null)
+  const [slotB, setSlotB] = useState<Slide | null>(null)
+  const [activeSlot, setActiveSlot] = useState<'A' | 'B'>('A')
+
+  // Refs pour éviter les stale closures dans setInterval
+  const queueRef = useRef<number[]>([])
+  const posRef = useRef(0)
+  const activeSlotRef = useRef<'A' | 'B'>('A')
+
+  // Initialisation : mélange aléatoire au montage
+  useEffect(() => {
+    if (!slides || slides.length === 0) return
+    const q = shuffle(slides.map((_, i) => i))
+    queueRef.current = q
+    posRef.current = 0
+    const first = slides[q[0]]
+    setSlotA({ src: first.image || '', alt: first.guest || '' })
+    setActiveSlot('A')
+    activeSlotRef.current = 'A'
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Défilement automatique toutes les 2 s
   useEffect(() => {
     if (!slides || slides.length <= 1) return
     const timer = setInterval(() => {
-      setActiveIdx((i) => (i + 1) % slides.length)
+      // Avance dans la queue
+      let nextPos = posRef.current + 1
+      if (nextPos >= queueRef.current.length) {
+        // Queue épuisée : réinitialisation avec anti-répétition du dernier épisode affiché
+        const lastIdx = queueRef.current[posRef.current]
+        let newQueue = shuffle(slides.map((_, i) => i))
+        if (newQueue.length > 1 && newQueue[0] === lastIdx) {
+          const swapIdx = 1 + Math.floor(Math.random() * (newQueue.length - 1))
+          ;[newQueue[0], newQueue[swapIdx]] = [newQueue[swapIdx], newQueue[0]]
+        }
+        queueRef.current = newQueue
+        nextPos = 0
+      }
+      posRef.current = nextPos
+
+      const ep = slides[queueRef.current[nextPos]]
+      const newSlide: Slide = { src: ep.image || '', alt: ep.guest || '' }
+
+      // Met à jour le slot caché puis bascule (crossfade)
+      const nextSlot = activeSlotRef.current === 'A' ? 'B' : 'A'
+      if (nextSlot === 'B') setSlotB(newSlide)
+      else setSlotA(newSlide)
+      activeSlotRef.current = nextSlot
+      setActiveSlot(nextSlot)
     }, 2000)
     return () => clearInterval(timer)
-  }, [slides])
+  }, [slides]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const lead = articles[0]
   const side = articles.slice(1, 3)
@@ -102,25 +157,38 @@ export default function MagazineEditorial({
     </div></section>
 
     <section className="magx-podcast">
-      {/* Carrousel automatique — crossfade toutes les 2 s */}
+      {/* Carrousel aléatoire — crossfade 2 slots, toutes les 2 s */}
       <div className="magx-podcast-photo" style={{ position: 'relative' }}>
-        {slides ? slides.map((ep, i) => (
-          <img
-            key={ep.slug}
-            src={ep.image}
-            alt={ep.guest}
-            style={{
-              position: 'absolute',
-              inset: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              opacity: i === activeIdx ? 0.86 : 0,
-              transition: 'opacity 0.9s ease',
-              pointerEvents: 'none',
-            }}
-          />
-        )) : (
+        {slotA ? (
+          <>
+            <img
+              src={slotA.src}
+              alt={slotA.alt}
+              style={{
+                position: 'absolute', inset: 0,
+                width: '100%', height: '100%',
+                objectFit: 'cover',
+                opacity: activeSlot === 'A' ? 0.86 : 0,
+                transition: 'opacity 0.9s ease',
+                pointerEvents: 'none',
+              }}
+            />
+            {slotB && (
+              <img
+                src={slotB.src}
+                alt={slotB.alt}
+                style={{
+                  position: 'absolute', inset: 0,
+                  width: '100%', height: '100%',
+                  objectFit: 'cover',
+                  opacity: activeSlot === 'B' ? 0.86 : 0,
+                  transition: 'opacity 0.9s ease',
+                  pointerEvents: 'none',
+                }}
+              />
+            )}
+          </>
+        ) : (
           <img src="/images/les-invites-header/waabee127.png" alt="Dance Lab" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.86 }} />
         )}
       </div>
