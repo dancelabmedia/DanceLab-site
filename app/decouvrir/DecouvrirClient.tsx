@@ -9,6 +9,7 @@ import type { MagazineArticle } from "./articles-data"
 import MagHeroSlider, { type MagHeroSliderHandle, type SlideArticle } from "./MagHeroSlider"
 import PhotoCredit from "@/components/PhotoCredit"
 import MagazineEditorial from "./MagazineEditorial"
+import type { UnifiedEpisode } from "@/lib/episodes"
 
 // ─── Données statiques ─────────────────────────────────────────────────────────
 
@@ -43,11 +44,15 @@ const THEMES = [
 interface Props {
   /** Articles déjà filtrés (publiés uniquement), triés par publishedAt desc */
   articles: MagazineArticle[]
+  /** Dernier épisode publié — affiché dans le bloc "Épisode en lien" */
+  latestEpisode?: UnifiedEpisode
+  /** Épisodes récents pour le carrousel de la section podcast */
+  carouselEpisodes?: UnifiedEpisode[]
 }
 
 // ─── Composant principal ───────────────────────────────────────────────────────
 
-export default function DecouvrirClient({ articles }: Props) {
+export default function DecouvrirClient({ articles, latestEpisode, carouselEpisodes }: Props) {
   const locale = useLocale()
   const t = (text: string) => uiText(locale, text)
   const [search, setSearch]               = useState("")
@@ -280,7 +285,7 @@ export default function DecouvrirClient({ articles }: Props) {
 
       ) : featuredArticle ? (
         <>
-          <MagazineEditorial articles={articles} />
+          <MagazineEditorial articles={articles} latestEpisode={latestEpisode} carouselEpisodes={carouselEpisodes} />
           {false && (<>
           {/* ══ À LA UNE ════════════════════════════════════════════════════ */}
           <section className="mag-une">

@@ -1,11 +1,13 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { sectionVisibility } from '@/data/section-visibility'
 import PhotoCredit from '@/components/PhotoCredit'
 import type { MagazineArticle } from './articles-data'
 import { useLocale } from '@/components/LocaleProvider'
 import { uiText } from '@/data/i18n/messages'
+import type { UnifiedEpisode } from '@/lib/episodes'
 
 function getThemes(locale: string) {
   if (locale === 'en') return [
@@ -41,10 +43,30 @@ function ArticleImage({ article }: { article: MagazineArticle }) {
   return <div className="magx-image"><img src={article.image} alt={article.title} style={article.imageObjectPosition ? { objectPosition: article.imageObjectPosition } : undefined} /><PhotoCredit credit={article.imageCredit} /></div>
 }
 
-export default function MagazineEditorial({ articles }: { articles: MagazineArticle[] }) {
+export default function MagazineEditorial({
+  articles,
+  latestEpisode,
+  carouselEpisodes,
+}: {
+  articles: MagazineArticle[]
+  latestEpisode?: UnifiedEpisode
+  carouselEpisodes?: UnifiedEpisode[]
+}) {
   const locale = useLocale()
   const t = (text: string) => uiText(locale, text)
   const THEMES = getThemes(locale)
+
+  // ── Carrousel automatique ──────────────────────────────────────────────────
+  const slides = carouselEpisodes && carouselEpisodes.length > 0 ? carouselEpisodes : null
+  const [activeIdx, setActiveIdx] = useState(0)
+
+  useEffect(() => {
+    if (!slides || slides.length <= 1) return
+    const timer = setInterval(() => {
+      setActiveIdx((i) => (i + 1) % slides.length)
+    }, 2000)
+    return () => clearInterval(timer)
+  }, [slides])
 
   const lead = articles[0]
   const side = articles.slice(1, 3)
@@ -80,9 +102,58 @@ export default function MagazineEditorial({ articles }: { articles: MagazineArti
     </div></section>
 
     <section className="magx-podcast">
-      <div className="magx-podcast-photo"><img src="/images/les-invites-header/waabee127.png" alt="WaaBee" /></div>
-      <div className="magx-podcast-intro"><span>{t('Prolonger la réflexion')}</span><h2>{t("Et si on en parlait aussi en podcast ?")}</h2><p>{t("Des conversations avec celles et ceux qui font la danse d'aujourd'hui.")}</p><Link href="/ecouter">{t("Découvrir tous les épisodes →")}</Link></div>
-      <Link href="/episodes/127-waabee" className="magx-podcast-episode"><span>{t('Épisode en lien')}</span><div><img src="/images/les-invites/waabee127.png" alt="WaaBee" /><i aria-hidden="true">▶</i></div><small>WaaBee · Battle</small><h3>Ce qu&apos;un danseur ressent juste avant un battle</h3></Link>
+      {/* Carrousel automatique — crossfade toutes les 2 s */}
+      <div className="magx-podcast-photo" style={{ position: 'relative' }}>
+        {slides ? slides.map((ep, i) => (
+          <img
+            key={ep.slug}
+            src={ep.image}
+            alt={ep.guest}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              opacity: i === activeIdx ? 0.86 : 0,
+              transition: 'opacity 0.9s ease',
+              pointerEvents: 'none',
+            }}
+          />
+        )) : (
+          <img src="/images/les-invites-header/waabee127.png" alt="Dance Lab" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.86 }} />
+        )}
+      </div>
+
+      <div className="magx-podcast-intro">
+        <span>{t('Prolonger la réflexion')}</span>
+        <h2>{t("Et si on en parlait aussi en podcast ?")}</h2>
+        <p>{t("Des conversations avec celles et ceux qui font la danse d'aujourd'hui.")}</p>
+        <Link href="/ecouter">{t("Découvrir tous les épisodes →")}</Link>
+      </div>
+
+      {/* Dernier épisode publié — mis à jour automatiquement */}
+      {latestEpisode ? (
+        <Link href={`/episodes/${latestEpisode.slug}`} className="magx-podcast-episode">
+          <span>{t('Épisode en lien')}</span>
+          <div>
+            <img src={latestEpisode.image} alt={latestEpisode.guest} />
+            <i aria-hidden="true">▶</i>
+          </div>
+          <small>
+            {latestEpisode.number ? `#${latestEpisode.number} · ` : ''}{latestEpisode.guest}
+          </small>
+          <h3>{latestEpisode.title}</h3>
+        </Link>
+      ) : (
+        <Link href="/episodes/127-waabee" className="magx-podcast-episode">
+          <span>{t('Épisode en lien')}</span>
+          <div><img src="/images/les-invites/waabee127.png" alt="WaaBee" /><i aria-hidden="true">▶</i></div>
+          <small>WaaBee · Battle</small>
+          <h3>Ce qu&apos;un danseur ressent juste avant un battle</h3>
+        </Link>
+      )}
+
       <div className="magx-readalso"><span>{t('À lire aussi')}</span>{podcastReads.map(article => <Link key={article.slug} href={`/decouvrir/articles/${article.slug}`}>→ <b>{article.title}</b></Link>)}</div>
     </section>
 
