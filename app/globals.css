@@ -15746,29 +15746,7 @@ a.ep-topic-pill:hover {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin-bottom: clamp(44px, 6vw, 72px);
-}
-
-.cmt-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: rgba(35, 48, 51, 0.55);
-  margin-bottom: 18px;
-}
-
-/* La petite ligne horizontale après le surtitre */
-.cmt-eyebrow::after {
-  content: '';
-  display: inline-block;
-  width: 48px;
-  height: 1px;
-  background: rgba(35, 48, 51, 0.30);
-  flex-shrink: 0;
+  margin-bottom: clamp(20px, 2.5vw, 32px);
 }
 
 .cmt-heading-row {

@@ -265,9 +265,6 @@ export default function CommentsSection({ slug }: { slug: string }) {
 
         {/* ── En-tête éditorial ── */}
         <div className="cmt-header">
-          <span className="cmt-eyebrow">
-            {locale === 'en' ? 'COMMENTS' : 'COMMENTAIRES'}
-          </span>
           <div className="cmt-heading-row">
             <h2 className="cmt-heading">{t('Rejoindre la discussion')}</h2>
             {count > 0 && (
