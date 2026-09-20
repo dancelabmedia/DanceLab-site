@@ -35,6 +35,9 @@ export type MagazineArticle = {
   guest: string
   image: string
   imageObjectPosition?: string  // surcharge de object-position pour le hero (défaut : right center)
+  heroImageType?: 'portrait' | 'scene'
+  // portrait → personne/invité·e au premier plan : active le cadrage optimisé (visage droit + responsive)
+  // scene    → photo d'ambiance, lieu, action collective : cadrage standard conservé
   heroAspectRatio?: string      // force aspect-ratio sur le conteneur hero (ex: "16/9" pour une miniature paysage)
   useHeroSlider?: boolean       // si true : le hero affiche un slider des miniatures de chaque section (docLink.thumbnail)
   imageCredit?: string
@@ -76,6 +79,7 @@ export const magazineArticles: MagazineArticle[] = [
     guest: "Maïwenn Bramoulle",
     image: "/images/articles/cv.JPG",
     imageCredit: "© Blandine Abad",
+    heroImageType: 'portrait',
     imageObjectPosition: "center 20%",
     readTime: "5 min",
     tags: ["Carrière", "Marque personnelle", "Réseaux sociaux", "Avenir"],
@@ -218,6 +222,7 @@ export const magazineArticles: MagazineArticle[] = [
     guest: "Grichka Rootz",
     image: "/images/articles/danydann.jpg",
     imageCredit: "Danseur : Dany Dann · © Valroff Laurene",
+    heroImageType: 'portrait',
     readTime: "8 min",
     tags: ["Breaking", "Olympisme", "Culture hip-hop"],
     sections: [
@@ -304,6 +309,8 @@ export const magazineArticles: MagazineArticle[] = [
     guest: "Yasmine Habib",
     image: "/images/articles/sofiastanic.jpg",
     imageCredit: "Danseuse : Sofia Stanić · © Anna Jot",
+    heroImageType: 'portrait',
+    imageObjectPosition: "right 12%",  // image quasi-carrée : décale le crop vers le haut pour préserver la tête
     readTime: "7 min",
     tags: ["Waacking", "Disco", "Culture club"],
     sections: [
@@ -376,6 +383,7 @@ export const magazineArticles: MagazineArticle[] = [
     guest: "Tatiana Seguin",
     image: "/images/articles/festivalavignon.jpg",
     imageCredit: "Festival d'Avignon · © Christophe Raynaud de Lage",
+    heroImageType: 'scene',
     readTime: "6 min",
     tags: ["Festivals", "Agenda", "Spectacle vivant"],
     sections: [
@@ -446,7 +454,8 @@ export const magazineArticles: MagazineArticle[] = [
     episodeSlug: "115-laura-malie-leclerc",
     episodeNumber: "115",
     guest: "Laura Malié-Leclerc",
-    image: "/images/les-invites/lauramalieleclerc115.png",
+    image: "/images/les-invites-header/lauramalieleclerc115.png",  // 1400×787 — image header 16:9 conçue pour ce cadrage
+    heroImageType: 'portrait',
     readTime: "7 min",
     tags: ["Santé", "Prévention", "Corps"],
     quote:
@@ -506,7 +515,8 @@ export const magazineArticles: MagazineArticle[] = [
     episodeSlug: "111-johan-nus",
     episodeNumber: "111",
     guest: "Johan Nus",
-    image: "/images/les-invites/johannus111.png",
+    image: "/images/les-invites-header/johannus111.png",  // 1400×787 — image header 16:9 conçue pour ce cadrage
+    heroImageType: 'portrait',
     readTime: "8 min",
     tags: ["Santé mentale", "Bienveillance", "Longévité"],
     sections: [
@@ -570,7 +580,8 @@ export const magazineArticles: MagazineArticle[] = [
     episodeSlug: "118-yasmine-habib",
     episodeNumber: "118",
     guest: "Yasmine Habib",
-    image: "/images/les-invites/yasminehabib118.png",
+    image: "/images/les-invites-header/yasminehabib118.png",  // 1400×787 — image header 16:9 conçue pour ce cadrage
+    heroImageType: 'portrait',
     readTime: "9 min",
     tags: ["Carrière", "Formation", "Contrats"],
     quote: "Avant de faire un choix carriériste, je fais un choix humain",
@@ -649,6 +660,7 @@ export const magazineArticles: MagazineArticle[] = [
     episodeNumber: "",
     guest: "Maïwenn Bramoulle",
     image: "https://img.youtube.com/vi/ljP4RU067jY/maxresdefault.jpg",
+    heroImageType: 'scene',
     imageObjectPosition: "center center",
     heroAspectRatio: "16 / 9",
     useHeroSlider: true,
@@ -778,6 +790,7 @@ export const magazineArticles: MagazineArticle[] = [
     guest: "Maïwenn Bramoulle",
     image: "/images/maiwenn-2.jpg",
     imageCredit: "© Blandine Abad",
+    heroImageType: 'portrait',
     imageObjectPosition: "right 38%",
     readTime: "9 min",
     tags: ["Réseaux sociaux", "Carrière", "Visibilité", "Instagram"],
@@ -891,6 +904,7 @@ export const magazineArticles: MagazineArticle[] = [
     guest: "Maïwenn Bramoulle",
     image: "/images/articles/lavillette.jpg",
     imageCredit: "© Joseph Banderet",
+    heroImageType: 'scene',
     readTime: "4 min",
     tags: ["Freestyle", "Paris", "Adresses", "Hip-hop", "Spots"],
     quote:

@@ -9836,6 +9836,14 @@ p,
   display: block;
 }
 
+/* Portrait hero : personne/invité·e au premier plan
+   Desktop : right center (identique au défaut, mais explicite pour la cascade)
+   Mobile  : 70% top — décale vers la droite + haut, comme les pages épisodes,
+             pour préserver le visage sur petits écrans */
+.article-hero-bg--portrait img {
+  object-position: right center;
+}
+
 /* Dégradé : fort à gauche pour la lisibilité du texte,
    transparent à droite pour préserver l'image */
 .article-hero-overlay {
@@ -10345,6 +10353,11 @@ p,
 
   .article-hero-bg img {
     object-position: center top;
+  }
+
+  /* Portrait : visage en haut à droite, comme les pages épisodes (.ep-hero-img) */
+  .article-hero-bg--portrait img {
+    object-position: 70% top;
   }
 
   .article-sidebar {

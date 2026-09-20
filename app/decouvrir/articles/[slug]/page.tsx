@@ -137,7 +137,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         style={article.heroAspectRatio ? { aspectRatio: article.heroAspectRatio } : undefined}
       >
         {/* Photo plein cadre en arrière-plan */}
-        <div className="article-hero-bg" aria-hidden="true">
+        <div className={`article-hero-bg${article.heroImageType === 'portrait' ? ' article-hero-bg--portrait' : ''}`} aria-hidden="true">
           {article.useHeroSlider && heroSlides.length > 0 ? (
             <ArticleHeroSlider slides={heroSlides} />
           ) : (
