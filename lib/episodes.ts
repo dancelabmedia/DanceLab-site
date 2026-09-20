@@ -29,6 +29,7 @@ import {
   matchReelToEpisode,
   type InstagramReel,
 }                                                              from '@/lib/instagram-api'
+import { getResolvedTeaser }                                   from '@/lib/teaser-resolved'
 
 // ─── Type unifié ──────────────────────────────────────────────────────────────
 
@@ -154,18 +155,34 @@ function toSlug(str: string): string {
 
 function fromLegacy(
   ep: EpisodeListItem,
-  youtubeMap: Map<number, { videoId: string }>,
+  youtubeMap: Map<number, { videoId: string; isShort: boolean }>,
   inviteImages: Map<number, string>,
   recentReels: InstagramReel[],
 ): UnifiedEpisode {
-  const extras    = episodeExtras[ep.number]
-  const youtubeId = extras?.youtubeId ?? youtubeMap.get(ep.number)?.videoId ?? null
-  // ep.image = chemin hérité (/episodes/… ou /images/les-invites/…) comme dernier fallback
-  const image     = resolveCardImage(ep.number, extras, inviteImages, ep.image)
+  const extras   = episodeExtras[ep.number]
+  const resolved = getResolvedTeaser(ep.number)
+  const ytVideo  = youtubeMap.get(ep.number)
 
-  // Reel Instagram : override manuel > détection auto via Graph API
+  // Priorité : extras manuel > cache résolu (cron) > détection temps réel
+  const youtubeId =
+    extras?.youtubeId ??
+    resolved?.youtubeId ??
+    ytVideo?.videoId ??
+    null
+
+  const isYoutubeShort: boolean | undefined =
+    extras?.isYoutubeShort ??
+    resolved?.isYoutubeShort ??
+    ytVideo?.isShort ??
+    undefined
+
+  // ep.image = chemin hérité (/episodes/… ou /images/les-invites/…) comme dernier fallback
+  const image = resolveCardImage(ep.number, extras, inviteImages, ep.image)
+
+  // Reel Instagram : extras manuel > cache résolu (cron) > détection auto via Graph API
   const instagramReelUrl =
     extras?.instagramReelUrl ??
+    resolved?.instagramReelUrl ??
     matchReelToEpisode(recentReels, ep.number, ep.guest) ??
     undefined
 
@@ -186,28 +203,44 @@ function fromLegacy(
     spotifyEmbedUrl: '',       // legacy : lecteur Spotify géré séparément
     fromRSS:      false,
     instagramReelUrl,
-    isYoutubeShort: extras?.isYoutubeShort,
+    isYoutubeShort,
     en:           episodeTranslationsEN[ep.number],
   }
 }
 
 function fromRss(
   ep: RssEpisode,
-  youtubeMap: Map<number, { videoId: string }>,
+  youtubeMap: Map<number, { videoId: string; isShort: boolean }>,
   inviteImages: Map<number, string>,
   recentReels: InstagramReel[],
 ): UnifiedEpisode {
-  const extras    = episodeExtras[ep.number]
-  const guest     = ep.guest || 'Invité·e'
+  const extras   = episodeExtras[ep.number]
+  const resolved = getResolvedTeaser(ep.number)
+  const guest    = ep.guest || 'Invité·e'
   const guestSlug = toSlug(guest)
-  const slug      = `${ep.number}-${guestSlug}`
-  const youtubeId = extras?.youtubeId ?? youtubeMap.get(ep.number)?.videoId ?? null
-  // Fallback = CDN Ausha si aucune image locale trouvée
-  const image     = resolveCardImage(ep.number, extras, inviteImages, ep.aushaImage)
+  const slug     = `${ep.number}-${guestSlug}`
+  const ytVideo  = youtubeMap.get(ep.number)
 
-  // Reel Instagram : override manuel > détection auto via Graph API
+  // Priorité : extras manuel > cache résolu (cron) > détection temps réel
+  const youtubeId =
+    extras?.youtubeId ??
+    resolved?.youtubeId ??
+    ytVideo?.videoId ??
+    null
+
+  const isYoutubeShort: boolean | undefined =
+    extras?.isYoutubeShort ??
+    resolved?.isYoutubeShort ??
+    ytVideo?.isShort ??
+    undefined
+
+  // Fallback = CDN Ausha si aucune image locale trouvée
+  const image = resolveCardImage(ep.number, extras, inviteImages, ep.aushaImage)
+
+  // Reel Instagram : extras manuel > cache résolu (cron) > détection auto via Graph API
   const instagramReelUrl =
     extras?.instagramReelUrl ??
+    resolved?.instagramReelUrl ??
     matchReelToEpisode(recentReels, ep.number, guest) ??
     undefined
 
@@ -239,7 +272,7 @@ function fromRss(
       : ep.spotifyEmbedUrl,
     fromRSS:      true,
     instagramReelUrl,
-    isYoutubeShort: extras?.isYoutubeShort,
+    isYoutubeShort,
     // Traductions EN : depuis episode-translations-en.ts (épisodes ≥ 122 peuvent
     // y être ajoutés au fur et à mesure — même mécanique que les épisodes legacy)
     en:           episodeTranslationsEN[ep.number],

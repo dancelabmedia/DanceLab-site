@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/check-episodes",
       "schedule": "0 7 * * 1"
+    },
+    {
+      "path": "/api/cron/match-teasers",
+      "schedule": "0 0 * * *"
     }
   ]
 }
