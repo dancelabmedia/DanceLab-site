@@ -134,27 +134,35 @@ function CommentItem({
               autoComplete="off"
               style={{ display: 'none' }}
             />
-            <input
-              className="cmt-input"
-              type="text"
-              placeholder={t('Prénom ou pseudo')}
-              value={replyAuthor}
-              onChange={(e) => setReplyAuthor(e.target.value)}
-              maxLength={60}
-              required
-              disabled={submitting}
-            />
-            <textarea
-              ref={textareaRef}
-              className="cmt-textarea"
-              placeholder={locale === 'en' ? `Reply to ${comment.author}…` : `Répondre à ${comment.author}…`}
-              value={replyBody}
-              onChange={(e) => setReplyBody(e.target.value)}
-              rows={3}
-              maxLength={2000}
-              required
-              disabled={submitting}
-            />
+            <div className="cmt-field">
+              <label className="cmt-label" htmlFor={`reply-author-${comment.id}`}>
+                {locale === 'en' ? 'YOUR NAME' : 'TON PRÉNOM'}
+              </label>
+              <input
+                id={`reply-author-${comment.id}`}
+                className="cmt-input cmt-input--line"
+                type="text"
+                placeholder={t('Prénom ou pseudo')}
+                value={replyAuthor}
+                onChange={(e) => setReplyAuthor(e.target.value)}
+                maxLength={60}
+                required
+                disabled={submitting}
+              />
+            </div>
+            <div className="cmt-field">
+              <textarea
+                ref={textareaRef}
+                className="cmt-textarea"
+                placeholder={locale === 'en' ? `Reply to ${comment.author}…` : `Répondre à ${comment.author}…`}
+                value={replyBody}
+                onChange={(e) => setReplyBody(e.target.value)}
+                rows={3}
+                maxLength={2000}
+                required
+                disabled={submitting}
+              />
+            </div>
             {error && <p className="cmt-error">{error}</p>}
             <button
               className="cmt-submit cmt-submit--small"
@@ -254,101 +262,133 @@ export default function CommentsSection({ slug }: { slug: string }) {
   return (
     <section className="cmt-section" aria-label={t('Commentaires')}>
       <div className="container">
-      {/* En-tête */}
-      <div className="cmt-header">
-        <h2 className="cmt-heading">{t('Rejoindre la discussion')}</h2>
-        {count > 0 && (
-          <span className="cmt-count" aria-live="polite">
-            {count} {t(count === 1 ? 'commentaire' : 'commentaires')}
+
+        {/* ── En-tête éditorial ── */}
+        <div className="cmt-header">
+          <span className="cmt-eyebrow">
+            {locale === 'en' ? 'COMMENTS —' : 'COMMENTAIRES —'}
           </span>
-        )}
-      </div>
+          <div className="cmt-heading-row">
+            <h2 className="cmt-heading">{t('Rejoindre la discussion')}</h2>
+            {count > 0 && (
+              <span className="cmt-count" aria-live="polite">
+                {count} {t(count === 1 ? 'commentaire' : 'commentaires')}
+              </span>
+            )}
+          </div>
+          <p className="cmt-invite">{t("Et toi, qu'est-ce que tu en penses ?")}</p>
+        </div>
 
-      {/* Invitation */}
-      <p className="cmt-invite">{t("Et toi, qu'est-ce que tu en penses ?")}</p>
-
-      {/* Formulaire */}
-      <form className="cmt-form" onSubmit={handleSubmit} noValidate>
-        {/* Honeypot invisible */}
-        <input
-          type="text"
-          name="_hp"
-          value={honeypot}
-          onChange={(e) => setHoneypot(e.target.value)}
-          tabIndex={-1}
-          aria-hidden="true"
-          autoComplete="off"
-          style={{ display: 'none' }}
-        />
-
-        <div className="cmt-fields">
-          <div className="cmt-field-group">
-            <label className="cmt-label" htmlFor="cmt-author">{t('Prénom ou pseudo')}</label>
+        {/* ── Formulaire — bloc délimité ── */}
+        <div className="cmt-form-wrap">
+          <form className="cmt-form" onSubmit={handleSubmit} noValidate>
+            {/* Honeypot invisible */}
             <input
-              id="cmt-author"
-              className="cmt-input"
               type="text"
-              placeholder={locale === 'en' ? 'E.g. Marie' : 'Ex : Marie'}
-              value={author}
-              onChange={(e) => setAuthor(e.target.value)}
-              maxLength={60}
-              required
-              disabled={submitting}
+              name="_hp"
+              value={honeypot}
+              onChange={(e) => setHoneypot(e.target.value)}
+              tabIndex={-1}
+              aria-hidden="true"
+              autoComplete="off"
+              style={{ display: 'none' }}
             />
-          </div>
 
-          <div className="cmt-field-group cmt-field-group--full">
-            <label className="cmt-label" htmlFor="cmt-body">{t('Votre commentaire')}</label>
-            <textarea
-              id="cmt-body"
-              className="cmt-textarea"
-              placeholder={t('Partage ton avis, une recommandation, une réaction…')}
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              rows={4}
-              maxLength={2000}
-              required
-              disabled={submitting}
-            />
-          </div>
+            {/* Prénom — ligne seule */}
+            <div className="cmt-field">
+              <label className="cmt-label" htmlFor="cmt-author">
+                {locale === 'en' ? 'YOUR FIRST NAME OR NICKNAME' : 'TON PRÉNOM OU PSEUDO'}
+              </label>
+              <input
+                id="cmt-author"
+                className="cmt-input cmt-input--line"
+                type="text"
+                placeholder={locale === 'en' ? 'E.g. Marie' : 'Ex : Marie'}
+                value={author}
+                onChange={(e) => setAuthor(e.target.value)}
+                maxLength={60}
+                required
+                disabled={submitting}
+              />
+            </div>
+
+            {/* Commentaire */}
+            <div className="cmt-field">
+              <label className="cmt-label" htmlFor="cmt-body">
+                {locale === 'en' ? 'YOUR COMMENT' : 'TON COMMENTAIRE'}
+              </label>
+              <textarea
+                id="cmt-body"
+                className="cmt-textarea"
+                placeholder={t('Partage ton avis, une recommandation, une réaction…')}
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                rows={4}
+                maxLength={2000}
+                required
+                disabled={submitting}
+              />
+            </div>
+
+            {error && (
+              <p className="cmt-error" role="alert">{error}</p>
+            )}
+            {success && (
+              <p className="cmt-success" role="status">
+                {t('Commentaire publié — merci pour ta participation !')}
+              </p>
+            )}
+
+            <div className="cmt-form-footer">
+              <button
+                className="cmt-submit"
+                type="submit"
+                disabled={submitting || !author.trim() || !body.trim()}
+              >
+                {submitting ? t('Publication…') : `${t('Publier')} →`}
+              </button>
+              <span className="cmt-disclaimer">
+                {locale === 'en'
+                  ? 'Your comment will be visible after approval.'
+                  : 'Ton commentaire sera visible après validation.'}
+              </span>
+            </div>
+          </form>
         </div>
 
-        {error && (
-          <p className="cmt-error" role="alert">{error}</p>
-        )}
-        {success && (
-          <p className="cmt-success" role="status">
-            {t('Commentaire publié — merci pour ta participation !')}
-          </p>
+        {/* ── Liste des commentaires ── */}
+        {loading ? (
+          <div className="cmt-loading" aria-busy="true">{t('Chargement…')}</div>
+        ) : data && data.comments.length > 0 ? (
+          <div
+            className="cmt-list"
+            aria-label={`${count} ${t(count === 1 ? 'commentaire' : 'commentaires')}`}
+          >
+            {data.comments.map((comment) => (
+              <CommentItem
+                key={comment.id}
+                comment={comment}
+                slug={slug}
+                depth={0}
+                onReplyPosted={fetchComments}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="cmt-empty-state">
+            <div className="cmt-empty-divider">
+              <span>
+                {locale === 'en'
+                  ? 'NO COMMENTS YET'
+                  : 'AUCUN COMMENTAIRE POUR LE MOMENT'}
+              </span>
+            </div>
+            <p className="cmt-empty-text">
+              {t('Sois le premier à laisser un commentaire.')}
+            </p>
+          </div>
         )}
 
-        <button
-          className="cmt-submit"
-          type="submit"
-          disabled={submitting || !author.trim() || !body.trim()}
-        >
-          {submitting ? t('Publication…') : t('Publier')}
-        </button>
-      </form>
-
-      {/* Liste des commentaires */}
-      {loading ? (
-        <div className="cmt-loading" aria-busy="true">{t('Chargement…')}</div>
-      ) : data && data.comments.length > 0 ? (
-        <div className="cmt-list" aria-label={`${count} ${t(count === 1 ? 'commentaire' : 'commentaires')}`}>
-          {data.comments.map((comment) => (
-            <CommentItem
-              key={comment.id}
-              comment={comment}
-              slug={slug}
-              depth={0}
-              onReplyPosted={fetchComments}
-            />
-          ))}
-        </div>
-      ) : (
-        <p className="cmt-empty">{t('Sois le premier à laisser un commentaire.')}</p>
-      )}
       </div>
     </section>
   )
