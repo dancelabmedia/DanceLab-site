@@ -240,7 +240,7 @@ export default function LatestEpisodeSticky({
 
                 {/* Titre + invité */}
                 <div className="les-ep-card-overlay">
-                  <h3 className="les-ep-card-title">{episode.title}</h3>
+                  <p className="les-ep-card-title">{episode.title}</p>
                   <p className="les-ep-card-guest">
                     {t('Avec')} <strong>{episode.guest}</strong>
                   </p>

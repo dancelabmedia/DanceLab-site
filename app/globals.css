@@ -2395,7 +2395,9 @@ button {
   background: linear-gradient(to top, rgba(0,0,0,.92) 0%, transparent 100%);
 }
 
-.les-ep-card-title {
+/* Titre de carte — partagé entre la carte "Dernier épisode" et les cartes Interviews */
+.les-ep-card-title,
+.les-ivw-info-title {
   font-family: var(--font-display);
   font-size: clamp(13px, 1.3vw, 15px);
   font-weight: 700;
@@ -2408,13 +2410,16 @@ button {
   overflow: hidden;
 }
 
-.les-ep-card-guest {
+/* Nom de l'invité·e — partagé entre les deux types de carte */
+.les-ep-card-guest,
+.les-ivw-info-guest {
   font-size: 12px;
   color: rgba(255,255,255,.65);
   margin: 0;
 }
 
-.les-ep-card-guest strong {
+.les-ep-card-guest strong,
+.les-ivw-info-guest strong {
   color: rgba(255,255,255,.85);
   font-weight: 600;
 }
@@ -2618,30 +2623,6 @@ button {
   padding: 28px 13px 13px;
   background: linear-gradient(to top, rgba(0,0,0,.90) 0%, rgba(0,0,0,.40) 60%, transparent 100%);
   z-index: 2;
-}
-
-.les-ivw-info-title {
-  font-family: var(--font-display);
-  font-size: clamp(13px, 1.3vw, 15px);
-  font-weight: 700;
-  color: #fff;
-  line-height: 1.28;
-  margin: 0 0 5px;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.les-ivw-info-guest {
-  font-size: 12px;
-  color: rgba(255,255,255,.65);
-  margin: 0;
-}
-
-.les-ivw-info-guest strong {
-  color: rgba(255,255,255,.85);
-  font-weight: 600;
 }
 
 /* ── Overlay citation — état survol ─────────────────────────────────── */
