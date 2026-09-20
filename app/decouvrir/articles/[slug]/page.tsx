@@ -133,28 +133,36 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       {/* Même système de défilement que la page À propos */}
       <ScrollReveal selector=".article-page .article-content p, .article-page .article-content h2, .article-page .article-content blockquote, .article-page .article-content .article-section-img, .article-page .article-content .doc-card, .article-page .article-conclusion p" />
 
-      <section
-        className="article-hero"
-        style={article.heroAspectRatio ? { aspectRatio: article.heroAspectRatio } : undefined}
-      >
-        {/* Photo plein cadre en arrière-plan */}
-        <div className={`article-hero-bg${article.heroImageType === 'portrait' ? ' article-hero-bg--portrait' : ''}`} aria-hidden="true">
-          {article.useHeroSlider && heroSlides.length > 0 ? (
-            <ArticleHeroSlider slides={heroSlides} />
-          ) : (
-            <img
-              src={article.image}
-              alt=""
-              style={article.imageObjectPosition ? { objectPosition: article.imageObjectPosition } : undefined}
-            />
-          )}
-          <div className="article-hero-overlay" />
-          {/* Crédit photo au survol — système global PhotoCredit */}
+      {/* ══════════════════════════════════════════════════════
+            HERO — même structure que .ep-hero des pages Écouter :
+            image plein cadre (droite), dégradé sombre (gauche),
+            texte éditorial en bas à gauche, fond sticky au scroll.
+          ══════════════════════════════════════════════════════ */}
+      <section className="article-hero">
+
+        {/* Couche sticky : image + dégradé restent fixes pendant le premier scroll */}
+        <div className="article-hero-sticky-bg">
+          <div
+            className={`article-hero-bg${article.heroImageType === 'portrait' ? ' article-hero-bg--portrait' : ''}`}
+            aria-hidden="true"
+          >
+            {article.useHeroSlider && heroSlides.length > 0 ? (
+              <ArticleHeroSlider slides={heroSlides} />
+            ) : (
+              <img
+                src={article.image}
+                alt=""
+                style={article.imageObjectPosition ? { objectPosition: article.imageObjectPosition } : undefined}
+              />
+            )}
+          </div>
+          <div className="article-hero-overlay" aria-hidden="true" />
+          {/* Crédit photo au survol */}
           <PhotoCredit credit={article.imageCredit} />
         </div>
 
-        {/* Texte superposé */}
-        <div className="container article-hero-content">
+        {/* Texte posé sur la partie gauche assombrie — défile normalement */}
+        <div className="article-hero-content">
           <div className="article-hero-text">
             <HistoryBackLink fallbackHref="/decouvrir" className="article-back">
               {t('← Retour au magazine')}
@@ -167,6 +175,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </p>
           </div>
         </div>
+
       </section>
 
       <section className="article-body">

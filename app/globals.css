@@ -9813,12 +9813,23 @@ p,
 
 /* ── Hero immersif pleine largeur ─────────────────────────────── */
 
+/* ── Article hero — structure et DA calquées sur .ep-hero ─────────────
+   Même composition : image plein cadre à droite, dégradé sombre à gauche,
+   texte éditorial positionné en bas à gauche, proportions plein écran.
+   ─────────────────────────────────────────────────────────────────────── */
+
 .article-hero {
   position: relative;
+  height: 200vh; /* effet sticky identique à l'épisode */
+}
+
+/* Fond sticky : image + dégradé restent fixes pendant le premier scroll */
+.article-hero-sticky-bg {
+  position: sticky;
+  top: 0;
+  height: 100vh;
   overflow: hidden;
-  min-height: clamp(540px, 74vh, 860px);
-  display: flex;
-  align-items: flex-end;
+  isolation: isolate;
 }
 
 /* Image plein cadre */
@@ -9836,102 +9847,110 @@ p,
   display: block;
 }
 
-/* Portrait hero : personne/invité·e au premier plan
-   Desktop : right center (identique au défaut, mais explicite pour la cascade)
-   Mobile  : 70% top — décale vers la droite + haut, comme les pages épisodes,
-             pour préserver le visage sur petits écrans */
+/* Portrait : visage à droite, espace à gauche pour le texte */
 .article-hero-bg--portrait img {
   object-position: right center;
 }
 
-/* Dégradé : fort à gauche pour la lisibilité du texte,
-   transparent à droite pour préserver l'image */
+/* Dégradé — copie exacte de .ep-hero-shade :
+   sombre à gauche pour lisibilité, transparent à droite pour le portrait */
 .article-hero-overlay {
   position: absolute;
   inset: 0;
+  z-index: 1;
   pointer-events: none;
   background:
     linear-gradient(
       to right,
-      rgba(10, 18, 22, 0.92) 0%,
-      rgba(10, 18, 22, 0.78) 26%,
-      rgba(10, 18, 22, 0.42) 50%,
-      rgba(10, 18, 22, 0.10) 68%,
-      transparent 80%
+      rgba(8,8,8,.97)   0%,
+      rgba(8,8,8,.92)  18%,
+      rgba(8,8,8,.78)  32%,
+      rgba(8,8,8,.46)  46%,
+      rgba(8,8,8,.14)  60%,
+      rgba(8,8,8,.00)  72%
     ),
     linear-gradient(
       to top,
-      rgba(10, 18, 22, 0.55) 0%,
-      transparent 30%
+      rgba(0,0,0,.40) 0%,
+      transparent     28%
     );
 }
 
-/* Contenu textuel superposé */
+/* Contenu textuel — calé en bas à gauche, identique à .ep-hero-content */
 .article-hero-content {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
   z-index: 2;
-  padding-top: clamp(108px, 13vw, 156px);
-  padding-bottom: clamp(60px, 8vw, 96px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 64px 48px 60px;
+  color: white;
+  box-sizing: border-box;
   width: 100%;
 }
 
-/* Zone de texte limitée à la moitié gauche */
+/* Zone de texte — même contrainte que .ep-back/.ep-hero-content h1 */
 .article-hero-text {
-  max-width: min(58%, 660px);
+  max-width: min(540px, 46%);
 }
 
-/* ← Retour */
+/* ← Retour au magazine — même style que .ep-back */
 .article-back {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  margin-bottom: 20px;
-  color: rgba(255, 255, 255, 0.50);
+  gap: 6px;
+  margin-bottom: 28px;
+  color: rgba(255,255,255,.62);
+  text-decoration: none;
   font-size: 0.82rem;
   font-weight: 600;
-  text-decoration: none;
-  letter-spacing: 0.01em;
-  transition: color 0.18s;
+  letter-spacing: .04em;
+  transition: color 200ms ease;
 }
+.article-back:hover { color: #fff; }
 
-.article-back:hover {
-  color: rgba(255, 255, 255, 0.85);
-}
-
-/* Catégorie — label discret au-dessus du titre */
+/* Catégorie — même style que .ep-kicker */
 .article-hero-category {
   display: block;
-  margin-bottom: 14px;
-  color: rgba(255, 255, 255, 0.52);
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
+  font-family: var(--font-body);
+  font-size: 0.71rem;
+  font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: .15em;
+  color: var(--color-primary-light);
+  margin: 0 0 12px;
 }
 
-/* Titre — grand, blanc, éditorial */
+/* Titre — identique à .ep-hero-content h1 */
 .article-hero h1 {
-  margin: 0 0 22px;
-  font-size: clamp(2.2rem, 4.8vw, 5.4rem);
+  margin: 0 0 14px;
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 3.8vw, 4.8rem);
   font-weight: 600;
-  line-height: 0.93;
-  color: #ffffff;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
   text-wrap: balance;
+  color: #fff;
 }
 
-/* Chapô */
+/* Chapô — proche de .ep-guest */
 .article-hero-chapo {
-  max-width: 54ch;
-  margin: 0 0 26px;
-  color: rgba(255, 255, 255, 0.68);
-  font-size: clamp(0.92rem, 1.15vw, 1.04rem);
-  line-height: 1.76;
+  margin: 0 0 16px;
+  color: rgba(255,255,255,.72);
+  font-size: clamp(0.92rem, 1.1vw, 1.02rem);
+  line-height: 1.72;
 }
 
-/* Métadonnées — très discrètes */
+/* Métadonnées — discrètes, même traitement que les meta épisode */
 .article-hero-meta {
   margin: 0;
-  color: rgba(255, 255, 255, 0.40);
+  color: rgba(255,255,255,.40);
   font-size: 0.76rem;
   font-weight: 600;
   letter-spacing: 0.025em;
@@ -10316,37 +10335,36 @@ p,
     grid-template-columns: 1fr;
   }
 
-  /* Hero immersif : texte pleine largeur sur mobile */
-  .article-hero {
-    min-height: clamp(480px, 65vh, 640px);
-    align-items: flex-end;
-  }
-
+  /* Tablette : texte pleine largeur, dégradé plus opaque */
   .article-hero-text {
     max-width: 100%;
   }
 
+  .article-hero-content {
+    padding: 56px 32px 52px;
+  }
+
   .article-hero h1 {
-    font-size: clamp(1.9rem, 7.5vw, 3.2rem);
+    font-size: clamp(1.9rem, 7.5vw, 3.4rem);
   }
 
   .article-hero-chapo {
-    max-width: 100%;
     font-size: 0.93rem;
   }
 
-  /* Sur mobile, le dégradé couvre davantage l'image pour lisibilité */
+  /* Dégradé plus couvrante sur tablette */
   .article-hero-overlay {
     background:
       linear-gradient(
         to right,
-        rgba(10, 18, 22, 0.92) 0%,
-        rgba(10, 18, 22, 0.82) 50%,
-        rgba(10, 18, 22, 0.55) 100%
+        rgba(8,8,8,.97)   0%,
+        rgba(8,8,8,.90)  40%,
+        rgba(8,8,8,.55)  75%,
+        rgba(8,8,8,.00) 100%
       ),
       linear-gradient(
         to top,
-        rgba(10, 18, 22, 0.65) 0%,
+        rgba(0,0,0,.55) 0%,
         transparent 35%
       );
   }
@@ -10355,13 +10373,57 @@ p,
     object-position: center top;
   }
 
-  /* Portrait : visage en haut à droite, comme les pages épisodes (.ep-hero-img) */
   .article-hero-bg--portrait img {
     object-position: 70% top;
   }
 
   .article-sidebar {
     position: static;
+  }
+}
+
+/* Mobile : désactive le sticky, hero simple plein écran — même logique que .ep-hero mobile */
+@media (max-width: 620px) {
+  .article-hero {
+    height: auto;
+    min-height: 78vh;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+  }
+
+  .article-hero-sticky-bg {
+    position: absolute;
+    inset: 0;
+    height: auto;
+  }
+
+  .article-hero-content {
+    position: relative;
+    height: auto;
+    min-height: 78vh;
+    padding: 40px 20px 44px;
+    max-width: 100%;
+  }
+
+  .article-hero-text {
+    max-width: 100%;
+  }
+
+  .article-hero-bg img {
+    object-position: 70% center;
+  }
+
+  .article-hero-bg--portrait img {
+    object-position: 70% top;
+  }
+
+  .article-hero h1 {
+    font-size: clamp(1.9rem, 7vw, 3rem);
+  }
+
+  .article-back {
+    margin-bottom: 20px;
   }
 }
 
