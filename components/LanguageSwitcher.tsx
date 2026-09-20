@@ -5,7 +5,7 @@ import type { Locale } from '@/lib/i18n/routing'
 import { useLocale, useSetLocale } from './LocaleProvider'
 import styles from './LanguageSwitcher.module.css'
 
-export default function LanguageSwitcher({ locale: _initialLocale }: { locale: Locale }) {
+export default function LanguageSwitcher({ locale: _initialLocale, mobile }: { locale: Locale; mobile?: boolean }) {
   const locale = useLocale()
   const setLocale = useSetLocale()
   const [busy, setBusy] = useState(false)
@@ -37,7 +37,7 @@ export default function LanguageSwitcher({ locale: _initialLocale }: { locale: L
   }
 
   return (
-    <div className={styles.switcher} aria-label={locale === 'fr' ? 'Langue du site' : 'Site language'}>
+    <div className={`${styles.switcher}${mobile ? ` ${styles.mobileSwitcher}` : ''}`} aria-label={locale === 'fr' ? 'Langue du site' : 'Site language'}>
       <button
         type="button"
         lang="fr"

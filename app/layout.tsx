@@ -28,7 +28,6 @@ import ScrollReveal from './components/ScrollReveal'
 import { SITE_URL } from '../data/site'
 import { requestLocale, requestPath, languageAlternates } from '@/lib/i18n/server'
 import LocaleProvider from '@/components/LocaleProvider'
-import LanguageSwitcher from '@/components/LanguageSwitcher'
 
 
 const frenchMetadata: Metadata = {
@@ -106,7 +105,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <NewsletterModal locale={locale} />
         <DevLockButton />
         <ScrollReveal />
-        <LanguageSwitcher locale={locale} />
         </LocaleProvider>
       </body>
     </html>

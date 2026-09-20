@@ -1,80 +1,66 @@
-/* Fixed side switcher — position and z-index preserved exactly */
+/* Inline nav switcher */
 .switcher {
-  position: fixed;
-  z-index: 900;
-  right: max(16px, env(safe-area-inset-right));
-  top: 48%;
-  transform: translateY(-50%);
   display: flex;
   align-items: center;
   gap: 0;
-  background: #fff;
-  border: 1px solid var(--color-primary-light);
-  border-radius: 14px;
-  box-shadow: 0 2px 14px rgba(35, 48, 51, .12);
-  padding: 4px 6px;
 }
 
-/* Each language option: direct clickable button, always visible */
+/* Each language option */
 .option {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 36px;
-  min-height: 36px;
-  padding: 6px 8px;
+  padding: 4px 7px;
   border: 0;
-  border-radius: 9px;
+  border-radius: 4px;
   background: transparent;
   color: var(--color-primary-dark);
   cursor: pointer;
   font: inherit;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: .08em;
-  opacity: 0.45;
-  transition: background .15s ease, opacity .15s ease;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  opacity: 0.36;
+  transition: opacity .15s ease;
 }
 
-/* Active language: highlighted, full opacity */
+/* Active language */
 .option.active {
-  background: var(--color-primary-light);
   opacity: 1;
   cursor: default;
 }
 
-/* Inactive language: full opacity on hover, pointer cursor */
 .option:not(.active):hover {
-  opacity: 1;
-  background: var(--color-primary-light, rgba(35,48,51,.06));
+  opacity: 0.7;
 }
 
 .option:focus-visible {
   outline: 2px solid var(--color-primary-dark);
   outline-offset: 2px;
+  border-radius: 3px;
 }
 
 .option:disabled {
   cursor: wait;
 }
 
-/* Separator between FR and EN */
+/* Separator */
 .divider {
   font-size: 10px;
-  color: var(--color-primary-light, rgba(35,48,51,.3));
+  color: var(--color-primary-dark);
+  opacity: 0.2;
   user-select: none;
   pointer-events: none;
-  padding: 0 1px;
 }
 
-/* Mobile: stick to bottom-right above the nav bar */
-@media (max-width: 760px) {
-  .switcher {
-    top: auto;
-    transform: none;
-    bottom: calc(92px + env(safe-area-inset-bottom));
-    right: max(12px, env(safe-area-inset-right));
-  }
+/* Mobile: dans le menu mobile, centré */
+.mobileSwitcher {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 0 4px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  margin-top: 8px;
 }
 
 @media (prefers-reduced-motion: reduce) {
