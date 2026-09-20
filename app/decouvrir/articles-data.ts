@@ -598,7 +598,7 @@ export const magazineArticles: MagazineArticle[] = [
         ],
       },
       {
-        heading: "Les valeurs comme boussole professionnelle",
+        heading: "Savoir ce qu'on accepte et ce qu'on refuse",
         paragraphs: [
           "Et puis il y a quelque chose dont on parle peut-être moins : avec qui et dans quelles conditions on a envie de travailler ?",
           "Oui il est très important en 2026 de se poser ces questions.",
