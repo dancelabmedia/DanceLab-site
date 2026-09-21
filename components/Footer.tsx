@@ -43,7 +43,7 @@ export default function Footer({ locale: _initialLocale = 'fr' }: { locale?: Loc
     { label: 'Écouter', href: '/ecouter' },
     { label: 'Sortir', href: '/sortir' },
     { label: 'Explorer', href: '/explorer' },
-    { label: 'Guides', href: '/apprendre' },
+    { label: 'Apprendre', href: '/apprendre' },
     { label: 'À propos', href: '/a-propos' },
   ]
 

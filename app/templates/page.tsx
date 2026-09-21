@@ -76,7 +76,7 @@ const templateExamples: ContentTemplateData[] = [
     image: "/images/Couverture.png",
     description: "Template pour les pages événement.",
     ctaLabel: "Voir l'événement",
-    ctaHref: "/agenda",
+    ctaHref: "/sortir",
     tags: ["Spectacle", "Agenda", "Sortir"],
     blocks: [
       {
