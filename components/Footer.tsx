@@ -39,11 +39,11 @@ export default function Footer({ locale: _initialLocale = 'fr' }: { locale?: Loc
   const t = (text: string) => uiText(locale, text)
   const href = (path: string) => localizedHref(path, locale)
   const mainLinks = [
-    { label: 'Découvrir', href: '/decouvrir' },
+    { label: 'Magazine', href: '/decouvrir' },
     { label: 'Écouter', href: '/ecouter' },
-    { label: 'Sortir', href: '/agenda' },
+    { label: 'Sortir', href: '/sortir' },
     { label: 'Explorer', href: '/explorer' },
-    { label: 'Apprendre', href: '/apprendre' },
+    { label: 'Guides', href: '/apprendre' },
     { label: 'À propos', href: '/a-propos' },
   ]
 
