@@ -170,7 +170,21 @@ export const episodeExtras: Record<number, EpisodeExtra> = {
   119: { instagramReelUrl: "https://www.instagram.com/reel/DayCAZqKhv4/" },
   118: { instagramReelUrl: "https://www.instagram.com/reel/DagCGxUMlxk/" },
   117: { instagramReelUrl: "https://www.instagram.com/reel/DaOAg4IMP_Z/" },
-  116: { instagramReelUrl: "https://www.instagram.com/reel/DZ8F_m6M67C/", image: "/images/les-invites-header/julienramade.png" },
+  116: {
+    instagramReelUrl: "https://www.instagram.com/reel/DZ8F_m6M67C/",
+    // headerImage auto-détecté : public/images/les-invites-header/julienramade116.png
+    // image carte auto-détectée : public/images/les-invites/julienramade116.png
+    imagePresentations: {
+      // Julien est positionné à gauche dans son image header (contrairement aux autres
+      // invité·es qui sont à droite). On ancre à gauche pour garder son visage visible.
+      '/images/les-invites-header/julienramade116.png': {
+        width: 1400, height: 787,
+        desktop: { objectPosition: '20% 30%', objectFit: 'cover' },
+        tablet:  { objectPosition: '22% 30%' },
+        mobile:  { objectPosition: '20% 15%', aspectRatio: '4 / 3', fadeBottom: true },
+      },
+    },
+  },
   115: { instagramReelUrl: "https://www.instagram.com/reel/DZp7vTfsIzq/" },
   114: { instagramReelUrl: "https://www.instagram.com/reel/DZX3uJ3sMZz/" },
   113: { instagramReelUrl: "https://www.instagram.com/reel/DZF8A1QqnJh/" },

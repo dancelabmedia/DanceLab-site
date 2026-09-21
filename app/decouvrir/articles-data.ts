@@ -616,7 +616,7 @@ export const magazineArticles: MagazineArticle[] = [
     heroImages: [
       { src: "/images/les-invites-header/yasminehabib118.png",  objectPosition: "right center" },
       { src: "/images/les-invites-header/tatianaseguin117.png", objectPosition: "right center" },
-      { src: "/images/les-invites-header/julienramade.png",      objectPosition: "right center" },
+      { src: "/images/les-invites-header/julienramade116.png",    objectPosition: "20% center" },
       { src: "/images/les-invites-header/roseotentick114.png",  objectPosition: "right center" },
     ],
     // readTime calculé automatiquement par getReadTime() — ~450 mots → 2 min
