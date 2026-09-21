@@ -1356,33 +1356,35 @@ button {
 @keyframes tick { from{transform:translateX(0)} to{transform:translateX(-50%)} }
 
 /* ===========================
-   RUBAN COLLABORATIONS
+   RUBAN CONFIANCE
+   (anciennement "COLLABORATIONS")
+   Placé en bas de la homepage, après le contenu.
+   Structure verticale : label centré + piste défilante.
+   Intentionnellement distinct du ticker bleu de thématiques.
 =========================== */
 .collabs-band {
-  display: flex;
-  align-items: center;
-  background: #050505;
-  height: 48px;
+  padding: 26px 0 22px;
+  background: #0a0a0a;
   overflow: hidden;
-  border-top: 1px solid rgba(255,255,255,.05);
+  border-top: 1px solid rgba(255,255,255,.06);
 }
 
 .collabs-band-label {
-  flex-shrink: 0;
+  display: block;
+  text-align: center;
   font-family: var(--font-body);
-  font-size: 10px;
-  font-style: italic;
-  letter-spacing: .12em;
-  color: var(--color-primary);
-  opacity: .6;
-  padding: 0 20px 0 24px;
-  border-right: 1px solid rgba(255,255,255,.08);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.28);
+  margin-bottom: 16px;
+  padding: 0 24px;
   white-space: nowrap;
   line-height: 1;
 }
 
 .collabs-band-track-wrapper {
-  flex: 1;
   overflow: hidden;
   white-space: nowrap;
 }
@@ -1390,7 +1392,7 @@ button {
 .collabs-band-track {
   display: inline-flex;
   align-items: center;
-  animation: collabs-scroll 55s linear infinite;
+  animation: collabs-scroll 80s linear infinite;
 }
 
 .collabs-band-track:hover {
@@ -1400,28 +1402,27 @@ button {
 .collabs-band-item {
   display: inline-flex;
   align-items: center;
-  gap: 18px;
+  gap: 22px;
   font-family: var(--font-display), var(--font-body);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: .22em;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .18em;
   text-transform: uppercase;
-  color: rgba(255,255,255,.28);
-  padding: 0 28px;
+  color: rgba(255,255,255,.52);
+  padding: 0 36px;
   white-space: nowrap;
-  transition: color .3s ease;
+  transition: color .35s ease;
 }
 
 .collabs-band-item:hover {
-  color: rgba(255,255,255,.55);
+  color: rgba(255,255,255,.82);
 }
 
 .collabs-band-dot {
-  color: var(--color-primary);
-  opacity: .5;
-  font-size: 14px;
+  color: rgba(255,255,255,.18);
+  font-size: 11px;
   line-height: 1;
-  margin-right: -10px;
+  margin-right: -14px;
 }
 
 @keyframes collabs-scroll {
@@ -1434,8 +1435,8 @@ button {
 }
 
 @media (max-width: 600px) {
-  .collabs-band-label { display: none; }
-  .collabs-band-item  { font-size: 9px; padding: 0 20px; letter-spacing: .18em; }
+  .collabs-band-label { font-size: 8px; letter-spacing: .20em; }
+  .collabs-band-item  { font-size: 9.5px; padding: 0 24px; letter-spacing: .15em; }
 }
 
 /* ===========================

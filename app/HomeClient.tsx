@@ -274,13 +274,12 @@ function getTickerItems(locale: Locale) {
 
 const COLLAB_ITEMS = [
   'La Villette',
+  'Inès Vandamme',
+  'Danc·r',
+  'Soprano',
+  'CN D · Centre national de la danse',
+  'Nicolas Huchard',
   'La Place',
-  'DANC·R',
-  'Centre National de la Danse',
-  'Festival d\'Avignon',
-  'Montpellier Danse',
-  'Pôle Emploi Spectacle',
-  'AFDAS',
 ]
 const HOME_AGENDA_LIMIT = 3
 
@@ -730,23 +729,6 @@ export default function HomeClient({ latestEpisode, latestArticle }: HomeClientP
         </div>
       </div>
 
-      {/* ========================================
-          RUBAN COLLABORATIONS
-      ======================================== */}
-      <div className="collabs-band" aria-label="Collaborations et partenaires">
-        <span className="collabs-band-label" aria-hidden="true">{t('avec')}</span>
-        <div className="collabs-band-track-wrapper">
-          <div className="collabs-band-track">
-            {[...COLLAB_ITEMS, ...COLLAB_ITEMS].map((name, i) => (
-              <span key={i} className="collabs-band-item">
-                <span className="collabs-band-dot" aria-hidden="true">·</span>
-                {name}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-
       {/* ════════════════════════════════════════════════════════════
           EXPÉRIENCE IMMERSIVE — MediaReveal + LatestEpisodeSticky
           Un seul wrapper, un seul dégradé, aucune coupure visible.
@@ -850,6 +832,27 @@ export default function HomeClient({ latestEpisode, latestArticle }: HomeClientP
       </section>
 
         <div className="mxp-outro" aria-hidden="true" />
+      </div>
+
+      {/* ========================================
+          RUBAN ILS NOUS ONT FAIT CONFIANCE
+          Placé après le contenu principal — crédibilité et preuve sociale.
+          Distinct du ticker bleu : structure verticale, défilement lent.
+      ======================================== */}
+      <div className="collabs-band" aria-label="Ils nous ont fait confiance">
+        <span className="collabs-band-label" aria-hidden="true">
+          {locale === 'en' ? 'THEY TRUSTED US' : 'ILS NOUS ONT FAIT CONFIANCE'}
+        </span>
+        <div className="collabs-band-track-wrapper">
+          <div className="collabs-band-track">
+            {[...COLLAB_ITEMS, ...COLLAB_ITEMS].map((name, i) => (
+              <span key={i} className="collabs-band-item">
+                <span className="collabs-band-dot" aria-hidden="true">·</span>
+                {name}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
 
     </main>
