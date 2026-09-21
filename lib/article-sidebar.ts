@@ -9,22 +9,26 @@
  *
  * Principe de remplissage :
  *   §0 → TOUS les épisodes associés à l'article (dans la limite de MAX_EPISODES)
- *   §1+ → citation forte (article.quote) dans la première section vide
- *   §2+ → notion clé (article.aside) dans la section vide suivante
+ *   §1+ → citations des épisodes liés (source = data/episodes-list.ts +
+ *          data/episode-extras.ts), une par section vide, dans l'ordre des
+ *          episodeLinks
+ *   §n+ → notion clé (article.aside) dans la section vide suivante
+ *   §n+ → article.quote en dernier recours (articles sans épisodes liés)
+ *
+ * Source de vérité pour les citations :
+ *   Les citations proviennent EXCLUSIVEMENT des données existantes des épisodes
+ *   (mêmes données que les pages Écouter). Aucune citation n'est inventée,
+ *   reformulée ou dupliquée dans les données articles.
+ *   Priorité : episodeExtras[n].quote > episodesList[n].quote
  *
  * Si des sections restent vides, la colonne s'affiche vide — jamais de
  * contenu inventé.
- *
- * Attribution des citations :
- *   - Utilise article.quoteAuthor si renseigné explicitement.
- *   - Sinon, auto-attribue à article.guest uniquement si l'article n'a qu'un
- *     seul invité·e répertorié dans episodeLinks (évite les attributions fausses
- *     sur les articles multi-invités).
- *   - Reste vide si l'attribution ne peut pas être déterminée avec certitude.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
 import type { MagazineArticle, EpisodeLink } from '@/app/decouvrir/articles-data'
+import { episodesList } from '@/data/episodes-list'
+import { episodeExtras } from '@/data/episode-extras'
 
 export type { EpisodeLink }
 
@@ -36,11 +40,14 @@ const MAX_EPISODES = 5
 export type SidebarFrame = {
   /** Tous les épisodes Dance Lab liés à l'article (section §0 uniquement) */
   episodes?: EpisodeLink[]
-  /** Citation forte tirée de l'article */
+  /**
+   * Citation tirée des données épisode (source : pages Écouter).
+   * Jamais inventée — uniquement récupérée depuis episodesList / episodeExtras.
+   */
   quote?: string
   /**
-   * Auteur·rice de la citation — affiché sous la citation sous la forme « — Nom ».
-   * Jamais inventé : uniquement renseigné quand l'attribution est certaine.
+   * Nom de l'invité·e propriétaire de la citation.
+   * Toujours dérivé du champ `guest` de l'épisode source — jamais deviné.
    */
   quoteAuthor?: string
   /** Idée clé / point à retenir */
@@ -48,6 +55,29 @@ export type SidebarFrame = {
     label: string
     content: string
   }
+}
+
+/**
+ * Recherche la citation et le nom de l'invité·e d'un épisode dans les
+ * données synchrones existantes (même source que les pages Écouter).
+ *
+ * Priorité : episodeExtras[number].quote > episodesList[number].quote
+ *
+ * Retourne null si l'épisode est introuvable ou sa citation vide.
+ */
+function getEpisodeQuoteData(
+  episodeNumber: number
+): { quote: string; guest: string } | null {
+  // 1. Override manuel → episodeExtras (couvre les épisodes RSS 122+ avec extra)
+  const extra = episodeExtras[episodeNumber]
+  // 2. Données de base → episodesList (épisodes legacy 1–121)
+  const base = episodesList.find((ep) => ep.number === episodeNumber)
+
+  const quote = extra?.quote ?? base?.quote ?? ''
+  const guest = base?.guest ?? ''
+
+  if (!quote) return null
+  return { quote, guest }
 }
 
 /**
@@ -73,27 +103,6 @@ function makeEpisodeLinkFromArticle(article: MagazineArticle): EpisodeLink | nul
 }
 
 /**
- * Détermine l'auteur·rice de la citation.
- * Retourne undefined si l'attribution ne peut pas être déterminée avec certitude.
- */
-function resolveQuoteAuthor(article: MagazineArticle): string | undefined {
-  // 1. Attribution explicite dans les données → prioritaire, toujours fiable
-  if (article.quoteAuthor) return article.quoteAuthor
-
-  // 2. Article avec un seul invité·e listé → la citation vient vraisemblablement de lui/elle
-  const epLinks = article.episodeLinks
-  if (epLinks && epLinks.length === 1) return epLinks[0].name
-
-  // 3. Article sans episodeLinks mais avec un unique guest (non-éditorial)
-  //    On n'auto-attribue que si le guest n'est pas l'hôte "Dance Lab" lui-même.
-  //    La convention dans le projet : le guest est l'hôte/éditorial quand episodeSlug est vide.
-  if (!epLinks && article.guest && article.episodeSlug) return article.guest
-
-  // Attribution incertaine — on préfère ne rien afficher plutôt qu'inventer
-  return undefined
-}
-
-/**
  * Construit le tableau de frames (une par section) à partir des données
  * de l'article. Renvoie `null` pour les sections sans contenu associé.
  *
@@ -110,9 +119,8 @@ export function buildSidebarFrames(
 
   // ── 1. Tous les épisodes dans la section §0 ───────────────────────────────────
   //
-  // Logique : les épisodes sont le premier repère éditorial du lecteur.
-  // On les groupe TOUS dans le frame d'entrée plutôt que de les répartir —
-  // l'utilisateur voit immédiatement l'ensemble des ressources liées à l'article.
+  // Les épisodes sont le premier repère du lecteur : ils apparaissent tous
+  // immédiatement dès l'entrée dans l'article.
   //
   const epLinks: EpisodeLink[] = article.episodeLinks?.length
     ? article.episodeLinks.slice(0, MAX_EPISODES)
@@ -124,22 +132,31 @@ export function buildSidebarFrames(
     frames[0] = { episodes: epLinks }
   }
 
-  // ── 2. Citation forte → première section vide (§1 ou suivante) ───────────────
-  if (article.quote) {
-    const emptyIdx = frames.findIndex((f) => f === null)
-    // S'il n'y a aucune section vide, on ajoute la citation à la dernière section
-    const target = emptyIdx >= 0 ? emptyIdx : N - 1
-    const author = resolveQuoteAuthor(article)
-    frames[target] = {
-      ...(frames[target] ?? {}),
-      quote: article.quote,
-      ...(author ? { quoteAuthor: author } : {}),
+  // ── 2. Citations des épisodes liés → sections §1, §2, … ──────────────────────
+  //
+  // Source de vérité : données épisodes (pages Écouter).
+  // On récupère la citation de chaque épisode dans l'ordre des episodeLinks.
+  // Chaque citation va dans la première section vide disponible (§1 ou suivante).
+  // Pas de copie dans les données article : changement côté épisode = MAJ auto.
+  //
+  for (const ep of epLinks) {
+    // Trouver la prochaine section vide (§1 minimum, jamais §0)
+    const emptyIdx = frames.findIndex((f, i) => i > 0 && f === null)
+    if (emptyIdx < 0) break // toutes les sections sont remplies
+
+    const epNum = parseInt(ep.number, 10)
+    const quoteData = getEpisodeQuoteData(epNum)
+    if (!quoteData) continue // pas de citation pour cet épisode → on passe
+
+    frames[emptyIdx] = {
+      quote: quoteData.quote,
+      quoteAuthor: quoteData.guest || ep.name,
     }
   }
 
   // ── 3. Notion / aside → section vide suivante ────────────────────────────────
   if (article.aside && article.aside.items.length > 0) {
-    const emptyIdx = frames.findIndex((f) => f === null)
+    const emptyIdx = frames.findIndex((f, i) => i > 0 && f === null)
     if (emptyIdx >= 0) {
       frames[emptyIdx] = {
         notion: {
@@ -147,6 +164,22 @@ export function buildSidebarFrames(
           content: article.aside.items[0],
         },
       }
+    }
+  }
+
+  // ── 4. Fallback : article.quote (articles sans épisodes liés) ────────────────
+  //
+  // Utilisé uniquement quand aucun épisode n'est associé (ex : article
+  // éditorial sans invité). Pour les articles avec episodeLinks, les citations
+  // viennent des données épisodes (étape 2 ci-dessus).
+  //
+  if (article.quote && epLinks.length === 0) {
+    const emptyIdx = frames.findIndex((f) => f === null)
+    const target = emptyIdx >= 0 ? emptyIdx : N - 1
+    frames[target] = {
+      ...(frames[target] ?? {}),
+      quote: article.quote,
+      ...(article.quoteAuthor ? { quoteAuthor: article.quoteAuthor } : {}),
     }
   }
 
