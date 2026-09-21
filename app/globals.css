@@ -10402,6 +10402,18 @@ p,
   color: var(--color-primary-dark);
 }
 
+/* Signature de la citation — discrète, ne prend pas le dessus sur la phrase */
+.asb-quote-author {
+  margin-top: 10px;
+  font-family: inherit;
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: rgba(35, 48, 51, 0.48);
+  line-height: 1;
+}
+
 /* ── Notion / idée clé ───────────────────────────────────────────────── */
 .asb-notion-text {
   margin: 0;

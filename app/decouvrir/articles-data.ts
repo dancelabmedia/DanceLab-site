@@ -56,6 +56,13 @@ export type MagazineArticle = {
   tags: string[]
   metaDescription?: string  // Meta description SEO (générée automatiquement pour les articles podcast)
   quote?: string
+  /**
+   * Attribution explicite de la citation (article.quote).
+   * Ne renseigner que lorsque l'attribution est certaine.
+   * Si absent : attribution automatique pour les articles à un seul invité·e ;
+   * silence complet pour les articles multi-invités (plutôt qu'inventer).
+   */
+  quoteAuthor?: string
   sections: {
     heading: string
     paragraphs: string[]

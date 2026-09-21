@@ -192,6 +192,11 @@ export function SidebarFrameContent({ frame }: { frame: SidebarFrame }) {
       {frame.quote && (
         <blockquote className="asb-quote">
           <p>{frame.quote}</p>
+          {frame.quoteAuthor && (
+            <footer className="asb-quote-author">
+              <span aria-hidden="true">— </span>{frame.quoteAuthor}
+            </footer>
+          )}
         </blockquote>
       )}
 
