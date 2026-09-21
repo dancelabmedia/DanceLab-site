@@ -77,6 +77,19 @@ export type MagazineArticle = {
     title: string
     items: string[]
   }
+  /**
+   * Phrase éditoriale courte mise en avant dans le bloc « À RETENIR ».
+   * Une seule phrase, synthèse d'une idée importante réellement développée dans l'article.
+   * Affichée inline dans le corps de l'article (entre sections) ET dans la colonne éditoriale.
+   * Générée automatiquement par le générateur d'articles ; éditable manuellement avant publication.
+   * Ne jamais inventer une information absente de l'article.
+   */
+  takeaway?: string
+  /**
+   * Index (0-based) de la section après laquelle insérer le bloc « À RETENIR ».
+   * Par défaut : Math.floor((sections.length - 1) / 2) — milieu de l'article, jamais en première position.
+   */
+  takeawayAfterSection?: number
   episodeLinks?: EpisodeLink[]
   conclusion: string | string[]  // string simple ou tableau pour les conclusions multi-paragraphes
   /**
@@ -200,6 +213,7 @@ export const magazineArticles: MagazineArticle[] = [
         "Montrer ce qu'on fait vaut plus que déclarer ce qu'on a fait.",
       ],
     },
+    takeaway: "La marque personnelle remplace progressivement le CV papier.",
     episodeLinks: [
       {
         // Épisode 1 — Mathilde Champion : ancienne danseuse devenue community manager
@@ -297,6 +311,8 @@ export const magazineArticles: MagazineArticle[] = [
         "Pas au programme des Jeux de Los Angeles 2028."
       ],
     },
+    takeaway: "S'il a pu entrer aux Jeux, c'est parce qu'une culture entière l'avait développé et fait vivre bien avant que l'institution olympique ne s'y intéresse.",
+    takeawayAfterSection: 2,
     episodeLinks: [
       {
         name: "Grichka Rootz",
@@ -378,6 +394,8 @@ export const magazineArticles: MagazineArticle[] = [
         "Le lien entre technique, attitude et histoire culturelle."
       ],
     },
+    takeaway: "Sa puissance vient de son rapport à l'identité et à la manière dont le corps peut reprendre la parole.",
+    takeawayAfterSection: 1,
     episodeLinks: [
       {
         name: "Annabelle Da Fonte",
@@ -452,6 +470,8 @@ export const magazineArticles: MagazineArticle[] = [
         "Prévoir des formats différents : grande scène, extérieur, performance, rencontre."
       ],
     },
+    takeaway: "Un festival, c'est aussi un moyen de prendre le pouls d'une scène et de comprendre ce qui travaille la danse contemporaine à un moment donné.",
+    takeawayAfterSection: 1,
     episodeLinks: [
       {
         name: "Tatiana Seguin",
@@ -520,6 +540,7 @@ export const magazineArticles: MagazineArticle[] = [
         "Le danseur gagne à être accompagné comme un athlète."
       ],
     },
+    takeaway: "La douleur doit être prise au sérieux dès les premiers signaux.",
     episodeLinks: [
       {
         name: "Laura Malié-Leclerc",
@@ -580,6 +601,8 @@ export const magazineArticles: MagazineArticle[] = [
         "Les outils concrets pour durer sans s'épuiser."
       ],
     },
+    takeaway: "Durer dans un métier créatif demande aussi de savoir se reconstruire, se repositionner et reconnaître ses limites.",
+    takeawayAfterSection: 1,
     episodeLinks: [
       {
         name: "Johan Nus",
@@ -655,6 +678,8 @@ export const magazineArticles: MagazineArticle[] = [
         ],
       },
     ],
+    takeaway: "Une carrière ne se construit pas uniquement avec les opportunités qu'on accepte, mais aussi avec celles qu'on refuse.",
+    takeawayAfterSection: 1,
     episodeLinks: [
       {
         name: "Yasmine Habib",
@@ -792,6 +817,8 @@ export const magazineArticles: MagazineArticle[] = [
         "Mr. Gaga · Tomer Heymann · Ohad Naharin et le langage de mouvement Gaga."
       ],
     },
+    takeaway: "Comprendre l'histoire d'une danse change complètement la manière dont on la regarde.",
+    takeawayAfterSection: 2,
     episodeLinks: [
       {
         name: "Grichka Rootz",
@@ -909,6 +936,8 @@ export const magazineArticles: MagazineArticle[] = [
         "Penser « portfolio artistique » plutôt que « course à la visibilité »."
       ],
     },
+    takeaway: "Les réseaux ne remplacent pas l'audition, la recommandation ou le réseau professionnel.",
+    takeawayAfterSection: 2,
     episodeLinks: [
       {
         name: "Maxime Rullier",
@@ -1028,6 +1057,8 @@ export const magazineArticles: MagazineArticle[] = [
         "Le Carreau du Temple : programmation artistique pour nourrir son regard et ses références.",
       ],
     },
+    takeaway: "Pour progresser en freestyle, les cours ne font pas tout : il faut aussi des endroits où chercher, tester, observer et rencontrer d'autres danseurs.",
+    takeawayAfterSection: 0,
     conclusion: [
       "De manière simple, pour apprendre à freestyler il faut surtout développer son écoute, ses références, sa curiosité et sa manière personnelle de répondre à la musique.",
       "Et si tu as peur du regard des autres, l'endroit le plus safe reste chez toi, alors mets le son à fond et lâche toi, danses matin, midi et soir.",

@@ -138,7 +138,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       <ReadingProgress />
 
       {/* Même système de défilement que la page À propos */}
-      <ScrollReveal selector=".article-page .article-content p, .article-page .article-content h2, .article-page .article-content blockquote, .article-page .article-content .article-section-img, .article-page .article-content .doc-card, .article-page .article-conclusion p" />
+      <ScrollReveal selector=".article-page .article-content p, .article-page .article-content h2, .article-page .article-content blockquote, .article-page .article-content .article-section-img, .article-page .article-content .doc-card, .article-page .article-content .article-takeaway, .article-page .article-conclusion p" />
 
       {/* ══════════════════════════════════════════════════════
             HERO — même structure que .ep-hero des pages Écouter :
@@ -230,6 +230,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                     </figure>
                   )}
                   {docLink !== null && <DocCard doc={docLink} t={t} />}
+
+                  {/* Bloc éditorial « À retenir » — inséré après la section cible */}
+                  {article.takeaway && i === (article.takeawayAfterSection ?? Math.floor((article.sections.length - 1) / 2)) && (
+                    <aside className="article-takeaway">
+                      <span className="asb-label">{t('À retenir')}</span>
+                      <p className="article-takeaway-text">{article.takeaway}</p>
+                    </aside>
+                  )}
 
                   {/* Slot mobile — même contenu que la sidebar, rendu statiquement
                       entre chaque section. Masqué sur desktop (≥ 981px via CSS). */}

@@ -122,8 +122,16 @@ export function buildSidebarFrames(article: MagazineArticle): SidebarFrame[] {
     })
   }
 
-  // ── 3. Notion / aside (optionnel) ────────────────────────────────────────────
-  if (article.aside && article.aside.items.length > 0) {
+  // ── 3. Notion / takeaway (optionnel) ─────────────────────────────────────────
+  // Priorité : article.takeaway (champ dédié) > article.aside (ancien système)
+  if (article.takeaway) {
+    frames.push({
+      notion: {
+        label:   'À retenir',
+        content: article.takeaway,
+      },
+    })
+  } else if (article.aside && article.aside.items.length > 0) {
     frames.push({
       notion: {
         label:   article.aside.title,

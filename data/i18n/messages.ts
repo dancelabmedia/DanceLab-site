@@ -306,6 +306,7 @@ const english: Record<string, string> = {
   "Choisis ta plateforme d'écoute": 'Choose your listening platform',
   'Dans cet épisode': 'In this episode',
   'Chapitres': 'Chapters',
+  'À retenir': 'Key takeaway',
   'À lire aussi': 'Also read',
   "Lire l'article sur cet épisode": 'Read the article about this episode',
   'sur YouTube': 'on YouTube',

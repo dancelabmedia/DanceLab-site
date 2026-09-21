@@ -27,6 +27,7 @@ type GeneratedArticleContent = {
   category: string
   tags: string[]
   quote?: string
+  takeaway?: string
   sections: {
     heading: string
     paragraphs: string[]
@@ -63,6 +64,7 @@ STRUCTURE ATTENDUE (JSON strict) :
   "category": "Une seule catégorie parmi : Parcours, Technique, Carrière, Mindset, Culture, Décryptage, Portrait",
   "tags": ["3-5 tags pertinents"],
   "quote": "Citation forte de l'invité si disponible dans la description (texte exact, sans invention)",
+  "takeaway": "Phrase éditoriale courte synthétisant une idée essentielle de l'article (1 phrase max, naturelle, directe, jamais générique)",
   "sections": [
     {
       "heading": "Intertitre H2 éditorial (pas un résumé, une accroche)",
@@ -169,6 +171,7 @@ export async function generateArticleFromEpisode(
     tags: generated.tags,
     metaDescription: generated.metaDescription,
     quote: generated.quote,
+    takeaway: generated.takeaway,
     sections: generated.sections,
     conclusion: generated.conclusion,
   }

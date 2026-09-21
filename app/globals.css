@@ -10230,6 +10230,30 @@ p,
   line-height: 1.5;
 }
 
+/* ── Bloc éditorial « À retenir » — inséré inline entre deux sections ──────── */
+.article-takeaway {
+  margin: clamp(36px, 5vw, 56px) 0;
+  padding: clamp(20px, 3vw, 30px) clamp(24px, 3.5vw, 36px);
+  border-left: 3px solid var(--color-primary);
+  background: rgba(var(--color-primary-rgb, 35, 48, 51), 0.04);
+  border-radius: 0 6px 6px 0;
+  max-width: 68ch;
+}
+
+.article-takeaway .asb-label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.article-takeaway-text {
+  margin: 0;
+  font-size: clamp(1.05rem, 1.3vw, 1.18rem);
+  line-height: 1.7;
+  font-style: italic;
+  color: rgba(35, 48, 51, 0.85);
+  max-width: 62ch;
+}
+
 .article-conclusion {
   margin-top: clamp(52px, 7vw, 86px);
   padding-top: 30px;
