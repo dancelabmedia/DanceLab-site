@@ -9833,6 +9833,36 @@ p,
   object-position: right center;
 }
 
+/* ── Crossfade hero (articles multi-invités) ─────────────────────────────────
+   Toutes les images sont empilées (position: absolute) et préchargées dans
+   le DOM. L'image active passe à opacity: 1, les autres restent à opacity: 0.
+   La transition CSS garantit un fondu sans flash ni saut de mise en page.
+   prefers-reduced-motion : géré côté JS (ArticleHeroCrossfade.tsx),
+   le composant bascule alors sur un rendu statique sans animation.          */
+.article-hero-crossfade {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.article-hero-crossfade-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  opacity: 0;
+  /* transitionDuration est injecté en inline style depuis le composant */
+  transition-property: opacity;
+  transition-timing-function: ease-in-out;
+  will-change: opacity;
+}
+
+.article-hero-crossfade-slide--active {
+  opacity: 1;
+}
+
 /* Dégradé — copie exacte de .ep-hero-shade :
    sombre à gauche pour lisibilité, transparent à droite pour le portrait */
 .article-hero-overlay {

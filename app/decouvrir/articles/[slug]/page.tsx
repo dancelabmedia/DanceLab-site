@@ -11,6 +11,7 @@ import {
 import { getArticleBySlug, getAllPublishedSlugs } from "@/lib/all-articles"
 import CommentsSection from "../../../components/CommentsSection"
 import ArticleHeroSlider from "./ArticleHeroSlider"
+import ArticleHeroCrossfade from "./ArticleHeroCrossfade"
 import ScrollReveal from "../../../../components/ScrollReveal"
 import PhotoCredit from "../../../../components/PhotoCredit"
 import ReadingProgress from "../../../../components/ReadingProgress"
@@ -146,7 +147,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             className={`article-hero-bg${article.heroImageType === 'portrait' ? ' article-hero-bg--portrait' : ''}`}
             aria-hidden="true"
           >
-            {article.useHeroSlider && heroSlides.length > 0 ? (
+            {article.heroImages && article.heroImages.length > 1 ? (
+              /* Rotation crossfade automatique entre plusieurs invité·es */
+              <ArticleHeroCrossfade images={article.heroImages} />
+            ) : article.useHeroSlider && heroSlides.length > 0 ? (
               <ArticleHeroSlider slides={heroSlides} />
             ) : (
               <img

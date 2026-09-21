@@ -40,6 +40,17 @@ export type MagazineArticle = {
   // scene    → photo d'ambiance, lieu, action collective : cadrage standard conservé
   heroAspectRatio?: string      // force aspect-ratio sur le conteneur hero (ex: "16/9" pour une miniature paysage)
   useHeroSlider?: boolean       // si true : le hero affiche un slider des miniatures de chaque section (docLink.thumbnail)
+  /**
+   * Rotation automatique crossfade d'images dans le hero (articles multi-invités).
+   * Si renseigné (2+ images), remplace l'image fixe par un fondu enchaîné automatique.
+   * Chaque image est affichée ~2,6 s avec une transition de ~0,9 s.
+   * Les images doivent déjà exister sur le site — aucune nouvelle génération.
+   */
+  heroImages?: Array<{
+    src: string
+    /** object-position CSS — défaut : "right center" (portrait face à droite) */
+    objectPosition?: string
+  }>
   imageCredit?: string
   readTime?: string   // facultatif : calculé automatiquement via getReadTime() si absent
   tags: string[]
@@ -582,6 +593,13 @@ export const magazineArticles: MagazineArticle[] = [
     guest: "Yasmine Habib",
     image: "/images/les-invites-header/yasminehabib118.png",  // 1400×787 — image header 16:9 conçue pour ce cadrage
     heroImageType: 'portrait',
+    // Rotation automatique des quatre invité·es cité·es dans l'article
+    heroImages: [
+      { src: "/images/les-invites-header/yasminehabib118.png",  objectPosition: "right center" },
+      { src: "/images/les-invites-header/tatianaseguin117.png", objectPosition: "right center" },
+      { src: "/images/les-invites/julienramade116.png",         objectPosition: "right center" },
+      { src: "/images/les-invites-header/roseotentick114.png",  objectPosition: "right center" },
+    ],
     // readTime calculé automatiquement par getReadTime() — ~450 mots → 2 min
     tags: ["Carrière", "Formation", "Contrats"],
     quote: "Avant de faire un choix carriériste, je fais un choix humain",
