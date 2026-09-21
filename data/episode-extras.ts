@@ -170,7 +170,7 @@ export const episodeExtras: Record<number, EpisodeExtra> = {
   119: { instagramReelUrl: "https://www.instagram.com/reel/DayCAZqKhv4/" },
   118: { instagramReelUrl: "https://www.instagram.com/reel/DagCGxUMlxk/" },
   117: { instagramReelUrl: "https://www.instagram.com/reel/DaOAg4IMP_Z/" },
-  116: { instagramReelUrl: "https://www.instagram.com/reel/DZ8F_m6M67C/" },
+  116: { instagramReelUrl: "https://www.instagram.com/reel/DZ8F_m6M67C/", image: "/images/les-invites-header/julienramade.png" },
   115: { instagramReelUrl: "https://www.instagram.com/reel/DZp7vTfsIzq/" },
   114: { instagramReelUrl: "https://www.instagram.com/reel/DZX3uJ3sMZz/" },
   113: { instagramReelUrl: "https://www.instagram.com/reel/DZF8A1QqnJh/" },
