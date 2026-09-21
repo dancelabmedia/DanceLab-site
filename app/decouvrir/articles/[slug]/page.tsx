@@ -196,13 +196,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <article className="article-content" data-article-content>
             {article.sections.map((section, i) => {
               const docLink = section.docLink ?? null
-              const mobileFrame = sidebarFrames[i]
               return (
                 <section
                   key={i}
                   id={`article-section-${i}`}
-                  data-article-section
-                  data-section-index={i}
                 >
                   {section.heading && <h2>{section.heading}</h2>}
                   {section.paragraphs.map((paragraph, pi) => (
@@ -236,9 +233,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
                   {/* Slot mobile — même contenu que la sidebar, rendu statiquement
                       entre chaque section. Masqué sur desktop (≥ 981px via CSS). */}
-                  {mobileFrame && (
+                  {i < sidebarFrames.length && (
                     <div className="asb-mobile-slot">
-                      <SidebarFrameContent frame={mobileFrame} />
+                      <SidebarFrameContent frame={sidebarFrames[i]} />
                     </div>
                   )}
                 </section>
