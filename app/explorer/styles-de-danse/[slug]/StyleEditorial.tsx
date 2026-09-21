@@ -235,7 +235,7 @@ export default async function StyleEditorial({ style, cover, summaryRest, linked
         {style.resources.length > 0 && (
           <section id="ressources" className={`container ${css.chapter} ${css.ruled}`}>
             <Heading number="09" title={t("Pour aller plus loin")} />
-            <p className={css.sectionNote}>{t("Ressources vérifiées — livres, documentaires, archives et sites institutionnels.")}</p>
+            <p className={css.sectionNote}>{t("Ressources vérifiées : livres, documentaires, archives et sites institutionnels.")}</p>
             <ul className={css.resources}>{style.resources.map((resource, i) => (
               <li key={i}>
                 <div>

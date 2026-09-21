@@ -579,7 +579,7 @@ const english: Record<string, string> = {
   'Formats de pratique': 'Practice formats',
   'Artistes de référence': 'Reference artists',
   'Personnalités et collectifs importants': 'Key figures and collectives',
-  "Ressources vérifiées — livres, documentaires, archives et sites institutionnels.": "Verified resources — books, documentaries, archives and official websites.",
+  "Ressources vérifiées : livres, documentaires, archives et sites institutionnels.": "Verified resources: books, documentaries, archives and official websites.",
   "Accéder à la ressource": "Access the resource",
   "Prolonger la découverte": "Go deeper",
   "Pour aller plus loin avec Dance Lab": "Go further with Dance Lab",

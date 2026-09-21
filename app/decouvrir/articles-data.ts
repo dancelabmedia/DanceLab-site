@@ -1021,11 +1021,11 @@ export const magazineArticles: MagazineArticle[] = [
     aside: {
       title: "Les 5 spots en résumé",
       items: [
-        "Le 104 — Espaces libres gratuits et sans réservation, toutes disciplines.",
-        "La Place — Training libre chaque jeudi de 17h à 20h, cultures hip-hop.",
-        "La Villette — Parquet sous la Grande Halle, accès libre, toutes disciplines.",
-        "La Mona — Soirées house et disco depuis 2008, la danse au cœur du dancefloor.",
-        "Le Carreau du Temple — Programmation artistique pour nourrir son regard et ses références.",
+        "Le 104 : espaces libres gratuits et sans réservation, toutes disciplines.",
+        "La Place : training libre chaque jeudi de 17h à 20h, cultures hip-hop.",
+        "La Villette : parquet sous la Grande Halle, accès libre, toutes disciplines.",
+        "La Mona : soirées house et disco depuis 2008, la danse au cœur du dancefloor.",
+        "Le Carreau du Temple : programmation artistique pour nourrir son regard et ses références.",
       ],
     },
     conclusion: [
