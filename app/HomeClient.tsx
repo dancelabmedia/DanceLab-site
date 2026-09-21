@@ -272,14 +272,14 @@ function getTickerItems(locale: Locale) {
     : ['Podcast', 'Articles', 'Agenda culturel', "Portraits d'artistes", 'Ressources pro', 'Styles de danse', 'Festivals', 'Interviews', 'Compagnies', 'Spectacles']
 }
 
-const COLLAB_ITEMS = [
-  'La Villette',
-  'Inès Vandamme',
-  'Danc·r',
-  'Soprano',
-  'CN D · Centre national de la danse',
-  'Nicolas Huchard',
-  'La Place',
+const COLLAB_ITEMS: { name: string; href?: string }[] = [
+  { name: 'La Villette' },
+  { name: 'Inès Vandamme',                   href: '/episodes/72-ines-vandamme' },
+  { name: 'Danc·r',                           href: '/episodes/44-danc-r' },
+  { name: 'Soprano',                          href: '/episodes/89-soprano' },
+  { name: 'CN D · Centre national de la danse' },
+  { name: 'Nicolas Huchard',                  href: '/episodes/78-nicolas-huchard' },
+  { name: 'La Place' },
 ]
 const HOME_AGENDA_LIMIT = 3
 
@@ -844,13 +844,23 @@ export default function HomeClient({ latestEpisode, latestArticle }: HomeClientP
           {locale === 'en' ? 'THEY TRUSTED US' : 'ILS NOUS ONT FAIT CONFIANCE'}
         </span>
         <div className="collabs-band-track-wrapper">
-          <div className="collabs-band-track">
-            {[...COLLAB_ITEMS, ...COLLAB_ITEMS].map((name, i) => (
-              <span key={i} className="collabs-band-item">
-                <span className="collabs-band-dot" aria-hidden="true">·</span>
-                {name}
-              </span>
-            ))}
+          <div className="collabs-band-track" aria-hidden="true">
+            {[...COLLAB_ITEMS, ...COLLAB_ITEMS].map((item, i) =>
+              item.href ? (
+                <Link
+                  key={i}
+                  href={item.href}
+                  className="collabs-band-item"
+                  tabIndex={i < COLLAB_ITEMS.length ? 0 : -1}
+                >
+                  {item.name}
+                </Link>
+              ) : (
+                <span key={i} className="collabs-band-item">
+                  {item.name}
+                </span>
+              )
+            )}
           </div>
         </div>
       </div>
