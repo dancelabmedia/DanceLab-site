@@ -10117,90 +10117,7 @@ p,
   position: relative;
 }
 
-/* ---- ENCART ÉPISODES LIÉS ---- */
-
-.article-panel--episodes {
-  padding: 20px;
-}
-
-.article-episode-links {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.article-episode-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 8px;
-  border-radius: 8px;
-  transition: background 0.18s;
-  text-decoration: none;
-  color: inherit;
-}
-
-.article-episode-item:hover {
-  background: rgba(91, 115, 119, 0.07);
-}
-
-.article-episode-img {
-  flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  border-radius: 6px;
-  overflow: hidden;
-  background: var(--color-background-soft);
-}
-
-.article-episode-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.article-episode-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.article-episode-info small {
-  display: block;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-primary-light);
-  margin-bottom: 2px;
-}
-
-.article-episode-info strong {
-  display: block;
-  font-size: 0.92rem;
-  font-weight: 700;
-  color: var(--color-text-dark);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.article-episode-arrow {
-  flex-shrink: 0;
-  width: 16px;
-  height: 16px;
-  color: var(--color-primary-light);
-  opacity: 0;
-  transform: translateX(-4px);
-  transition: opacity 0.18s, transform 0.18s;
-}
-
-.article-episode-item:hover .article-episode-arrow {
-  opacity: 1;
-  transform: translateX(0);
-}
+/* (encart épisodes liés — remplacé par .asb-* ci-dessous) */
 
 .article-body,
 .article-related {
@@ -10319,69 +10236,190 @@ p,
   border-top: 1px solid rgba(35, 48, 51, 0.14);
 }
 
+/* ── Colonne éditoriale dynamique (sidebar article) ────────────────────────────
+   Compagnon de lecture : sticky desktop, disparaît sur mobile.
+   Son contenu change au fil du scroll via ArticleSidebar.tsx (client).
+
+   Direction artistique : beaucoup d'espace, pas de cards/bordures,
+   typographie forte, images bien composées, transitions très subtiles.
+   ─────────────────────────────────────────────────────────────────────────── */
+
 .article-sidebar {
+  /* Sticky : reste ancré au sommet pendant la lecture */
   position: sticky;
   top: 96px;
-  display: grid;
-  gap: 16px;
+  /* align-self: start → obligatoire pour que sticky fonctionne dans un grid */
+  align-self: start;
 }
 
-.article-panel {
-  border: 1px solid rgba(35, 48, 51, 0.12);
-  border-radius: 8px;
-  padding: 22px;
-  background: rgba(255, 255, 255, 0.72);
+/* Racine du composant client — conteneur minimal */
+.asb {
+  width: 100%;
+  min-height: 60px;
 }
 
-.article-panel span {
-  display: block;
-  margin-bottom: 12px;
-  color: var(--color-primary-light);
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
+/* Frame : la "diapositive" active — transition opacity + légère dérive verticale */
+.asb-frame {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.article-panel h2 {
-  margin: 0 0 12px;
-  font-size: 1.55rem;
-  line-height: 1.08;
-  color: var(--color-primary-dark);
+.asb-frame--out {
+  opacity: 0;
+  transform: translateY(5px);
 }
 
-.article-panel p,
-.article-panel li {
-  color: var(--color-text-muted);
-  font-size: 0.94rem;
-  line-height: 1.65;
-}
-
-.article-panel a {
-  display: inline-flex;
-  margin-top: 18px;
-  color: var(--color-primary-dark);
-  font-weight: 800;
-}
-
-.article-panel ul {
-  display: grid;
-  gap: 10px;
-  padding-left: 18px;
-}
-
-.article-tags {
+/* Contenu intérieur du frame */
+.asb-content {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-direction: column;
+  gap: 36px;
 }
 
-.article-tags small {
-  border-radius: 999px;
-  padding: 8px 10px;
-  background: rgba(193, 208, 223, 0.28);
-  color: var(--color-primary-dark);
-  font-size: 0.78rem;
+/* Libellé de catégorie (À ÉCOUTER / À RETENIR / etc.) */
+.asb-label {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 9.5px;
   font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin: 0 0 14px;
+}
+
+/* ── Épisodes ────────────────────────────────────────────────────────── */
+
+.asb-ep-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Ligne épisode : image carrée + texte + flèche */
+.asb-ep {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(35, 48, 51, 0.07);
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 0.18s ease;
+}
+
+.asb-ep:first-child {
+  padding-top: 0;
+}
+
+.asb-ep:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.asb-ep:hover {
+  opacity: 0.72;
+}
+
+.asb-ep:hover .asb-ep-img img {
+  transform: scale(1.04);
+}
+
+.asb-ep:hover .asb-ep-arrow {
+  opacity: 0.7;
+  transform: translateX(0);
+}
+
+/* Photo de l'invité·e — square, bien composée */
+.asb-ep-img {
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--color-background-soft);
+}
+
+.asb-ep-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+  transition: transform 0.35s ease;
+}
+
+.asb-ep-caption {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.asb-ep-number {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+.asb-ep-name {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.22;
+  color: var(--color-primary-dark);
+  display: block;
+}
+
+/* Flèche → légère, réservée au hover */
+.asb-ep-arrow {
+  flex-shrink: 0;
+  color: var(--color-primary-dark);
+  opacity: 0.22;
+  transform: translateX(-5px);
+  transition: opacity 0.18s ease, transform 0.22s ease;
+}
+
+/* ── Citation forte ──────────────────────────────────────────────────── */
+.asb-quote {
+  margin: 0;
+  padding: 0 0 0 16px;
+  border-left: 2px solid var(--color-primary);
+}
+
+.asb-quote p {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.08rem, 1.4vw, 1.28rem);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--color-primary-dark);
+}
+
+/* ── Notion / idée clé ───────────────────────────────────────────────── */
+.asb-notion-text {
+  margin: 0;
+  font-size: 0.93rem;
+  line-height: 1.72;
+  color: rgba(35, 48, 51, 0.72);
+}
+
+/* ── Slot mobile — inséré entre chaque section dans l'article ──────────
+   Masqué sur desktop (≥ 981px), visible sur mobile/tablette (≤ 980px).
+   ─────────────────────────────────────────────────────────────────────── */
+.asb-mobile-slot {
+  display: none; /* masqué par défaut; affiché via @media ci-dessous */
+  margin-top: clamp(28px, 5vw, 40px);
+  padding: clamp(20px, 4vw, 28px);
+  border-top: 1px solid rgba(35, 48, 51, 0.09);
+  border-bottom: 1px solid rgba(35, 48, 51, 0.09);
+  background: rgba(193, 208, 223, 0.08);
 }
 
 @media (max-width: 980px) {
@@ -10443,8 +10481,14 @@ p,
     object-position: 70% top;
   }
 
+  /* Sidebar sticky : masquée sur tablette/mobile — les .asb-mobile-slot prennent le relais */
   .article-sidebar {
-    position: static;
+    display: none;
+  }
+
+  /* Slots mobiles : visibles sur tablette/mobile */
+  .asb-mobile-slot {
+    display: block;
   }
 }
 

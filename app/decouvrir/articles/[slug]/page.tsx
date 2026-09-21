@@ -13,7 +13,9 @@ import CommentsSection from "../../../components/CommentsSection"
 import ArticleHeroSlider from "./ArticleHeroSlider"
 import ArticleHeroCrossfade from "./ArticleHeroCrossfade"
 import ArticleTicker from "./ArticleTicker"
+import ArticleSidebar, { SidebarFrameContent } from "./ArticleSidebar"
 import ScrollReveal from "../../../../components/ScrollReveal"
+import { buildSidebarFrames } from "@/lib/article-sidebar"
 import PhotoCredit from "../../../../components/PhotoCredit"
 import ReadingProgress from "../../../../components/ReadingProgress"
 import { requestLocale } from "@/lib/i18n/server"
@@ -116,6 +118,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     .slice(0, 2)
 
   // Slides pour le hero slider (articles avec useHeroSlider = true)
+  // Frames de la colonne éditoriale latérale — une par section
+  const sidebarFrames = buildSidebarFrames(article)
+
   const heroSlides = article.useHeroSlider
     ? article.sections
         .map((s, i) => ({ s, i }))
@@ -191,8 +196,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <article className="article-content" data-article-content>
             {article.sections.map((section, i) => {
               const docLink = section.docLink ?? null
+              const mobileFrame = sidebarFrames[i]
               return (
-                <section key={i} id={`article-section-${i}`}>
+                <section
+                  key={i}
+                  id={`article-section-${i}`}
+                  data-article-section
+                  data-section-index={i}
+                >
                   {section.heading && <h2>{section.heading}</h2>}
                   {section.paragraphs.map((paragraph, pi) => (
                     <p key={pi} dangerouslySetInnerHTML={{ __html: paragraph }} />
@@ -222,6 +233,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                     </figure>
                   )}
                   {docLink !== null && <DocCard doc={docLink} t={t} />}
+
+                  {/* Slot mobile — même contenu que la sidebar, rendu statiquement
+                      entre chaque section. Masqué sur desktop (≥ 981px via CSS). */}
+                  {mobileFrame && (
+                    <div className="asb-mobile-slot">
+                      <SidebarFrameContent frame={mobileFrame} />
+                    </div>
+                  )}
                 </section>
               )
             })}
@@ -234,59 +253,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </div>
           </article>
 
+          {/* Colonne éditoriale dynamique — sticky desktop, masquée sur mobile */}
           <aside className="article-sidebar">
-
-            {/* Encart épisodes personnalisé OU encart source par défaut */}
-            {article.episodeLinks ? (
-              <div className="article-panel article-panel--episodes">
-                <span>{t('Épisodes à écouter pour aller plus loin')}</span>
-                <ul className="article-episode-links">
-                  {article.episodeLinks.map((ep) => (
-                    <li key={ep.slug}>
-                      <Link href={`/episodes/${ep.slug}`} className="article-episode-item">
-                        <div className="article-episode-img">
-                          <img src={ep.image} alt={ep.name} />
-                        </div>
-                        <div className="article-episode-info">
-                          <small>{t('Épisode')} {ep.number}</small>
-                          <strong>{ep.name}</strong>
-                        </div>
-                        <svg className="article-episode-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <path d="M5 12h14M12 5l7 7-7 7"/>
-                        </svg>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              <div className="article-panel">
-                <span>{t('Épisode source')}</span>
-                <h2>{article.guest}</h2>
-                <p>{locale === 'en' ? `Article based on episode ${article.episodeNumber} of Dance Lab.` : `Article construit à partir de l'épisode ${article.episodeNumber} de Dance Lab.`}</p>
-                <Link href={`/episodes/${article.episodeSlug}`}>{t("Écouter l'épisode")}</Link>
-              </div>
-            )}
-
-            {article.aside ? (
-              <div className="article-panel">
-                <span>{article.aside.title}</span>
-                <ul>
-                  {article.aside.items.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-
-            <div className="article-panel">
-              <span>{t('Tags')}</span>
-              <div className="article-tags">
-                {article.tags.map((tag) => (
-                  <small key={tag}>{tag}</small>
-                ))}
-              </div>
-            </div>
+            <ArticleSidebar frames={sidebarFrames} />
           </aside>
         </div>
       </section>
