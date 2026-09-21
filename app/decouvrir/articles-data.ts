@@ -72,6 +72,12 @@ export type MagazineArticle = {
   }
   episodeLinks?: EpisodeLink[]
   conclusion: string | string[]  // string simple ou tableau pour les conclusions multi-paragraphes
+  /**
+   * Mots-clés / expressions éditoriales affichés dans le bandeau défilant sous le hero.
+   * 5 à 8 items, en majuscules, formules courtes et percutantes.
+   * Générés au moment de la création de l'article.
+   */
+  themes?: string[]
 }
 
 export const magazineArticles: MagazineArticle[] = [
@@ -94,6 +100,7 @@ export const magazineArticles: MagazineArticle[] = [
     imageObjectPosition: "center 20%",
     readTime: "5 min",
     tags: ["Carrière", "Marque personnelle", "Réseaux sociaux", "Avenir"],
+    themes: ["LE CV ARTISTIQUE EST MORT", "MONTRER PLUTÔT QUE DÉCLARER", "LA MARQUE PERSONNELLE AVANT TOUT", "LES RÉSEAUX COMME VITRINE", "IDENTITÉ NUMÉRIQUE D'ARTISTE", "SE RENDRE VISIBLE EN 2026", "LA PREUVE PLUTÔT QUE LA DÉCLARATION"],
     sections: [
       {
         // Section d'ouverture — liste flash des observations (sans heading)
@@ -236,6 +243,7 @@ export const magazineArticles: MagazineArticle[] = [
     heroImageType: 'portrait',
     readTime: "8 min",
     tags: ["Breaking", "Olympisme", "Culture hip-hop"],
+    themes: ["LA CULTURE AVANT LE SPORT", "NÉ DANS LE BRONX", "LA RUE ET L'INSTITUTION", "PARIS 2024", "PAS À LOS ANGELES 2028", "LÉGITIMITÉ OU RECONNAISSANCE", "TRANSMETTRE D'OÙ L'ON VIENT"],
     sections: [
       {
         heading: "Avant d'être un sport olympique, le break est une culture",
@@ -324,6 +332,7 @@ export const magazineArticles: MagazineArticle[] = [
     imageObjectPosition: "right 12%",  // image quasi-carrée : décale le crop vers le haut pour préserver la tête
     readTime: "7 min",
     tags: ["Waacking", "Disco", "Culture club"],
+    themes: ["NÉ DANS LES CLUBS DE LOS ANGELES", "UNE DANSE D'AFFIRMATION", "HISTOIRE LGBTQ+", "THÉÂTRALITÉ ET ATTITUDE", "LE DISCO COMME LANGAGE", "TRANSMETTRE LE CONTEXTE", "LE CORPS QUI PREND LA PAROLE"],
     sections: [
       {
         heading: "Une danse de club avant d'être un style de cours",
@@ -397,6 +406,7 @@ export const magazineArticles: MagazineArticle[] = [
     heroImageType: 'scene',
     readTime: "6 min",
     tags: ["Festivals", "Agenda", "Spectacle vivant"],
+    themes: ["MONTPELLIER DANSE", "LE FESTIVAL D'AVIGNON", "REPÉRER LES CRÉATIONS", "SPECTACLE VIVANT EN ÉTÉ", "COMMENT CHOISIR SON FESTIVAL", "CIRCULATION DES ŒUVRES", "RENCONTRER UNE SCÈNE"],
     sections: [
       {
         heading: "Pourquoi l'été compte autant pour la danse",
@@ -469,6 +479,7 @@ export const magazineArticles: MagazineArticle[] = [
     heroImageType: 'portrait',
     readTime: "7 min",
     tags: ["Santé", "Prévention", "Corps"],
+    themes: ["LE CORPS N'EST PAS UN OUTIL À ÉPUISER", "LA DOULEUR EST UN SIGNAL", "S'ÉCHAUFFER VRAIMENT", "RÉCUPÉRER INTELLIGEMMENT", "TRAITER LE DANSEUR COMME UN ATHLÈTE", "UNE CULTURE DU SOIN", "ANTICIPER PLUTÔT QU'ENCAISSER"],
     quote:
       "La douleur c'est le premier signal du corps pour te dire qu'il y a quelque chose qui ne va pas.",
     sections: [
@@ -530,6 +541,7 @@ export const magazineArticles: MagazineArticle[] = [
     heroImageType: 'portrait',
     readTime: "8 min",
     tags: ["Santé mentale", "Bienveillance", "Longévité"],
+    themes: ["AU-DELÀ DE LA PERFORMANCE", "ENVIRONNEMENTS DE TRAVAIL TOXIQUES", "RECONNAÎTRE SES LIMITES", "LA BIENVEILLANCE COMME CONDITION", "DURER SANS S'ÉPUISER", "SE RECONSTRUIRE APRÈS LA CRISE", "L'ARTISTE EXISTE EN DEHORS DU PLATEAU"],
     sections: [
       {
         heading: "L'artiste n'est pas seulement ce qu'il produit",
@@ -602,6 +614,7 @@ export const magazineArticles: MagazineArticle[] = [
     ],
     // readTime calculé automatiquement par getReadTime() — ~450 mots → 2 min
     tags: ["Carrière", "Formation", "Contrats"],
+    themes: ["BIEN DANSER NE SUFFIT PAS", "CONNAÎTRE SES DROITS", "SAVOIR DIRE NON", "CHOISIR SES CONDITIONS DE TRAVAIL", "COMPRENDRE SES CONTRATS", "POSER SES LIMITES", "SE FORMER AU-DELÀ DU STUDIO"],
     quote: "Avant de faire un choix carriériste, je fais un choix humain",
     sections: [
       {
@@ -687,6 +700,7 @@ export const magazineArticles: MagazineArticle[] = [
     useHeroSlider: true,
     readTime: "8 min",
     tags: ["Documentaires", "Cinéma", "Culture", "Sélection"],
+    themes: ["COULISSES D'UNE CRÉATION À L'OPÉRA", "KRUMP ET LOS ANGELES", "CULTURE BALLROOM ET VOGUING", "L'HISTOIRE DE LA DANSE ÉLECTRO", "LE LANGAGE GAGA", "COMPRENDRE UNE CULTURE PAR LE FILM", "CINQ DOCUMENTAIRES ESSENTIELS"],
     quote: "Comprendre l'histoire d'une danse change complètement la manière dont on la regarde.",
     sections: [
       {
@@ -815,6 +829,7 @@ export const magazineArticles: MagazineArticle[] = [
     imageObjectPosition: "right 38%",
     readTime: "9 min",
     tags: ["Réseaux sociaux", "Carrière", "Visibilité", "Instagram"],
+    themes: ["INSTAGRAM EST-IL NOTRE NOUVEAU CV ?", "DANSER ≠ SE RENDRE VISIBLE", "PORTFOLIO PLUTÔT QU'ABONNÉS", "NE PAS CONFONDRE VISIBILITÉ ET TALENT", "LA PRESSION DES RÉSEAUX", "ÊTRE VISIBLE À QUEL PRIX", "TROUVER SA MANIÈRE D'EXISTER EN LIGNE"],
     quote: "Danser et savoir se rendre visible sont deux compétences différentes.",
     sections: [
       {
@@ -928,6 +943,7 @@ export const magazineArticles: MagazineArticle[] = [
     heroImageType: 'scene',
     readTime: "4 min",
     tags: ["Freestyle", "Paris", "Adresses", "Hip-hop", "Spots"],
+    themes: ["LE 104 EN ACCÈS LIBRE", "TRAINING À LA PLACE", "LA VILLETTE SOUS LA GRANDE HALLE", "LA MONA ET LA CULTURE CLUB", "LE CARREAU DU TEMPLE", "FREESTYLER C'EST IMPROVISER", "OBSERVER LES AUTRES POUR PROGRESSER"],
     quote:
       "Danser avec un DJ, avec les autres et avec ce qui se passe réellement dans la musique, c'est aussi une autre manière d'apprendre.",
     sections: [

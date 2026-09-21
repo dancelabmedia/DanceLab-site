@@ -9863,6 +9863,61 @@ p,
   opacity: 1;
 }
 
+/* ── Ticker éditorial ──────────────────────────────────────────────────────────
+   Bandeau horizontal défilant placé immédiatement sous le hero de chaque article.
+   Technique : double jeu de contenu + animation translateX(-50%) pour un loop
+   seamless sans saut visible. prefers-reduced-motion : animation suspendue.     */
+.article-ticker {
+  width: 100%;
+  overflow: hidden;
+  background: var(--color-bg, #0a0a0a);
+  border-top: 1px solid rgba(255,255,255,.08);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  padding: 10px 0;
+}
+
+.article-ticker-track {
+  display: flex;
+  white-space: nowrap;
+  width: max-content;
+  /* 60 s pour une vitesse élégante et lisible; ajustable via custom prop */
+  animation: article-ticker-scroll 60s linear infinite;
+}
+
+@keyframes article-ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .article-ticker-track {
+    animation-play-state: paused;
+  }
+}
+
+.article-ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+}
+
+.article-ticker-text {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.45);
+  line-height: 1;
+}
+
+.article-ticker-sep {
+  font-size: 9px;
+  color: rgba(255,255,255,.2);
+  line-height: 1;
+}
+
 /* Dégradé — copie exacte de .ep-hero-shade :
    sombre à gauche pour lisibilité, transparent à droite pour le portrait */
 .article-hero-overlay {

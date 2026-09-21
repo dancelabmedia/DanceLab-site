@@ -12,6 +12,7 @@ import { getArticleBySlug, getAllPublishedSlugs } from "@/lib/all-articles"
 import CommentsSection from "../../../components/CommentsSection"
 import ArticleHeroSlider from "./ArticleHeroSlider"
 import ArticleHeroCrossfade from "./ArticleHeroCrossfade"
+import ArticleTicker from "./ArticleTicker"
 import ScrollReveal from "../../../../components/ScrollReveal"
 import PhotoCredit from "../../../../components/PhotoCredit"
 import ReadingProgress from "../../../../components/ReadingProgress"
@@ -181,6 +182,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </div>
 
       </section>
+
+      {/* Bandeau éditorial défilant — thèmes extraits du contenu de l'article */}
+      <ArticleTicker themes={article.themes} />
 
       <section className="article-body">
         <div className="container article-body-grid">
