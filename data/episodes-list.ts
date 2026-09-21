@@ -505,7 +505,7 @@ export const episodesList: EpisodeListItem[] = [
     "title": "Auditions et castings : ce que dit la loi",
     "guest": "Samuela Berdah & Raphaëlle Petitperrin",
     "duration": "31 min",
-    "image": "/logo.png",
+    "image": "/episodes/samuelaetraphaelle77.png",
     "sourceImage": "/episodes/samuelaetraphaelle77.png",
     "excerpt": "Un échange juridique sur les auditions, les pratiques interdites et les droits essentiels à connaître avant de passer un casting.",
     "quote": "On ne peut pas faire attendre des danseurs.ses dans la rue."
@@ -527,7 +527,7 @@ export const episodesList: EpisodeListItem[] = [
     "title": "Embaucher un artiste : tout ce qu’il faut savoir",
     "guest": "Samuela Berdah & Raphaëlle Petitperrin",
     "duration": "48 min",
-    "image": "/logo.png",
+    "image": "/episodes/samuelaetraphaelle75.png",
     "sourceImage": "/episodes/samuelaetraphaelle75.png",
     "excerpt": "Un guide concret sur l’embauche d’un artiste, les contrats, les déclarations et les responsabilités légales des porteurs de projets.",
     "quote": "Les employeurs ne sont pas totalement libres dans leurs manières de rédiger leurs annonces."
@@ -637,7 +637,7 @@ export const episodesList: EpisodeListItem[] = [
     "title": "Inspiration vs plagiat : Comment protéger ses oeuvres ?",
     "guest": "Samuela Berdah & Raphaëlle Petitperrin",
     "duration": "29 min",
-    "image": "/logo.png",
+    "image": "/episodes/samuelaetraphaelle65.png",
     "sourceImage": "/episodes/samuelaetraphaelle65.png",
     "excerpt": "Un épisode juridique pour distinguer inspiration et plagiat, protéger une chorégraphie et comprendre les droits liés aux œuvres artistiques.",
     "quote": "Ce n’est pas parce que c’est sur internet que je peux m’en saisir et le réutiliser à ma guise. Tout ça, ça nécessite des autorisations."
@@ -1055,7 +1055,7 @@ export const episodesList: EpisodeListItem[] = [
     "title": "Révolutionner son corps, son esprit et ses performances grâce au yoga",
     "guest": "Laure Dary",
     "duration": "42 min",
-    "image": "/logo.png",
+    "image": "/episodes/lauredary27.png",
     "sourceImage": "/episodes/lauredary27.png",
     "excerpt": "Un échange sur le yoga, la conscience du corps et les outils permettant d’améliorer durablement ses performances de danseur.",
     "quote": "Avoir une autre image de son corps grâce à différentes disciplines qui nous permettent de prendre soin de nous, c’est essentiel."
