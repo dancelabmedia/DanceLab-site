@@ -3075,6 +3075,13 @@ a.collabs-band-item:focus-visible {
     height: clamp(280px, 55vw, 360px);
   }
 
+  /* Recadrage vertical sur mobile : décale le point focal vers le bas de l'image,
+     ce qui remonte le visage de l'invité·e dans le cadre visible de la carte.
+     Valeur calibrée pour tous les épisodes (ne pas modifier par épisode). */
+  .les-ep-card-img {
+    object-position: center 20%;
+  }
+
   /* 1 seule carte d'interview visible */
   .les-ivw-card {
     flex: 0 0 auto;
