@@ -271,6 +271,18 @@ export default function PrivateAccessPage({ mode = 'preview', returnTo, localWor
         .access-signature { position: absolute; z-index: 2; right: 42px; bottom: 38px; margin: 0; color: rgba(255,255,255,.9); text-transform: uppercase; letter-spacing: .22em; font-size: 8px; font-weight: 600; line-height: 1.6; display: flex; align-items: center; gap: 22px; }
         .access-signature span { display: block; width: 64px; height: 1px; background: rgba(255,255,255,.6); }
         .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+        /* Desktop uniquement — fond commun à toutes les rubriques privées.
+           Remplace automatiquement l'image par section : toute nouvelle rubrique
+           ajoutée utilisera fondlaptop.png sans configuration supplémentaire. */
+        @media (min-width: 761px) {
+          .access-photo {
+            background-image: url('/images/fondlaptop.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+          }
+          .access-photo img { opacity: 0; }
+        }
         @media (max-width: 1100px) {
           .access-page { padding-left: 7vw; padding-right: 7vw; grid-template-columns: minmax(380px, 1fr) 1px minmax(310px, .8fr); gap: 40px; }
           .access-editorial h1 { font-size: clamp(55px, 6vw, 72px); }
