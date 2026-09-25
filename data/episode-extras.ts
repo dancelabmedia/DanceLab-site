@@ -129,9 +129,16 @@ export const episodeExtras: Record<number, EpisodeExtra> = {
     quote:          "Un battle, ça définit pas ta danse, ton talent, ton niveau. Donc juste, amuse-toi.",
   },
 
+  129: {
+    image: '/images/les-invites/clementinedagousset129.png',
+    headerImage: '/images/les-invites-header/clementinedagousset129.png',
+    instagramReelUrl: "https://www.instagram.com/reel/DdmTj5vIZZn/",
+  },
+
   128: {
     image: '/images/les-invites/128wilfriedbernard.png',
     headerImage: '/images/les-invites-header/128wilfriedbernard.png',
+    instagramReelUrl: "https://www.instagram.com/reel/DdUScU8MEY8/",
     imagePresentations: {
       // 16:9 photograph: Wilfried occupies the right-hand third, not the centre.
       '/images/les-invites-header/128wilfriedbernard.png': {
