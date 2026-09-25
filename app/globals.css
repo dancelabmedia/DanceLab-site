@@ -673,8 +673,11 @@ button {
   width: 100vw;
   min-height: 100vh;
   min-height: 100dvh;
-  background: rgba(5,5,5,.985);
-  backdrop-filter: blur(20px);
+  background-color: #0b0b0b;
+  background-image: url('/images/fondlaptop.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   align-items: flex-start;
   justify-content: center;
   overflow-y: auto;
