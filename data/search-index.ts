@@ -1,10 +1,11 @@
 import { agendaEvents } from "../app/agenda/agenda-data"
-import { magazineArticles } from "../app/decouvrir/articles-data"
+import { getArticleCardObjectPosition, magazineArticles } from "../app/decouvrir/articles-data"
 import { discoverSections } from "../app/decouvrir/discover-data"
 import { explorerSections } from "../app/explorer/explorer-data"
 import { episodes } from "./episodes"
 import { normalizeSearchText, type SearchItem } from "./search"
 import { isPrivateSectionPath } from './section-visibility'
+import { privateAccessScope } from './private-navigation'
 
 function searchable(parts: Array<string | number | undefined>) {
   return normalizeSearchText(parts.filter((part) => part !== undefined).join(" "))
@@ -45,6 +46,7 @@ const articleItems: SearchItem[] = magazineArticles.map((article) => ({
   href: `/decouvrir/articles/${article.slug}`,
   summary: article.chapo,
   image: article.image,
+  imageObjectPosition: getArticleCardObjectPosition(article),
   guest: article.guest,
   searchText: searchable([
     article.title,
@@ -206,4 +208,4 @@ export const searchIndex: SearchItem[] = [
   ...discoverItems,
   ...explorerItems,
   ...editorialItems,
-].filter(item => !isPrivateSectionPath(item.href))
+].filter(item => !isPrivateSectionPath(item.href) && !privateAccessScope(item.href))

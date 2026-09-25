@@ -2,6 +2,9 @@
 export type SectionKey = 'danceStyles' | 'jobs' | 'schools'
 export type Visibility = 'private' | 'public'
 
+/** La page d'accueil Explorer s'ouvre indépendamment de ses sous-rubriques. */
+export const explorerHomeVisibility: Visibility = 'private'
+
 export const sectionVisibility: Record<SectionKey, Visibility> = {
   danceStyles: 'private',
   jobs: 'private',
@@ -25,11 +28,14 @@ export function sectionForPath(value: string) {
 }
 
 export function isPrivateSectionPath(path: string) {
+  const pathname = path.split(/[?#]/, 1)[0].replace(/\/+$/, '') || '/'
+  if (pathname === '/explorer') return explorerHomeVisibility === 'private'
   const section = sectionForPath(path)
   return !!section && sectionVisibility[section.key] === 'private'
 }
 
 export function safeExplorerReturnTo(value: unknown): string {
+  if (value === '/explorer') return value
   return typeof value === 'string' && value.length <= 2048 && sectionForPath(value)
     ? value
     : explorerAccessSections[0].path

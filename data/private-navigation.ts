@@ -1,7 +1,7 @@
 import { isPrivateSectionPath } from './section-visibility'
 
 /** Même référentiel pour le middleware et les mentions de disponibilité. */
-export const previewPaths = ['/sortir', '/apprendre', '/explorer/artistes', '/explorer/choregraphes', '/explorer/compagnies'] as const
+export const previewPaths = ['/sortir', '/apprendre'] as const
 export type PrivateAccessScope = 'explorer' | 'preview'
 export function privateAccessScope(value: string): PrivateAccessScope | null {
   if (isPrivateSectionPath(value)) return 'explorer'

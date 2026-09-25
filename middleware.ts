@@ -15,16 +15,25 @@ export async function middleware(request: NextRequest) {
   const originalPath = request.nextUrl.pathname
   const urlLocale = localeFromPath(originalPath)
   const pathname = sourcePath(originalPath)
-  // Cookie-based language preference: respected on all non-/en/ paths.
-  // /en/* paths always resolve to English regardless of cookie.
   const cookieLocale = request.cookies.get(LOCALE_COOKIE)?.value
-  const locale = urlLocale === 'fr' && cookieLocale === 'en' ? 'en' : urlLocale
+  const locale = urlLocale
   const forwardedHeaders = new Headers(request.headers)
-  // Never trust a client-supplied locale/path header. They are derived from the actual URL + cookie.
+  // Never trust client-supplied locale/path headers. They come from the actual URL.
   forwardedHeaders.set(LOCALE_HEADER, locale)
   forwardedHeaders.set(PATH_HEADER, originalPath)
-  const next = () => NextResponse.next({ request: { headers: forwardedHeaders } })
+  const next = () => {
+    if (locale === 'en') {
+      const destination = request.nextUrl.clone()
+      destination.pathname = pathname
+      // /en is an external locale URL only. Internally it renders the exact French route/component.
+      return NextResponse.rewrite(destination, { request: { headers: forwardedHeaders } })
+    }
+    return NextResponse.next({ request: { headers: forwardedHeaders } })
+  }
   if (urlLocale === 'en' && /^\/(?:api|admin|_next)(?:\/|$)/.test(pathname)) return new NextResponse(null, { status: 404 })
+  if (originalPath === '/' && cookieLocale === 'en' && request.method === 'GET') {
+    return NextResponse.redirect(new URL('/en', request.url))
+  }
 
   // Toutes les sous-routes, requêtes RSC et préchargements sont contrôlés.
   // Fermé par défaut, y compris si EXPLORER_ACCESS_CODE n'est pas configuré.
