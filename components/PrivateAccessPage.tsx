@@ -275,6 +275,7 @@ export default function PrivateAccessPage({ mode = 'preview', returnTo, localWor
            Remplace automatiquement l'image par section : toute nouvelle rubrique
            ajoutée utilisera fondlaptop.png sans configuration supplémentaire. */
         @media (min-width: 761px) {
+          /* Fond commun à toutes les rubriques privées */
           .access-photo {
             background-image: url('/images/fondlaptop.png');
             background-size: cover;
@@ -282,6 +283,12 @@ export default function PrivateAccessPage({ mode = 'preview', returnTo, localWor
             background-repeat: no-repeat;
           }
           .access-photo img { opacity: 0; }
+          /* Épuration desktop : suppression des éléments décoratifs */
+          .access-number { display: none; }
+          .access-divider span { display: none; }
+          .access-rule { display: none; }
+          .access-panel-rule { display: none; }
+          .access-signature span { display: none; }
         }
         @media (max-width: 1100px) {
           .access-page { padding-left: 7vw; padding-right: 7vw; grid-template-columns: minmax(380px, 1fr) 1px minmax(310px, .8fr); gap: 40px; }
