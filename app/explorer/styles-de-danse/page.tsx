@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { requireExplorerAccess } from '@/lib/explorer-access'
 import Link from "next/link"
 import StylesHeroFeatured from "./StylesHeroFeatured"
+import StylesPodcastBanner, { type PodcastBannerImage } from "./StylesPodcastBanner"
 import StylesReveal from "./StylesReveal"
 import MissionReveal from "../../../components/MissionReveal"
 import { danceStyles, upcomingStyles } from "./styles-data"
@@ -9,6 +10,8 @@ import { withDedicatedStyleImages } from "./style-image-resolver"
 import { getEpisodes } from "@/lib/episodes"
 import { requestLocale } from '@/lib/i18n/server'
 import { uiText } from '@/data/i18n/messages'
+import { episodeExtras } from '@/data/episode-extras'
+import { findImagePresentation, resolveImageFrame } from '@/lib/episode-image-presentation'
 
 export const metadata: Metadata = {
   title: "Styles de danse - Histoire, cultures et ressources | Dance Lab",
@@ -40,6 +43,17 @@ export default async function StylesDeDansePage() {
 
   // Source de vérité : même données que la page Écouter (legacy + RSS Ausha)
   const episodes = await getEpisodes()
+  const podcastBannerImages = episodes.flatMap<PodcastBannerImage>((episode) => {
+    const src = episodeExtras[episode.number]?.headerImage ?? episode.image
+    if (!src) return []
+    const presentation = findImagePresentation(episodeExtras[episode.number]?.imagePresentations, src)
+    return [{
+      src,
+      alt: episode.guest,
+      desktopPosition: presentation ? resolveImageFrame(presentation, 'desktop').objectPosition : 'center center',
+      mobilePosition: presentation ? resolveImageFrame(presentation, 'mobile').objectPosition : 'center center',
+    }]
+  }).filter((image, index, all) => all.findIndex(candidate => candidate.src === image.src) === index)
 
   // Tous les styles (disponibles + à venir), triés alphabétiquement
   const allStyles = [
@@ -200,25 +214,7 @@ export default async function StylesDeDansePage() {
       ════════════════════════════════════════ */}
       <section className="sty-podcast-wrap" data-reveal>
         <div className="container">
-          <div className="sty-podcast">
-            <div className="sty-podcast-glow" aria-hidden="true" />
-            <div className="sty-podcast-content">
-              <div className="sty-podcast-icon" aria-hidden="true">
-                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                  <circle cx="24" cy="24" r="23" stroke="rgba(255,255,255,.18)" strokeWidth="1.5"/>
-                  <circle cx="24" cy="24" r="15" stroke="rgba(255,255,255,.08)" strokeWidth="1"/>
-                  <path d="M19 16.5v15l13-7.5-13-7.5z" fill="rgba(255,255,255,.90)"/>
-                </svg>
-              </div>
-              <h2>{t('Écoutez les histoires derrière chaque style')}</h2>
-              <p>
-                {t('Immersion, témoignages et coulisses avec les artistes qui font vivre ces cultures.')}
-              </p>
-              <Link href="/ecouter" className="sty-podcast-btn">
-                {t('Découvrir les épisodes →')}
-              </Link>
-            </div>
-          </div>
+          <StylesPodcastBanner images={podcastBannerImages} />
         </div>
       </section>
 

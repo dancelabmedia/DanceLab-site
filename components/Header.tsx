@@ -40,7 +40,6 @@ const IconEnvelope = () => (
   </svg>
 )
 
-const popularSearches = ['Waacking', 'Breakdance', 'Intermittence', 'Chorégraphes', 'Danse contemporaine']
 const MAX_PREVIEW_RESULTS = 12
 
 export default function Header({ searchItems, locale: _initialLocale = 'fr' }: { searchItems: SearchItem[]; locale?: Locale }) {
@@ -58,6 +57,8 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [activeResult, setActiveResult] = useState(-1)
+  const [popularSearches, setPopularSearches] = useState<string[]>([])
+  const [showAll, setShowAll] = useState(false)
   const searchInputRef = useRef<HTMLInputElement | null>(null)
   const searchBoxRef = useRef<HTMLDivElement | null>(null)
   const newsletterScrollTimersRef = useRef<number[]>([])
@@ -110,6 +111,21 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
   )
   const hasMoreSuggestions = allSuggestions.length > suggestions.length
 
+  // Groupe complet (sans limite de prévisualisation) — utilisé quand showAll = true
+  const allSuggestionGroups = useMemo(() => {
+    const groupedResults = new Map<string, SearchItem[]>()
+    for (const item of allSuggestions) {
+      const group = groupedResults.get(item.groupLabel) || []
+      group.push(item)
+      groupedResults.set(item.groupLabel, group)
+    }
+    return Array.from(groupedResults, ([label, items]) => ({ label, items }))
+  }, [allSuggestions])
+
+  // Ce que l'overlay affiche réellement selon l'état "expand"
+  const displayedGroups = showAll ? allSuggestionGroups : suggestionGroups
+  const displayedItems  = showAll ? allSuggestions      : suggestions
+
   const discoverLinks = [
     { label: 'Articles', href: '/decouvrir/articles-culture' },
     { label: 'Portraits', href: '/decouvrir/artistes-a-suivre' },
@@ -134,9 +150,21 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
   }, [])
 
   useEffect(() => {
+    setShowAll(false) // nouveau mot → retour en mode aperçu
     const timeout = window.setTimeout(() => setDebouncedQuery(query), 120)
     return () => window.clearTimeout(timeout)
   }, [query])
+
+  // Charge les recherches populaires depuis l'API à chaque ouverture de la barre
+  useEffect(() => {
+    if (!searchOpen) return
+    fetch('/api/search-stats')
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data?.searches)) setPopularSearches(data.searches)
+      })
+      .catch(() => {})
+  }, [searchOpen])
 
   useEffect(() => {
     const onKeyDown = (event: globalThis.KeyboardEvent) => {
@@ -274,12 +302,21 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
     setActiveResult(-1)
   }
 
+  /** Enregistre une requête côté serveur (fire-and-forget, sans bloquer la nav). */
+  const trackSearch = (q: string) => {
+    fetch('/api/search-stats', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: q }),
+    }).catch(() => {})
+  }
+
   const goToSearchResults = () => {
     const trimmedQuery = query.trim()
     if (!trimmedQuery) return
-
-    router.push(href(`/recherche?q=${encodeURIComponent(trimmedQuery)}`))
-    closeSearch()
+    trackSearch(trimmedQuery)
+    // Affiche tous les résultats dans l'overlay — aucune redirection
+    setShowAll(true)
   }
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
@@ -288,19 +325,19 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
   }
 
   const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'ArrowDown' && suggestions.length > 0) {
+    if (event.key === 'ArrowDown' && displayedItems.length > 0) {
       event.preventDefault()
-      setActiveResult((current) => (current + 1) % suggestions.length)
+      setActiveResult((current) => (current + 1) % displayedItems.length)
     }
 
-    if (event.key === 'ArrowUp' && suggestions.length > 0) {
+    if (event.key === 'ArrowUp' && displayedItems.length > 0) {
       event.preventDefault()
-      setActiveResult((current) => (current <= 0 ? suggestions.length - 1 : current - 1))
+      setActiveResult((current) => (current <= 0 ? displayedItems.length - 1 : current - 1))
     }
 
-    if (event.key === 'Enter' && activeResult >= 0 && suggestions[activeResult]) {
+    if (event.key === 'Enter' && activeResult >= 0 && displayedItems[activeResult]) {
       event.preventDefault()
-      router.push(suggestions[activeResult].href)
+      router.push(displayedItems[activeResult].href)
       closeSearch()
     } else if (event.key === 'Enter') {
       event.preventDefault()
@@ -488,7 +525,7 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
                 aria-autocomplete="list"
                 aria-controls="search-suggestions"
                 aria-activedescendant={
-                  activeResult >= 0 ? `search-result-${suggestions[activeResult]?.id}` : undefined
+                  activeResult >= 0 ? `search-result-${displayedItems[activeResult]?.id}` : undefined
                 }
                 onChange={(event) => {
                   setQuery(event.target.value)
@@ -514,7 +551,10 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
                       type="button"
                       className="s-chip"
                       onClick={() => {
+                        // Insère le terme dans le champ — les résultats apparaissent
+                        // immédiatement dans l'overlay, sans quitter l'interface.
                         setQuery(search)
+                        trackSearch(search)
                         searchInputRef.current?.focus()
                       }}
                     >
@@ -527,9 +567,13 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
 
             {query.trim() ? (
               <div className="search-suggestions" aria-live="polite">
-                {suggestions.length > 0 ? (
-                  <div id="search-suggestions" className="search-suggestion-scroll" role="listbox">
-                    {suggestionGroups.map((group, groupIndex) => (
+                {displayedItems.length > 0 ? (
+                  <div
+                    id="search-suggestions"
+                    className={`search-suggestion-scroll${showAll ? ' search-suggestion-scroll--all' : ''}`}
+                    role="listbox"
+                  >
+                    {displayedGroups.map((group, groupIndex) => (
                       <section
                         key={group.label}
                         className="search-suggestion-group"
@@ -541,7 +585,7 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
                         </h2>
                         <ul>
                           {group.items.map((item) => {
-                            const itemIndex = suggestions.findIndex((suggestion) => suggestion.id === item.id)
+                            const itemIndex = displayedItems.findIndex((s) => s.id === item.id)
 
                             return (
                               <li key={item.id} role="presentation">
@@ -581,7 +625,8 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
                   <p className="search-empty">{locale === 'en' ? 'English search is not available yet.' : `${t('Aucun résultat trouvé pour')} « ${query.trim()} ».`}</p>
                 ) : null}
 
-                {hasMoreSuggestions ? (
+                {/* Bouton visible seulement quand il reste des résultats non affichés */}
+                {hasMoreSuggestions && !showAll ? (
                   <button className="search-all-results" type="button" onClick={goToSearchResults}>
                     {t('Voir tous les résultats')} ({allSuggestions.length})
                   </button>

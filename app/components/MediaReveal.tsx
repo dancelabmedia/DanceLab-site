@@ -375,12 +375,7 @@ export default function MediaReveal({ article, event }: Props) {
                     <div><img src="/images/styles-de-danse/jazz.png" alt="" /><span>Jazz</span></div>
                     <div><img src="/images/styles-de-danse/break.png" alt="" /><span>Break</span></div>
                     <div><img src="/images/styles-de-danse/danseclassique.png" alt="" /><span>Classique</span></div>
-                    <div><img src="/images/sofiastanic.jpg" alt="" /><span>Waacking</span></div>
-                    <div><img src="/images/styles-de-danse/jazz.png" alt="" /><span>Voguing</span></div>
-                    <div><img src="/images/styles-de-danse/break.png" alt="" /><span>Krump</span></div>
                     <div><img src="/images/styles-de-danse/claquettes.png" alt="" /><span>Claquettes</span></div>
-                    <div><img src="/images/styles-de-danse/danseclassique.png" alt="" /><span>Street jazz</span></div>
-                    <div><img src="/images/sofiastanic.jpg" alt="" /><span>Hip-hop</span></div>
                   </div>
                   <span className="mfr-preview-cta">{isPrivateSectionPath(explorerFeature.href) ? t("Bientôt · contenu en cours de vérification") : t("Ouvrir l'encyclopédie →")}</span>
                 </div>

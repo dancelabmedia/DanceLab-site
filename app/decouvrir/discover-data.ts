@@ -1,4 +1,20 @@
-export const discoverSections = [
+export type DiscoverSection = {
+  slug: string
+  label: string
+  title: string
+  description: string
+  kicker: string
+  /**
+   * Contrôle la visibilité dans la recherche publique.
+   * - `false` (défaut) : rubrique en construction, exclue de la recherche
+   * - `true` : rubrique publiée, indexée et visible dans la recherche
+   *
+   * Pour rendre une rubrique publique, passer cette valeur à `true`.
+   */
+  published: boolean
+}
+
+export const discoverSections: DiscoverSection[] = [
   {
     slug: "articles-culture",
     label: "Articles culture",
@@ -6,6 +22,7 @@ export const discoverSections = [
     description:
       "Un espace pour publier des articles de fond, des regards critiques et des récits autour de la danse comme culture vivante.",
     kicker: "Magazine",
+    published: false, // page de rubrique en construction
   },
   {
     slug: "histoire-des-styles",
@@ -14,6 +31,7 @@ export const discoverSections = [
     description:
       "Une rubrique pensée pour raconter les origines, les filiations, les codes et les évolutions des grandes esthétiques de danse.",
     kicker: "Repères",
+    published: false, // page de rubrique en construction
   },
   {
     slug: "decryptages",
@@ -22,6 +40,7 @@ export const discoverSections = [
     description:
       "Des analyses pour comprendre ce qui se joue derrière les tendances, les spectacles, les carrières et les transformations du milieu.",
     kicker: "Analyse",
+    published: false, // page de rubrique en construction
   },
   {
     slug: "tendances",
@@ -30,6 +49,7 @@ export const discoverSections = [
     description:
       "Une veille éditoriale sur les mouvements, formats, pratiques et signaux qui traversent la danse aujourd'hui.",
     kicker: "Veille",
+    published: false, // page de rubrique en construction
   },
   {
     slug: "artistes-a-suivre",
@@ -38,6 +58,7 @@ export const discoverSections = [
     description:
       "Un espace pour mettre en avant les voix, parcours et présences artistiques qui façonnent la danse contemporaine.",
     kicker: "Portraits",
+    published: false, // page de rubrique en construction
   },
 ]
 

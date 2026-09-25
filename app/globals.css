@@ -761,45 +761,55 @@ button {
 .search-suggestions { position: relative; overflow: visible; }
 .search-suggestion-scroll {
   display: grid;
-  gap: 18px;
+  gap: 14px;
   max-height: min(62vh, 640px);
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-color: var(--color-primary-light) rgba(255,255,255,.08);
   scrollbar-width: thin;
-  padding: 0 8px 8px 0;
+  padding: 0 10px 12px 2px;
+}
+/* Mode « Voir tous » : la zone scroll s'étend pour accueillir l'ensemble des résultats.
+   La barre de recherche reste visible au-dessus (elle ne fait pas partie du scroll). */
+.search-suggestion-scroll--all {
+  max-height: calc(100vh - 230px);
 }
 .search-suggestion-group { min-width: 0; }
+
+/* Surtitre de catégorie — petit label éditorial aéré, sans rectangle plein */
 .search-suggestion-group h2 {
-  position: sticky;
-  top: 0;
-  z-index: 2;
   margin: 0;
-  padding: 7px 0 9px;
-  background: #050505;
-  color: rgba(255,255,255,.48);
+  padding: 16px 0 8px;
+  background: transparent;
+  color: var(--color-primary-light);
   font-family: var(--font-body);
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: .16em;
+  letter-spacing: .18em;
   text-transform: uppercase;
 }
+.search-suggestion-scroll .search-suggestion-group:first-child h2 {
+  padding-top: 4px; /* premier groupe : moins d'espace au-dessus */
+}
+
 .search-suggestion-group ul {
   display: grid;
-  gap: 8px;
+  gap: 7px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
+
+/* Carte résultat — plus compacte, plus arrondie, plus éditoriale */
 .search-suggestion {
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr) auto;
+  grid-template-columns: 54px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 16px;
+  gap: 13px;
   border: 1px solid rgba(255,255,255,.09);
-  border-radius: 8px;
-  padding: 10px;
-  background: rgba(255,255,255,.035);
+  border-radius: 12px;
+  padding: 11px 14px 11px 11px;
+  background: rgba(255,255,255,.04);
   color: #fff;
   text-decoration: none;
   transition: border-color .2s, background .2s, transform .2s;
@@ -807,34 +817,35 @@ button {
 .search-suggestion:hover,
 .search-suggestion:focus-visible,
 .search-suggestion.active {
-  border-color: rgba(193,208,223,.72);
-  background: rgba(193,208,223,.1);
+  border-color: rgba(193,208,223,.6);
+  background: rgba(193,208,223,.09);
   outline: none;
-  transform: translateX(2px);
+  transform: translateX(3px);
 }
 .search-suggestion img,
 .search-suggestion-placeholder {
   display: grid;
-  width: 64px;
-  height: 64px;
+  width: 54px;
+  height: 54px;
   place-items: center;
-  border-radius: 6px;
+  border-radius: 8px;
   object-fit: cover;
+  flex-shrink: 0;
 }
 .search-suggestion-placeholder {
-  background: rgba(193,208,223,.16);
+  background: rgba(193,208,223,.14);
   color: var(--color-primary-light);
   font-family: var(--font-display);
-  font-size: 1.8rem;
+  font-size: 1.6rem;
 }
 .search-suggestion-copy {
   display: grid;
   min-width: 0;
-  gap: 3px;
+  gap: 2px;
 }
 .search-suggestion-copy small {
   color: var(--color-primary-light);
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
   letter-spacing: .12em;
   text-transform: uppercase;
@@ -842,22 +853,25 @@ button {
 .search-suggestion-copy strong {
   overflow: hidden;
   font-family: var(--font-display);
-  font-size: 1.17rem;
+  font-size: 1.1rem;
   font-weight: 600;
-  line-height: 1.08;
+  line-height: 1.15;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .search-suggestion-copy > span {
   overflow: hidden;
-  color: rgba(255,255,255,.52);
-  font-size: 12px;
+  color: rgba(255,255,255,.48);
+  font-size: 11.5px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Flèche — rapprochée du contenu, plus discrète */
 .search-suggestion-arrow {
-  padding: 0 8px;
-  color: rgba(255,255,255,.38);
+  padding: 0 0 0 6px;
+  color: rgba(255,255,255,.3);
+  font-size: 13px;
 }
 .search-empty {
   margin: 36px 0 0;
@@ -1153,17 +1167,21 @@ button {
     background: rgba(255,255,255,.06);
     color: rgba(255,255,255,.82);
   }
-  .search-suggestion-group h2 { background: rgba(51,79,91,.92); color: rgba(255,255,255,.72); }
-  .search-suggestion { border-color: rgba(255,255,255,.18); background: rgba(12,32,41,.2); backdrop-filter: blur(8px); }
+  /* Mobile : même surtitre éditorial, sans rectangle */
+  .search-suggestion-group h2 { background: transparent; color: var(--color-primary-light); padding: 14px 0 7px; }
+  .search-suggestion-scroll .search-suggestion-group:first-child h2 { padding-top: 4px; }
+  .search-suggestion { border-color: rgba(255,255,255,.14); background: rgba(12,32,41,.22); backdrop-filter: blur(8px); }
   .search-suggestion {
-    grid-template-columns: 52px minmax(0, 1fr);
-    gap: 12px;
-    padding: 8px;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 11px;
+    padding: 9px 12px 9px 9px;
+    border-radius: 10px;
   }
   .search-suggestion img,
-  .search-suggestion-placeholder { width: 52px; height: 52px; }
+  .search-suggestion-placeholder { width: 48px; height: 48px; border-radius: 6px; }
   .search-suggestion-arrow { display: none; }
   .search-suggestion-scroll { max-height: calc(100dvh - 220px); }
+  .search-suggestion-scroll--all { max-height: calc(100dvh - 180px); }
   .search-results-hero {
     min-height: 0;
     padding: calc(var(--nav-h) + 32px) 0 42px;
@@ -2029,6 +2047,16 @@ a.collabs-band-item:focus-visible {
   background: rgba(251, 191, 36, .18);
   color: #fcd34d;
   border: 1px solid rgba(251, 191, 36, .32);
+}
+
+/* Desktop : les univers sont des surtitres éditoriaux, sans capsule. */
+@media (min-width: 769px) {
+  .mfr-badge {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
 }
 
 /* Catégorie / kicker */
@@ -13090,6 +13118,35 @@ a.sty-mag-card {
   padding: 80px 72px;
 }
 
+.sty-podcast-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: #14262d;
+}
+.sty-podcast-media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: var(--sty-podcast-position, center center);
+}
+.sty-podcast-media-current { animation: sty-podcast-crossfade 1.25s ease both; }
+.sty-podcast-media-previous { opacity: 0; transition: opacity 1.25s ease; }
+@keyframes sty-podcast-crossfade { from { opacity: 0; } to { opacity: 1; } }
+
+.sty-podcast::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(90deg, rgba(8,23,30,.92) 0%, rgba(12,31,40,.82) 48%, rgba(14,33,42,.48) 100%),
+    linear-gradient(180deg, rgba(8,22,29,.18), rgba(7,20,27,.64));
+  pointer-events: none;
+}
+
 .sty-podcast-glow {
   position: absolute;
   inset: 0;
@@ -13097,12 +13154,13 @@ a.sty-mag-card {
     radial-gradient(ellipse at 85% 50%, rgba(193,208,223,.10) 0%, transparent 55%),
     radial-gradient(ellipse at 12% 75%, rgba(91,115,119,.14) 0%, transparent 50%);
   pointer-events: none;
+  z-index: 2;
 }
 
 .sty-podcast-content {
   max-width: 620px;
   position: relative;
-  z-index: 1;
+  z-index: 3;
 }
 
 .sty-podcast-icon {
@@ -13223,6 +13281,13 @@ a.sty-mag-card {
   .sty-podcast {
     padding: 52px 32px;
   }
+  .sty-podcast-media img {
+    object-position: var(--sty-podcast-position-mobile, center center);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sty-podcast-media-current { animation: none; }
 }
 
 /* ══════════════════════════════════════════════════════════════

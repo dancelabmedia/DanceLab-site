@@ -37,27 +37,31 @@ const episodeItems: SearchItem[] = episodes.map((episode) => ({
   ]),
 }))
 
-const articleItems: SearchItem[] = magazineArticles.map((article) => ({
-  id: `article-${article.slug}`,
-  type: "article",
-  typeLabel: article.category,
-  groupLabel: "Articles & portraits",
-  title: article.title,
-  href: `/decouvrir/articles/${article.slug}`,
-  summary: article.chapo,
-  image: article.image,
-  imageObjectPosition: getArticleCardObjectPosition(article),
-  guest: article.guest,
-  searchText: searchable([
-    article.title,
-    article.category,
-    article.chapo,
-    article.guest,
-    ...article.tags,
-    ...article.sections.flatMap((section) => [section.heading, ...section.paragraphs]),
-    ...(Array.isArray(article.conclusion) ? article.conclusion : [article.conclusion]),
-  ]),
-}))
+// Seuls les articles publiés (status === 'published') entrent dans l'index public.
+// Les articles en statut 'draft' ou 'scheduled' sont invisibles en recherche.
+const articleItems: SearchItem[] = magazineArticles
+  .filter((article) => article.status === 'published')
+  .map((article) => ({
+    id: `article-${article.slug}`,
+    type: "article",
+    typeLabel: article.category,
+    groupLabel: "Articles & portraits",
+    title: article.title,
+    href: `/decouvrir/articles/${article.slug}`,
+    summary: article.chapo,
+    image: article.image,
+    imageObjectPosition: getArticleCardObjectPosition(article),
+    guest: article.guest,
+    searchText: searchable([
+      article.title,
+      article.category,
+      article.chapo,
+      article.guest,
+      ...article.tags,
+      ...article.sections.flatMap((section) => [section.heading, ...section.paragraphs]),
+      ...(Array.isArray(article.conclusion) ? article.conclusion : [article.conclusion]),
+    ]),
+  }))
 
 const eventItems: SearchItem[] = agendaEvents.map((event) => ({
   id: `event-${event.slug}`,
@@ -79,16 +83,21 @@ const eventItems: SearchItem[] = agendaEvents.map((event) => ({
   ]),
 }))
 
-const discoverItems: SearchItem[] = discoverSections.map((section) => ({
-  id: `discover-${section.slug}`,
-  type: "section",
-  typeLabel: section.label,
-  groupLabel: "Rubriques éditoriales",
-  title: section.title,
-  href: `/decouvrir/${section.slug}`,
-  summary: section.description,
-  searchText: searchable([section.label, section.title, section.kicker, section.description]),
-}))
+// Seules les rubriques marquées `published: true` dans discover-data.ts
+// apparaissent dans la recherche. Pour rendre une rubrique publique :
+//   → passer `published: true` dans app/decouvrir/discover-data.ts
+const discoverItems: SearchItem[] = discoverSections
+  .filter((section) => section.published)
+  .map((section) => ({
+    id: `discover-${section.slug}`,
+    type: "section",
+    typeLabel: section.label,
+    groupLabel: "Rubriques éditoriales",
+    title: section.title,
+    href: `/decouvrir/${section.slug}`,
+    summary: section.description,
+    searchText: searchable([section.label, section.title, section.kicker, section.description]),
+  }))
 
 const explorerItems: SearchItem[] = explorerSections.map((section) => ({
   id: `explorer-${section.slug}`,

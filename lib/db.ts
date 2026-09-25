@@ -63,7 +63,33 @@ function getDb(): Database.Database {
 
     CREATE INDEX IF NOT EXISTS idx_comments_parent
       ON comments(parent_id);
+
+    CREATE TABLE IF NOT EXISTS search_stats (
+      query            TEXT PRIMARY KEY,  -- clé normalisée (lowercase + trim)
+      display_query    TEXT NOT NULL,     -- forme d'affichage (première occurrence)
+      count            INTEGER NOT NULL DEFAULT 1,
+      last_searched_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+    );
   `)
+
+  // ── Données de démarrage (seed) ──────────────────────────────────────────
+  // Insérées une seule fois grâce à INSERT OR IGNORE ; les vraies recherches
+  // incrémenteront le compteur et prendront naturellement la place des seeds
+  // si elles deviennent plus populaires.
+  const seedSearches = [
+    'Waacking',
+    'Break',
+    'Intermittence',
+    'Chorégraphes',
+    'Danse contemporaine',
+  ]
+  const seedStmt = _db.prepare(`
+    INSERT OR IGNORE INTO search_stats (query, display_query, count)
+    VALUES (?, ?, 5)
+  `)
+  for (const term of seedSearches) {
+    seedStmt.run(_normalizeQuery(term), term)
+  }
 
   return _db
 }
@@ -192,4 +218,54 @@ export function updateCommentStatus(id: number, status: CommentStatus): boolean 
 /** Suppression définitive (soft-delete → status = 'deleted'). */
 export function softDeleteComment(id: number): boolean {
   return updateCommentStatus(id, 'deleted')
+}
+
+// ── Statistiques de recherche ───────────────────────────────────────────────
+
+/**
+ * Normalise une requête pour le stockage :
+ * - trim des espaces en début/fin
+ * - lowercase
+ * - collapse des espaces multiples
+ */
+function _normalizeQuery(raw: string): string {
+  return raw.trim().toLowerCase().replace(/\s+/g, ' ')
+}
+
+/**
+ * Enregistre une recherche effectuée par un visiteur.
+ * - La requête est normalisée pour éviter les doublons majuscules/minuscules.
+ * - Si la requête existe déjà, incrémente son compteur.
+ * - Si c'est une première occurrence, stocke la forme d'affichage telle que saisie.
+ */
+export function recordSearch(rawQuery: string): void {
+  const normalized = _normalizeQuery(rawQuery)
+  if (!normalized) return
+
+  // Forme d'affichage : première lettre en majuscule, reste intact
+  const display = rawQuery.trim().replace(/^\S/, (c) => c.toUpperCase())
+
+  const db = getDb()
+  db.prepare(`
+    INSERT INTO search_stats (query, display_query, count)
+    VALUES (?, ?, 1)
+    ON CONFLICT(query) DO UPDATE SET
+      count = count + 1,
+      last_searched_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now')
+  `).run(normalized, display)
+}
+
+/**
+ * Retourne les N recherches les plus populaires, triées par popularité décroissante.
+ * Renvoie la forme d'affichage (display_query) pour chaque terme.
+ */
+export function getPopularSearches(limit = 10): string[] {
+  const db = getDb()
+  const rows = db.prepare(`
+    SELECT display_query
+    FROM search_stats
+    ORDER BY count DESC, last_searched_at DESC
+    LIMIT ?
+  `).all(limit) as { display_query: string }[]
+  return rows.map((r) => r.display_query)
 }
