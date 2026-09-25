@@ -63,6 +63,15 @@
   margin-top: 8px;
 }
 
+.mobileSwitcher .option,
+.mobileSwitcher .divider {
+  color: #fff;
+}
+
+.mobileSwitcher .option { opacity: .68; }
+.mobileSwitcher .option.active { opacity: 1; }
+.mobileSwitcher .option:focus-visible { outline-color: #fff; }
+
 @media (prefers-reduced-motion: reduce) {
   .option { transition: none; }
 }

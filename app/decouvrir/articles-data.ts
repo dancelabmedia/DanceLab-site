@@ -35,6 +35,10 @@ export type MagazineArticle = {
   guest: string
   image: string
   imageObjectPosition?: string  // surcharge de object-position pour le hero (défaut : right center)
+  /** Point focal réservé aux petites couvertures d'article sur mobile. */
+  cardImageObjectPositionMobile?: string
+  /** Point focal du visuel lorsqu'il tourne dans le hero mobile du Magazine. */
+  magazineHeroMobilePosition?: string
   heroImageType?: 'portrait' | 'scene'
   // portrait → personne/invité·e au premier plan : active le cadrage optimisé (visage droit + responsive)
   // scene    → photo d'ambiance, lieu, action collective : cadrage standard conservé
@@ -91,6 +95,10 @@ export type MagazineArticle = {
    */
   takeawayAfterSection?: number
   episodeLinks?: EpisodeLink[]
+  /** Manual editorial selection is never replaced by regeneration. */
+  episodeLinksMode?: 'auto' | 'manual'
+  /** Provenance d'un article créé à partir d'une interview (pas un lien éditorial historique). */
+  sourceEpisodeNumber?: number
   conclusion: string | string[]  // string simple ou tableau pour les conclusions multi-paragraphes
   /**
    * Mots-clés / expressions éditoriales affichés dans le bandeau défilant sous le hero.
@@ -98,6 +106,24 @@ export type MagazineArticle = {
    * Générés au moment de la création de l'article.
    */
   themes?: string[]
+}
+
+/**
+ * Cadrage commun aux couvertures d'articles.
+ *
+ * `imageObjectPosition` reste réservé au grand hero, dont le ratio et la
+ * composition sont très différents. Les portraits des petites cartes sont
+ * ramenés vers l'intérieur du cadre, tandis que les scènes conservent leur
+ * cadrage éditorial existant.
+ */
+export function getArticleCardObjectPosition(article: MagazineArticle): string | undefined {
+  return article.heroImageType === 'portrait'
+    ? '60% center'
+    : article.imageObjectPosition
+}
+
+export function getArticleCardMobileObjectPosition(article: MagazineArticle): string | undefined {
+  return article.cardImageObjectPositionMobile ?? getArticleCardObjectPosition(article)
 }
 
 export const magazineArticles: MagazineArticle[] = [
@@ -118,6 +144,7 @@ export const magazineArticles: MagazineArticle[] = [
     imageCredit: "© Blandine Abad",
     heroImageType: 'portrait',
     imageObjectPosition: "center 20%",
+    magazineHeroMobilePosition: "28% 20%",
     readTime: "5 min",
     tags: ["Carrière", "Marque personnelle", "Réseaux sociaux", "Avenir"],
     themes: ["LE CV ARTISTIQUE EST MORT", "MONTRER PLUTÔT QUE DÉCLARER", "LA MARQUE PERSONNELLE AVANT TOUT", "LES RÉSEAUX COMME VITRINE", "IDENTITÉ NUMÉRIQUE D'ARTISTE", "SE RENDRE VISIBLE EN 2026", "LA PREUVE PLUTÔT QUE LA DÉCLARATION"],
@@ -260,6 +287,7 @@ export const magazineArticles: MagazineArticle[] = [
     episodeNumber: "113",
     guest: "Grichka Rootz",
     image: "/images/articles/danydann.jpg",
+    magazineHeroMobilePosition: "center center",
     imageCredit: "Danseur : Dany Dann · © Valroff Laurene",
     heroImageType: 'portrait',
     readTime: "8 min",
@@ -353,6 +381,7 @@ export const magazineArticles: MagazineArticle[] = [
     imageCredit: "Danseuse : Sofia Stanić · © Anna Jot",
     heroImageType: 'portrait',
     imageObjectPosition: "right 12%",  // image quasi-carrée : décale le crop vers le haut pour préserver la tête
+    magazineHeroMobilePosition: "0% 12%",
     readTime: "7 min",
     tags: ["Waacking", "Disco", "Culture club"],
     themes: ["NÉ DANS LES CLUBS DE LOS ANGELES", "UNE DANSE D'AFFIRMATION", "HISTOIRE LGBTQ+", "THÉÂTRALITÉ ET ATTITUDE", "LE DISCO COMME LANGAGE", "TRANSMETTRE LE CONTEXTE", "LE CORPS QUI PREND LA PAROLE"],
@@ -427,6 +456,7 @@ export const magazineArticles: MagazineArticle[] = [
     episodeNumber: "117",
     guest: "Tatiana Seguin",
     image: "/images/articles/festivalavignon.jpg",
+    magazineHeroMobilePosition: "center center",
     imageCredit: "Festival d'Avignon · © Christophe Raynaud de Lage",
     heroImageType: 'scene',
     readTime: "6 min",
@@ -503,6 +533,8 @@ export const magazineArticles: MagazineArticle[] = [
     episodeNumber: "115",
     guest: "Laura Malié-Leclerc",
     image: "/images/les-invites-header/lauramalieleclerc115.png",  // 1400×787 — image header 16:9 conçue pour ce cadrage
+    cardImageObjectPositionMobile: "94% center",
+    magazineHeroMobilePosition: "86% 22%",
     heroImageType: 'portrait',
     readTime: "7 min",
     tags: ["Santé", "Prévention", "Corps"],
@@ -566,6 +598,8 @@ export const magazineArticles: MagazineArticle[] = [
     episodeNumber: "111",
     guest: "Johan Nus",
     image: "/images/les-invites-header/johannus111.png",  // 1400×787 — image header 16:9 conçue pour ce cadrage
+    cardImageObjectPositionMobile: "100% center",
+    magazineHeroMobilePosition: "86% 22%",
     heroImageType: 'portrait',
     readTime: "8 min",
     tags: ["Santé mentale", "Bienveillance", "Longévité"],
@@ -634,6 +668,8 @@ export const magazineArticles: MagazineArticle[] = [
     episodeNumber: "118",
     guest: "Yasmine Habib",
     image: "/images/les-invites-header/yasminehabib118.png",  // 1400×787 — image header 16:9 conçue pour ce cadrage
+    cardImageObjectPositionMobile: "100% center",
+    magazineHeroMobilePosition: "86% 22%",
     heroImageType: 'portrait',
     // Rotation automatique des quatre invité·es cité·es dans l'article
     heroImages: [
@@ -728,6 +764,7 @@ export const magazineArticles: MagazineArticle[] = [
     image: "https://img.youtube.com/vi/ljP4RU067jY/maxresdefault.jpg",
     heroImageType: 'scene',
     imageObjectPosition: "center center",
+    magazineHeroMobilePosition: "center center",
     heroAspectRatio: "16 / 9",
     useHeroSlider: true,
     readTime: "8 min",
@@ -861,6 +898,7 @@ export const magazineArticles: MagazineArticle[] = [
     imageCredit: "© Blandine Abad",
     heroImageType: 'portrait',
     imageObjectPosition: "right 38%",
+    magazineHeroMobilePosition: "25% 30%",
     readTime: "9 min",
     tags: ["Réseaux sociaux", "Carrière", "Visibilité", "Instagram"],
     themes: ["INSTAGRAM EST-IL NOTRE NOUVEAU CV ?", "DANSER ≠ SE RENDRE VISIBLE", "PORTFOLIO PLUTÔT QU'ABONNÉS", "NE PAS CONFONDRE VISIBILITÉ ET TALENT", "LA PRESSION DES RÉSEAUX", "ÊTRE VISIBLE À QUEL PRIX", "TROUVER SA MANIÈRE D'EXISTER EN LIGNE"],
@@ -975,6 +1013,7 @@ export const magazineArticles: MagazineArticle[] = [
     episodeNumber: "",
     guest: "Maïwenn Bramoulle",
     image: "/images/articles/lavillette.jpg",
+    magazineHeroMobilePosition: "center center",
     imageCredit: "© Joseph Banderet",
     heroImageType: 'scene',
     readTime: "4 min",

@@ -7,6 +7,21 @@ import { translatedField } from '@/lib/i18n/translations'
 import { requestLocale, languageAlternates } from '@/lib/i18n/server'
 import { uiText } from '@/data/i18n/messages'
 import type { Locale } from '@/lib/i18n/routing'
+import { cookies, headers } from 'next/headers'
+import { explorerHomeVisibility } from '@/data/section-visibility'
+import { EXPLORER_COOKIE, validExplorerSession } from '@/lib/explorer-session'
+import { isLocalEditorAccess } from '@/lib/local-editor-access'
+import PrivateAccessPage from '@/components/PrivateAccessPage'
+import { getComingSoonStats } from '@/lib/site-stats'
+import { Suspense } from 'react'
+
+export const dynamic = 'force-dynamic'
+
+async function canViewExplorerHome() {
+  if (explorerHomeVisibility === 'public') return true
+  if (isLocalEditorAccess(await headers())) return true
+  return validExplorerSession((await cookies()).get(EXPLORER_COOKIE)?.value)
+}
 
 function explorerText(locale: Locale) {
   const source = explorerSource()
@@ -14,16 +29,20 @@ function explorerText(locale: Locale) {
   return (key: string) => {
     if (locale === 'fr') return source.fields[key]
     const text = translatedField(source, translation, key)
-    if (!text) throw new Error(`Traduction Explorer manquante : ${key}`)
-    return text
+    return text ?? source.fields[key]
   }
 }
 export async function generateMetadata() {
   const locale = await requestLocale(), t = explorerText(locale)
+  if (!await canViewExplorerHome()) return { title: 'Cette rubrique se prépare | Dance Lab', robots: { index: false, follow: false } }
   return { title: t('seoTitle'), description: t('seoDescription'), alternates: languageAlternates('/explorer', locale), openGraph: { title: t('seoTitle'), description: t('seoDescription'), locale: locale === 'en' ? 'en_GB' : 'fr_FR' } }
 }
 export default async function ExplorerPage() {
   const locale = await requestLocale()
+  if (!await canViewExplorerHome()) {
+    const stats = await getComingSoonStats()
+    return <Suspense><PrivateAccessPage mode="explorer" returnTo="/explorer" locale={locale} stats={stats} /></Suspense>
+  }
   const t = explorerText(locale)
   const ui = (text: string) => uiText(locale, text)
   return (

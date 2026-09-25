@@ -48,6 +48,8 @@ export type EpisodeExtra = {
   headerImage?: string
   /** Per source image, with independent desktop/tablet/mobile framing. */
   imagePresentations?: Record<string, EpisodeImagePresentation>
+  /** Optional focal point for the episode hero portrait on phones only. */
+  mobileHeroPosition?: string
   /**
    * ID YouTube (11 caractères) si la correspondance automatique échoue.
    * Utilisé aussi pour les épisodes trop anciens pour figurer dans le flux RSS YouTube.
@@ -209,7 +211,10 @@ export const episodeExtras: Record<number, EpisodeExtra> = {
    94: { instagramReelUrl: "https://www.instagram.com/reel/DTvg-FQjPvq/" },
    93: { instagramReelUrl: "https://www.instagram.com/reel/DTdhwFPjKQv/" },
    92: { instagramReelUrl: "https://www.instagram.com/reel/DTLUV0CirbM/" },
-   91: { instagramReelUrl: "https://www.instagram.com/reel/DS5XpnyjAKy/" },
+   91: {
+     instagramReelUrl: "https://www.instagram.com/reel/DS5XpnyjAKy/",
+     mobileHeroPosition: '100% 30%',
+   },
    90: { instagramReelUrl: "https://www.instagram.com/reel/DSvMd9mjHr9/" },
    89: { instagramReelUrl: "https://www.instagram.com/reel/DSnRgnBjNOR/" },
    88: { instagramReelUrl: "https://www.instagram.com/reel/DSdMqKjDNWN/" },
@@ -245,7 +250,6 @@ export const episodeExtras: Record<number, EpisodeExtra> = {
   // ── Épisodes 1–59 : vidéos YouTube associées ─────────────────────────────────
   // Retrouvées automatiquement via recherche par numéro d'épisode + nom d'invité.
   // Les épisodes 60–121 ont leur vidéo dans data/episodes.ts (champ youtube).
-  // L'épisode 27 (Laure Dary) n'a pas de vidéo sur la chaîne.
 
    1: { youtubeId: 'G6mPGnJ2k6M' }, // 1. Mathilde Champion
    2: { youtubeId: 'jyoFJPY4YLM' }, // 2. Omar Dramé
@@ -258,7 +262,7 @@ export const episodeExtras: Record<number, EpisodeExtra> = {
    9: { youtubeId: 'PfQd4QCwzQE' }, // 9. Émilie Heinrich
   10: { youtubeId: 'qZ1EPCjeK64' }, // 10. Régis Truchy
   11: { youtubeId: 'W_n_mGByHFY' }, // 11. Émilie Ferreira Saramago
-  12: { youtubeId: '8n5aDeIA734' }, // 12. Rabah Alioune
+  12: { youtubeId: '8n5aDeIA734' }, // 12. Rabah Aliouane
   13: { youtubeId: 'AL1e34XQuS8' }, // 13. Spoade
   14: { youtubeId: 'pg9gsXPkZy0' }, // 14. Kriss Logan
   15: { youtubeId: 'LYssVy12PXA' }, // 15. Marie Jamots
@@ -273,7 +277,7 @@ export const episodeExtras: Record<number, EpisodeExtra> = {
   24: { youtubeId: 'yu3LOIvP4b4', instagramReelUrl: "https://www.instagram.com/reel/DAlyKvVAabG/" }, // 24. Priscilla Villa
   25: { youtubeId: 'LnoKfugAOeA', instagramReelUrl: "https://www.instagram.com/reel/DA3sxwJgIUW/" }, // 25. Angelina Bruno
   26: { youtubeId: 'mGyfR07mznU', instagramReelUrl: "https://www.instagram.com/reel/DBJ1KMPg_1t/" }, // 26. Diem N'guyen
-  27: { instagramReelUrl: "https://www.instagram.com/reel/DBb-yWtgcAK/" },                            // 27. Laure Dary (pas de vidéo YouTube)
+  27: { youtubeId: '9Nti1KFQcDc', instagramReelUrl: "https://www.instagram.com/reel/DBb-yWtgcAK/" }, // 27. Laure Dary
   28: { youtubeId: 'e04aTA1Uq6Q', instagramReelUrl: "https://www.instagram.com/reel/DBt_u0WAtcd/" }, // 28. Shirwann Jeammes
   29: { youtubeId: 'EdPTc759Z2g', instagramReelUrl: "https://www.instagram.com/reel/DCAA6TqA7Mk/" }, // 29. Reem
   30: { youtubeId: 'StL6yfD6NP8', instagramReelUrl: "https://www.instagram.com/reel/DCR6cJ4A1Gc/" }, // 30. Coraline Bucciacchio

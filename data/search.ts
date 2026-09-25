@@ -8,6 +8,7 @@ export type SearchItem = {
   summary: string
   searchText: string
   image?: string
+  imageObjectPosition?: string
   episodeNumber?: number
   guest?: string
 }

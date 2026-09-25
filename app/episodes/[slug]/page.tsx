@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 
 import EpisodeAnimations from "./EpisodeAnimations";
+import MobileEpisodeYouTube from "./MobileEpisodeYouTube";
 import EpisodeImage from "../../../components/EpisodeImage";
 import imageStyles from "../../../components/episode-image.module.css";
 import { episodeExtras } from "../../../data/episode-extras";
-import { episodeNumberFromImageName, findImagePresentation } from "@/lib/episode-image-presentation";
+import { episodeNumberFromImageName, findImagePresentation, resolveImageFrame } from "@/lib/episode-image-presentation";
 import EpisodeInstagramReel from "../../../components/EpisodeInstagramReel";
 import EpisodeShare from "../../../components/EpisodeShare";
 import HistoryBackLink from "../../../components/HistoryBackLink";
@@ -371,6 +373,10 @@ export default async function EpisodePage({ params }: PageProps) {
   const similarEpisodes = await getRecommendedEpisodes(episode.number);
   const episodeUrl = new URL(`/episodes/${episode.slug}`, SITE_URL).toString();
   const headerImage = getEpisodeHeaderImage(episode);
+  const headerPresentation = findImagePresentation(episodeExtras[episode.number]?.imagePresentations, headerImage);
+  const mobileHeaderPosition = episodeExtras[episode.number]?.mobileHeroPosition
+    ?? headerPresentation?.mobile?.objectPosition
+    ?? '86% 30%';
   const descriptionParagraphs = getEpisodeDescriptionParagraphs(displayDesc);
   const descriptionBlocks = getEpisodeDescriptionBlocks(descriptionParagraphs);
 
@@ -402,7 +408,10 @@ export default async function EpisodePage({ params }: PageProps) {
         ══════════════════════════════════════ */}
         <section className="ep-hero">
           {/* Couche sticky : image + dégradé restent fixes pendant le scroll */}
-          <div className={`ep-hero-sticky-bg ${findImagePresentation(episodeExtras[episode.number]?.imagePresentations, headerImage) ? imageStyles.heroCanvas : ''}`}>
+          <div
+            className={`ep-hero-sticky-bg ${headerPresentation ? imageStyles.heroCanvas : ''}`}
+            style={{ '--ep-hero-mobile-position': mobileHeaderPosition } as CSSProperties}
+          >
             <EpisodeImage
               episodeNumber={episode.number}
               className="ep-hero-img"
@@ -481,6 +490,13 @@ export default async function EpisodePage({ params }: PageProps) {
               {episode.link ? <a href={episode.link} target="_blank" rel="noopener noreferrer">{t("Choisis ta plateforme d'écoute")}</a> : null}
             </div>
           </div>
+          {youtubeId ? (
+            <MobileEpisodeYouTube
+              youtubeId={youtubeId}
+              title={displayTitle}
+              watchLabel={t("Regarder l'épisode complet")}
+            />
+          ) : null}
         </section>
 
         {/* ══════════════════════════════════════════════════════
@@ -706,6 +722,10 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
     // 3. Fallback CDN Ausha
     return unified.aushaImage || unified.image;
   })();
+  const heroPresentation = findImagePresentation(episodeExtras[unified.number]?.imagePresentations, heroImage);
+  const mobileHeroPosition = episodeExtras[unified.number]?.mobileHeroPosition
+    ?? (heroPresentation?.mobile?.objectPosition ? resolveImageFrame(heroPresentation, 'mobile').objectPosition : undefined)
+    ?? '86% 30%';
 
   // Tags thématiques automatiques (max 6) — toujours sur le texte FR (meilleur matching)
   const rssTagKeys = getEpisodeTags(
@@ -722,7 +742,10 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
 
         {/* HERO */}
         <section className="ep-hero">
-          <div className={`ep-hero-sticky-bg ${findImagePresentation(episodeExtras[unified.number]?.imagePresentations, heroImage) ? imageStyles.heroCanvas : ''}`}>
+          <div
+            className={`ep-hero-sticky-bg ${heroPresentation ? imageStyles.heroCanvas : ''}`}
+            style={{ '--ep-hero-mobile-position': mobileHeroPosition } as CSSProperties}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <EpisodeImage
               episodeNumber={unified.number}
@@ -802,6 +825,14 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
               <a href={unified.link} target="_blank" rel="noopener noreferrer">{t("Choisis ta plateforme d'écoute")}</a>
             </div>
           </div>
+          {youtubeId ? (
+            <MobileEpisodeYouTube
+              youtubeId={youtubeId}
+              title={displayTitle}
+              isShort={isShort}
+              watchLabel={isShort ? t('Regarder le Short') : t("Regarder l'épisode complet")}
+            />
+          ) : null}
         </section>
 
         {/* CORPS */}

@@ -40,6 +40,7 @@ test('redirection limitée aux rubriques Explorer, sans redirection externe', ()
   const fallback = explorerAccessSections[0].path
   for (const input of [null, '//evil.test', '/\\evil.test', 'https://evil.test', '/explorer/styles-de-danse/../../admin', '/%00', '/explorer/%ZZ']) assert.equal(safeExplorerReturnTo(input), fallback)
   assert.equal(safeExplorerReturnTo('/explorer/styles-de-danse/break?view=1#origines'), '/explorer/styles-de-danse/break?view=1#origines')
+  assert.equal(safeExplorerReturnTo('/explorer'), '/explorer')
 })
 
 test('Bientôt couvre aussi toutes les anciennes pages protégées et leurs sous-routes', () => {

@@ -2596,8 +2596,21 @@ a.collabs-band-item:focus-visible {
   background: linear-gradient(to top, rgba(0,0,0,.92) 0%, transparent 100%);
 }
 
-/* Titre de carte — partagé entre la carte "Dernier épisode" et les cartes Interviews */
-.les-ep-card-title,
+/* Titre de carte — "Dernier épisode" (homepage uniquement) */
+.les-ep-card-title {
+  font-family: var(--font-display);
+  font-size: clamp(13px, 1.3vw, 16px);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.28;
+  margin: 0 0 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Titre de carte — Interviews (Magazine page) */
 .les-ivw-info-title {
   font-family: var(--font-display);
   font-size: clamp(13px, 1.3vw, 15px);
@@ -2611,15 +2624,25 @@ a.collabs-band-item:focus-visible {
   overflow: hidden;
 }
 
-/* Nom de l'invité·e — partagé entre les deux types de carte */
-.les-ep-card-guest,
+/* Nom de l'invité·e — "Dernier épisode" (homepage uniquement) */
+.les-ep-card-guest {
+  font-size: 12px;
+  color: rgba(255,255,255,.62);
+  margin: 0;
+}
+
+/* Nom de l'invité·e — Interviews (Magazine page) */
 .les-ivw-info-guest {
   font-size: 12px;
   color: rgba(255,255,255,.65);
   margin: 0;
 }
 
-.les-ep-card-guest strong,
+.les-ep-card-guest strong {
+  color: rgba(255,255,255,.85);
+  font-weight: 600;
+}
+
 .les-ivw-info-guest strong {
   color: rgba(255,255,255,.85);
   font-weight: 600;

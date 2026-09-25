@@ -27,6 +27,7 @@ import NewsletterModal from '../components/NewsletterModal'
 import ScrollReveal from './components/ScrollReveal'
 import { SITE_URL } from '../data/site'
 import { requestLocale, requestPath, languageAlternates } from '@/lib/i18n/server'
+import { hasPublishedEnglish } from '@/lib/i18n/routing'
 import LocaleProvider from '@/components/LocaleProvider'
 
 
@@ -54,9 +55,10 @@ const frenchMetadata: Metadata = {
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await requestLocale()
+  const path = await requestPath()
   const title = locale === 'en' ? 'Dance Lab — Dance, culture and conversations' : frenchMetadata.title
   const description = locale === 'en' ? 'Dance Lab explores dance through interviews, culture and resources for professionals, enthusiasts and curious minds.' : frenchMetadata.description
-  return { ...frenchMetadata, title, description, alternates: languageAlternates(await requestPath(), locale), openGraph: { ...frenchMetadata.openGraph, title: title as string, description: description as string, locale: locale === 'en' ? 'en_GB' : 'fr_FR' }, twitter: { ...frenchMetadata.twitter, title: title as string, description: description as string } }
+  return { ...frenchMetadata, title, description, alternates: languageAlternates(path, locale), ...(locale === 'en' && !hasPublishedEnglish(path) ? { robots: { index: false, follow: true } } : {}), openGraph: { ...frenchMetadata.openGraph, title: title as string, description: description as string, locale: locale === 'en' ? 'en_GB' : 'fr_FR' }, twitter: { ...frenchMetadata.twitter, title: title as string, description: description as string } }
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

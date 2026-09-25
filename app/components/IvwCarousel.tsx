@@ -31,6 +31,7 @@ const MIN_INFINITE   = 4    // nb minimum d'épisodes pour activer la boucle
 const ROTATION_SIZE  = 18   // sélection aléatoire par chargement (54 cartes avec clones)
 const LOCK_DURATION  = 460  // ms pendant lesquelles les flèches sont verrouillées
 const AUTOPLAY_SPEED = 20   // px/s — lent, mais perceptible sur tous les écrans
+const TOUCH_RESUME_DELAY = 2500
 
 /* ── Helpers ─────────────────────────────────────────────────────── */
 const IconArrowL = () => (
@@ -101,6 +102,7 @@ export default function IvwCarousel({ pool, latestSlug, getGuestImage }: Props) 
   const autoplayWasMovingRef = useRef(false)
   const dragStartScrollRef = useRef(0)
   const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const suppressClickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   /* État vide au SSR → hydratation propre, sans mismatch */
   const [episodes, setEpisodes] = useState<Episode[]>([])
@@ -218,7 +220,7 @@ export default function IvwCarousel({ pool, latestSlug, getGuestImage }: Props) 
     }
   }, [episodes])
 
-  /* ── Hover, drag souris/tactile et trackpad ─────────────────────── */
+  /* ── Hover, drag souris, tactile natif et trackpad ─────────────── */
   useEffect(() => {
     const track = trackRef.current
     if (!track || episodes.length === 0) return
@@ -228,16 +230,27 @@ export default function IvwCarousel({ pool, latestSlug, getGuestImage }: Props) 
     let startY = 0
     let horizontalDrag = false
     let draggedRecently = false
+    let touchStartX = 0
+    let touchStartY = 0
+    let touchMovedHorizontally = false
 
     const onPointerOver = (event: PointerEvent) => {
+      // A finger also fires pointerover on mobile, but there is no real hover
+      // state there. Keeping it would pause autoplay forever after a swipe.
+      if (event.pointerType !== 'mouse') return
       const card = (event.target as Element).closest('.les-ivw-card')
       if (card) setAutoplayPaused('hover', true)
     }
     const onPointerOut = (event: PointerEvent) => {
+      if (event.pointerType !== 'mouse') return
       const nextCard = (event.relatedTarget as Element | null)?.closest?.('.les-ivw-card')
       if (!nextCard) setAutoplayPaused('hover', false)
     }
     const onPointerDown = (event: PointerEvent) => {
+      /* Sur écran tactile, laisser Safari/Chrome faire défiler nativement la
+         piste : on conserve ainsi l'inertie iOS et le scroll vertical naturel.
+         Les événements touch ci-dessous ne servent qu'à piloter l'autoplay. */
+      if (event.pointerType === 'touch') return
       if (event.pointerType === 'mouse' && event.button !== 0) return
       pointerId = event.pointerId
       startX = event.clientX
@@ -245,6 +258,44 @@ export default function IvwCarousel({ pool, latestSlug, getGuestImage }: Props) 
       dragStartScrollRef.current = track.scrollLeft
       horizontalDrag = false
       setAutoplayPaused('drag', true)
+    }
+    const onTouchStart = (event: TouchEvent) => {
+      const touch = event.touches[0]
+      if (!touch) return
+      touchStartX = touch.clientX
+      touchStartY = touch.clientY
+      touchMovedHorizontally = false
+      setAutoplayPaused('touch', true)
+      if (resumeTimerRef.current) {
+        clearTimeout(resumeTimerRef.current)
+        resumeTimerRef.current = null
+      }
+    }
+    const onTouchMove = (event: TouchEvent) => {
+      const touch = event.touches[0]
+      if (!touch) return
+      const deltaX = touch.clientX - touchStartX
+      const deltaY = touch.clientY - touchStartY
+      if (Math.abs(deltaX) > 8 && Math.abs(deltaX) > Math.abs(deltaY)) {
+        touchMovedHorizontally = true
+        draggedRecently = true
+      }
+    }
+    const onTouchEnd = () => {
+      setAutoplayPaused('touch', false)
+      pauseAfterManualInteraction(TOUCH_RESUME_DELAY)
+
+      /* Le click synthétique suit immédiatement touchend. La garde reste
+         active assez longtemps pour l'annuler après un swipe, puis s'efface
+         afin qu'un tap ultérieur ouvre normalement l'épisode. */
+      if (touchMovedHorizontally) {
+        if (suppressClickTimerRef.current) clearTimeout(suppressClickTimerRef.current)
+        suppressClickTimerRef.current = setTimeout(() => {
+          draggedRecently = false
+          suppressClickTimerRef.current = null
+        }, 500)
+      }
+      touchMovedHorizontally = false
     }
     const onPointerMove = (event: PointerEvent) => {
       if (pointerId !== event.pointerId) return
@@ -265,7 +316,9 @@ export default function IvwCarousel({ pool, latestSlug, getGuestImage }: Props) 
       if (!horizontalDrag) return
 
       event.preventDefault()
-      track.scrollLeft = dragStartScrollRef.current - deltaX * 1.15
+      // 1:1 movement: the rail stays directly under the user's finger and is
+      // never forced to snap to a particular card.
+      track.scrollLeft = dragStartScrollRef.current - deltaX * (event.pointerType === 'touch' ? 1 : 1.15)
     }
     const finishDrag = (event: PointerEvent) => {
       if (pointerId !== event.pointerId) return
@@ -274,7 +327,11 @@ export default function IvwCarousel({ pool, latestSlug, getGuestImage }: Props) 
       }
       pointerId = null
       setAutoplayPaused('drag', false)
-      pauseAfterManualInteraction(horizontalDrag ? 1200 : 500)
+      pauseAfterManualInteraction(
+        horizontalDrag
+          ? (event.pointerType === 'touch' ? TOUCH_RESUME_DELAY : 1200)
+          : 500
+      )
       horizontalDrag = false
     }
     const onClick = (event: MouseEvent) => {
@@ -295,6 +352,11 @@ export default function IvwCarousel({ pool, latestSlug, getGuestImage }: Props) 
     track.addEventListener('pointermove', onPointerMove, { passive: false })
     track.addEventListener('pointerup', finishDrag)
     track.addEventListener('pointercancel', finishDrag)
+    track.addEventListener('lostpointercapture', finishDrag)
+    track.addEventListener('touchstart', onTouchStart, { passive: true })
+    track.addEventListener('touchmove', onTouchMove, { passive: true })
+    track.addEventListener('touchend', onTouchEnd, { passive: true })
+    track.addEventListener('touchcancel', onTouchEnd, { passive: true })
     track.addEventListener('click', onClick, true)
     track.addEventListener('wheel', onWheel, { passive: true })
 
@@ -305,9 +367,15 @@ export default function IvwCarousel({ pool, latestSlug, getGuestImage }: Props) 
       track.removeEventListener('pointermove', onPointerMove)
       track.removeEventListener('pointerup', finishDrag)
       track.removeEventListener('pointercancel', finishDrag)
+      track.removeEventListener('lostpointercapture', finishDrag)
+      track.removeEventListener('touchstart', onTouchStart)
+      track.removeEventListener('touchmove', onTouchMove)
+      track.removeEventListener('touchend', onTouchEnd)
+      track.removeEventListener('touchcancel', onTouchEnd)
       track.removeEventListener('click', onClick, true)
       track.removeEventListener('wheel', onWheel)
       if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current)
+      if (suppressClickTimerRef.current) clearTimeout(suppressClickTimerRef.current)
     }
   }, [episodes])
 

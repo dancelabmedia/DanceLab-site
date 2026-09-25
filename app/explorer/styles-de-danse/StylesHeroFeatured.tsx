@@ -9,6 +9,7 @@ import StylesAutocomplete from "./StylesAutocomplete"
 import StylesGrid from "./StylesGrid"
 import { useLocale } from "@/components/LocaleProvider"
 import { uiText } from "@/data/i18n/messages"
+import { useBackNavigationState } from '@/lib/use-back-navigation-state'
 
 const ALL_KEY = "Tous les styles"
 
@@ -43,6 +44,10 @@ export default function StylesHeroFeatured({
   const t = (text: string) => uiText(locale, text)
   const [activeFamily, setActiveFamily] = useState<string>(ALL_KEY)
   const [searchQuery, setSearchQuery]   = useState("")
+  useBackNavigationState('dance-styles-filters', { activeFamily, searchQuery }, saved => {
+    setActiveFamily(saved.activeFamily)
+    setSearchQuery(saved.searchQuery)
+  })
   const [isOpen, setIsOpen]             = useState(false)
   const [mounted, setMounted]           = useState(false)
   const [menuPos, setMenuPos]           = useState<React.CSSProperties>({})
@@ -175,6 +180,7 @@ export default function StylesHeroFeatured({
             <StylesAutocomplete
               styles={availableStyles}
               onQueryChange={setSearchQuery}
+              value={searchQuery}
             />
 
             {/* Filtre par famille — bouton déroulant (menu via portal) */}

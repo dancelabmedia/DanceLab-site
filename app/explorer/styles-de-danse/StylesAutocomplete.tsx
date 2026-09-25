@@ -23,6 +23,7 @@ type Props = {
   styles: DanceStyle[]
   /** Appelé à chaque changement de requête — permet au parent de filtrer la grille */
   onQueryChange?: (query: string) => void
+  value?: string
 }
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -42,7 +43,7 @@ function scoreNorm(haystack: string, needle: string): number {
 
 // ── Component ──────────────────────────────────────────────────────────────
 
-export default function StylesAutocomplete({ styles, onQueryChange }: Props) {
+export default function StylesAutocomplete({ styles, onQueryChange, value }: Props) {
   const locale = useLocale()
   const t = (text: string) => uiText(locale, text)
 
@@ -62,6 +63,10 @@ export default function StylesAutocomplete({ styles, onQueryChange }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
   const wrapRef  = useRef<HTMLDivElement>(null)
   const listId   = useId()
+
+  useEffect(() => {
+    if (value !== undefined && value !== query) setQuery(value)
+  }, [value, query])
 
   // ── Build results ────────────────────────────────────────────────────────
 

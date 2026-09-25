@@ -5,6 +5,7 @@ import type { EcoleDanse, EcoleType, ParcoursFormation } from './ecoles-data'
 import { AnimatedStats } from '../styles-de-danse/StylesStats'
 import { useLocale } from '@/components/LocaleProvider'
 import { uiText } from '@/data/i18n/messages'
+import { useBackNavigationState } from '@/lib/use-back-navigation-state'
 
 interface Props { ecoles: EcoleDanse[] }
 
@@ -64,6 +65,16 @@ export default function EcolesClient({ ecoles }: Props) {
   const [selectedEcole, setSelectedEcole] = useState<EcoleDanse | null>(null)
   const [mapError, setMapError] = useState(false)
   const [mapReady, setMapReady] = useState(false)
+  useBackNavigationState('dance-schools', {
+    search, activeType, region, ville, style, parcours, niveau, pratique,
+    professionalOnly, moreOpen, sort, mobileView, selectedEcoleId: selectedEcole?.id ?? null,
+  }, saved => {
+    setSearch(saved.search); setActiveType(saved.activeType); setRegion(saved.region)
+    setVille(saved.ville); setStyle(saved.style); setParcours(saved.parcours)
+    setNiveau(saved.niveau); setPratique(saved.pratique); setProfessionalOnly(saved.professionalOnly)
+    setMoreOpen(saved.moreOpen); setSort(saved.sort); setMobileView(saved.mobileView)
+    setSelectedEcole(ecoles.find(ecole => ecole.id === saved.selectedEcoleId) ?? null)
+  })
 
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)

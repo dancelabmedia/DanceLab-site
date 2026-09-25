@@ -26,6 +26,7 @@ export interface SlideArticle {
   title: string
   image: string
   imageCredit?: string
+  mobileObjectPosition?: string
 }
 
 /** Handle exposé au parent via ref */
@@ -162,6 +163,7 @@ const MagHeroSlider = forwardRef<MagHeroSliderHandle, Props>(
                 src={slide.image}
                 alt=""
                 className="mag-slide-img"
+                style={{ '--mag-mobile-object-position': slide.mobileObjectPosition ?? '74% 22%' } as React.CSSProperties}
                 draggable={false}
               />
               <PhotoCredit credit={slide.imageCredit} />

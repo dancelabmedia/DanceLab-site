@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { SITE_URL } from '@/data/site'
-import { explorerAccessSections, sectionVisibility } from '@/data/section-visibility'
+import { explorerAccessSections, explorerHomeVisibility, sectionVisibility } from '@/data/section-visibility'
 import { danceStyles } from './explorer/styles-de-danse/styles-data'
 import { getEpisodes } from '@/lib/episodes'
 import { getAllPublishedArticles } from '@/lib/all-articles'
@@ -8,7 +8,8 @@ import { hasPublishedEnglish, localizedHref } from '@/lib/i18n/routing'
 
 export const revalidate = 3600
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const paths = ['/', '/a-propos', '/ecouter', '/ecouter/incontournables', '/ecouter/playlists-thematiques', '/decouvrir', '/decouvrir/articles-culture', '/explorer']
+  const paths = ['/', '/a-propos', '/ecouter', '/ecouter/incontournables', '/ecouter/playlists-thematiques', '/decouvrir', '/decouvrir/articles-culture']
+  if (explorerHomeVisibility === 'public') paths.push('/explorer')
   for (const section of explorerAccessSections) {
     if (sectionVisibility[section.key] === 'public') paths.push(section.path)
   }

@@ -7,6 +7,7 @@ import { useState } from "react"
 import { safeExplorerReturnTo } from '@/data/section-visibility'
 import { localizedHref, type Locale } from '@/lib/i18n/routing'
 import { uiText } from '@/data/i18n/messages'
+import type { ComingSoonStats } from '@/data/site-stats'
 
 const Arrow = () => (
   <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -76,7 +77,7 @@ const DEFAULT_CONFIG: SectionConfig = {
 }
 
 /** Une seule composition pour tous les accès privés, deux vérifications serveur. */
-export default function PrivateAccessPage({ mode = 'preview', returnTo, localWorkHref, locale = 'fr' }: { mode?: 'preview' | 'explorer'; returnTo?: string; localWorkHref?: string; locale?: Locale }) {
+export default function PrivateAccessPage({ mode = 'preview', returnTo, localWorkHref, locale = 'fr', stats }: { mode?: 'preview' | 'explorer'; returnTo?: string; localWorkHref?: string; locale?: Locale; stats: ComingSoonStats }) {
   const t = (text: string) => uiText(locale, text)
   const href = (path: string) => localizedHref(path, locale)
   const router = useRouter()
@@ -144,12 +145,12 @@ export default function PrivateAccessPage({ mode = 'preview', returnTo, localWor
         <div className="access-number" aria-hidden="true">{section.number}</div>
         <div className="access-waiting">
           <span>{t(localWorkHref ? 'Édition locale' : 'En attendant')}</span>
-          <Link href={href(localWorkHref || '/ecouter')}><Arrow />{t(localWorkHref ? 'Ouvrir la page de travail' : 'Découvrir les autres rubriques')}</Link>
+          <Link href={href(localWorkHref || '/')}><Arrow />{t(localWorkHref ? 'Ouvrir la page de travail' : 'Retour à l\'accueil')}</Link>
         </div>
         <div className="access-stats" aria-label="Dance Lab en quelques chiffres">
-          <div><strong>+ 120</strong><span>{t('Conversations')}<br />{t('publiées')}</span></div>
-          <div><strong>100K</strong><span>{t('Écoutes')}<br />{t('cumulées')}</span></div>
-          <div><strong>2M</strong><span>{t('Vues sur')}<br />{t('les réseaux')}</span></div>
+          <div><strong>{stats.conversations}</strong><span>{t('Conversations')}</span></div>
+          <div><strong>{stats.cumulativeListens}</strong><span>{t('Écoutes')}<br />{t('cumulées')}</span></div>
+          <div><strong>{stats.cumulativeViews}</strong><span>{t('Vues')}<br />{t('cumulées')}</span></div>
         </div>
       </section>
 
@@ -281,14 +282,14 @@ export default function PrivateAccessPage({ mode = 'preview', returnTo, localWor
           .access-photo { inset: var(--nav-h) 0 0; height: auto; }
           .access-photo img { object-position: center; filter: saturate(.72) contrast(1.04); }
           .access-wash { background: linear-gradient(180deg, rgba(26,50,63,.24) 0%, rgba(25,47,58,.56) 48%, rgba(24,45,56,.78) 100%); }
-          .access-editorial { min-height: 48vh; display: block; padding-right: 6vw; }
+          .access-editorial { min-height: 0; display: block; padding-right: 6vw; }
           .access-kicker { font-size: 10px; }
           .access-rule { margin: 18px 0 20px; background: rgba(255,255,255,.65); }
           .access-editorial h1 { font-size: clamp(47px, 14vw, 70px); line-height: .92; max-width: 520px; text-shadow: 0 2px 24px rgba(9,23,30,.25); }
           .access-rule--light { margin: 19px 0; }
           .access-intro { font-size: 14px; line-height: 1.55; }
           .access-number, .access-waiting, .access-stats, .access-divider, .access-vertical, .access-signature { display: none; }
-          .access-panel { position: relative; width: 100%; margin: 30px auto 0; padding-top: 31px; border-top: 1px solid rgba(255,255,255,.34); }
+          .access-panel { position: relative; width: 100%; margin: 48px auto 0; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.34); }
           .access-lock { width: 45px; height: 45px; margin-bottom: 20px; }
           .access-lock svg { width: 20px; height: 20px; }
           .access-panel-title { font-size: 11px; }

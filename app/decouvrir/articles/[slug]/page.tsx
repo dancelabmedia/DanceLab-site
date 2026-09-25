@@ -6,6 +6,7 @@ import {
   getPublishedArticles,
   isArticlePublished,
   getReadTime,
+  getArticleCardObjectPosition,
   type DocLink,
 } from "../../articles-data"
 import { getArticleBySlug, getAllPublishedSlugs } from "@/lib/all-articles"
@@ -282,7 +283,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                       src={item.image}
                       alt=""
                       loading="lazy"
-                      style={item.imageObjectPosition ? { objectPosition: item.imageObjectPosition } : undefined}
+                      style={{ objectPosition: getArticleCardObjectPosition(item) }}
                     />
                     <PhotoCredit credit={item.imageCredit} />
                   </div>

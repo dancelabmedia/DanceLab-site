@@ -21,6 +21,8 @@ import {
   type PodcastArticleStatus,
 } from '@/lib/podcast-articles'
 import type { MagazineArticle } from '@/app/decouvrir/articles-data'
+import { regenerateArticleAssociations } from '@/lib/article-episode-associations'
+import { getEpisodeRecommendationCatalog } from '@/lib/episode-recommendations.server'
 import {
   findNotionPageByEpisode,
   updateNotionArticleStatus,
@@ -135,6 +137,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     updateEditorNotes(episodeNumber, body.editorNotes)
   }
 
+  // Une modification manuelle des épisodes prime sur les suggestions futures.
+  if (body.article?.episodeLinks !== undefined) body.article.episodeLinksMode = 'manual'
+
   // Met à jour le contenu de l'article
   if (body.article) {
     updatePodcastArticleContent(episodeNumber, body.article)
@@ -147,6 +152,20 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       } catch (err) {
         console.error('[Notion] Erreur sync contenu :', err)
       }
+    }
+  }
+
+  // Un brouillon historique sans sélection reçoit sa liste à la publication.
+  // Les choix manuels, y compris une liste vide, ne sont jamais remplacés.
+  if (body.status === 'programme' || body.status === 'publie') {
+    const refreshed = getPodcastArticleBySlug(slug)
+    if (refreshed && refreshed.article.episodeLinks === undefined) {
+      const { inputs, catalog } = await getEpisodeRecommendationCatalog()
+      const cards = new Map(catalog.map(ep => [ep.number, ep]))
+      const article = regenerateArticleAssociations({ ...refreshed.article, sourceEpisodeNumber: episodeNumber }, inputs.map(input => ({
+        ...input, guest: cards.get(input.number)?.guest, image: cards.get(input.number)?.image,
+      })))
+      updatePodcastArticleContent(episodeNumber, article)
     }
   }
 

@@ -2865,7 +2865,7 @@ export const episodes: Episode[] = [
     "number": 12,
     "slug": "12-rabah-alioune",
     "title": "Comment réussir son casting ?",
-    "guest": "Rabah Alioune",
+    "guest": "Rabah Aliouane",
     "role": "",
     "publishedAt": "2024-07-09",
     "duration": "50 min",
@@ -2885,7 +2885,7 @@ export const episodes: Episode[] = [
     "chapters": [],
     "guestLinks": "",
     "seoTitle": "Comment réussir son casting ? | Dance Lab",
-    "seoDescription": "Découvrez Rabah Alioune dans Dance Lab : En résumé : Visualisez votre réussite : Avant de passer une audition, prenez un moment pour vous. Imaginez-vous…"
+    "seoDescription": "Découvrez Rabah Aliouane dans Dance Lab : En résumé : Visualisez votre réussite : Avant de passer une audition, prenez un moment pour vous. Imaginez-vous…"
   },
   {
     "number": 11,

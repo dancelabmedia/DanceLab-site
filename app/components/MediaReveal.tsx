@@ -1,11 +1,12 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import Link from 'next/link'
-import PublicExplorerLink from '@/components/PublicExplorerLink'
 import { isPrivateSectionPath } from '@/data/section-visibility'
+import { privateAccessScope } from '@/data/private-navigation'
+import { localizedHref } from '@/lib/i18n/routing'
 import type { MagazineArticle } from '../decouvrir/articles-data'
-import { getReadTime } from '../decouvrir/articles-data'
+import { getArticleCardObjectPosition, getReadTime } from '../decouvrir/articles-data'
 import { formatAgendaDate, type AgendaEvent } from '../agenda/agenda-data'
 import { useLocale } from '@/components/LocaleProvider'
 import { uiText } from '@/data/i18n/messages'
@@ -118,9 +119,29 @@ export default function MediaReveal({ article, event }: Props) {
   const card2Ref   = useRef<HTMLDivElement>(null)   // Explorer (2e à apparaître)
   const card4Ref   = useRef<HTMLDivElement>(null)   // Sortir (position et timing conservés)
   const labelRef   = useRef<HTMLDivElement>(null)
+  const mobileTrackRef = useRef<HTMLDivElement>(null)
+  const [mobileIndex, setMobileIndex] = useState(0)
+
+  const selectMobileCard = (index: number) => {
+    const track = mobileTrackRef.current
+    if (!track) return
+    setMobileIndex(index)
+    track.scrollTo({
+      left: index * track.clientWidth,
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    })
+  }
+
+  const syncMobileCard = () => {
+    const track = mobileTrackRef.current
+    if (!track || !track.clientWidth) return
+    setMobileIndex(clamp(Math.round(track.scrollLeft / track.clientWidth), 0, event ? 2 : 1))
+  }
 
   /* ── Feature Explorer — toujours Styles de danse ─────────────────────── */
   const explorerFeature = EXPLORER_FEATURES[0]
+  const sortirIsPrivate = privateAccessScope('/sortir') !== null
+  const sortirHref = localizedHref(sortirIsPrivate ? '/sortir' : `/sortir/${event?.slug ?? ''}`, locale)
 
   /* ── Informations pratiques de l'événement Sortir ─────────────────────── */
   const eventDates = event
@@ -244,6 +265,7 @@ export default function MediaReveal({ article, event }: Props) {
     >
       <div className="mfr-sticky">
         <div className="mfr-canvas">
+          <div ref={mobileTrackRef} className="mfr-track" onScroll={syncMobileCard}>
 
           {/* ════════════════════════════════════════
               Carte 1 — Le Magazine (article)
@@ -265,6 +287,7 @@ export default function MediaReveal({ article, event }: Props) {
                       aria-hidden="true"
                       className="mfr-card-img"
                       loading="lazy"
+                      style={{ objectPosition: getArticleCardObjectPosition(article) }}
                     />
                     <div className="mfr-card-gradient" />
                     <div className="mfr-card-body mfr-card-body--lower">
@@ -286,7 +309,7 @@ export default function MediaReveal({ article, event }: Props) {
                     </div>
                     <div className="mfr-preview-image">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={article.image} alt="" aria-hidden="true" loading="lazy" />
+                      <img src={article.image} alt="" aria-hidden="true" loading="lazy" style={{ objectPosition: getArticleCardObjectPosition(article) }} />
                       {article.imageCredit ? (
                         <span className="mfr-preview-image-credit">{article.imageCredit}</span>
                       ) : null}
@@ -317,8 +340,8 @@ export default function MediaReveal({ article, event }: Props) {
               Apparaît en DEUXIÈME
           ════════════════════════════════════════ */}
           <div ref={card2Ref} className="mfr-card mfr-card--style">
-            <PublicExplorerLink
-              href={explorerFeature.href}
+            <Link
+              href={localizedHref(explorerFeature.href, locale)}
               className="mfr-card-inner"
               aria-label={`Explorer — ${explorerFeature.title}`}
             >
@@ -376,7 +399,7 @@ export default function MediaReveal({ article, event }: Props) {
                   <span className="mfr-preview-cta">{isPrivateSectionPath(explorerFeature.href) ? t('Bientôt') : t('Découvrir →')}</span>
                 </div>
               )}
-            </PublicExplorerLink>
+            </Link>
           </div>
 
           {/* ════════════════════════════════════════
@@ -387,7 +410,7 @@ export default function MediaReveal({ article, event }: Props) {
           {event && (
             <div ref={card4Ref} className="mfr-card mfr-card--sortir">
               <Link
-                href={`/sortir/${event.slug}`}
+                href={sortirHref}
                 className="mfr-card-inner"
                 aria-label={event.title}
               >
@@ -408,7 +431,7 @@ export default function MediaReveal({ article, event }: Props) {
                     <p className="mfr-card-chapo">{event.description}</p>
                     <div className="mfr-card-foot">
                       <span className="mfr-card-meta">{eventDates}</span>
-                      <span className="mfr-card-cta mfr-card-cta--sort">{t("Voir l'événement →")}</span>
+                      <span className="mfr-card-cta mfr-card-cta--sort">{t(sortirIsPrivate ? 'Bientôt' : "Voir l'événement →")}</span>
                     </div>
                   </div>
                 </div>
@@ -421,11 +444,30 @@ export default function MediaReveal({ article, event }: Props) {
                     {eventTimes ? <div><dt>{t('Horaires')}</dt><dd>{eventTimes}</dd></div> : null}
                     {eventPrice ? <div><dt>{t('Tarifs')}</dt><dd>{eventPrice}</dd></div> : null}
                   </dl>
-                  <span className="mfr-preview-cta">{t("Voir l'événement →")}</span>
+                  <span className="mfr-preview-cta">{t(sortirIsPrivate ? 'Bientôt' : "Voir l'événement →")}</span>
                 </div>
               </Link>
             </div>
           )}
+          </div>{/* /mfr-track — display: contents sur desktop */}
+
+          <div className="mfr-mobile-tabs" role="group" aria-label={t('Choisir un univers Dance Lab')}>
+            {[
+              { label: t('Magazine'), key: 'mag' },
+              { label: t('Explorer'), key: 'exp' },
+              ...(event ? [{ label: t('Sortir'), key: 'sort' }] : []),
+            ].map((tab, index) => (
+              <button
+                key={tab.key}
+                type="button"
+                className={`mfr-label-tag mfr-label-tag--${tab.key}${mobileIndex === index ? ' is-active' : ''}`}
+                aria-pressed={mobileIndex === index}
+                onClick={() => selectMobileCard(index)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
 
           {/* ── Label de composition — apparaît en dernier ── */}
           <div ref={labelRef} className="mfr-label" aria-hidden="true">

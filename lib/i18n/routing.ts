@@ -30,6 +30,6 @@ export function safeLanguageTarget(value: unknown): string | null {
   } catch { return null }
 }
 
-// Publish only complete, reviewed page templates. A URL alone is not a translation.
+// Every English URL reuses the French template. Untranslated fields fall back to French.
 export const publishedEnglishPaths: readonly string[] = ['/explorer']
 export const hasPublishedEnglish = (path: string) => publishedEnglishPaths.includes(sourcePath(path))

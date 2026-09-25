@@ -22,6 +22,7 @@
 import type { MagazineArticle, EpisodeLink } from '@/app/decouvrir/articles-data'
 import { episodesList } from '@/data/episodes-list'
 import { episodeExtras } from '@/data/episode-extras'
+import { getArticleEpisodeLinks } from '@/lib/article-episode-associations'
 
 export type { EpisodeLink }
 
@@ -62,25 +63,6 @@ function getEpisodeQuoteData(
 }
 
 /**
- * Construit l'EpisodeLink de fallback depuis les champs principaux de l'article.
- * Utilisé pour les articles sans episodeLinks explicite.
- */
-function makeEpisodeLinkFromArticle(article: MagazineArticle): EpisodeLink | null {
-  if (!article.episodeSlug || !article.guest || !article.episodeNumber) return null
-  const nameNorm = article.guest
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]/g, '')
-  return {
-    name:   article.guest,
-    slug:   article.episodeSlug,
-    number: article.episodeNumber,
-    image:  `/episodes/${nameNorm}${article.episodeNumber}.png`,
-  }
-}
-
-/**
  * Construit le tableau PLAT de frames pour la colonne éditoriale.
  *
  * Structure garantie :
@@ -96,11 +78,7 @@ export function buildSidebarFrames(article: MagazineArticle): SidebarFrame[] {
   const frames: SidebarFrame[] = []
 
   // ── 1. Épisodes → frame[0] ───────────────────────────────────────────────────
-  const epLinks: EpisodeLink[] = article.episodeLinks?.length
-    ? article.episodeLinks.slice(0, MAX_EPISODES)
-    : [makeEpisodeLinkFromArticle(article)].filter(
-        (e): e is EpisodeLink => e !== null
-      )
+  const epLinks: EpisodeLink[] = getArticleEpisodeLinks(article).slice(0, MAX_EPISODES)
 
   if (epLinks.length > 0) {
     frames.push({ episodes: epLinks })

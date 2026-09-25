@@ -1218,7 +1218,7 @@ export const episodesList: EpisodeListItem[] = [
     "number": 12,
     "slug": "12-rabah-alioune",
     "title": "Comment réussir son casting ?",
-    "guest": "Rabah Alioune",
+    "guest": "Rabah Aliouane",
     "duration": "50 min",
     "image": "/episodes/rabahaliouane12.png",
     "sourceImage": "/episodes/rabahaliouane12.png",

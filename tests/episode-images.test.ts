@@ -103,3 +103,12 @@ test('the square portrait retains its original ratio in small recommendation car
   assert.equal(portrait.width, portrait.height)
   assert.equal(episodeExtras[127].headerImage, '/images/les-invites-header/waabee127.png')
 })
+
+test('Laure Dary YouTube video is stored in the episode source used by every consumer', async () => {
+  assert.equal(episodeExtras[27].youtubeId, '9Nti1KFQcDc')
+  const { getEpisodeBySlug, getEpisodeYoutubeUrl } = await import('../lib/episodes')
+  const episode = await getEpisodeBySlug('27-laure-dary')
+  assert.ok(episode)
+  assert.equal(episode.youtubeId, '9Nti1KFQcDc')
+  assert.equal(getEpisodeYoutubeUrl(episode), 'https://www.youtube.com/watch?v=9Nti1KFQcDc')
+})

@@ -6,11 +6,12 @@ import { useState, useMemo, useRef, useEffect, useCallback } from "react"
 import { useLocale } from "@/components/LocaleProvider"
 import { uiText } from "@/data/i18n/messages"
 import type { MagazineArticle } from "./articles-data"
-import { getReadTime } from "./articles-data"
+import { getArticleCardMobileObjectPosition, getArticleCardObjectPosition, getReadTime } from "./articles-data"
 import MagHeroSlider, { type MagHeroSliderHandle, type SlideArticle } from "./MagHeroSlider"
 import PhotoCredit from "@/components/PhotoCredit"
 import MagazineEditorial from "./MagazineEditorial"
 import type { UnifiedEpisode } from "@/lib/episodes"
+import { useBackNavigationState } from '@/lib/use-back-navigation-state'
 
 // ─── Données statiques ─────────────────────────────────────────────────────────
 
@@ -45,8 +46,8 @@ const THEMES = [
 interface Props {
   /** Articles déjà filtrés (publiés uniquement), triés par publishedAt desc */
   articles: MagazineArticle[]
-  /** Dernier épisode publié — affiché dans le bloc "Épisode en lien" */
-  latestEpisode?: UnifiedEpisode
+  /** Dernier épisode publié — source unique du bloc « Dernier épisode » */
+  latestEpisode: UnifiedEpisode
   /** Épisodes récents pour le carrousel de la section podcast */
   carouselEpisodes?: UnifiedEpisode[]
 }
@@ -58,6 +59,10 @@ export default function DecouvrirClient({ articles, latestEpisode, carouselEpiso
   const t = (text: string) => uiText(locale, text)
   const [search, setSearch]               = useState("")
   const [activeCategory, setActiveCategory] = useState("Tous")
+  useBackNavigationState('magazine', { search, activeCategory }, saved => {
+    setSearch(saved.search)
+    setActiveCategory(saved.activeCategory)
+  })
   const heroRef = useRef<HTMLElement>(null)
 
   // ── Nav éditoriale du slider ───────────────────────────────────────────
@@ -132,6 +137,7 @@ export default function DecouvrirClient({ articles, latestEpisode, carouselEpiso
             title:       a.title,
             image:       a.image,
             imageCredit: a.imageCredit,
+            mobileObjectPosition: a.magazineHeroMobilePosition ?? a.imageObjectPosition,
           }))}
           onSlidesReady={setHeroSlides}
           onCurrentChange={setHeroCurrent}
@@ -262,7 +268,7 @@ export default function DecouvrirClient({ articles, latestEpisode, carouselEpiso
                     className="mag-card"
                   >
                     <div className="mag-card-img">
-                      <img src={article.image} alt={article.title} style={article.imageObjectPosition ? { objectPosition: article.imageObjectPosition } : undefined} />
+                      <img src={article.image} alt={article.title} style={{ objectPosition: getArticleCardObjectPosition(article), '--mag-card-mobile-object-position': getArticleCardMobileObjectPosition(article) } as React.CSSProperties} />
                       <div className="mag-card-overlay">
                         <span className="mag-card-category">{article.category}</span>
                         <h2 className="mag-card-title">{article.title}</h2>
@@ -346,7 +352,7 @@ export default function DecouvrirClient({ articles, latestEpisode, carouselEpiso
                         <img
                           src={recentArticles[0].image}
                           alt={recentArticles[0].title}
-                          style={recentArticles[0].imageObjectPosition ? { objectPosition: recentArticles[0].imageObjectPosition } : undefined}
+                          style={{ objectPosition: getArticleCardObjectPosition(recentArticles[0]), '--mag-card-mobile-object-position': getArticleCardMobileObjectPosition(recentArticles[0]) } as React.CSSProperties}
                         />
                         <PhotoCredit credit={recentArticles[0].imageCredit} />
                       </div>
@@ -375,7 +381,7 @@ export default function DecouvrirClient({ articles, latestEpisode, carouselEpiso
                             <img
                               src={article.image}
                               alt={article.title}
-                              style={article.imageObjectPosition ? { objectPosition: article.imageObjectPosition } : undefined}
+                              style={{ objectPosition: getArticleCardObjectPosition(article), '--mag-card-mobile-object-position': getArticleCardMobileObjectPosition(article) } as React.CSSProperties}
                             />
                             <div className="mag-card-overlay">
                               <span className="mag-card-category">{article.category}</span>

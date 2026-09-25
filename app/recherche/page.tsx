@@ -77,7 +77,7 @@ export default async function SearchResultsPage({
                     {groupResults.map((item) => (
                       <Link key={item.id} className="search-result-card" href={item.href}>
                         {item.image ? (
-                          <img src={item.image} alt="" />
+                          <img src={item.image} alt="" style={item.imageObjectPosition ? { objectPosition: item.imageObjectPosition } : undefined} />
                         ) : (
                           <span className="search-result-placeholder" aria-hidden="true">
                             {item.typeLabel.slice(0, 1)}

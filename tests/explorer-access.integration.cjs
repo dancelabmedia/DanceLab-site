@@ -179,10 +179,10 @@ async function main() {
       const response = await fetch(base + pathname, { headers: { Cookie: cookie } })
       assert.equal(response.status, 200)
       const html = await response.text()
-      assert.ok(html.includes('The English version is being prepared.'))
+      assert.ok(html.includes('<html lang="en"'))
+      assert.ok(!html.includes('The English version is being prepared.'))
       assert.ok(/name="robots"[^>]*content="[^"]*noindex/.test(html))
       assert.ok(!/hrefLang="en"/i.test(html))
-      assert.ok(!html.includes(danceStyles[0].introduction.slice(0, 100)))
       checks++
     }
     assert.equal((await fetch(base + '/en/does-not-exist')).status, 404)

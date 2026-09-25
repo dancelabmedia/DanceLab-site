@@ -1,11 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { sectionVisibility } from '@/data/section-visibility'
 import PhotoCredit from '@/components/PhotoCredit'
 import type { MagazineArticle } from './articles-data'
-import { getReadTime } from './articles-data'
+import { getArticleCardMobileObjectPosition, getArticleCardObjectPosition, getReadTime } from './articles-data'
 import { useLocale } from '@/components/LocaleProvider'
 import { uiText } from '@/data/i18n/messages'
 import type { UnifiedEpisode } from '@/lib/episodes'
@@ -51,7 +51,9 @@ function ArticleMeta({ article }: { article: MagazineArticle }) {
 }
 
 function ArticleImage({ article }: { article: MagazineArticle }) {
-  return <div className="magx-image"><img src={article.image} alt={article.title} style={article.imageObjectPosition ? { objectPosition: article.imageObjectPosition } : undefined} /><PhotoCredit credit={article.imageCredit} /></div>
+  const objectPosition = getArticleCardObjectPosition(article)
+  const mobileObjectPosition = getArticleCardMobileObjectPosition(article)
+  return <div className="magx-image"><img src={article.image} alt={article.title} style={{ objectPosition, '--magx-mobile-object-position': mobileObjectPosition } as CSSProperties} /><PhotoCredit credit={article.imageCredit} /></div>
 }
 
 export default function MagazineEditorial({
@@ -60,7 +62,7 @@ export default function MagazineEditorial({
   carouselEpisodes,
 }: {
   articles: MagazineArticle[]
-  latestEpisode?: UnifiedEpisode
+  latestEpisode: UnifiedEpisode
   carouselEpisodes?: UnifiedEpisode[]
 }) {
   const locale = useLocale()
@@ -201,27 +203,22 @@ export default function MagazineEditorial({
         <Link href="/ecouter">{t("Découvrir tous les épisodes →")}</Link>
       </div>
 
-      {/* Dernier épisode publié — mis à jour automatiquement */}
-      {latestEpisode ? (
-        <Link href={`/episodes/${latestEpisode.slug}`} className="magx-podcast-episode">
-          <span>{t('Épisode en lien')}</span>
-          <div>
+      {/* Source unifiée : se met à jour avec chaque nouvel épisode publié. */}
+      <Link href={`/episodes/${latestEpisode.slug}`} className="magx-podcast-episode">
+        <span>{t('Dernier épisode')}</span>
+        <div className="magx-podcast-episode-row">
+          <div className="magx-podcast-episode-image">
             <img src={latestEpisode.image} alt={latestEpisode.guest} />
             <i aria-hidden="true">▶</i>
           </div>
-          <small>
-            {latestEpisode.number ? `#${latestEpisode.number} · ` : ''}{latestEpisode.guest}
-          </small>
-          <h3>{latestEpisode.title}</h3>
-        </Link>
-      ) : (
-        <Link href="/episodes/127-waabee" className="magx-podcast-episode">
-          <span>{t('Épisode en lien')}</span>
-          <div><img src="/images/les-invites/waabee127.png" alt="WaaBee" /><i aria-hidden="true">▶</i></div>
-          <small>WaaBee · Battle</small>
-          <h3>Ce qu&apos;un danseur ressent juste avant un battle</h3>
-        </Link>
-      )}
+          <div className="magx-podcast-episode-copy">
+            <small>
+              {latestEpisode.number ? `#${latestEpisode.number} · ` : ''}{latestEpisode.guest}
+            </small>
+            <h3>{latestEpisode.title}</h3>
+          </div>
+        </div>
+      </Link>
 
       <div className="magx-readalso"><span>{t('À lire aussi')}</span>{podcastReads.map(article => <Link key={article.slug} href={`/decouvrir/articles/${article.slug}`}>→ <b>{article.title}</b></Link>)}</div>
     </section>

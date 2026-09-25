@@ -7,6 +7,7 @@ import { createPortal } from "react-dom"
 import { useLocale } from '@/components/LocaleProvider'
 import { uiText } from '@/data/i18n/messages'
 import AnimatedCounter from "../components/AnimatedCounter"
+import { useBackNavigationState } from '@/lib/use-back-navigation-state'
 
 const EPISODES_PAGE_SIZE = 12
 
@@ -212,6 +213,12 @@ export default function EcouterClient({ episodes }: Props) {
   const [sort, setSort] = useState("recent")
   const [inviteFilter, setInviteFilter] = useState("Tous")
   const [page, setPage] = useState(1)
+  const filtersRef = useRef({ search, thematique, duree, sort, inviteFilter })
+  useBackNavigationState('ecouter', { search, thematique, duree, sort, inviteFilter, page }, saved => {
+    filtersRef.current = saved
+    setSearch(saved.search); setThematique(saved.thematique); setDuree(saved.duree)
+    setSort(saved.sort); setInviteFilter(saved.inviteFilter); setPage(saved.page)
+  })
   const episodesGridRef = useRef<HTMLDivElement>(null)
   const revealedEpisodeIds = useRef(new Set<number>())
 
@@ -313,7 +320,6 @@ export default function EcouterClient({ episodes }: Props) {
     return () => observer.disconnect()
   }, [visibleEpisodes])
 
-  const filtersRef = useRef({ search, thematique, duree, sort, inviteFilter })
   useEffect(() => {
     const prev = filtersRef.current
     if (
@@ -392,8 +398,11 @@ export default function EcouterClient({ episodes }: Props) {
             </div>
             <div className="el-stat-sep" aria-hidden="true" />
             <div className="el-stat">
-              <strong>
+              <strong className="el-listens-desktop">
                 <AnimatedCounter prefix="+" value={100} suffix={"\u00a0000"} duration={1600} />
+              </strong>
+              <strong className="el-listens-mobile">
+                <AnimatedCounter prefix="+" value={400} suffix={"\u00a000"} duration={1600} />
               </strong>
               <span>{t('écoutes cumulées')}</span>
             </div>

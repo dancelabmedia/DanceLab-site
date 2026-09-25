@@ -14,6 +14,7 @@ function find(node, predicate) {
 function harness(response = { ok: true, json: async () => ({ href: '/en/explorer/styles-de-danse/break?view=1#origines' }) }) {
   const filename = path.join(__dirname, '../components/LanguageSwitcher.tsx')
   const state = [], requests = [], navigations = []
+  let locale = 'fr', refreshes = 0
   let cursor = 0
   const hooks = { ...React, useEffect() {}, useId: () => 'language-menu', useRef: initial => ({ current: initial }), useState(initial) {
     const i = cursor++
@@ -24,45 +25,42 @@ function harness(response = { ok: true, json: async () => ({ href: '/en/explorer
   const mod = { exports: {} }, localRequire = createRequire(filename)
   new Function('require', 'module', 'exports', 'fetch', 'window', compiled)(name => {
     if (name === 'react') return hooks
-    if (name === 'next/navigation') return { usePathname: () => '/explorer/styles-de-danse/break' }
-    if (name.endsWith('.module.css')) return { default: { switcher: 'switcher', trigger: 'trigger', menu: 'menu' } }
+    if (name === 'next/navigation') return {
+      usePathname: () => '/explorer/styles-de-danse/break',
+      useRouter: () => ({ replace: (href, options) => navigations.push({ href, options }), refresh: () => { refreshes++ } }),
+    }
+    if (name === './LocaleProvider') return { useLocale: () => locale, useSetLocale: () => value => { locale = value } }
+    if (name.endsWith('.module.css')) return { default: { switcher: 'switcher', option: 'option', active: 'active', divider: 'divider', mobileSwitcher: 'mobileSwitcher' } }
     return localRequire(name)
   }, mod, mod.exports, async (url, options) => { requests.push({ url, options }); return response }, { location: { pathname: '/explorer/styles-de-danse/break', search: '?view=1', hash: '#origines', assign: url => navigations.push(url) } })
-  const render = (locale = 'fr') => { cursor = 0; return mod.exports.default({ locale }) }
-  return { render, requests, navigations }
+  const render = () => { cursor = 0; return mod.exports.default({ locale }) }
+  return { render, requests, navigations, get locale() { return locale }, get refreshes() { return refreshes } }
 }
 
-test('sélecteur : bouton Newsletter réutilisé, menu bilingue accessible, Échap', () => {
+test('sélecteur : choix FR/EN accessible et langue active clairement annoncée', () => {
   const ui = harness()
-  const trigger = find(ui.render(), el => el.type === 'button')[0]
-  assert.ok(trigger.props.className.includes('btn btn-primary'))
-  assert.equal(trigger.props['aria-label'], 'Choisir la langue')
-  assert.equal(trigger.props['aria-expanded'], false)
-  trigger.props.onClick()
-  const menu = ui.render()
-  const options = find(menu, el => el.props.role === 'menuitemradio')
+  const options = find(ui.render(), el => el.type === 'button')
   assert.equal(options.length, 2)
-  assert.deepEqual(options.map(el => el.props.children[0]), ['Français', 'English'])
-  assert.deepEqual(options.map(el => el.props['aria-checked']), [true, false])
-  menu.props.onKeyDown({ key: 'Escape', preventDefault() {} })
-  assert.equal(find(ui.render(), el => el.props.role === 'menu').length, 0)
+  assert.deepEqual(options.map(el => el.props.children), ['FR', 'EN'])
+  assert.deepEqual(options.map(el => el.props['aria-pressed']), [true, false])
 })
 
 test('changement : même fiche, recherche et ancre envoyées au serveur ; préférence non écrite dans document.cookie', async () => {
   const ui = harness()
-  find(ui.render(), el => el.type === 'button')[0].props.onClick()
-  await find(ui.render(), el => el.props.role === 'menuitemradio' && el.props.lang === 'en')[0].props.onClick()
+  await find(ui.render(), el => el.type === 'button' && el.props.lang === 'en')[0].props.onClick()
   assert.equal(ui.requests[0].url, '/api/language')
   assert.deepEqual(JSON.parse(ui.requests[0].options.body), { locale: 'en', href: '/explorer/styles-de-danse/break?view=1#origines' })
   assert.equal(ui.requests[0].options.credentials, 'same-origin')
-  assert.deepEqual(ui.navigations, ['/en/explorer/styles-de-danse/break?view=1#origines'])
+  assert.deepEqual(ui.navigations, [{ href: '/en/explorer/styles-de-danse/break?view=1#origines', options: { scroll: false } }])
+  assert.equal(ui.locale, 'en')
+  assert.equal(ui.refreshes, 1)
 })
 
 test('erreur récupérable : pas de changement de page si la préférence ne peut pas être enregistrée', async () => {
   const ui = harness({ ok: false })
-  find(ui.render(), el => el.type === 'button')[0].props.onClick()
-  await find(ui.render(), el => el.props.role === 'menuitemradio' && el.props.lang === 'en')[0].props.onClick()
+  await find(ui.render(), el => el.type === 'button' && el.props.lang === 'en')[0].props.onClick()
   assert.equal(ui.navigations.length, 0)
   assert.ok(find(ui.render(), el => el.props.role === 'alert').length)
-  assert.equal(find(ui.render(), el => el.props.role === 'menuitemradio').every(el => !el.props.disabled), true)
+  assert.equal(ui.locale, 'fr')
+  assert.equal(find(ui.render(), el => el.type === 'button').every(el => !el.props.disabled), true)
 })

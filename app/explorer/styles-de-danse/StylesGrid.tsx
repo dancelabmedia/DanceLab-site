@@ -5,6 +5,8 @@ import { useState, useEffect, useRef, useCallback } from "react"
 import type { DanceStyleFamily } from "./styles-data"
 import { useLocale } from "@/components/LocaleProvider"
 import { uiText } from "@/data/i18n/messages"
+import { useBackNavigationState } from '@/lib/use-back-navigation-state'
+import { isHistoryRestoreTarget } from '@/lib/navigation-memory'
 
 /* ── Constantes ──────────────────────────────────────────────── */
 const STEP    = 8   // cartes ajoutées / retirées à chaque clic
@@ -53,10 +55,12 @@ export default function StylesGrid({ styles, totalCount }: Props) {
   const locale = useLocale()
   const t = (text: string) => uiText(locale, text)
   const [visibleCount, setVisibleCount] = useState(INITIAL)
+  useBackNavigationState('dance-styles-grid', { visibleCount }, saved => setVisibleCount(saved.visibleCount))
   const controlsRef = useRef<HTMLDivElement>(null)
 
   /* Réinitialise à 8 dès que la liste filtrée change (recherche ou filtre famille) */
   useEffect(() => {
+    if (isHistoryRestoreTarget()) return
     setVisibleCount(INITIAL)
   }, [styles])
 

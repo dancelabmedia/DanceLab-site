@@ -18,6 +18,11 @@ import {
   type MagazineArticle,
 } from '@/app/decouvrir/articles-data'
 import { getPublishedPodcastArticles, getPodcastArticleBySlug } from '@/lib/podcast-articles'
+import { getArticleEpisodeLinks } from '@/lib/article-episode-associations'
+
+function withAssociatedEpisodes(article: MagazineArticle): MagazineArticle {
+  return { ...article, episodeLinks: getArticleEpisodeLinks(article) }
+}
 
 /**
  * Retourne tous les articles publiés (statiques + podcast générés),
@@ -33,7 +38,7 @@ export function getAllPublishedArticles(): MagazineArticle[] {
   const seenSlugs = new Set(staticArticles.map(a => a.slug))
   const uniquePodcast = podcastArticles.filter(a => !seenSlugs.has(a.slug))
 
-  return [...staticArticles, ...uniquePodcast].sort(
+  return [...staticArticles, ...uniquePodcast].map(withAssociatedEpisodes).sort(
     (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
   )
 }
@@ -45,11 +50,11 @@ export function getAllPublishedArticles(): MagazineArticle[] {
 export function getArticleBySlug(slug: string): MagazineArticle | undefined {
   // Articles statiques en priorité
   const staticMatch = magazineArticles.find(a => a.slug === slug)
-  if (staticMatch) return staticMatch
+  if (staticMatch) return withAssociatedEpisodes(staticMatch)
 
   // Articles podcast générés
   const podcastMatch = getPodcastArticleBySlug(slug)
-  if (podcastMatch) return podcastMatch.article
+  if (podcastMatch) return withAssociatedEpisodes(podcastMatch.article)
 
   return undefined
 }

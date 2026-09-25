@@ -34,7 +34,7 @@ const english: Record<string, string> = {
   'Une erreur est survenue. Réessaie.': 'Something went wrong. Please try again.', 'Mot de passe incorrect.': 'Incorrect password.', 'Code incorrect.': 'Incorrect code.', 'L\u2019acc\u00e8s n\u2019a pas pu \u00eatre v\u00e9rifi\u00e9.': 'Access could not be verified.',
 
   /* ── Stats / signature ── */
-  'Conversations': 'Conversations', 'publiées': 'published', 'Écoutes': 'Listens', 'cumulées': 'in total', 'Vues sur': 'Views on', 'les réseaux': 'social media',
+  'Conversations': 'Conversations', 'publiées': 'published', 'Écoutes': 'Listens', 'cumulées': 'in total', 'Vues': 'Views', 'Vues sur': 'Views on', 'les réseaux': 'social media',
   'Le média': 'The media platform', 'référence': 'reference', 'sur la danse': 'to dance',
 
   /* ── Newsletter ── */

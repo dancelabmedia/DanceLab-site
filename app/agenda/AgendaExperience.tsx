@@ -7,6 +7,7 @@ import type { AgendaEvent } from "./agenda-data"
 import { formatAgendaDateRange } from "./agenda-data"
 import { useLocale } from "@/components/LocaleProvider"
 import { uiText } from "@/data/i18n/messages"
+import { useBackNavigationState } from '@/lib/use-back-navigation-state'
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
@@ -425,6 +426,13 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
 
   // ── Mobile : panneau filtres ──
   const [filtersOpen, setFiltersOpen] = useState(false)
+  useBackNavigationState('agenda', {
+    search, typeFilter, cityFilter, dateFilter, priceFilter, sortValue, filtersOpen, activeSlug,
+  }, saved => {
+    setSearch(saved.search); setTypeFilter(saved.typeFilter); setCityFilter(saved.cityFilter)
+    setDateFilter(saved.dateFilter); setPriceFilter(saved.priceFilter); setSortValue(saved.sortValue)
+    setFiltersOpen(saved.filtersOpen); setActiveSlug(saved.activeSlug)
+  })
 
   // ── Options dynamiques ──
   const typeOptions = useMemo(

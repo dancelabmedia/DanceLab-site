@@ -118,7 +118,7 @@ export function aboutContent(locale: Locale) {
     entrepreneurP3: en
       ? 'Through these various projects, my goal remains the same: to create spaces that allow us to tell stories, pass on knowledge and foster new connections.'
       : "À travers ces différents projets, mon objectif reste le même : créer des espaces qui permettent de raconter, transmettre et faire émerger de nouvelles connexions.",
-    missionTitle: en ? 'The mission of Dance Lab' : 'La mission de Dance Lab',
+    missionTitle: en ? 'The mission of' : 'La mission de',
     missionSubtitle: en ? 'To help people discover, understand and experience dance.' : 'Faire découvrir, comprendre et vivre la danse.',
     mission1Title: en ? 'Giving voice' : 'Donner la parole',
     mission1Text: en

@@ -65,26 +65,28 @@ test('aucun appel sans fournisseur autorisé et aucun appel pour une traduction 
   assert.ok(!hasPublishedEnglish('/episodes/127-waabee'))
 })
 
-test("middleware : langue derivee de l'URL ou du cookie, aucun contournement des routes privees EN", async () => {
+test("middleware : langue dérivée de l'URL, préférence persistante à l'accueil et aucun contournement privé EN", async () => {
   // /en/* paths always resolve to English regardless of cookie
   const english = await middleware(new NextRequest('https://example.test/en/explorer', { headers: { 'x-dancelab-locale': 'fr', 'x-dancelab-path': '/admin' } }))
   assert.equal(english.headers.get('x-middleware-request-x-dancelab-locale'), 'en')
   assert.equal(english.headers.get('x-middleware-request-x-dancelab-path'), '/en/explorer')
-  // Cookie preference is now respected on non-/en/ paths
+  assert.equal(new URL(english.headers.get('x-middleware-rewrite')!).pathname, '/explorer')
+  // Une URL française explicite reste française, même avec une ancienne préférence EN.
   const cookieEn = await middleware(new NextRequest('https://example.test/explorer', { headers: { Cookie: 'dancelab_locale=en', 'x-dancelab-locale': 'en' } }))
-  assert.equal(cookieEn.headers.get('x-middleware-request-x-dancelab-locale'), 'en')
+  assert.equal(cookieEn.headers.get('x-middleware-request-x-dancelab-locale'), 'fr')
   // Without EN cookie, French URL stays French
   const cookieFr = await middleware(new NextRequest('https://example.test/explorer', { headers: { Cookie: 'dancelab_locale=fr' } }))
   assert.equal(cookieFr.headers.get('x-middleware-request-x-dancelab-locale'), 'fr')
-  // Homepage with EN cookie renders in English (no redirect to /en — locale is cookie-based)
+  // La préférence est restaurée à l'arrivée sur l'accueil via l'URL canonique EN.
   const home = await middleware(new NextRequest('https://example.test/', { headers: { Cookie: 'dancelab_locale=en' } }))
-  assert.equal(home.headers.get('x-middleware-request-x-dancelab-locale'), 'en')
-  assert.ok(!home.headers.get('location'))
+  assert.equal(new URL(home.headers.get('location')!).pathname, '/en')
   for (const path of ['/en/explorer/styles-de-danse/break', '/en/explorer/metiers-de-la-danse', '/en/explorer/ecoles-de-danse/fiche', '/en/explorer/artistes', '/en/apprendre/guides']) {
     const response = await middleware(new NextRequest('https://example.test' + path))
     assert.equal(response.status, 307)
     assert.ok(new URL(response.headers.get('location')!).pathname.startsWith('/en/'))
     assert.ok(response.headers.get('x-robots-tag')?.includes('noindex'))
   }
+  const publicEnglish = await middleware(new NextRequest('https://example.test/en/a-propos'))
+  assert.equal(new URL(publicEnglish.headers.get('x-middleware-rewrite')!).pathname, '/a-propos')
   assert.equal((await middleware(new NextRequest('https://example.test/en/admin/articles'))).status, 404)
 })

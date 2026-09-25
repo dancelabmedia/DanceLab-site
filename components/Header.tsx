@@ -27,6 +27,19 @@ const IconMenu = () => (
   </svg>
 )
 
+const IconArrow = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M5 12h14M14 6l6 6-6 6" />
+  </svg>
+)
+
+const IconEnvelope = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="2.5" y="4.5" width="19" height="15" rx="1.5" />
+    <path d="m3.5 6 8.5 7 8.5-7" />
+  </svg>
+)
+
 const popularSearches = ['Waacking', 'Breakdance', 'Intermittence', 'Chorégraphes', 'Danse contemporaine']
 const MAX_PREVIEW_RESULTS = 12
 
@@ -41,6 +54,7 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [mobileSubOpen, setMobileSubOpen] = useState<string | null>(null)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [compactSearchPlaceholder, setCompactSearchPlaceholder] = useState(false)
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [activeResult, setActiveResult] = useState(-1)
@@ -103,29 +117,12 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
     { label: 'Tendances', href: '/decouvrir/tendances' },
   ]
 
-  const exploreLinks = [
-    { label: 'Styles', href: '/explorer/styles-de-danse' },
-    { label: 'Artistes', href: '/explorer/artistes' },
-    { label: 'Chorégraphes', href: '/explorer/choregraphes' },
-    { label: 'Compagnies', href: '/explorer/compagnies' },
-    { label: 'Métiers', href: '/explorer/metiers-de-la-danse' },
-    { label: 'Écoles', href: '/explorer/ecoles-de-danse' },
-  ]
-
   const navGroups = [
     { label: 'Magazine', directHref: '/decouvrir' },
     { label: 'Écouter', directHref: '/ecouter' },
     { label: 'Sortir', directHref: '/sortir' },
-    { label: 'Explorer', items: exploreLinks },
-    {
-      label: 'Apprendre',
-      items: [
-        { label: 'Guides', href: '/apprendre/guides' },
-        { label: 'Conseils', href: '/apprendre/conseils' },
-        { label: 'Formations', href: '/apprendre/formations' },
-        { label: 'Outils', href: '/apprendre/outils' },
-      ],
-    },
+    { label: 'Explorer', directHref: '/explorer' },
+    { label: 'Apprendre', directHref: '/apprendre' },
   ]
 
   useEffect(() => {
@@ -151,6 +148,8 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
 
       if (event.key === 'Escape') {
         setSearchOpen(false)
+        setMobileOpen(false)
+        setMobileSubOpen(null)
       }
     }
 
@@ -182,7 +181,29 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
   }, [mobileOpen])
 
   useEffect(() => {
+    const desktop = window.matchMedia('(min-width: 1101px)')
+    const closeOnDesktop = () => {
+      if (desktop.matches) {
+        setMobileOpen(false)
+        setMobileSubOpen(null)
+      }
+    }
+    desktop.addEventListener('change', closeOnDesktop)
+    return () => desktop.removeEventListener('change', closeOnDesktop)
+  }, [])
+
+  useEffect(() => {
+    const mobileSearch = window.matchMedia('(max-width: 640px)')
+    const syncPlaceholder = () => setCompactSearchPlaceholder(mobileSearch.matches)
+    syncPlaceholder()
+    mobileSearch.addEventListener('change', syncPlaceholder)
+    return () => mobileSearch.removeEventListener('change', syncPlaceholder)
+  }, [])
+
+  useEffect(() => {
     setSearchOpen(false)
+    setMobileOpen(false)
+    setMobileSubOpen(null)
   }, [pathname])
 
   useEffect(() => {
@@ -320,29 +341,10 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
 
         <ul className="nav-links">
           {navGroups.map((group) => (
-            <li
-              key={group.label}
-              className={'directHref' in group ? undefined : 'nav-dropdown'}
-            >
-              {'directHref' in group ? (
-                <Link href={href(publicNavigationHref(group.directHref))} className={privateAccessScope(group.directHref) ? availability.available : undefined}>
-                  {t(group.label)}{privateAccessScope(group.directHref) && <small className={availability.badge}>{t('Bientôt')}</small>}
-                </Link>
-              ) : (
-                <>
-                  <button type="button" className="nav-dropdown-trigger">
-                    {t(group.label)}
-                  </button>
-
-                  <div className="dropdown-menu">
-                    {group.items.map((item) => (
-                      <Link key={item.label} href={href(publicNavigationHref(item.href))} className={privateAccessScope(item.href) ? availability.available : undefined}>
-                        <span>{t(item.label)}</span>{privateAccessScope(item.href) && <small className={availability.badge}>{t('Bientôt')}</small>}
-                      </Link>
-                    ))}
-                  </div>
-                </>
-              )}
+            <li key={group.label}>
+              <Link href={href(publicNavigationHref(group.directHref))} className={privateAccessScope(group.directHref) ? availability.available : undefined}>
+                {t(group.label)}{privateAccessScope(group.directHref) && <small className={availability.badge}>{t('Bientôt')}</small>}
+              </Link>
             </li>
           ))}
 
@@ -375,7 +377,10 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
 
           <button
             className="nav-burger"
-            aria-label="Menu"
+            type="button"
+            aria-label={t('Menu principal mobile')}
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-navigation"
             onClick={() => setMobileOpen(true)}
           >
             <IconMenu />
@@ -384,53 +389,64 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
       </nav>
 
       {mobileOpen ? createPortal(
-        <nav className="mobile-nav open" aria-label={t('Menu principal mobile')}>
-          <button
-            className="mobile-nav-close"
-            onClick={closeMobileMenu}
-            aria-label={t('Fermer')}
-          >
-            ✕
-          </button>
-
-          {navGroups.map((group) =>
-            'directHref' in group ? (
-              <Link
-                key={group.label}
-                href={href(publicNavigationHref(group.directHref))}
-                className="mobile-menu-title"
-                onClick={closeMobileMenu}
-              >
-                {t(group.label)}{privateAccessScope(group.directHref) && <small className={availability.badge}>{t('Bientôt')}</small>}
+        <nav id="mobile-navigation" className="mobile-nav open" aria-label={t('Menu principal mobile')}>
+          <div className="mobile-nav-shell">
+            <div className="mobile-nav-head">
+              <Link href={href('/')} className="mobile-nav-logo" onClick={closeMobileMenu}>
+                <img src="/logo.png" alt="Dance Lab" />
               </Link>
-            ) : (
-              <div key={group.label} className="mobile-menu-group">
-                <button
-                  type="button"
-                  className="mobile-menu-title"
-                  onClick={() => setMobileSubOpen(mobileSubOpen === group.label ? null : group.label)}
-                >
-                  {t(group.label)}
-                </button>
+              <button className="mobile-nav-close" onClick={closeMobileMenu} aria-label={t('Fermer')}>
+                <span aria-hidden="true" />
+              </button>
+            </div>
 
-                {mobileSubOpen === group.label ? (
-                  <div className="mobile-submenu">
-                    {group.items.map((item) => (
-                      <Link key={item.label} href={href(publicNavigationHref(item.href))} onClick={closeMobileMenu} className={privateAccessScope(item.href) ? availability.available : undefined}>
-                        <span>{t(item.label)}</span>{privateAccessScope(item.href) && <small className={availability.badge}>{t('Bientôt')}</small>}
-                      </Link>
-                    ))}
-                  </div>
-                ) : null}
+            <div className="mobile-editorial-cards">
+              <Link href={href('/decouvrir')} className="mobile-editorial-card mobile-editorial-card--magazine" onClick={closeMobileMenu}>
+                <strong>{t('Magazine')}</strong>
+                <span className="mobile-card-copy">{t('Lire, comprendre, découvrir')}</span>
+                <span className="mobile-card-arrow"><IconArrow /></span>
+              </Link>
+              <Link href={href('/ecouter')} className="mobile-editorial-card mobile-editorial-card--listen" onClick={closeMobileMenu}>
+                <strong>{t('Écouter')}</strong>
+                <span className="mobile-card-copy">{t('Les conversations avec celles et ceux qui font, pensent et transforment la danse.')}</span>
+                <span className="mobile-card-arrow"><IconArrow /></span>
+              </Link>
+            </div>
+
+            <div className="mobile-secondary-nav">
+              <Link href={href(publicNavigationHref('/sortir'))} onClick={closeMobileMenu}>
+                <span>{t('Sortir')} <small>{t('Bientôt')}</small></span><IconArrow />
+              </Link>
+              <Link href={href(publicNavigationHref('/explorer'))} onClick={closeMobileMenu}>
+                <span>{t('Explorer')} <small>{t('Bientôt')}</small></span><IconArrow />
+              </Link>
+              <Link href={href(publicNavigationHref('/apprendre'))} onClick={closeMobileMenu}>
+                <span>{t('Apprendre')} <small>{t('Bientôt')}</small></span><IconArrow />
+              </Link>
+              <Link href={href('/a-propos')} onClick={closeMobileMenu}>
+                <span>{t('À propos')}</span><IconArrow />
+              </Link>
+            </div>
+
+            <button type="button" className="mobile-search-bar" onClick={openSearch}>
+              <IconSearch />
+              <span>{t('Rechercher sur Dance Lab')}</span>
+            </button>
+
+            <div className="mobile-newsletter-row">
+              <div className="mobile-newsletter-copy">
+                <IconEnvelope />
+                <span><strong>Newsletter</strong><small>{t('Recevoir nos nouveautés et nos sélections')}</small></span>
               </div>
-            )
-          )}
+              <Link href={href('/#newsletter')} className="mobile-newsletter-cta" onClick={handleNewsletterClick}>
+                {t("S’inscrire")} <IconArrow />
+              </Link>
+            </div>
 
-          <Link href={href('/a-propos')} className="mobile-menu-title" onClick={closeMobileMenu}>
-            {t('À propos')}
-          </Link>
-
-          <LanguageSwitcher locale={locale} mobile />
+            <div className="mobile-language-row">
+              <LanguageSwitcher locale={locale} mobile />
+            </div>
+          </div>
         </nav>,
         document.body
       ) : null}
@@ -447,6 +463,14 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
           }}
         >
           <div ref={searchBoxRef} className="search-box">
+            <div className="search-mobile-head">
+              <Link href={href('/')} className="search-mobile-logo" onClick={closeSearch}>
+                <img src="/logo.png" alt="Dance Lab" />
+              </Link>
+              <button className="search-mobile-close" type="button" onClick={closeSearch} aria-label={t('Fermer la recherche')}>
+                <span aria-hidden="true" />
+              </button>
+            </div>
             <form className="search-row" role="search" onSubmit={submitSearch}>
               <IconSearch />
               <input
@@ -454,7 +478,11 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
                 className="search-input"
                 type="search"
                 value={query}
-                placeholder={t('Rechercher un épisode, un artiste, un style…')}
+                placeholder={
+                  compactSearchPlaceholder
+                    ? (locale === 'en' ? 'Search an episode or artist…' : 'Rechercher un épisode, un artiste…')
+                    : t('Rechercher un épisode, un artiste, un style…')
+                }
                 autoComplete="off"
                 aria-label={t('Rechercher dans Dance Lab')}
                 aria-autocomplete="list"
@@ -526,7 +554,7 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
                                   onClick={closeSearch}
                                 >
                                   {item.image ? (
-                                    <img src={item.image} alt="" />
+                                    <img src={item.image} alt="" style={item.imageObjectPosition ? { objectPosition: item.imageObjectPosition } : undefined} />
                                   ) : (
                                     <span className="search-suggestion-placeholder" aria-hidden="true">
                                       {item.typeLabel.slice(0, 1)}

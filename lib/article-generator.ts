@@ -10,6 +10,8 @@
 
 import type { RssEpisode } from '@/lib/ausha-rss'
 import type { MagazineArticle } from '@/app/decouvrir/articles-data'
+import { regenerateArticleAssociations } from '@/lib/article-episode-associations'
+import { getEpisodeRecommendationCatalog } from '@/lib/episode-recommendations.server'
 import {
   formatDisplayDate,
   estimateReadTime,
@@ -165,6 +167,7 @@ export async function generateArticleFromEpisode(
     publishedDate: displayDate,
     episodeSlug: episode.aushaSlug,
     episodeNumber: `#${episode.number}`,
+    sourceEpisodeNumber: episode.number,
     guest: episode.guest || extractGuestFromTitle(episode.title),
     image: episode.aushaImage || '',
     readTime,
@@ -176,7 +179,21 @@ export async function generateArticleFromEpisode(
     conclusion: generated.conclusion,
   }
 
-  return article
+  // Persist once at creation; a manual editorial choice can subsequently replace it.
+  const { inputs, catalog } = await getEpisodeRecommendationCatalog()
+  const cards = new Map(catalog.map(ep => [ep.number, ep]))
+  const associationInputs = inputs.map(input => ({
+    ...input, guest: cards.get(input.number)?.guest, image: cards.get(input.number)?.image,
+  }))
+  // The source interview is already in hand even if a second RSS fetch fails.
+  if (!associationInputs.some(input => input.number === episode.number)) {
+    associationInputs.push({
+      number: episode.number, slug: episode.aushaSlug, title: episode.title,
+      description: episode.description, guest: episode.guest,
+      image: episode.aushaImage, excerpt: '',
+    })
+  }
+  return regenerateArticleAssociations(article, associationInputs)
 }
 
 // ─── Helpers privés ───────────────────────────────────────────────────────────

@@ -1,6 +1,7 @@
 import Link from "next/link"
 import type { Metadata } from "next"
-import { getPublishedArticles, getReadTime } from "../articles-data"
+import type { CSSProperties } from "react"
+import { getArticleCardMobileObjectPosition, getArticleCardObjectPosition, getPublishedArticles, getReadTime } from "../articles-data"
 import { requestLocale } from "@/lib/i18n/server"
 import { uiText } from "@/data/i18n/messages"
 
@@ -56,7 +57,7 @@ export default async function ArticlesCulturePage() {
                 className="mag-card"
               >
                 <div className="mag-card-img">
-                  <img src={article.image} alt={article.title} style={article.imageObjectPosition ? { objectPosition: article.imageObjectPosition } : undefined} />
+                  <img src={article.image} alt={article.title} style={{ objectPosition: getArticleCardObjectPosition(article), '--mag-card-mobile-object-position': getArticleCardMobileObjectPosition(article) } as CSSProperties} />
                   <div className="mag-card-overlay">
                     <span className="mag-card-category">{article.category}</span>
                     <h2 className="mag-card-title">{article.title}</h2>
