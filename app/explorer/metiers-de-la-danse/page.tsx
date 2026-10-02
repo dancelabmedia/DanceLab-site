@@ -1,16 +1,10 @@
 import type { Metadata } from 'next'
 import { requireExplorerAccess } from '@/lib/explorer-access'
-import Link from 'next/link'
-import { requestLocale } from '@/lib/i18n/server'
-import { uiText } from '@/data/i18n/messages'
-import {
-  metiers,
-  UNIVERS,
-  UNIVERS_ORDER,
-  TOTAL_METIERS,
-  TOTAL_UNIVERS,
-  getMetiersByUnivers,
-} from './metiers-data'
+import MetiersExplorer from './MetiersExplorer'
+import MetiersPodcastShowcase, { type MetierPodcastEpisode } from './MetiersPodcastShowcase'
+import { getEpisodes, type UnifiedEpisode } from '@/lib/episodes'
+
+// ── Métadonnées ────────────────────────────────────────────────────────────────
 
 export const metadata: Metadata = {
   title: 'Métiers de la danse - Carrières et professions | Dance Lab',
@@ -30,170 +24,171 @@ export const metadata: Metadata = {
   },
 }
 
+import { UNIVERS_ORDER, type MetierUniversId } from './metiers-data'
+
+// ── Mapping rôle → univers(s) Métiers ─────────────────────────────────────────
+//
+//  ep.role est la source de vérité unique (data/episodes.ts).
+//  Cette fonction dérive les univers à partir du texte libre du rôle.
+//  Un invité.e peut appartenir à plusieurs univers simultanément.
+//  Ordre vérifié : du plus spécifique au plus large pour éviter les faux positifs.
+
+function getRoleUniverses(role: string): MetierUniversId[] {
+  if (!role || !role.trim()) return []
+
+  const n = (s: string) =>
+    s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+  const norm = n(role)
+  const has  = (kw: string) => norm.includes(n(kw))
+
+  const univers = new Set<MetierUniversId>()
+
+  // 01 — Interpréter : sur scène, en corps
+  if (
+    has('danseuse') || has('danseur') || has('danseuses') || has('danseurs') ||
+    has('performeuse') || has('performeur') || has('comedienne') || has('comedien') ||
+    has('comédienne') || has('comédien') || has('chanteur') || has('chanteuse') ||
+    has('acrobate') || has('cascadeur') || has('cascadeuse') ||
+    // "artiste" seul = interprète, mais "agente d'artiste" = Produire → exclure
+    (has('artiste') && !has("agente d'artiste") && !has("agent d'artiste")) ||
+    has('maitresse de ceremonie') || has('pole dance') ||
+    has('mc ') || has(' mc') || has('dj')
+  ) univers.add('interpreter')
+
+  // 02 — Créer : conception, écriture chorégraphique, scénographie
+  if (
+    has('choregraphe') || has('scenographe') || has('movement director') ||
+    has('compositeur') || has('compositrice') || has('auteur') || has('auteure') ||
+    has('assistant choregraphe')
+  ) univers.add('creer')
+
+  // 03 — Transmettre : enseignement, formation, coaching (hors corps/santé)
+  if (
+    has('professeur') || has('professeure') || has('formateur') || has('formatrice') ||
+    has("directeur d'ecole") || has("directrice d'ecole") || has("directeur d ecole") ||
+    // "coach" générique → transmettre, SAUF si contexte corps/santé (boxe, pilates)
+    (has('coach') && !has('coach boxe') && !has('coach pilates') && !has('coach vocal'))
+  ) univers.add('transmettre')
+
+  // 04 — Produire & diffuser : gestion de projet, entrepreneuriat, diffusion
+  if (
+    has('entrepreneur') || has('entrepreneuse') || has('entrepreneurs') ||
+    has("agente d'artiste") || has("agent d'artiste") || has('agente') ||
+    has('cheffe de projet') || has('chef de projet') ||
+    has('directeur de casting') || has('directrice de casting') ||
+    has('animatrice')   // dans le sens médias / events
+  ) univers.add('produire')
+
+  // 05 — Accompagner : santé, préparation physique, bien-être, juridique
+  if (
+    has('kinesitherapeute') || has('medecin du sport') || has('osteopathe') ||
+    has('naturopathe') || has('magnetiseuse') || has('magnetiseur') ||
+    has('coach pilates') || has('coach boxe') ||
+    has('preparateur') || has('preparatrice') || has('juriste') || has('juristes') ||
+    has('pilates')
+  ) univers.add('accompagner')
+
+  // 06 — Image & scène : technique, visuel, costumes, photo, vidéo
+  if (
+    has('photographe') || has('videaste') || has('vidéaste') || has('styliste') ||
+    has('costume designer') || has('regisseur') || has('regisseuse') ||
+    has('brand designer')
+  ) univers.add('image')
+
+  return [...univers]
+}
+
+// ── Algorithme de rotation par univers ────────────────────────────────────────
+//
+//  Principe :
+//  1. Chaque épisode est rattaché à un ou plusieurs univers via getRoleUniverses().
+//     ep.role est la source de vérité — pas de déduction par mots-clés depuis
+//     le titre ou la description.
+//  2. On groupe les épisodes par univers PRIMAIRE (premier retourné).
+//  3. Seed journalier : stable toute la journée, change chaque jour.
+//  4. Pour chaque des 6 univers, on sélectionne 2 épisodes → 12 cartes au total.
+//     → représentation garantie de chaque univers chaque jour.
+//  5. Dans chaque univers, la sélection tourne quotidiennement pour varier les profils.
+
+const MAX_PER_UNIVERSE  = 2   // épisodes affichés par univers
+const MAX_CAROUSEL_CARDS = 12  // total
+const ROTATION_EPOCH = new Date('2024-01-01').getTime()
+
+function computeDailySeed(): number {
+  return Math.floor((Date.now() - ROTATION_EPOCH) / 86_400_000)
+}
+
+function selectCarouselEpisodes(
+  allEpisodes: UnifiedEpisode[],
+  seed: number,
+): MetierPodcastEpisode[] {
+
+  // Étape 1 — rattacher chaque épisode à son univers primaire via ep.role
+  type Tagged = { episode: UnifiedEpisode; primaryUnivers: MetierUniversId }
+  const byUnivers = new Map<MetierUniversId, Tagged[]>()
+
+  for (const ep of allEpisodes) {
+    if (!ep.role || !ep.role.trim()) continue          // skip sans rôle explicite
+    const univers = getRoleUniverses(ep.role)
+    if (univers.length === 0) continue                 // rôle non reconnu
+    const primary = univers[0]
+    const group   = byUnivers.get(primary) ?? []
+    group.push({ episode: ep, primaryUnivers: primary })
+    byUnivers.set(primary, group)
+  }
+
+  // Étape 2 — trier chaque groupe par numéro d'épisode (déterminisme)
+  for (const group of byUnivers.values()) {
+    group.sort((a, b) => a.episode.number - b.episode.number)
+  }
+
+  // Étape 3 — sélection : 2 épisodes par univers, dans l'ordre UNIVERS_ORDER
+  const shown  = new Set<number>()
+  const result: MetierPodcastEpisode[] = []
+
+  for (const uid of UNIVERS_ORDER) {
+    if (result.length >= MAX_CAROUSEL_CARDS) break
+    const group = byUnivers.get(uid)
+    if (!group || group.length === 0) continue
+
+    const n = group.length
+    let picked = 0
+    for (let i = 0; i < n && picked < MAX_PER_UNIVERSE; i++) {
+      const idx     = (seed + i) % n
+      const { episode } = group[idx]
+      if (shown.has(episode.number)) continue
+      shown.add(episode.number)
+      result.push({
+        number:     episode.number,
+        slug:       episode.slug,
+        title:      episode.title,
+        guest:      episode.guest,
+        image:      episode.image,
+        profession: episode.role!.replaceAll('·', '.'), // écriture inclusive Dance Lab
+      })
+      picked++
+    }
+  }
+
+  return result
+}
+
+// ── Page ───────────────────────────────────────────────────────────────────────
+
 export default async function MetiersDeLaDansePage() {
   await requireExplorerAccess('jobs')
-  const locale = await requestLocale()
-  const t = (text: string) => uiText(locale, text)
+  const allEpisodes = await getEpisodes()
+
+  const seed           = computeDailySeed()
+  const careerEpisodes = selectCarouselEpisodes(allEpisodes, seed)
+
   return (
     <main className="met-page">
+      {/* Hero + 6 univers + recherche intégrée */}
+      <MetiersExplorer />
 
-      {/* ════════════════════════════════════════════════════
-          HERO — éditorial, typographique, deux colonnes
-      ════════════════════════════════════════════════════ */}
-      <section className="met-hero" aria-label="Introduction">
-
-        {/* Décoration d'arrière-plan */}
-        <div className="met-hero-deco" aria-hidden="true">
-          <div className="met-hero-deco-circle met-hero-deco-circle-1" />
-          <div className="met-hero-deco-circle met-hero-deco-circle-2" />
-          <div className="met-hero-deco-line" />
-        </div>
-
-        <div className="container met-hero-inner">
-
-          {/* — Colonne gauche : texte éditorial ————————— */}
-          <div className="met-hero-left">
-            <span className="met-hero-kicker">{t('Explorer · Métiers de la danse')}</span>
-
-            <h1 className="met-hero-title">
-              {t('Les métiers')}<br />
-              {t('qui font exister')}<br />
-              <em>{t('la danse.')}</em>
-            </h1>
-
-            <p className="met-hero-desc">
-              Danser n&apos;est qu&apos;une partie de l&apos;écosystème. Derrière chaque
-              représentation, il y a celles et ceux qui créent, produisent, transmettent,
-              accompagnent et rendent la danse visible.
-            </p>
-
-            {/* Stats */}
-            <div className="met-hero-stats">
-              <div className="met-hero-stat">
-                <strong>{TOTAL_UNIVERS}</strong>
-                <span>{t('univers')}</span>
-              </div>
-              <div className="met-hero-stat-divider" aria-hidden="true" />
-              <div className="met-hero-stat">
-                <strong>{TOTAL_METIERS}+</strong>
-                <span>{t('métiers référencés')}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* — Colonne droite : table des matières ————— */}
-          <div className="met-hero-right" aria-label={t('Univers')}>
-            <ol className="met-hero-index">
-              {UNIVERS_ORDER.map((id) => {
-                const u = UNIVERS[id]
-                return (
-                  <li key={id} className="met-hero-index-item">
-                    <a href={`#univers-${id}`} className="met-hero-index-link">
-                      <span className="met-hero-index-num">{u.num}</span>
-                      <span className="met-hero-index-label">{u.label}</span>
-                      <span className="met-hero-index-arrow" aria-hidden="true">↓</span>
-                    </a>
-                  </li>
-                )
-              })}
-            </ol>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ════════════════════════════════════════════════════
-          CONTENU PAR UNIVERS
-      ════════════════════════════════════════════════════ */}
-      <div className="met-content">
-        {UNIVERS_ORDER.map((universId, sectionIndex) => {
-          const u       = UNIVERS[universId]
-          const items   = getMetiersByUnivers(universId)
-          const featured = items.filter(m => m.featured)
-          const regular  = items.filter(m => !m.featured)
-
-          return (
-            <section
-              key={universId}
-              id={`univers-${universId}`}
-              className="met-univers"
-              data-index={sectionIndex}
-            >
-              <div className="container">
-
-                {/* En-tête de l'univers */}
-                <header className="met-univers-header">
-                  <div className="met-univers-meta">
-                    <span className="met-univers-num">{u.num}</span>
-                    <span className="met-univers-count">{items.length} métier{items.length > 1 ? 's' : ''}</span>
-                  </div>
-                  <div className="met-univers-title-wrap">
-                    <h2 className="met-univers-title">{u.label}</h2>
-                    <p className="met-univers-desc">{u.description}</p>
-                  </div>
-                  <div className="met-univers-rule" aria-hidden="true" />
-                </header>
-
-                {/* Grille de métiers */}
-                <div className="met-grid">
-
-                  {/* Carte(s) featured — large */}
-                  {featured.map(metier => (
-                    <article key={metier.id} className="met-card met-card--featured">
-                      <div className="met-card-accent" aria-hidden="true" />
-                      <div className="met-card-body">
-                        <span className="met-card-univers">{u.label}</span>
-                        <h3 className="met-card-title">{metier.nom}</h3>
-                        <p className="met-card-desc">{metier.description}</p>
-                      </div>
-                      <div className="met-card-foot">
-                        <span className="met-card-cta">{t('En savoir plus →')}</span>
-                      </div>
-                    </article>
-                  ))}
-
-                  {/* Cartes régulières */}
-                  {regular.map(metier => (
-                    <article key={metier.id} className="met-card">
-                      <div className="met-card-accent" aria-hidden="true" />
-                      <div className="met-card-body">
-                        <span className="met-card-univers">{u.label}</span>
-                        <h3 className="met-card-title">{metier.nom}</h3>
-                        <p className="met-card-desc">{metier.description}</p>
-                      </div>
-                      <div className="met-card-foot">
-                        <span className="met-card-cta">{t('En savoir plus →')}</span>
-                      </div>
-                    </article>
-                  ))}
-
-                </div>
-              </div>
-            </section>
-          )
-        })}
-      </div>
-
-      {/* ════════════════════════════════════════════════════
-          FOOTER ÉDITORIAL — renvoi vers le podcast
-      ════════════════════════════════════════════════════ */}
-      <section className="met-podcast-cta">
-        <div className="container met-podcast-cta-inner">
-          <div className="met-podcast-cta-text">
-            <span className="section-label">{t('Podcast Dance Lab')}</span>
-            <h2>{t('Des professionnels racontent leur métier')}</h2>
-            <p>
-              Plus de {metiers.filter(m => m.univers !== 'image').length * 3} conversations avec
-              des danseurs, chorégraphes, agents, régisseurs et professeurs.
-              Tout ce qu'on ne voit pas, raconté par celles et ceux qui le font.
-            </p>
-          </div>
-          <Link href="/ecouter" className="met-podcast-cta-btn">
-            {t('Écouter les épisodes →')}
-          </Link>
-        </div>
-      </section>
-
+      {/* Épisodes à découvrir — rotation équilibrée */}
+      <MetiersPodcastShowcase episodes={careerEpisodes} />
     </main>
   )
 }

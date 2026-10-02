@@ -7,7 +7,7 @@ import { useState } from "react"
 import { safeExplorerReturnTo } from '@/data/section-visibility'
 import { localizedHref, type Locale } from '@/lib/i18n/routing'
 import { uiText } from '@/data/i18n/messages'
-import type { ComingSoonStats } from '@/data/site-stats'
+import { COMING_SOON_FIXED_STATS, type ComingSoonStats } from '@/data/site-stats'
 
 const Arrow = () => (
   <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -77,7 +77,7 @@ const DEFAULT_CONFIG: SectionConfig = {
 }
 
 /** Une seule composition pour tous les accès privés, deux vérifications serveur. */
-export default function PrivateAccessPage({ mode = 'preview', returnTo, localWorkHref, locale = 'fr', stats }: { mode?: 'preview' | 'explorer'; returnTo?: string; localWorkHref?: string; locale?: Locale; stats: ComingSoonStats }) {
+export default function PrivateAccessPage({ mode = 'preview', returnTo, localWorkHref, locale = 'fr', stats }: { mode?: 'preview' | 'explorer'; returnTo?: string; localWorkHref?: string; locale?: Locale; stats?: ComingSoonStats }) {
   const t = (text: string) => uiText(locale, text)
   const href = (path: string) => localizedHref(path, locale)
   const router = useRouter()
@@ -95,6 +95,9 @@ export default function PrivateAccessPage({ mode = 'preview', returnTo, localWor
     ? { ...DEFAULT_CONFIG, intro: 'Son contenu est actuellement en cours de vérification.' }
     : SECTION_CONFIGS[redirectPath] ?? DEFAULT_CONFIG
   const inputId = isExplorer ? 'explorer-access-code' : 'preview-password'
+  // Les pages serveur fournissent toujours ces statistiques. Ce fallback évite
+  // néanmoins qu'une donnée facultative absente fasse tomber tout le template.
+  const safeStats = stats ?? { conversations: '+0', ...COMING_SOON_FIXED_STATS }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
@@ -148,9 +151,9 @@ export default function PrivateAccessPage({ mode = 'preview', returnTo, localWor
           <Link href={href(localWorkHref || '/')}><Arrow />{t(localWorkHref ? 'Ouvrir la page de travail' : 'Retour à l\'accueil')}</Link>
         </div>
         <div className="access-stats" aria-label="Dance Lab en quelques chiffres">
-          <div><strong>{stats.conversations}</strong><span>{t('Conversations')}</span></div>
-          <div><strong>{stats.cumulativeListens}</strong><span>{t('Écoutes')}<br />{t('cumulées')}</span></div>
-          <div><strong>{stats.cumulativeViews}</strong><span>{t('Vues')}<br />{t('cumulées')}</span></div>
+          <div><strong>{safeStats.conversations}</strong><span>{t('Conversations')}</span></div>
+          <div><strong>{safeStats.cumulativeListens}</strong><span>{t('Écoutes')}<br />{t('cumulées')}</span></div>
+          <div><strong>{safeStats.cumulativeViews}</strong><span>{t('Vues')}<br />{t('cumulées')}</span></div>
         </div>
       </section>
 

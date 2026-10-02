@@ -84,10 +84,13 @@ function parseYoutubeTitle(title: string): { episodeNumber: number | null; isSho
  */
 export async function getYoutubeEpisodeMap(): Promise<YoutubeEpisodeMap> {
   const map: YoutubeEpisodeMap = new Map()
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 5000)
 
   try {
     const res = await fetch(YOUTUBE_FEED_URL, {
       next: { revalidate: 3600 },
+      signal: controller.signal,
     })
 
     if (!res.ok) {
@@ -123,7 +126,9 @@ export async function getYoutubeEpisodeMap(): Promise<YoutubeEpisodeMap> {
       // Si l'existant est déjà complet, on garde l'existant
     }
   } catch (err) {
-    console.warn('[youtube-rss] Erreur lors du fetch :', err)
+    console.warn('[youtube-rss] Flux indisponible ou trop lent, fallback local utilisé :', err)
+  } finally {
+    clearTimeout(timeout)
   }
 
   return map

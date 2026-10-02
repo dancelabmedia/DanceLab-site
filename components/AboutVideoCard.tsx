@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import ThirdPartyEmbed from './ThirdPartyEmbed'
+import { useCookieConsent } from './CookieConsent'
 
 type Props = {
   label?: string
@@ -19,6 +21,8 @@ type Props = {
 
 export default function AboutVideoCard({ videoId, instagramReel, label }: Props) {
   const [active, setActive] = useState(false)
+  const { youtubeAllowed, instagramAllowed, openSettings } = useCookieConsent()
+  const thirdPartyAllowed = instagramReel ? instagramAllowed : youtubeAllowed
 
   const thumb      = instagramReel?.thumbnailSrc ?? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
   const embedSrc   = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`
@@ -27,19 +31,15 @@ export default function AboutVideoCard({ videoId, instagramReel, label }: Props)
   // Le Reel conserve son ratio natif, sans recadrage, y compris au survol.
   const thumbnail = (
     <>
-      <img
-        src={thumb}
-        alt=""
-        loading="lazy"
-        className="about-vc-img"
-        width={instagramReel?.thumbnailWidth}
-        height={instagramReel?.thumbnailHeight}
-        style={instagramReel ? {
-          objectFit: 'contain',
-          objectPosition: 'center',
-          transform: 'none',
-        } : undefined}
-      />
+      {(instagramReel || thirdPartyAllowed) ? <img
+          src={thumb}
+          alt=""
+          loading="lazy"
+          className="about-vc-img"
+          width={instagramReel?.thumbnailWidth}
+          height={instagramReel?.thumbnailHeight}
+          style={instagramReel ? { objectFit: 'contain', objectPosition: 'center', transform: 'none' } : undefined}
+        /> : <div className="about-vc-img" aria-hidden="true" style={{ background: '#c1d0df' }} />}
       <div className="about-vc-veil" aria-hidden="true" />
       <div className="about-vc-play" aria-hidden="true">
         <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -66,7 +66,8 @@ export default function AboutVideoCard({ videoId, instagramReel, label }: Props)
       {/* ── Vidéo intégrée (après clic) ──────────────────────────── */}
       {active && (
         <div className="about-vc-embed">
-          <iframe
+          <ThirdPartyEmbed
+            provider="YouTube"
             src={embedSrc}
             title={label ?? 'Interview vidéo'}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -90,7 +91,7 @@ export default function AboutVideoCard({ videoId, instagramReel, label }: Props)
       ) : (
         <button
           className="about-vc-thumb"
-          onClick={() => setActive(true)}
+          onClick={() => thirdPartyAllowed ? setActive(true) : openSettings()}
           aria-label={`Lancer la vidéo${label ? ` : ${label}` : ''}`}
         >
           {thumbnail}

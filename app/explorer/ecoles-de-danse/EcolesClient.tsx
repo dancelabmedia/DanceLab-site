@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { EcoleDanse, EcoleType, ParcoursFormation } from './ecoles-data'
+import Link from 'next/link'
+import { ECOLE_CATEGORIES, getEcoleCategories, getEcoleLocationLabel, getEcoleMarkerKind, getEcoleSearchText, normalizeEcoleSearch, type EcoleCategory, type EcoleDanse, type EcoleType, type ParcoursFormation } from './ecoles-data'
 import { AnimatedStats } from '../styles-de-danse/StylesStats'
 import { useLocale } from '@/components/LocaleProvider'
 import { uiText } from '@/data/i18n/messages'
@@ -33,8 +34,13 @@ const PARIS_LANDMARKS = [
   { name: 'Panthéon', position: [48.8462, 2.346] as [number, number], symbol: '▱' },
 ]
 
-function lieu(ecole: EcoleDanse) {
-  return [ecole.ville, ecole.region].filter(Boolean).join(' · ') || ecole.adresse || 'France'
+function distanceKm(from: [number, number], ecole: EcoleDanse) {
+  if (ecole.lat == null || ecole.lng == null) return Number.POSITIVE_INFINITY
+  const radians = (value: number) => value * Math.PI / 180
+  const dLat = radians(ecole.lat - from[0])
+  const dLng = radians(ecole.lng - from[1])
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(radians(from[0])) * Math.cos(radians(ecole.lat)) * Math.sin(dLng / 2) ** 2
+  return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
 
 export default function EcolesClient({ ecoles }: Props) {
@@ -52,26 +58,30 @@ export default function EcolesClient({ ecoles }: Props) {
 
   const [search, setSearch] = useState('')
   const [activeType, setActiveType] = useState<EcoleType | null>(null)
-  const [region, setRegion] = useState('')
+  const [region, setRegion] = useState('Île-de-France')
   const [ville, setVille] = useState('')
+  const [arrondissement, setArrondissement] = useState('')
   const [style, setStyle] = useState('')
   const [parcours, setParcours] = useState('')
   const [niveau, setNiveau] = useState('')
   const [pratique, setPratique] = useState('')
+  const [publicFilter, setPublicFilter] = useState('')
   const [professionalOnly, setProfessionalOnly] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
-  const [sort, setSort] = useState<'pertinence' | 'alphabetique'>('pertinence')
+  const [sort, setSort] = useState<'pertinence' | 'distance' | 'alphabetique'>('pertinence')
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null)
   const [mobileView, setMobileView] = useState<'liste' | 'carte'>('liste')
   const [selectedEcole, setSelectedEcole] = useState<EcoleDanse | null>(null)
+  const [hoveredEcoleId, setHoveredEcoleId] = useState<string | null>(null)
   const [mapError, setMapError] = useState(false)
   const [mapReady, setMapReady] = useState(false)
   useBackNavigationState('dance-schools', {
-    search, activeType, region, ville, style, parcours, niveau, pratique,
+    search, activeType, region, ville, arrondissement, style, parcours, niveau, pratique, publicFilter,
     professionalOnly, moreOpen, sort, mobileView, selectedEcoleId: selectedEcole?.id ?? null,
   }, saved => {
     setSearch(saved.search); setActiveType(saved.activeType); setRegion(saved.region)
-    setVille(saved.ville); setStyle(saved.style); setParcours(saved.parcours)
-    setNiveau(saved.niveau); setPratique(saved.pratique); setProfessionalOnly(saved.professionalOnly)
+    setVille(saved.ville); setArrondissement(saved.arrondissement ?? ''); setStyle(saved.style); setParcours(saved.parcours)
+    setNiveau(saved.niveau); setPratique(saved.pratique); setPublicFilter(saved.publicFilter ?? ''); setProfessionalOnly(saved.professionalOnly)
     setMoreOpen(saved.moreOpen); setSort(saved.sort); setMobileView(saved.mobileView)
     setSelectedEcole(ecoles.find(ecole => ecole.id === saved.selectedEcoleId) ?? null)
   })
@@ -84,34 +94,48 @@ export default function EcolesClient({ ecoles }: Props) {
 
   const regions = useMemo(() => [...new Set(ecoles.map(e => e.region).filter(Boolean) as string[])].sort(), [ecoles])
   const villes = useMemo(() => [...new Set(ecoles.filter(e => !region || e.region === region).map(e => e.ville).filter(Boolean) as string[])].sort(), [ecoles, region])
-  const styles = useMemo(() => [...new Set(ecoles.flatMap(e => e.styles))].sort(), [ecoles])
+  const styles = ECOLE_CATEGORIES
+  const arrondissements = useMemo(() => [...new Set(ecoles.filter(e => e.ville === 'Paris' && e.arrondissement).map(e => e.arrondissement!))].sort((a, b) => a - b), [ecoles])
   const niveaux = useMemo(() => [...new Set(ecoles.flatMap(e => e.niveaux))].sort(), [ecoles])
   const pratiques = useMemo(() => [...new Set(ecoles.flatMap(e => e.pratiques))].sort(), [ecoles])
+  const publics = ['Enfants', 'Adolescents', 'Adultes', 'Professionnels']
 
   const filteredEcoles = useMemo(() => {
-    const q = search.trim().toLocaleLowerCase('fr')
+    const q = normalizeEcoleSearch(search.trim())
     const result = ecoles.filter(ecole => {
-      const searchable = [ecole.nom, ecole.adresse, ecole.ville, ecole.region, ecole.description, ...(ecole.styles || []), ...(ecole.parcours || []), ...(ecole.programmes || [])]
-        .filter(Boolean).join(' ').toLocaleLowerCase('fr')
+      const searchable = getEcoleSearchText(ecole)
       if (q && !searchable.includes(q)) return false
       if (activeType && ecole.type !== activeType) return false
       if (region && ecole.region !== region) return false
       if (ville && ecole.ville !== ville) return false
-      if (style && !ecole.styles.includes(style)) return false
+      if (arrondissement && ecole.arrondissement !== Number(arrondissement)) return false
+      if (style && !getEcoleCategories(ecole).includes(style as EcoleCategory)) return false
       if (parcours && !ecole.parcours?.includes(parcours as ParcoursFormation)) return false
       if (niveau && !ecole.niveaux.includes(niveau as never)) return false
       if (pratique && !ecole.pratiques.includes(pratique as never)) return false
-      if (professionalOnly && ecole.categorie !== 'Se former professionnellement') return false
+      if (publicFilter && !normalizeEcoleSearch([...(ecole.publics ?? []), ...ecole.pratiques].join(' ')).includes(normalizeEcoleSearch(publicFilter))) return false
+      if (professionalOnly && !getEcoleCategories(ecole).includes('Formation professionnelle')) return false
       return true
     })
-    return sort === 'alphabetique' ? [...result].sort((a, b) => a.nom.localeCompare(b.nom, 'fr')) : result
-  }, [ecoles, search, activeType, region, ville, style, parcours, niveau, pratique, professionalOnly, sort])
+    if (sort === 'alphabetique') return [...result].sort((a, b) => a.nom.localeCompare(b.nom, 'fr'))
+    if (sort === 'distance' && userLocation) return [...result].sort((a, b) => distanceKm(userLocation, a) - distanceKm(userLocation, b))
+    return result
+  }, [ecoles, search, activeType, region, ville, arrondissement, style, parcours, niveau, pratique, publicFilter, professionalOnly, sort, userLocation])
 
-  const hasFilters = Boolean(search || activeType || region || ville || style || parcours || niveau || pratique || professionalOnly)
+  const hasFilters = Boolean(search || activeType || (region && region !== 'Île-de-France') || ville || arrondissement || style || parcours || niveau || pratique || publicFilter || professionalOnly)
 
   function resetFilters() {
-    setSearch(''); setActiveType(null); setRegion(''); setVille(''); setStyle('')
-    setParcours(''); setNiveau(''); setPratique(''); setProfessionalOnly(false)
+    setSearch(''); setActiveType(null); setRegion('Île-de-France'); setVille(''); setArrondissement(''); setStyle('')
+    setParcours(''); setNiveau(''); setPratique(''); setPublicFilter(''); setProfessionalOnly(false)
+  }
+
+  function changeSort(value: typeof sort) {
+    if (value !== 'distance') return setSort(value)
+    if (!navigator.geolocation) return
+    navigator.geolocation.getCurrentPosition(position => {
+      setUserLocation([position.coords.latitude, position.coords.longitude])
+      setSort('distance')
+    })
   }
 
   useEffect(() => {
@@ -168,8 +192,9 @@ export default function EcolesClient({ ecoles }: Props) {
     if (!L || !map) return
     markersRef.current.forEach(marker => marker.remove()); markersRef.current.clear()
     filteredEcoles.filter(e => e.lat != null && e.lng != null).forEach(ecole => {
-      const selected = selectedEcole?.id === ecole.id
-      const icon = L.divIcon({ className: '', html: `<div class="ecole-marker${selected ? ' ecole-marker--active' : ''}"><span></span></div>`, iconSize: [52, 52], iconAnchor: [26, 42] })
+      const selected = selectedEcole?.id === ecole.id || hoveredEcoleId === ecole.id
+      const kind = getEcoleMarkerKind(ecole)
+      const icon = L.divIcon({ className: '', html: `<div class="ecole-marker ecole-marker--${kind}${selected ? ' ecole-marker--active' : ''}"><span></span></div>`, iconSize: [52, 52], iconAnchor: [26, 42] })
       const marker = L.marker([ecole.lat!, ecole.lng!], {
         icon,
         riseOnHover: true,
@@ -177,11 +202,17 @@ export default function EcolesClient({ ecoles }: Props) {
         zIndexOffset: selected ? 1000 : 0,
       }).addTo(map).on('click', () => {
         setSelectedEcole(ecole)
-        document.getElementById(`ecole-${ecole.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-      })
+        const revealCard = () => document.getElementById(`ecole-${ecole.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+        if (window.matchMedia('(max-width: 768px)').matches) {
+          setMobileView('liste')
+          window.setTimeout(revealCard, 80)
+        } else {
+          revealCard()
+        }
+      }).on('mouseover', () => setHoveredEcoleId(ecole.id)).on('mouseout', () => setHoveredEcoleId(null))
       markersRef.current.set(ecole.id, marker)
     })
-  }, [filteredEcoles, selectedEcole, mapReady])
+  }, [filteredEcoles, selectedEcole, hoveredEcoleId, mapReady])
 
   useEffect(() => {
     if (mobileView === 'carte') setTimeout(() => mapInstanceRef.current?.invalidateSize(), 50)
@@ -238,22 +269,25 @@ export default function EcolesClient({ ecoles }: Props) {
 
           <div className="ecoles-directory-toolbar">
             <div className="ecoles-primary-filters">
-              <label><span>{t('Région')}</span><select value={region} onChange={e => { setRegion(e.target.value); setVille('') }}><option value="">{t('Toutes')}</option>{regions.map(value => <option key={value}>{value}</option>)}</select></label>
-              <label><span>{t('Ville')}</span><select value={ville} onChange={e => setVille(e.target.value)}><option value="">{t('Toutes')}</option>{villes.map(value => <option key={value}>{value}</option>)}</select></label>
+              <label><span>{t('Arrondissement')}</span><select value={arrondissement} onChange={e => setArrondissement(e.target.value)}><option value="">{t('Tous')}</option>{arrondissements.map(value => <option key={value} value={value}>Paris {value}e</option>)}</select></label>
               <label><span>{t('Style')}</span><select value={style} onChange={e => setStyle(e.target.value)}><option value="">{t('Tous')}</option>{styles.map(value => <option key={value}>{value}</option>)}</select></label>
+              <label><span>{t('Type')}</span><select value={activeType ?? ''} onChange={e => setActiveType((e.target.value || null) as EcoleType | null)}><option value="">{t('Tous')}</option>{TYPES_DISPLAY.map(({ type, label }) => <option key={type} value={type}>{label}</option>)}</select></label>
               <button className={`ecoles-more-button${moreOpen ? ' is-active' : ''}`} onClick={() => setMoreOpen(!moreOpen)} aria-expanded={moreOpen}><span>+</span> {t('Plus de filtres')}</button>
             </div>
 
             {moreOpen && <div className="ecoles-secondary-filters">
-              <label>{t('Parcours')}<select value={parcours} onChange={e => setParcours(e.target.value)}><option value="">{t('Tous les parcours')}</option>{PARCOURS.map(value => <option key={value}>{value}</option>)}</select></label>
               <label>{t('Niveau')}<select value={niveau} onChange={e => setNiveau(e.target.value)}><option value="">{t('Tous les niveaux')}</option>{niveaux.map(value => <option key={value}>{value}</option>)}</select></label>
+              <label>{t('Public')}<select value={publicFilter} onChange={e => setPublicFilter(e.target.value)}><option value="">{t('Tous les publics')}</option>{publics.map(value => <option key={value}>{value}</option>)}</select></label>
               <label>{t('Pratique')}<select value={pratique} onChange={e => setPratique(e.target.value)}><option value="">{t('Toutes les pratiques')}</option>{pratiques.map(value => <option key={value}>{value}</option>)}</select></label>
-              <label className="ecoles-professional-check"><input type="checkbox" checked={professionalOnly} onChange={e => setProfessionalOnly(e.target.checked)} /> {t('Se former professionnellement')}</label>
+              <label>{t('Région')}<select value={region} onChange={e => { setRegion(e.target.value); setVille('') }}><option value="">{t('Toutes les régions')}</option>{regions.map(value => <option key={value}>{value}</option>)}</select></label>
+              <label>{t('Ville')}<select value={ville} onChange={e => setVille(e.target.value)}><option value="">{t('Toutes les villes')}</option>{villes.map(value => <option key={value}>{value}</option>)}</select></label>
+              <label>{t('Parcours')}<select value={parcours} onChange={e => setParcours(e.target.value)}><option value="">{t('Tous les parcours')}</option>{PARCOURS.map(value => <option key={value}>{value}</option>)}</select></label>
+              <label className="ecoles-professional-check"><input type="checkbox" checked={professionalOnly} onChange={e => setProfessionalOnly(e.target.checked)} /> {t('Formation professionnelle uniquement')}</label>
             </div>}
 
             <div className="ecoles-results-meta">
-              <span><strong>{filteredEcoles.length}</strong> {t(filteredEcoles.length > 1 ? 'établissements' : 'établissement')}</span>
-              <div>{hasFilters && <button onClick={resetFilters}>{t('Effacer les filtres')}</button>}<label>{t('Trier par :')} <select value={sort} onChange={e => setSort(e.target.value as typeof sort)}><option value="pertinence">{t('Pertinence')}</option><option value="alphabetique">A–Z</option></select></label></div>
+              <span><strong>{filteredEcoles.length}</strong> {t(filteredEcoles.length > 1 ? 'écoles et formations' : 'école ou formation')} {ville === 'Paris' || arrondissement ? t('à Paris') : region === 'Île-de-France' ? t('à Paris et proche banlieue') : t('en France')}</span>
+              <div>{hasFilters && <button onClick={resetFilters}>{t('Effacer les filtres')}</button>}<label>{t('Trier par :')} <select value={sort} onChange={e => changeSort(e.target.value as typeof sort)}><option value="pertinence">{t('Pertinence')}</option><option value="distance">{t('Distance')}</option><option value="alphabetique">A–Z</option></select></label></div>
             </div>
           </div>
 
@@ -264,14 +298,21 @@ export default function EcolesClient({ ecoles }: Props) {
 
               <div className="ecoles-cards">
                 {filteredEcoles.map((ecole, index) => {
-                  const tags = [...(ecole.parcours || []), ...ecole.styles]
-                  return <article key={ecole.id} id={`ecole-${ecole.id}`} className={`ecole-result-card${selectedEcole?.id === ecole.id ? ' is-selected' : ''}`} onClick={() => selectEcole(ecole)}>
-                    <div className={`ecole-result-visual ecole-result-visual--${index % 4}`} aria-hidden="true"><span>{ecole.type.slice(0, 2)}</span></div>
+                  const tags = ecole.styles
+                  const allLevels = ['Débutant', 'Intermédiaire', 'Avancé'].every(level => ecole.niveaux.includes(level as never))
+                  const facts = [
+                    ...(ecole.publics?.slice(0, 1) ?? []),
+                    allLevels ? t('Tous niveaux') : ecole.niveaux[0],
+                    ecole.pratiques.includes('Formation professionnelle') ? t('Professionnel') : ecole.pratiques.includes('Loisirs') ? t('Loisir') : ecole.pratiques[0],
+                  ].filter(Boolean)
+                  return <article key={ecole.id} id={`ecole-${ecole.id}`} className={`ecole-result-card${selectedEcole?.id === ecole.id ? ' is-selected' : ''}`} onClick={() => selectEcole(ecole)} onMouseEnter={() => setHoveredEcoleId(ecole.id)} onMouseLeave={() => setHoveredEcoleId(null)}>
+                    <div className={`ecole-result-visual ecole-result-visual--${index % 4}${ecole.image ? ' has-image' : ''}`} aria-hidden={!ecole.image}>{ecole.image ? <img src={ecole.image} alt={ecole.imageAlt ?? ''} loading="lazy" /> : <span>{ecole.type.slice(0, 2)}</span>}</div>
                     <div className="ecole-result-content">
-                      <span className="ecole-result-type">{ecole.type}</span><h2>{ecole.nom}</h2><p className="ecole-result-place">{lieu(ecole)}</p>
-                      <div className="ecole-result-tags">{tags.slice(0, 3).map(tag => <span key={tag}>{tag}</span>)}{tags.length > 3 && <span>+{tags.length - 3}</span>}</div>
+                      <span className="ecole-result-type">{ecole.type}</span><h2>{ecole.nom}</h2><p className="ecole-result-place">{getEcoleLocationLabel(ecole)}</p>
+                      <div className="ecole-result-tags">{tags.slice(0, 3).map(tag => <span key={tag}>{tag}</span>)}{tags.length > 3 && <span>+{tags.length - 3} {t('styles')}</span>}</div>
+                      <div className="ecole-result-facts">{facts.map(fact => <span key={fact}>{fact}</span>)}</div>
                       {ecole.description && <p className="ecole-result-desc">{ecole.description}</p>}
-                      {ecole.siteWeb && <a href={ecole.siteWeb} target="_blank" rel="noopener noreferrer" onClick={event => event.stopPropagation()} aria-label={`${t('Voir le site officiel')} de ${ecole.nom}`}>{t('Voir le site officiel')} <span>↗</span></a>}
+                      <div className="ecole-result-actions"><Link href={`/explorer/ecoles-de-danse/${ecole.id}`} onClick={event => event.stopPropagation()}>{t('Voir la fiche')} <span>→</span></Link>{ecole.siteWeb && <a href={ecole.siteWeb} target="_blank" rel="noopener noreferrer" onClick={event => event.stopPropagation()} aria-label={`${t('Voir le site officiel')} de ${ecole.nom}`}>{t('Site officiel')} <span>↗</span></a>}</div>
                     </div><span className="ecole-result-arrow" aria-hidden="true">→</span>
                   </article>
                 })}
@@ -282,8 +323,8 @@ export default function EcolesClient({ ecoles }: Props) {
             <div className={`ecoles-map-panel${mobileView === 'liste' ? ' is-mobile-hidden' : ''}`}>
               <div className="ecoles-map-toggle" aria-hidden="true"><span className="is-active">{t("Carte")}</span><span>{t("Liste")}</span></div>
               {mapError ? <div className="ecoles-map-fallback"><p>{t("La carte n'a pas pu se charger.")}<br />{t("La liste reste disponible.")}</p></div> : <div ref={mapRef} className="ecoles-map" />}
-              {selectedEcole && <aside className="ecoles-map-popup"><button onClick={() => setSelectedEcole(null)} aria-label={t("Fermer")}>×</button><span>{selectedEcole.type}</span><h3>{selectedEcole.nom}</h3><p>{lieu(selectedEcole)}</p>{selectedEcole.siteWeb && <a href={selectedEcole.siteWeb} target="_blank" rel="noopener noreferrer">{t("Voir le site officiel")} ↗</a>}</aside>}
-              <div className="ecoles-map-legend"><span><i /> {t("Établissement géolocalisé")}</span><span><i /> {t("Établissement sans coordonnées")}</span></div>
+              {selectedEcole && <aside className="ecoles-map-popup"><button onClick={() => setSelectedEcole(null)} aria-label={t("Fermer")}>×</button><span>{selectedEcole.type}</span><h3>{selectedEcole.nom}</h3><p>{getEcoleLocationLabel(selectedEcole)}</p><div><Link href={`/explorer/ecoles-de-danse/${selectedEcole.id}`}>{t('Voir la fiche')} →</Link>{selectedEcole.siteWeb && <a href={selectedEcole.siteWeb} target="_blank" rel="noopener noreferrer">{t("Site officiel")} ↗</a>}</div></aside>}
+              <div className="ecoles-map-legend" aria-label={t('Légende de la carte')}><span><i className="is-school" /> {t('Écoles & studios')}</span><span><i className="is-conservatory" /> {t('Conservatoires')}</span><span><i className="is-training" /> {t('Formations professionnelles')}</span><span><i className="is-higher" /> {t('Enseignement supérieur')}</span></div>
               <div className="ecoles-mobile-toggle ecoles-mobile-toggle--map"><button onClick={() => setMobileView("liste")}>{t("Liste")}</button><button className="is-active" onClick={() => setMobileView("carte")}>{t("Carte")}</button></div>
             </div>
           </div>

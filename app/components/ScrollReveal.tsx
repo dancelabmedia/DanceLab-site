@@ -8,10 +8,10 @@
  * dès que l'élément entre dans le viewport.
  *
  * Variantes de délai :
- *   data-reveal="delay-1"  → 100ms
- *   data-reveal="delay-2"  → 200ms
- *   data-reveal="delay-3"  → 300ms
- *   data-reveal="delay-4"  → 400ms
+ *   data-reveal="delay-1"  → 80ms
+ *   data-reveal="delay-2"  → 160ms
+ *   data-reveal="delay-3"  → 240ms
+ *   data-reveal="delay-4"  → 320ms
  *
  * Variantes d'animation :
  *   data-reveal-type="fade-up"    → montée + fondu (défaut)
@@ -21,11 +21,19 @@
  *
  * Respecte prefers-reduced-motion : si activé, tous les éléments
  * sont immédiatement visibles sans animation.
+ *
+ * NOTE : usePathname() est utilisé en dépendance pour re-observer les éléments
+ * à chaque navigation client-side (Next.js App Router). Sans cela, les sections
+ * des fiches métiers (et toute page avec data-reveal) resteraient invisibles
+ * après une navigation soft.
  */
 
 import { useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 
 export default function ScrollReveal() {
+  const pathname = usePathname()
+
   useEffect(() => {
     // Respect prefers-reduced-motion
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -54,11 +62,17 @@ export default function ScrollReveal() {
       }
     )
 
-    const targets = document.querySelectorAll('[data-reveal]')
-    targets.forEach(el => observer.observe(el))
+    // Légère attente pour laisser React finir le rendu DOM après la navigation
+    const raf = requestAnimationFrame(() => {
+      const targets = document.querySelectorAll<Element>('[data-reveal]:not(.dl-revealed)')
+      targets.forEach(el => observer.observe(el))
+    })
 
-    return () => observer.disconnect()
-  }, [])
+    return () => {
+      cancelAnimationFrame(raf)
+      observer.disconnect()
+    }
+  }, [pathname]) // ← se re-déclenche à chaque changement de route
 
   return null
 }

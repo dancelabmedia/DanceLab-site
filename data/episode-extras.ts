@@ -35,6 +35,8 @@
 import type { EpisodeImagePresentation } from '../lib/episode-image-presentation'
 
 export type EpisodeExtra = {
+  /** Tags éditoriaux supplémentaires utilisés uniquement par la recherche. */
+  searchTags?: string[]
   /** Citation mise en avant */
   quote?: string
   /**
@@ -92,6 +94,11 @@ export type EpisodeExtra = {
  */
 export const episodeExtras: Record<number, EpisodeExtra> = {
 
+  130: {
+    title: "Est-ce qu'on danse pour soi ou pour correspondre ?",
+    instagramReelUrl: "https://www.instagram.com/reel/Dd4dxSGRRQT/",
+  },
+
   // ── Épisodes RSS (≥ 122) ─────────────────────────────────────────────────────
 
   122: {
@@ -100,6 +107,7 @@ export const episodeExtras: Record<number, EpisodeExtra> = {
     instagramReelUrl: "https://www.instagram.com/reel/DboK-ssMwmt/",
   },
   123: {
+    title: "Comment se démarquer quand tout le monde est talentueux ?",
     quote: "Arrêtons de toujours se comparer, on disperse nos énergies, on ne les met pas à la bonne place.",
     instagramReelUrl: "https://www.instagram.com/reel/Db6NYLKsyG0/",
   },
@@ -110,8 +118,12 @@ export const episodeExtras: Record<number, EpisodeExtra> = {
     quote:          "Tu n'as pas besoin de mettre une emprise sur tes danseurs pour exister.",
     youtubeId:      "NaB8w4BpsyU",
     instagramReelUrl: "https://www.instagram.com/reel/DcMH-YsIqS3/",
+    // Fred Jean-Baptiste est professeur de danse — override explicite pour éviter
+    // toute fausse association avec "directeur de casting" (mots déclencheurs présents dans sa description)
+    searchTags:     ['professeur de danse', 'professeur', 'enseignement', 'transmission', 'pédagogie', 'carrière'],
   },
   125: {
+    title:          "Quelle place pour les femmes dans la danse, le hip-hop et les cultures club ?",
     quote:          "Aujourd'hui tout va beaucoup plus vite.",
     youtubeId:      "s4RKHoun40k",
     instagramReelUrl: "https://www.instagram.com/reel/DceUKnrs3Zh/",
@@ -133,12 +145,15 @@ export const episodeExtras: Record<number, EpisodeExtra> = {
     image: '/images/les-invites/clementinedagousset129.png',
     headerImage: '/images/les-invites-header/clementinedagousset129.png',
     instagramReelUrl: "https://www.instagram.com/reel/DdmTj5vIZZn/",
+    searchTags: ['management', 'manager', 'agent', 'agent d’artistes', 'production', 'diffusion', 'financement', 'spectacle', 'carrière', 'entrepreneuriat', 'accompagnement d’artistes'],
   },
 
   128: {
+    title: "Danse et handicap : le milieu est-il vraiment inclusif ?",
     image: '/images/les-invites/128wilfriedbernard.png',
     headerImage: '/images/les-invites-header/128wilfriedbernard.png',
     instagramReelUrl: "https://www.instagram.com/reel/DdUScU8MEY8/",
+    searchTags: ['Disney', 'handicap', 'handidanse', 'inclusion', 'accessibilité', 'diversité des corps', 'spectacle vivant', 'cirque'],
     imagePresentations: {
       // 16:9 photograph: Wilfried occupies the right-hand third, not the centre.
       '/images/les-invites-header/128wilfriedbernard.png': {
@@ -185,7 +200,7 @@ export const episodeExtras: Record<number, EpisodeExtra> = {
     // image carte auto-détectée : public/images/les-invites/julienramade116.png
     imagePresentations: {
       // Julien est positionné à gauche dans son image header (contrairement aux autres
-      // invité·es qui sont à droite). On ancre à gauche pour garder son visage visible.
+      // invité.es qui sont à droite). On ancre à gauche pour garder son visage visible.
       '/images/les-invites-header/julienramade116.png': {
         width: 1400, height: 787,
         desktop: { objectPosition: '20% 30%', objectFit: 'cover' },
@@ -209,9 +224,9 @@ export const episodeExtras: Record<number, EpisodeExtra> = {
   103: { instagramReelUrl: "https://www.instagram.com/reel/DWRu88gDOEe/" },
   102: { instagramReelUrl: "https://www.instagram.com/reel/DV_speEjOg4/" },
   101: { instagramReelUrl: "https://www.instagram.com/reel/DVtrH-eDRHk/" },
-  100: { instagramReelUrl: "https://www.instagram.com/reel/DVbnr6MDATB/" },
+  100: { instagramReelUrl: "https://www.instagram.com/reel/DVbnr6MDATB/", searchTags: ['break', 'breakdance', 'breaking', 'breaker'] },
    99: { instagramReelUrl: "https://www.instagram.com/reel/DVJmMC9iiUf/" },
-   98: { instagramReelUrl: "https://www.instagram.com/reel/DU3r7dhjCME/" },
+   98: { instagramReelUrl: "https://www.instagram.com/reel/DU3r7dhjCME/", searchTags: ['waacking', 'waacker', 'danse urbaine', 'club culture'] },
    97: { instagramReelUrl: "https://www.instagram.com/reel/DUljVlZjKTM/" },
    96: { instagramReelUrl: "https://www.instagram.com/reel/DUTk8IzjKCX/" },
    95: { instagramReelUrl: "https://www.instagram.com/reel/DUBhD0gjI_k/" },
@@ -241,7 +256,7 @@ export const episodeExtras: Record<number, EpisodeExtra> = {
    74: { instagramReelUrl: "https://www.instagram.com/reel/DOq36SkjKhs/" },
    73: { instagramReelUrl: "https://www.instagram.com/reel/DOY2P1ljLUt/" },
    72: { instagramReelUrl: "https://www.instagram.com/reel/DOG45ShDEMW/" },
-   71: { instagramReelUrl: "https://www.instagram.com/reel/DN02mWZNscV/" },
+   71: { instagramReelUrl: "https://www.instagram.com/reel/DN02mWZNscV/", searchTags: ['break', 'breakdance', 'breaking', 'breaker'] },
    70: { instagramReelUrl: "https://www.instagram.com/reel/DNi1Cojo_qV/" },
    69: { instagramReelUrl: "https://www.instagram.com/reel/DNQzcZ_oVOS/" },
    68: { instagramReelUrl: "https://www.instagram.com/reel/DM-x87-glHQ/" },
@@ -308,7 +323,7 @@ export const episodeExtras: Record<number, EpisodeExtra> = {
   48: { youtubeId: 'BBSq-CRix4M', instagramReelUrl: "https://www.instagram.com/reel/DHVYZCCgnZE/" }, // 48. Tamara Fernando
   49: { youtubeId: 'up0qqTrRuCY', instagramReelUrl: "https://www.instagram.com/reel/DHn8xRBo6WQ/" }, // 49. Krees De Almeida
   50: { youtubeId: '7BiM04LsbnQ', instagramReelUrl: "https://www.instagram.com/reel/DH6SrV9N3ZR/" }, // 50. Zoé Laïb
-  51: { youtubeId: 'n4OaVUfqtOc', instagramReelUrl: "https://www.instagram.com/reel/DILbzQ3A95v/" }, // 51. Arnaud Deprez
+  51: { youtubeId: 'n4OaVUfqtOc', instagramReelUrl: "https://www.instagram.com/reel/DILbzQ3A95v/", searchTags: ['break', 'breakdance', 'breaking', 'breaker'] }, // 51. Arnaud Deprez
   52: { youtubeId: '2TyYlXWo3q4', instagramReelUrl: "https://www.instagram.com/reel/DIeWiWotyzz/" }, // 52. Mark Weld
   53: { youtubeId: 'J_vjjzAMgzs', instagramReelUrl: "https://www.instagram.com/reel/DIwT6CogOma/" }, // 53. Sabrina Lonis
   54: { youtubeId: 'vVfY44r69jQ', instagramReelUrl: "https://www.instagram.com/reel/DJCSE6UIpUP/" }, // 54. Link Le Neil

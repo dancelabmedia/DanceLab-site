@@ -1,0 +1,25 @@
+name: Qualité technique
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Audit source
+        run: npm run lint
+      - name: TypeScript
+        run: npm run typecheck
+      - name: Tests de non-régression
+        run: npm run test:audit
+      - name: Build de production
+        run: npm run build

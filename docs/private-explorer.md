@@ -8,15 +8,17 @@
 
 Le middleware couvre les chemins et descendants, y compris les requêtes RSC/préchargements. Les pages contrôlent aussi la session avant de lire/rendre leurs données ; les layouts couvrent les descendants. Toute future API retournant ces données doit avoir le même contrôle serveur. Ne pas exporter ces données dans un JSON public ou un composant client.
 
-Toutes les sous-catégories protégées portent « Bientôt » dans les menus desktop et mobile : les six entrées Explorer, les quatre entrées Apprendre, ainsi que Sortir. La mention reste affichée pendant le travail privé. Chaque lien reste cliquable et ouvre la page d'accès correspondant à sa rubrique, y compris en local et après connexion. Les cartes Explorer suivent la même règle. Les anciens accès utilisent `PREVIEW_PASSWORD`, les trois nouvelles rubriques utilisent `EXPLORER_ACCESS_CODE` ; aucune session n'ouvre l'autre périmètre sur Vercel. L'ancien cookie local dure huit heures, et non plus trente secondes.
+Toutes les sous-catégories protégées portent « Bientôt » dans les menus desktop et mobile : les six entrées Explorer, les quatre entrées Apprendre, ainsi que Sortir. La mention reste affichée pendant le travail privé. En production, chaque lien ouvre la page d'accès correspondant à sa rubrique. Sous `next dev`, les mêmes liens mènent directement aux vraies pages de travail. Les cartes Explorer suivent la même règle. Les anciens accès utilisent `PREVIEW_PASSWORD`, les trois nouvelles rubriques utilisent `EXPLORER_ACCESS_CODE` ; aucune session n'ouvre l'autre périmètre sur Vercel. L'ancien cookie local dure huit heures, et non plus trente secondes.
 
 `GET /api/explorer-access` renvoie uniquement trois booléens non mis en cache : autorisation Explorer, autorisation des anciennes rubriques et mode d'édition locale. Jamais le code ni le cookie. La page d'attente utilise le même composant `components/PrivateAccessPage.tsx`, les mêmes photographies et le même CSS que les autres pages d'accès privé.
 
 ## Continuer à travailler en local
 
-`DANCELAB_LOCAL_EDITOR=1` dans `.env.local` (ignoré par Git) active l'accès direct uniquement avec **`next dev`**, sur un hôte **localhost / 127.0.0.1 / [::1]**, et **hors Vercel**. Le serveur de développement doit rester lié à `127.0.0.1` (actuellement port 3010), pas exposé au réseau. Cela ne déverrouille pas l'administration.
+Avec **`next dev`**, les hôtes **localhost / 127.0.0.1 / [::1]** disposent automatiquement de l'accès de travail, uniquement hors Vercel. Il n'est plus nécessaire de renseigner une variable pour travailler depuis le navigateur local. Cela ne déverrouille pas l'administration.
 
-Ce réglage est ignoré dans tout build de production (`next start`), même si la variable y était copiée par erreur et même avec un Host localhost. Les cookies sécurisés et les codes restent nécessaires sur Vercel. Pour désactiver l'accès direct local, passer la variable à `0` puis recharger/redémarrer le serveur.
+Pour tester depuis un téléphone sur le même Wi-Fi, `DANCELAB_LOCAL_EDITOR=1` dans `.env.local` (ignoré par Git) autorise également les adresses privées du réseau local, toujours uniquement avec **`next dev`** et hors Vercel.
+
+Ce réglage est ignoré dans tout build de production (`next start`), même si la variable y était copiée par erreur et même avec un Host localhost. Les cookies sécurisés et les codes restent nécessaires sur Vercel. Pour couper l'accès depuis le réseau local, passer la variable à `0` puis recharger/redémarrer le serveur ; la boucle locale reste disponible sous `next dev`.
 
 Les pages d'attente restent affichées normalement, sans redirection automatique ni paramètre spécial. En édition locale uniquement, leur lien secondaire devient « Ouvrir la page de travail » et pointe vers le contenu demandé. Il réutilise l'emplacement et le design du lien « En attendant », sans modifier la composition, les photographies ou le formulaire. Sa présence et sa destination sont déterminées côté serveur ; il n'est jamais affiché en production. Les URL directes des contenus restent accessibles pour travailler en local.
 

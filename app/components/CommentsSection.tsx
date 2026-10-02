@@ -352,6 +352,9 @@ export default function CommentsSection({ slug }: { slug: string }) {
                   : 'Ton commentaire sera visible après validation.'}
               </span>
             </div>
+            <p className="cmt-disclaimer">
+              Ton prénom ou pseudo, ton commentaire et un identifiant technique anti-abus sont traités pour publier et modérer la discussion. <a href="/politique-de-confidentialite">En savoir plus sur tes droits</a>.
+            </p>
           </form>
         </div>
 

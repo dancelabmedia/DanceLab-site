@@ -6,8 +6,8 @@ import { isPrivateSectionPath } from '@/data/section-visibility'
 import { privateAccessScope } from '@/data/private-navigation'
 import { localizedHref } from '@/lib/i18n/routing'
 import type { MagazineArticle } from '../decouvrir/articles-data'
-import { getArticleCardObjectPosition, getReadTime } from '../decouvrir/articles-data'
-import { formatAgendaDate, type AgendaEvent } from '../agenda/agenda-data'
+import { getArticleCardObjectPosition, getReadTime, getPublishedArticles } from '../decouvrir/articles-data'
+import { formatAgendaDate, type AgendaEvent, featuredAgendaEvents } from '../agenda/agenda-data'
 import { useLocale } from '@/components/LocaleProvider'
 import { uiText } from '@/data/i18n/messages'
 
@@ -88,6 +88,112 @@ const EXPLORER_FEATURES: ExplorerFeature[] = [
 ]
 
 /* ─────────────────────────────────────────────────────────
+   Image pools — crossfade cycling sur les 3 cartes
+───────────────────────────────────────────────────────── */
+interface ImageSlot { src: string; pos?: string }
+
+const MAGAZINE_IMAGES: ImageSlot[] = getPublishedArticles()
+  .slice(0, 6)
+  .map(a => ({ src: a.image, pos: getArticleCardObjectPosition(a) }))
+
+const EXPLORER_IMAGES: ImageSlot[] = EXPLORER_FEATURES.map(f => ({ src: f.image }))
+
+const SORTIR_IMAGES: ImageSlot[] = (() => {
+  const imgs = featuredAgendaEvents.map(e => ({
+    src: e.image || '/images/sorties/parisfestivalete.png',
+  }))
+  return imgs.length > 0 ? imgs : [{ src: '/images/sorties/parisfestivalete.png' }]
+})()
+
+/* ─────────────────────────────────────────────────────────
+   Hook — carrousel deux slots A/B avec crossfade
+───────────────────────────────────────────────────────── */
+interface TwoSlotState { a: ImageSlot; b: ImageSlot; active: 'a' | 'b' }
+
+function useTwoSlot(pool: ImageSlot[], intervalMs: number, initialDelay = 0): TwoSlotState {
+  const [state, setState] = useState<TwoSlotState>({
+    a: pool[0] ?? { src: '' },
+    b: pool[1] ?? pool[0] ?? { src: '' },
+    active: 'a',
+  })
+  const idxRef = useRef(1)
+
+  useEffect(() => {
+    if (pool.length <= 1) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    let timer: ReturnType<typeof setInterval>
+    const delay = setTimeout(() => {
+      timer = setInterval(() => {
+        idxRef.current = (idxRef.current + 1) % pool.length
+        const next = pool[idxRef.current]
+        setState(prev =>
+          prev.active === 'a'
+            ? { a: prev.a, b: next, active: 'b' }
+            : { a: next, b: prev.b, active: 'a' }
+        )
+      }, intervalMs)
+    }, initialDelay)
+    return () => { clearTimeout(delay); clearInterval(timer) }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  return state
+}
+
+/* ─────────────────────────────────────────────────────────
+   Hook — breathing light effect
+   Chaque carte a son propre cycle d'éclaircissement, décalé
+   dans le temps pour éviter toute synchronisation visible.
+   La section doit être visible (IntersectionObserver) pour
+   que l'animation tourne ; elle se met en pause autrement.
+   prefers-reduced-motion : aucun timer, état statique.
+─────────────────────────────────────────────────────────*/
+interface BreatheConfig { delay: number; halfPeriod: number }
+
+function useBreathe(
+  sectionRef: React.RefObject<HTMLElement | null>,
+  configs: BreatheConfig[],
+): boolean[] {
+  const [lit, setLit] = useState(configs.map(() => false))
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    let visible   = false
+    let cancelled = false
+    const ids: ReturnType<typeof setTimeout>[] = []
+
+    const io = new IntersectionObserver(
+      ([entry]) => { visible = entry.isIntersecting },
+      { threshold: 0.1 },
+    )
+    if (sectionRef.current) io.observe(sectionRef.current)
+
+    configs.forEach(({ delay, halfPeriod }, i) => {
+      const cycle = () => {
+        if (cancelled) return
+        if (visible) {
+          setLit(prev => {
+            const next = [...prev]
+            next[i] = !next[i]
+            return next
+          })
+        }
+        ids.push(setTimeout(cycle, halfPeriod))
+      }
+      ids.push(setTimeout(cycle, delay))
+    })
+
+    return () => {
+      cancelled = true
+      ids.forEach(clearTimeout)
+      io.disconnect()
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  return lit
+}
+
+/* ─────────────────────────────────────────────────────────
    Math helpers (no import cost)
 ───────────────────────────────────────────────────────── */
 function clamp(v: number, lo: number, hi: number) {
@@ -143,6 +249,22 @@ export default function MediaReveal({ article, event }: Props) {
   const sortirIsPrivate = privateAccessScope('/sortir') !== null
   const sortirHref = localizedHref(sortirIsPrivate ? '/sortir' : `/sortir/${event?.slug ?? ''}`, locale)
 
+  /* ── Crossfade cycling — images indépendantes par carte ─────────────── */
+  const magSlot  = useTwoSlot(MAGAZINE_IMAGES,  7000,    0)
+  const expSlot  = useTwoSlot(EXPLORER_IMAGES, 11000, 3500)
+  const sortSlot = useTwoSlot(SORTIR_IMAGES,    9000, 1500)
+
+  /* ── Breathing light — cycles décalés, indépendants par carte ────────
+     [0] Magazine  : démarre à 1 500ms, alterne toutes les 2 500ms
+     [1] Explorer  : démarre à 2 800ms, alterne toutes les 3 000ms
+     [2] Sortir    : démarre à 4 200ms, alterne toutes les 3 500ms
+  ─────────────────────────────────────────────────────────────────────── */
+  const breathe = useBreathe(sectionRef, [
+    { delay: 1500, halfPeriod: 2500 },
+    { delay: 2800, halfPeriod: 3000 },
+    { delay: 4200, halfPeriod: 3500 },
+  ])
+
   /* ── Informations pratiques de l'événement Sortir ─────────────────────── */
   const eventDates = event
     ? event.dates !== 'À compléter'
@@ -160,9 +282,6 @@ export default function MediaReveal({ article, event }: Props) {
 
   const eventPrice = event?.price !== 'À compléter' ? event?.price ?? null : null
   const eventTimes = event?.time ?? null
-
-  /* Image de la carte Sortir — utilise event.image si disponible */
-  const sortirImage = event?.image ?? '/images/sorties/parisfestivalete.png'
 
   useEffect(() => {
     const section = sectionRef.current
@@ -271,7 +390,7 @@ export default function MediaReveal({ article, event }: Props) {
               Carte 1 — Le Magazine (article)
               Apparaît en PREMIER
           ════════════════════════════════════════ */}
-          <div ref={card1Ref} className="mfr-card mfr-card--article">
+          <div ref={card1Ref} className={`mfr-card mfr-card--article${breathe[0] ? ' mfr-card--lit' : ''}`}>
             <Link
               href={article ? `/decouvrir/articles/${article.slug}` : "/decouvrir"}
               className="mfr-card-inner"
@@ -280,15 +399,24 @@ export default function MediaReveal({ article, event }: Props) {
               {article ? (
                 <>
                   <div className="mfr-card-face mfr-card-face--front">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={article.image}
-                      alt=""
-                      aria-hidden="true"
-                      className="mfr-card-img"
-                      loading="lazy"
-                      style={{ objectPosition: getArticleCardObjectPosition(article) }}
-                    />
+                    <div className="mfr-imgwrap">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={magSlot.a.src}
+                        alt="" aria-hidden="true"
+                        className={`mfr-cfi${magSlot.active === 'a' ? ' mfr-cfi--active' : ''}`}
+                        loading="lazy"
+                        style={magSlot.a.pos ? { objectPosition: magSlot.a.pos } : undefined}
+                      />
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={magSlot.b.src}
+                        alt="" aria-hidden="true"
+                        className={`mfr-cfi${magSlot.active === 'b' ? ' mfr-cfi--active' : ''}`}
+                        loading="lazy"
+                        style={magSlot.b.pos ? { objectPosition: magSlot.b.pos } : undefined}
+                      />
+                    </div>
                     <div className="mfr-card-gradient" />
                     <div className="mfr-card-body mfr-card-body--lower">
                       <span className="mfr-badge mfr-badge--mag">{t('Magazine')}</span>
@@ -339,21 +467,29 @@ export default function MediaReveal({ article, event }: Props) {
               Tourne entre les 5 rubriques de la section.
               Apparaît en DEUXIÈME
           ════════════════════════════════════════ */}
-          <div ref={card2Ref} className="mfr-card mfr-card--style">
+          <div ref={card2Ref} className={`mfr-card mfr-card--style${breathe[1] ? ' mfr-card--lit' : ''}`}>
             <Link
               href={localizedHref(explorerFeature.href, locale)}
               className="mfr-card-inner"
               aria-label={`Explorer — ${explorerFeature.title}`}
             >
               <div className="mfr-card-face mfr-card-face--front">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={explorerFeature.image}
-                  alt=""
-                  aria-hidden="true"
-                  className="mfr-card-img"
-                  loading="lazy"
-                />
+                <div className="mfr-imgwrap">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={expSlot.a.src}
+                    alt="" aria-hidden="true"
+                    className={`mfr-cfi${expSlot.active === 'a' ? ' mfr-cfi--active' : ''}`}
+                    loading="lazy"
+                  />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={expSlot.b.src}
+                    alt="" aria-hidden="true"
+                    className={`mfr-cfi${expSlot.active === 'b' ? ' mfr-cfi--active' : ''}`}
+                    loading="lazy"
+                  />
+                </div>
                 <div className="mfr-card-gradient" />
                 <div className="mfr-card-body mfr-card-body--exp mfr-card-body--lower">
                   <span className="mfr-badge mfr-badge--exp">{t('Explorer')}</span>
@@ -403,21 +539,29 @@ export default function MediaReveal({ article, event }: Props) {
               ref={card4Ref} → animation [0.39 → 0.48]
           ════════════════════════════════════════ */}
           {event && (
-            <div ref={card4Ref} className="mfr-card mfr-card--sortir">
+            <div ref={card4Ref} className={`mfr-card mfr-card--sortir${breathe[2] ? ' mfr-card--lit' : ''}`}>
               <Link
                 href={sortirHref}
                 className="mfr-card-inner"
                 aria-label={event.title}
               >
                 <div className="mfr-card-face mfr-card-face--front">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={sortirImage}
-                    alt=""
-                    aria-hidden="true"
-                    className="mfr-card-img"
-                    loading="lazy"
-                  />
+                  <div className="mfr-imgwrap">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={sortSlot.a.src}
+                      alt="" aria-hidden="true"
+                      className={`mfr-cfi${sortSlot.active === 'a' ? ' mfr-cfi--active' : ''}`}
+                      loading="lazy"
+                    />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={sortSlot.b.src}
+                      alt="" aria-hidden="true"
+                      className={`mfr-cfi${sortSlot.active === 'b' ? ' mfr-cfi--active' : ''}`}
+                      loading="lazy"
+                    />
+                  </div>
                   <div className="mfr-card-gradient" />
                   <div className="mfr-card-body mfr-card-body--lower">
                     <span className="mfr-badge mfr-badge--sort">{t('Sortir')}</span>

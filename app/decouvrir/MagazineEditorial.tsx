@@ -198,8 +198,18 @@ export default function MagazineEditorial({
 
       <div className="magx-podcast-intro">
         <span>{t('Prolonger la réflexion')}</span>
-        <h2>{t("Et si on en parlait aussi en podcast ?")}</h2>
-        <p>{t("Des conversations avec celles et ceux qui font la danse d'aujourd'hui.")}</p>
+        {/* Retours à la ligne contrôlés sur desktop (fr) — la classe mag-podcast-br
+            est masquée via CSS sur mobile pour laisser le texte se réorganiser naturellement. */}
+        <h2>
+          {locale === 'fr' ? (
+            <>Et si on en parlait<br className="mag-podcast-br" /> aussi en podcast&nbsp;?</>
+          ) : t("Et si on en parlait aussi en podcast ?")}
+        </h2>
+        <p>
+          {locale === 'fr' ? (
+            <>Des conversations avec celles et ceux<br className="mag-podcast-br" /> qui font la danse d&apos;aujourd&apos;hui.</>
+          ) : t("Des conversations avec celles et ceux qui font la danse d'aujourd'hui.")}
+        </p>
         <Link href="/ecouter">{t("Découvrir tous les épisodes →")}</Link>
       </div>
 
@@ -220,7 +230,19 @@ export default function MagazineEditorial({
         </div>
       </Link>
 
-      <div className="magx-readalso"><span>{t('À lire aussi')}</span>{podcastReads.map(article => <Link key={article.slug} href={`/decouvrir/articles/${article.slug}`}>→ <b>{article.title}</b></Link>)}</div>
+      <div className="magx-readalso">
+        <span>{t('À lire aussi')}</span>
+        {podcastReads.map(article => (
+          <Link key={article.slug} href={`/decouvrir/articles/${article.slug}`}>
+            <img src={article.image} alt="" aria-hidden="true" />
+            <span className="magx-readalso-copy">
+              <small>{article.category}</small>
+              <b>{article.title}</b>
+            </span>
+            <i aria-hidden="true">→</i>
+          </Link>
+        ))}
+      </div>
     </section>
 
     <section className="magx-themes"><div className="container">
@@ -234,6 +256,5 @@ export default function MagazineEditorial({
       <div className="magx-styles-grid">{STYLES.map(style => <Link key={style.slug} href={`/explorer/styles-de-danse/${style.slug}`}><img src={style.image} alt={style.name} /><span>{style.name}</span><i aria-hidden="true">→</i></Link>)}</div>
     </div></section>}
 
-    <section className="magx-newsletter"><div className="container"><div><h2>{t('Restons en mouvement.')}</h2><p>{t("Des articles, des recommandations et les coulisses de Dance Lab, chaque semaine dans votre boîte mail.")}</p></div><Link href="/#newsletter"><span>{t('Votre adresse e-mail')}</span><b>{t("S'inscrire")}</b></Link></div></section>
   </>
 }

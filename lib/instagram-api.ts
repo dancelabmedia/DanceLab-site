@@ -29,7 +29,7 @@
  * LOGIQUE DE CORRESPONDANCE :
  *   1. Le caption du Reel contient le numéro d'épisode
  *      (ex : "#126", "épisode 126", "ep. 126", "Ep126"…)
- *   2. + au moins un des : prénom de l'invité·e OU hashtag #DanceLab
+ *   2. + au moins un des : prénom de l'invité.e OU hashtag #DanceLab
  *      → confiance HAUTE → association automatique
  *   3. Numéro seul dans le caption (sans guest ni hashtag) :
  *      → confiance MOYENNE → association quand même (faux positifs rares)
@@ -88,10 +88,10 @@ function captionContainsEpisodeNumber(caption: string, episodeNumber: number): b
 }
 
 /**
- * Renvoie true si `caption` contient le prénom de l'invité·e (≥ 3 caractères).
+ * Renvoie true si `caption` contient le prénom de l'invité.e (≥ 3 caractères).
  */
 function captionContainsGuest(caption: string, guestName: string): boolean {
-  if (!guestName || guestName === 'Invité·e') return false
+  if (!guestName || guestName === 'Invité.e') return false
   const c = normalize(caption)
   // Essaie le prénom, puis le nom de famille
   const parts = normalize(guestName).split(/\s+/).filter((p) => p.length >= 3)
@@ -157,7 +157,7 @@ export async function getRecentInstagramReels(): Promise<InstagramReel[]> {
  * Renvoie le `permalink` du Reel correspondant, ou `null` si aucun match.
  *
  * Règles (du plus fiable au moins fiable) :
- *   1. Caption contient le numéro ET le prénom de l'invité·e → HAUTE confiance ✅
+ *   1. Caption contient le numéro ET le prénom de l'invité.e → HAUTE confiance ✅
  *   2. Caption contient le numéro ET #DanceLab ou #dancelab → HAUTE confiance ✅
  *   3. Caption contient le numéro seul → MOYENNE confiance ✅
  *      (acceptable car les numéros d'épisode sont des entiers spécifiques)

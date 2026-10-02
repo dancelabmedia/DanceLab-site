@@ -16,6 +16,18 @@ export type EditorialRecommendation = {
 
 /** Numéros stables, indépendants des slugs RSS. L'ordre est éditorial. */
 export const EDITORIAL_RECOMMENDATIONS: Record<number, EditorialRecommendation[]> = {
+  130: [
+    {
+      episode: 121,
+      reason: 'Marion Agosta → Laëtitia Simon : féminité, sensualité, sexualisation et projections portées sur le corps des danseuses.',
+      themes: ['sexualisation', 'pressions', 'identite'],
+    },
+    {
+      episode: 125,
+      reason: 'Marion Agosta → Jihene Slimani : place des femmes, normes de genre, représentation et discriminations dans la danse.',
+      themes: ['inclusion', 'sexualisation', 'pressions'],
+    },
+  ],
   128: [
     {
       episode: 22,

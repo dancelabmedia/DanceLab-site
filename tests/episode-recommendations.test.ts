@@ -11,7 +11,7 @@ const episode = (number: number, fields: Partial<RecommendationInput> = {}): Rec
 const keys = (input: RecommendationInput) => analyzeEpisode(input).themes.map(t => t.key)
 const wilfried = episode(128, {
   slug: '128-wilfried-bernard',
-  title: 'Danse et handicap : le milieu est-il vraiment inclusif',
+  title: 'Danse et handicap : le milieu est-il vraiment inclusif ?',
   excerpt: 'Est-ce qu’on peut vraiment parler d’inclusion si tout le monde n’a pas encore accès à la danse ?',
   description: 'Wilfried partage sa vision de la mixité, de la place des personnes en situation de handicap.\nC’est surtout connaître ses droits, comprendre son statut et savoir ce qu’on ne doit plus accepter.\nLisez vos contrats et apprenez à négocier.',
   quote: 'Ma vision du handidanse, c’est pas tire-larmes, au contraire.',
@@ -38,6 +38,29 @@ test('manual Wilfried → Ilies + Angelina precedes an otherwise identical candi
   assert.equal(recommendations.length, 3)
 })
 
+test('manual Marion → Laëtitia + Jihene precedes the strongest thematic third episode', () => {
+  const marion = episode(130, {
+    title: 'Danser comme une femme : sensualité, identité et regard des autres',
+    description: 'On parle de sexualisation, de représentation des femmes et de discriminations dans le milieu.\nMarion raconte la recherche de son identité artistique.',
+  })
+  const index = createRecommendationIndex([
+    marion,
+    episode(121, { title: 'Pourquoi les danseuses sont-elles s*xualisées ?' }),
+    episode(125, { title: 'Quelle place pour les femmes dans la danse et les cultures club ?' }),
+    episode(900, { title: 'Sexualisation, regard des autres et identité artistique' }),
+  ])
+  assert.deepEqual(recommendEpisodes(130, index).map(r => r.number), [121, 125, 900])
+  assert.ok(recommendEpisodes(130, index).slice(0, 2).every(r => r.manual))
+})
+
+test('one generic body keyword alone cannot create a similar episode', () => {
+  const index = createRecommendationIndex([
+    episode(1, { title: 'Le corps dans la danse' }),
+    episode(2, { title: 'Comprendre son corps' }),
+  ])
+  assert.deepEqual(recommendEpisodes(1, index, 3, {}), [])
+})
+
 test('manual links ignore missing targets, duplicates and self references', () => {
   const index = createRecommendationIndex([episode(1), episode(2), episode(3)])
   const links = { 1: [1, 999, 2, 2, 3].map(number => ({ episode: number, reason: 'Validated editorial link', themes: [] })) }
@@ -53,13 +76,13 @@ test('strong subject outranks same guest, series, profession and dance style', (
   assert.equal(recommendEpisodes(63, index, 3, {})[0].number, 900)
 })
 
-test('problem > professional role > studied dance style > generic overlap', () => {
+test('problem > professional role > studied dance style; one generic overlap is excluded', () => {
   const index = createRecommendationIndex([
     episode(1, { title: 'Argent et carrière dans le hip-hop', role: 'Régisseur' }),
     episode(2, { title: 'Comprendre son argent' }), episode(3, { role: 'Régisseur' }),
     episode(4, { title: 'Les fondements du hip-hop' }), episode(5, { title: 'Construire sa carrière' }),
   ])
-  assert.deepEqual(recommendEpisodes(1, index, 4, {}).map(r => r.number), [2, 3, 4, 5])
+  assert.deepEqual(recommendEpisodes(1, index, 4, {}).map(r => r.number), [2, 3, 4])
 })
 
 test('a passing mention, a guest biography and tags do not establish subjects', () => {
@@ -133,7 +156,7 @@ test('Mylène: mental health outranks a briefly outlined secondary theme', () =>
   assert.equal(recommendEpisodes(122, index, 3, {})[0].number, 1)
 })
 
-const card = (input: RecommendationInput): UnifiedEpisode => ({ ...input, guest: 'Invité', duration: '', image: '/image.png', aushaImage: '', excerpt: input.excerpt ?? '', description: input.description ?? '', quote: input.quote ?? '', link: '', pubDate: '', youtubeId: null, spotifyEmbedUrl: '', fromRSS: input.number >= 122 })
+const card = (input: RecommendationInput): UnifiedEpisode => ({ ...input, guest: 'Invité', duration: '', image: '/image.png', aushaImage: '', excerpt: input.excerpt ?? '', description: input.description ?? '', quote: input.quote ?? '', link: '', pubDate: '', youtubeId: null, spotifyEmbedUrl: '', fromRSS: input.number >= 122, searchTags: [] })
 
 test('historical full descriptions and new RSS are compared bidirectionally', () => {
   const legacy = episodes.filter(e => [22, 25].includes(e.number))

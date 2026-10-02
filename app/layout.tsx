@@ -29,6 +29,7 @@ import { SITE_URL } from '../data/site'
 import { requestLocale, requestPath, languageAlternates } from '@/lib/i18n/server'
 import { hasPublishedEnglish } from '@/lib/i18n/routing'
 import LocaleProvider from '@/components/LocaleProvider'
+import { CookieConsentProvider } from '@/components/CookieConsent'
 
 
 const frenchMetadata: Metadata = {
@@ -66,6 +67,22 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={locale}>
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: 'Dance Lab',
+            url: SITE_URL,
+            logo: `${SITE_URL}/logo.png`,
+            email: 'contact@dancelabmedia.com',
+            sameAs: [
+              'https://www.instagram.com/dancelab.media/',
+              'https://www.youtube.com/@maiwennbramoulle',
+              'https://www.linkedin.com/in/maïwenn-bramoullé/',
+            ],
+          }).replace(/</g, '\\u003c') }}
+        />
         <link
           rel="icon"
           href="/dancelab-favicon.ico?v=20260724"
@@ -100,6 +117,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <meta name="theme-color" content="#050505" />
       </head>
       <body>
+        <CookieConsentProvider>
         <LocaleProvider locale={locale}>
         <SiteLayout locale={locale}>
           {children}
@@ -108,6 +126,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <DevLockButton />
         <ScrollReveal />
         </LocaleProvider>
+        </CookieConsentProvider>
       </body>
     </html>
   )

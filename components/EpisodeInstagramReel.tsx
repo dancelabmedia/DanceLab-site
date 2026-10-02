@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useCookieConsent } from './CookieConsent'
 
 type Props = {
   instagramReelUrl: string
@@ -20,11 +21,13 @@ type Props = {
  * un bouton CTA propre remplace le Reel sans jamais casser la page.
  */
 export default function EpisodeInstagramReel({ instagramReelUrl }: Props) {
+  const { instagramAllowed: thirdPartyAllowed, openSettings } = useCookieConsent()
   const [embedFailed, setEmbedFailed] = useState(false)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const blockquoteRef = useRef<HTMLQuoteElement | null>(null)
 
   useEffect(() => {
+    if (!thirdPartyAllowed) return
     const win = window as Window & {
       instgrm?: { Embeds: { process: () => void } }
     }
@@ -65,7 +68,7 @@ export default function EpisodeInstagramReel({ instagramReelUrl }: Props) {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
     }
-  }, [instagramReelUrl])
+  }, [instagramReelUrl, thirdPartyAllowed])
 
   // URL de permalink officielle pour l'attribut data-instgrm-permalink
   const permalink =
@@ -89,6 +92,15 @@ export default function EpisodeInstagramReel({ instagramReelUrl }: Props) {
       <path d="M3 8h10M9 4l4 4-4 4" />
     </svg>
   )
+
+  if (!thirdPartyAllowed) {
+    return (
+      <div className="ep-reel ep-reel--fallback">
+        <p className="ep-reel-kicker">Un extrait de la conversation</p>
+        <button type="button" className="ep-reel-cta" onClick={openSettings}>Choisir mes préférences</button>
+      </div>
+    )
+  }
 
   // ── Fallback : embed impossible à charger ─────────────────────────────────
   if (embedFailed) {

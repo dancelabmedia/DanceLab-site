@@ -12,7 +12,18 @@ export type PodcastBannerImage = {
   mobilePosition: string
 }
 
-type Props = { images: PodcastBannerImage[] }
+export type PodcastEpisodeCard = {
+  number: number
+  guest: string
+  title: string
+  slug: string
+  image: string
+}
+
+type Props = {
+  images: PodcastBannerImage[]
+  episode?: PodcastEpisodeCard | null
+}
 
 function shuffledIndexes(length: number): number[] {
   const indexes = Array.from({ length }, (_, index) => index)
@@ -23,7 +34,7 @@ function shuffledIndexes(length: number): number[] {
   return indexes
 }
 
-export default function StylesPodcastBanner({ images }: Props) {
+export default function StylesPodcastBanner({ images, episode }: Props) {
   const locale = useLocale()
   const t = (text: string) => uiText(locale, text)
   const [order, setOrder] = useState(() => images.map((_, index) => index))
@@ -50,7 +61,7 @@ export default function StylesPodcastBanner({ images }: Props) {
       })
     }, 3600)
     return () => window.clearInterval(timer)
-  }, [images.length]) // La rotation est recréée lorsque le catalogue change.
+  }, [images.length])
 
   const currentIndex = order[position] ?? 0
   const current = images[currentIndex]
@@ -58,6 +69,8 @@ export default function StylesPodcastBanner({ images }: Props) {
 
   return (
     <div className="sty-podcast">
+
+      {/* ── Image de fond cyclique ── */}
       <div className="sty-podcast-media" aria-hidden="true">
         {previousImage ? (
           <img
@@ -85,17 +98,54 @@ export default function StylesPodcastBanner({ images }: Props) {
         ) : null}
       </div>
       <div className="sty-podcast-glow" aria-hidden="true" />
-      <div className="sty-podcast-content">
-        <div className="sty-podcast-icon" aria-hidden="true">
-          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-            <circle cx="24" cy="24" r="23" stroke="rgba(255,255,255,.18)" strokeWidth="1.5"/>
-            <circle cx="24" cy="24" r="15" stroke="rgba(255,255,255,.08)" strokeWidth="1"/>
-            <path d="M19 16.5v15l13-7.5-13-7.5z" fill="rgba(255,255,255,.90)"/>
-          </svg>
+
+      {/* ── Composition éditoriale — texte gauche · carte droite ── */}
+      <div className="sty-podcast-inner">
+
+        {/* Gauche : éditorial */}
+        <div className="sty-podcast-content">
+          <span className="sty-podcast-eyebrow">{t('Écouter')}</span>
+          <h2>
+            {t('Des conversations')}<br />
+            {t('qui donnent du sens')}<br />
+            {t('aux styles de danse.')}
+          </h2>
+          <p>
+            {t('Celles et ceux qui font, pensent et transforment la danse partagent leur parcours, leur vision et leur rapport à leur style.')}
+          </p>
+          <Link href="/ecouter" className="sty-podcast-btn">
+            {t('Découvrir tous les épisodes →')}
+          </Link>
         </div>
-        <h2>{t('Écoutez les histoires derrière chaque style')}</h2>
-        <p>{t('Immersion, témoignages et coulisses avec les artistes qui font vivre ces cultures.')}</p>
-        <Link href="/ecouter" className="sty-podcast-btn">{t('Découvrir les épisodes →')}</Link>
+
+        {/* Droite : dernier épisode en glassmorphism */}
+        {episode && (
+          <div
+            className="sty-podcast-episode"
+            aria-label={`${t('Dernier épisode')} : ${episode.guest}`}
+          >
+            <span className="sty-podcast-ep-badge">{t('Dernier épisode')}</span>
+            <div className="sty-podcast-ep-img">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={episode.image} alt={episode.guest} />
+            </div>
+            <div className="sty-podcast-ep-body">
+              <span className="sty-podcast-ep-meta">
+                #{episode.number}&thinsp;·&thinsp;{episode.guest}
+              </span>
+              <p className="sty-podcast-ep-title">{episode.title}</p>
+            </div>
+            <Link href={`/episodes/${episode.slug}`} className="sty-podcast-ep-play">
+              <span className="sty-podcast-ep-play-icon" aria-hidden="true">
+                <svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor">
+                  <path d="M0 1.5v9l9-4.5L0 1.5z" />
+                </svg>
+              </span>
+              {t("Écouter l'épisode")}
+            </Link>
+          </div>
+        )}
+
       </div>
     </div>
   )

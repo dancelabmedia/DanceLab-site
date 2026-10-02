@@ -178,7 +178,7 @@ export async function GET(request: NextRequest) {
       extras?.isYoutubeShort ?? ytVideo?.isShort ?? undefined
 
     // Instagram : extras manuel > détection auto
-    const guest = ep.guest || 'Invité·e'
+    const guest = ep.guest || 'Invité.e'
     const instagramReelUrl: string | undefined =
       extras?.instagramReelUrl ??
       matchReelToEpisode(recentReels, ep.number, guest) ??

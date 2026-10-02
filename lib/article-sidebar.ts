@@ -39,7 +39,7 @@ export type SidebarFrame = {
    */
   quote?: string
   /**
-   * Nom de l'invité·e propriétaire de la citation.
+   * Nom de l'invité.e propriétaire de la citation.
    * Dérivé du champ `guest` de l'épisode source.
    */
   quoteAuthor?: string
@@ -48,7 +48,7 @@ export type SidebarFrame = {
 }
 
 /**
- * Recherche la citation et le nom de l'invité·e depuis les données épisodes
+ * Recherche la citation et le nom de l'invité.e depuis les données épisodes
  * synchrones (même source que les pages Écouter).
  * Priorité : episodeExtras[number].quote > episodesList[number].quote
  */

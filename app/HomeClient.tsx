@@ -712,10 +712,7 @@ export default function HomeClient({ latestEpisode, latestArticle }: HomeClientP
         </div>
         </div>
 
-        <div className="hero-scroll" aria-hidden="true">
-          <span>{t('Scroll')}</span>
-          <div className="scroll-line" />
-        </div>
+
       </section>
 
       {/* ========================================

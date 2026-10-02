@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import ThirdPartyEmbed from "@/components/ThirdPartyEmbed";
+import { useCookieConsent } from "@/components/CookieConsent";
 
 type Props = {
   youtubeId: string;
@@ -15,6 +17,7 @@ type StageStyle = CSSProperties & { "--ep-mobile-video-progress": string };
 export default function MobileEpisodeYouTube({ youtubeId, title, isShort = false, watchLabel }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const [playing, setPlaying] = useState(false);
+  const { youtubeAllowed: thirdPartyAllowed, openSettings } = useCookieConsent();
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -63,16 +66,17 @@ export default function MobileEpisodeYouTube({ youtubeId, title, isShort = false
       <div className="ep-mobile-video-sticky">
         <div className="ep-mobile-video-frame">
           {playing ? (
-            <iframe
+            <ThirdPartyEmbed
+              provider="YouTube"
               src={embedUrl}
               title={title}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
             />
           ) : (
-            <button type="button" className="ep-mobile-video-poster" onClick={() => setPlaying(true)} aria-label={watchLabel}>
+            <button type="button" className="ep-mobile-video-poster" onClick={() => thirdPartyAllowed ? setPlaying(true) : openSettings()} aria-label={watchLabel}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={thumbnail} alt="" loading="lazy" />
+              {thirdPartyAllowed ? <img src={thumbnail} alt="" loading="lazy" /> : <span className="ep-mobile-video-consent">Activer les contenus YouTube</span>}
               <span className="ep-mobile-video-play" aria-hidden="true">
                 <svg viewBox="0 0 68 48"><path d="M66.52 7.74a8.23 8.23 0 0 0-5.8-5.84C55.68 0 34 0 34 0S12.32 0 7.28 1.9a8.23 8.23 0 0 0-5.8 5.84C0 12.8 0 24 0 24s0 11.2 1.48 16.26a8.23 8.23 0 0 0 5.8 5.84C12.32 48 34 48s21.68 0 26.72-1.9a8.23 8.23 0 0 0 5.8-5.84C68 35.2 68 24 68 24s0-11.2-1.48-16.26z" fill="rgba(0,0,0,.78)"/><path d="M27 34 45 24 27 14v20z" fill="#fff"/></svg>
               </span>

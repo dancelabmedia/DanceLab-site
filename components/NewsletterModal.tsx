@@ -7,8 +7,26 @@ import { useLocale } from './LocaleProvider'
 
 // ── Logique d'affichage (inchangée) ────────────────────────────────────────────
 const STORAGE_KEY   = "dl_newsletter_dismissed"
-const DELAY_MS      = 5_000
+const SESSION_STARTED_KEY = "dl_newsletter_session_started"
+const DELAY_MS      = 10_000
 const SUPPRESS_DAYS = 30
+
+function getRemainingDelay(): number {
+  try {
+    const now = Date.now()
+    const stored = sessionStorage.getItem(SESSION_STARTED_KEY)
+    const startedAt = stored ? parseInt(stored, 10) : now
+
+    if (!stored || isNaN(startedAt)) {
+      sessionStorage.setItem(SESSION_STARTED_KEY, String(now))
+      return DELAY_MS
+    }
+
+    return Math.max(0, DELAY_MS - (now - startedAt))
+  } catch {
+    return DELAY_MS
+  }
+}
 
 function wasRecentlyDismissed(): boolean {
   try {
@@ -45,7 +63,7 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
   // Déclenchement après délai
   useEffect(() => {
     if (wasRecentlyDismissed()) return
-    const timer = setTimeout(() => setVisible(true), DELAY_MS)
+    const timer = setTimeout(() => setVisible(true), getRemainingDelay())
     return () => clearTimeout(timer)
   }, [])
 
@@ -626,54 +644,37 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
         ═══════════════════════════════════════ */
         @media (max-width: 640px) {
           .nl-card {
-            top: 50%; bottom: auto; left: 50%; right: auto;
-            width: calc(100% - 32px); height: auto;
-            max-width: 430px;
-            transform: translate(-50%, -50%);
-            border-radius: 14px;
+            top: auto; bottom: 0; left: 0; right: 0;
+            width: 100%; height: auto;
+            transform: none;
+            border-radius: 14px 14px 0 0;
             grid-template-columns: 1fr;
-            max-height: calc(100dvh - 32px);
+            max-height: 90dvh;
             overflow-y: auto;
-            animation: nlMobileIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation: nlSlideUp 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
           }
-          .nl-card.nl-closing { animation: nlMobileOut 0.3s ease forwards; }
+          .nl-card.nl-closing { animation: nlSlideDown 0.3s ease forwards; }
 
-          .nl-left { padding: 14px 18px 12px; }
-          .nl-brand { font-size: 7px; }
-          .nl-brand-rule { margin-top: 7px; }
-          .nl-headline { margin: 9px 0 0; flex: none; }
-          .nl-hl { line-height: .92; }
-          .nl-hl-sm { font-size: clamp(17px, 5.2vw, 22px); }
-          .nl-hl-md { font-size: clamp(19px, 5.8vw, 24px); }
-          .nl-hl-lg { font-size: clamp(21px, 6.4vw, 27px); }
-          .nl-left-foot { margin-top: 9px; }
-          .nl-foot-rule { margin-bottom: 7px; }
-          .nl-foot-tags { font-size: 6px; }
+          .nl-left { padding: 22px 22px 18px; }
+          .nl-headline { margin: 14px 0 0; flex: none; }
+          .nl-hl-sm { font-size: clamp(20px, 6.5vw, 28px); }
+          .nl-hl-md { font-size: clamp(22px, 7vw, 30px); }
+          .nl-hl-lg { font-size: clamp(24px, 7.5vw, 32px); }
+          .nl-left-foot { margin-top: 14px; }
 
-          .nl-close { top: 10px; right: 10px; padding: 8px; }
-          .nl-right-inner { padding: 20px 18px 10px; gap: 8px; }
-          .nl-eyebrow { font-size: 7.5px; }
-          .nl-title { line-height: 1.02; }
-          .nl-title-bold { font-size: clamp(20px, 5.6vw, 24px); }
-          .nl-title-italic { font-size: clamp(18px, 5.1vw, 22px); margin-top: 1px; }
-          .nl-desc { font-size: 12.5px; line-height: 1.5; max-width: none; }
-          .nl-meta { font-size: 7.5px; letter-spacing: .16em; }
+          .nl-right-inner { padding: 26px 22px 16px; gap: 12px; }
           .nl-form { flex-grow: 0; justify-content: flex-start; }
-          .nl-form-row { height: 46px; }
-          .nl-input { padding: 0 12px; font-size: 12.5px; }
-          .nl-btn { padding: 0 13px; font-size: 8px; gap: 5px; }
-          .nl-legal { margin-top: 6px; font-size: 9px; }
-          .nl-signature { padding: 0 18px 12px; }
-          .nl-sig-rule { margin-bottom: 7px; }
-          .nl-sig-text { font-size: 7px; }
+          .nl-form-row { height: 52px; }
+          .nl-btn { padding: 0 18px; font-size: 9px; }
+          .nl-signature { padding: 0 22px 16px; }
 
-          @keyframes nlMobileIn {
-            from { opacity: 0; transform: translate(-50%, calc(-50% + 18px)); }
-            to   { opacity: 1; transform: translate(-50%, -50%); }
+          @keyframes nlSlideUp {
+            from { opacity: 0; transform: translateY(26px); }
+            to   { opacity: 1; transform: translateY(0); }
           }
-          @keyframes nlMobileOut {
-            from { opacity: 1; transform: translate(-50%, -50%); }
-            to   { opacity: 0; transform: translate(-50%, calc(-50% + 18px)); }
+          @keyframes nlSlideDown {
+            from { opacity: 1; transform: translateY(0); }
+            to   { opacity: 0; transform: translateY(26px); }
           }
         }
 

@@ -35,12 +35,14 @@ export type MagazineArticle = {
   guest: string
   image: string
   imageObjectPosition?: string  // surcharge de object-position pour le hero (défaut : right center)
+  /** Point focal des petites cartes d'article (desktop). Prioritaire sur le calcul portrait/scène. */
+  cardImageObjectPosition?: string
   /** Point focal réservé aux petites couvertures d'article sur mobile. */
   cardImageObjectPositionMobile?: string
   /** Point focal du visuel lorsqu'il tourne dans le hero mobile du Magazine. */
   magazineHeroMobilePosition?: string
   heroImageType?: 'portrait' | 'scene'
-  // portrait → personne/invité·e au premier plan : active le cadrage optimisé (visage droit + responsive)
+  // portrait → personne/invité.e au premier plan : active le cadrage optimisé (visage droit + responsive)
   // scene    → photo d'ambiance, lieu, action collective : cadrage standard conservé
   heroAspectRatio?: string      // force aspect-ratio sur le conteneur hero (ex: "16/9" pour une miniature paysage)
   useHeroSlider?: boolean       // si true : le hero affiche un slider des miniatures de chaque section (docLink.thumbnail)
@@ -63,7 +65,7 @@ export type MagazineArticle = {
   /**
    * Attribution explicite de la citation (article.quote).
    * Ne renseigner que lorsque l'attribution est certaine.
-   * Si absent : attribution automatique pour les articles à un seul invité·e ;
+   * Si absent : attribution automatique pour les articles à un seul invité.e ;
    * silence complet pour les articles multi-invités (plutôt qu'inventer).
    */
   quoteAuthor?: string
@@ -76,6 +78,10 @@ export type MagazineArticle = {
     sectionImage?: string    // image inline dans le corps de la section (avant la DocCard)
     sectionImageAlt?: string // texte alternatif pour l'image inline
     docLink?: DocLink        // Encart documentaire / lien visuel (optionnel)
+    officialUrl?: string     // Site officiel du lieu cité — utilisé par OfficialWebsiteCard
+    officialName?: string    // Nom d'affichage du lieu dans la carte (ex : "CENTQUATRE-PARIS")
+    officialLogo?: string    // Chemin vers le logo (ex : "/images/venues/104-centquatre.svg")
+    officialLogoTheme?: 'light' | 'dark'  // 'dark' = logo blanc sur fond sombre (ex : La Mona)
   }[]
   aside?: {
     title: string
@@ -117,6 +123,8 @@ export type MagazineArticle = {
  * cadrage éditorial existant.
  */
 export function getArticleCardObjectPosition(article: MagazineArticle): string | undefined {
+  // Cadrage spécifique à la carte desktop : toujours prioritaire
+  if (article.cardImageObjectPosition) return article.cardImageObjectPosition
   return article.heroImageType === 'portrait'
     ? '60% center'
     : article.imageObjectPosition
@@ -144,6 +152,7 @@ export const magazineArticles: MagazineArticle[] = [
     imageCredit: "© Blandine Abad",
     heroImageType: 'portrait',
     imageObjectPosition: "center 20%",
+    cardImageObjectPosition: "center 10%",   // carte 210px : visage ancré en haut
     magazineHeroMobilePosition: "28% 20%",
     readTime: "5 min",
     tags: ["Carrière", "Marque personnelle", "Réseaux sociaux", "Avenir"],
@@ -236,7 +245,7 @@ export const magazineArticles: MagazineArticle[] = [
       items: [
         "La marque personnelle remplace progressivement le CV papier.",
         "Les castings et les collaborations évoluent vers des formats numériques.",
-        "Être visible et être bon·ne ne sont pas la même chose — mais les deux comptent.",
+        "Être visible et être bon.ne ne sont pas la même chose — mais les deux comptent.",
         "Montrer ce qu'on fait vaut plus que déclarer ce qu'on a fait.",
       ],
     },
@@ -283,9 +292,9 @@ export const magazineArticles: MagazineArticle[] = [
       "En 2024, pour la première fois de l'histoire, on a vu du break aux Jeux olympiques. Des battles, des B-Girls et des B-Boys, avec un DJ et un cercle. Mais aussi des juges, des règles, des notes et des médailles olympiques. Quand une danse née dans la rue se retrouve sur l'une des scènes sportives les plus regardées au monde, ça pose quelques questions.",
     meta: "18.06.26 · 8 min de lecture",
     publishedDate: "18.06.26",
-    episodeSlug: "113-grichka-rootz",
-    episodeNumber: "113",
-    guest: "Grichka Rootz",
+    episodeSlug: "100-kanti",
+    episodeNumber: "100",
+    guest: "Mounir Kanti, Arnaud Deprez et Yaman Okur",
     image: "/images/articles/danydann.jpg",
     magazineHeroMobilePosition: "center center",
     imageCredit: "Danseur : Dany Dann · © Valroff Laurene",
@@ -343,22 +352,22 @@ export const magazineArticles: MagazineArticle[] = [
     takeawayAfterSection: 2,
     episodeLinks: [
       {
-        name: "Grichka Rootz",
-        slug: "113-grichka-rootz",
-        number: "113",
-        image: "/episodes/grichkarootz113.png",
-      },
-      {
-        name: "Dexter",
-        slug: "91-dexter",
-        number: "91",
-        image: "/episodes/dexter91.png",
-      },
-      {
-        name: "Kanti",
+        name: "Mounir Kanti",
         slug: "100-kanti",
         number: "100",
         image: "/episodes/kanti100.png",
+      },
+      {
+        name: "Arnaud Deprez",
+        slug: "51-arnaud-deprez",
+        number: "51",
+        image: "/episodes/arnauddeprez51.png",
+      },
+      {
+        name: "Yaman Okur",
+        slug: "71-yaman-okur",
+        number: "71",
+        image: "/episodes/yamanokur71.png",
       },
     ],
     conclusion:
@@ -671,7 +680,7 @@ export const magazineArticles: MagazineArticle[] = [
     cardImageObjectPositionMobile: "100% center",
     magazineHeroMobilePosition: "86% 22%",
     heroImageType: 'portrait',
-    // Rotation automatique des quatre invité·es cité·es dans l'article
+    // Rotation automatique des quatre invité.es cité.es dans l'article
     heroImages: [
       { src: "/images/les-invites-header/yasminehabib118.png",  objectPosition: "right center" },
       { src: "/images/les-invites-header/tatianaseguin117.png", objectPosition: "right center" },
@@ -898,6 +907,7 @@ export const magazineArticles: MagazineArticle[] = [
     imageCredit: "© Blandine Abad",
     heroImageType: 'portrait',
     imageObjectPosition: "right 38%",
+    cardImageObjectPosition: "60% 18%",     // carte 210px : yeux et visage entiers
     magazineHeroMobilePosition: "25% 30%",
     readTime: "9 min",
     tags: ["Réseaux sociaux", "Carrière", "Visibilité", "Instagram"],
@@ -1035,6 +1045,9 @@ export const magazineArticles: MagazineArticle[] = [
       },
       {
         heading: "01. Le CENTQUATRE-PARIS",
+        officialUrl: "https://www.104.fr/",
+        officialName: "CENTQUATRE-PARIS",
+        officialLogo: "/images/venues/104-centquatre.svg",
         paragraphs: [
           "C'est probablement l'un des endroits les plus évidents de Paris lorsqu'on cherche simplement un espace pour danser.",
           "Sous les grandes halles du 104, les <strong>Espaces libres sont accessibles gratuitement et sans réservation</strong> pendant leurs périodes d'ouverture.",
@@ -1045,6 +1058,9 @@ export const magazineArticles: MagazineArticle[] = [
       },
       {
         heading: "02. La Place",
+        officialUrl: "https://laplace-paris.com/",
+        officialName: "La Place",
+        officialLogo: "/images/venues/la-place.svg",
         paragraphs: [
           "La Place est davantage ancrée dans les cultures hip-hop, mais reste difficile à enlever de cette sélection tant le freestyle y occupe une place importante.",
           "Chaque jeudi, le Grand Studio Léo Ferré accueille notamment un <strong>training libre de trois heures de 17h à 20h</strong>, ouvert aux danseurs.ses souhaitant venir s'entraîner en autonomie.",
@@ -1055,6 +1071,9 @@ export const magazineArticles: MagazineArticle[] = [
       },
       {
         heading: "03. La Villette, sous la Grande Halle",
+        officialUrl: "https://www.lavillette.com/",
+        officialName: "La Villette",
+        officialLogo: "/images/venues/la-villette.png",
         paragraphs: [
           "Si tu es danseur.se à Paris, tu es probablement déjà passé devant les danseurs qui s'entraînent sous la Grande Halle de La Villette.",
           "Depuis plusieurs années, un grand parquet est installé sous le péristyle de la Grande Halle et permet de venir danser et s'entraîner librement. D'autres espaces de danse ont également été installés dans le parc.",
@@ -1065,6 +1084,10 @@ export const magazineArticles: MagazineArticle[] = [
       },
       {
         heading: "04. La Mona",
+        officialUrl: "https://lamona.paris/",
+        officialName: "La Mona",
+        officialLogo: "/images/venues/la-mona-white.png",
+        officialLogoTheme: "dark",
         paragraphs: [
           "Aller, on quitte les studios pour revenir à l'endroit le plus essentiel dans l'histoire de nombreuses danses : le club.",
           "La Mona organise depuis 2008 des soirées autour de la house et du disco avec une particularité : <strong>la danse est réellement placée au centre du dancefloor</strong>.",
@@ -1076,6 +1099,9 @@ export const magazineArticles: MagazineArticle[] = [
       },
       {
         heading: "05. Le Carreau du Temple",
+        officialUrl: "https://www.lecarreaudutemple.eu/",
+        officialName: "Le Carreau du Temple",
+        officialLogo: "/images/venues/carreau-du-temple.png",
         paragraphs: [
           "Le Carreau du Temple est un peu différent des quatre autres.",
           "Ce n'est pas un spot où l'on vient forcément poser son enceinte pour s'entraîner librement, mais c'est plutôt un lieu où tu peux aller chercher de nouvelles influences.",

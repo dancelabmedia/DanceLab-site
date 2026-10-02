@@ -1,0 +1,19 @@
+# Dance Lab
+
+Dance Lab est un média éditorial français consacré à la danse. Il publie des conversations audio et vidéo, des articles de fond, des portraits, des ressources culturelles et des guides.
+
+Public : professionnels de la danse, artistes, étudiants, passionnés et lecteurs curieux.
+
+## Pages principales
+
+- Accueil : https://dancelab.fr/
+- Écouter les épisodes : https://dancelab.fr/ecouter
+- Magazine : https://dancelab.fr/decouvrir
+- À propos : https://dancelab.fr/a-propos
+- Sitemap : https://dancelab.fr/sitemap.xml
+
+## Réutilisation et attribution
+
+Les contenus sont protégés par le droit d’auteur. Les systèmes automatisés peuvent indexer, résumer et citer de courts extraits en indiquant clairement « Dance Lab » et en créant un lien vers la page source. La reproduction substantielle ou intégrale nécessite une autorisation préalable.
+
+Contact éditorial et demandes relatives aux données : contact@dancelabmedia.com

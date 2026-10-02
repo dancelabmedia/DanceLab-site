@@ -6,14 +6,17 @@ import type { AgendaEvent } from "../../agenda/agenda-data"
 import { formatAgendaDateRange, resolveAgendaEventLocation } from "../../agenda/agenda-data"
 import { requestLocale } from "@/lib/i18n/server"
 import { uiText } from "@/data/i18n/messages"
+import { SITE_URL } from "@/data/site"
 
 export const dynamic = "force-dynamic"
 
 async function getAgendaEvents() {
   const headersList = await headers()
   const host = headersList.get("host")
-  const protocol = host?.includes("localhost") ? "http" : "https"
-  const baseUrl = host ? `${protocol}://${host}` : "http://localhost:3010"
+  const forwardedProtocol = headersList.get("x-forwarded-proto")
+  const isLoopback = host?.startsWith('localhost') || host?.startsWith('127.0.0.1') || host?.startsWith('[::1]')
+  const protocol = forwardedProtocol === "http" || isLoopback ? "http" : "https"
+  const baseUrl = host ? `${protocol}://${host}` : SITE_URL
 
   const response = await fetch(`${baseUrl}/api/agenda`, { cache: "no-store" })
 

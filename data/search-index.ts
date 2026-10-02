@@ -2,7 +2,8 @@ import { agendaEvents } from "../app/agenda/agenda-data"
 import { getArticleCardObjectPosition, magazineArticles } from "../app/decouvrir/articles-data"
 import { discoverSections } from "../app/decouvrir/discover-data"
 import { explorerSections } from "../app/explorer/explorer-data"
-import { episodes } from "./episodes"
+import { getEpisodes, type UnifiedEpisode } from "../lib/episodes"
+import { unstable_cache } from "next/cache"
 import { normalizeSearchText, type SearchItem } from "./search"
 import { isPrivateSectionPath } from './section-visibility'
 import { privateAccessScope } from './private-navigation'
@@ -11,7 +12,8 @@ function searchable(parts: Array<string | number | undefined>) {
   return normalizeSearchText(parts.filter((part) => part !== undefined).join(" "))
 }
 
-const episodeItems: SearchItem[] = episodes.map((episode) => ({
+function buildEpisodeItems(episodes: UnifiedEpisode[]): SearchItem[] {
+  return episodes.map((episode) => ({
   id: `episode-${episode.slug}`,
   type: "episode",
   typeLabel: "Épisode",
@@ -27,15 +29,13 @@ const episodeItems: SearchItem[] = episodes.map((episode) => ({
     episode.number,
     episode.title,
     episode.guest,
-    episode.role,
-    episode.category,
     episode.excerpt,
     episode.description,
     episode.quote,
-    ...episode.tags,
-    ...episode.chapters.map((chapter) => chapter.title),
+    ...episode.searchTags,
   ]),
-}))
+  }))
+}
 
 // Seuls les articles publiés (status === 'published') entrent dans l'index public.
 // Les articles en statut 'draft' ou 'scheduled' sont invisibles en recherche.
@@ -210,11 +210,23 @@ const editorialItems: SearchItem[] = [
   },
 ]
 
-export const searchIndex: SearchItem[] = [
-  ...episodeItems,
-  ...articleItems,
-  ...eventItems,
-  ...discoverItems,
-  ...explorerItems,
-  ...editorialItems,
-].filter(item => !isPrivateSectionPath(item.href) && !privateAccessScope(item.href))
+const buildSearchIndex = async (): Promise<SearchItem[]> => {
+  const episodeItems = buildEpisodeItems(await getEpisodes())
+  const items = [
+    ...episodeItems,
+    ...articleItems,
+    ...eventItems,
+    ...discoverItems,
+    ...explorerItems,
+    ...editorialItems,
+  ]
+  // L'index de travail reste complet sous `next dev`. Les builds publics
+  // continuent d'exclure strictement toutes les rubriques non publiées.
+  if (process.env.NODE_ENV === 'development' && !process.env.VERCEL) return items
+  return items.filter(item => !isPrivateSectionPath(item.href) && !privateAccessScope(item.href))
+}
+
+/** Index unifié, renouvelé chaque heure avec les nouveaux épisodes Ausha. */
+export const getSearchIndex = unstable_cache(buildSearchIndex, ['dance-lab-search-index-v2'], {
+  revalidate: 3600,
+})

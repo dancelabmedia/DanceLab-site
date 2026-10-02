@@ -206,7 +206,9 @@ export function recommendEpisodes(
       : shared.some(t => !GENERIC.has(t.key)) ? 4
       : sameRole ? 3
       : sharedStyles.length ? 2
-      : shared.length || sameSeries || sameGuest ? 1 : 0
+      // A lone generic notion such as « corps », « carrière » or
+      // « identité » is not an editorial relationship by itself.
+      : shared.length >= 2 || sameSeries || sameGuest ? 1 : 0
     if (!tier) continue // No unrelated filler just to produce three cards.
     const union = new Set([...current.themes, ...candidate.themes].map(t => t.key))
     const sharedWeight = shared.reduce((sum, t) => sum + idf(t.key), 0)

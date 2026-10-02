@@ -158,9 +158,9 @@ function buildNotionProperties(
     },
   }
 
-  // Invité·e
+  // Invité.e
   if (article.guest) {
-    props['Invité·e'] = { rich_text: [{ text: { content: article.guest } }] }
+    props['Invité.e'] = { rich_text: [{ text: { content: article.guest } }] }
   }
 
   // Meta description

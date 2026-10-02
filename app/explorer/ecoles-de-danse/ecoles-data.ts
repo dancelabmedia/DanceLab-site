@@ -1,4 +1,5 @@
 import { formationsProfessionnelles } from './formations-data'
+import { parisDirectoryAdditions } from './paris-directory-data'
 
 export type EcoleType = "Studio" | "École" | "Conservatoire" | "Centre de formation" | "Association" | "Établissement supérieur" | "Compagnie" | "Université"
 
@@ -23,6 +24,14 @@ export type ParcoursFormation =
 
 export type EcoleStyle = string
 
+export const ECOLE_CATEGORIES = [
+  'Classique', 'Jazz & Modern Jazz', 'Contemporain', 'Hip-hop & danses urbaines',
+  'Club & freestyle', 'Street Jazz & Commercial', 'Heels', 'Danses latines',
+  'Danses de couple', 'Danses du monde', 'Formation professionnelle', 'Conservatoires',
+] as const
+
+export type EcoleCategory = typeof ECOLE_CATEGORIES[number]
+
 export type EcoleDanse = {
   id: string
   nom: string
@@ -32,9 +41,11 @@ export type EcoleDanse = {
   departement?: string
   region?: string
   arrondissement?: number
+  quartier?: string
   lat?: number
   lng?: number
   styles: string[]
+  categories?: EcoleCategory[]
   stylesSlugs?: string[]
   niveaux: ("Débutant" | "Intermédiaire" | "Avancé" | "Professionnel")[]
   pratiques: ("Loisirs" | "Formation professionnelle" | "Préparation EAT/DE" | "Enfants" | "Adultes" | "Cours open")[]
@@ -47,6 +58,11 @@ export type EcoleDanse = {
   programmes?: string[]
   duree?: string
   statut?: "Public" | "Privé"
+  publics?: string[]
+  sources?: string[]
+  /** Logo ou photographie provenant exclusivement du site officiel. */
+  image?: string
+  imageAlt?: string
 }
 
 const ecolesExistantes: EcoleDanse[] = [
@@ -56,6 +72,7 @@ const ecolesExistantes: EcoleDanse[] = [
     type: "Centre de formation",
     adresse: "41 rue du Temple, 75004 Paris",
     arrondissement: 4,
+    quartier: "Le Marais",
     lat: 48.8608,
     lng: 2.3518,
     styles: ["Danse classique", "Contemporain", "Jazz", "Flamenco", "Danse orientale"],
@@ -71,13 +88,16 @@ const ecolesExistantes: EcoleDanse[] = [
     type: "École",
     adresse: "5 passage des Taillandiers, 75011 Paris",
     arrondissement: 11,
+    quartier: "Bastille",
     lat: 48.8557,
     lng: 2.3802,
-    styles: ["Danse classique", "Jazz", "Contemporain", "Capoeira", "Claquettes", "Locking", "Ragga"],
+    styles: ["Danse classique", "Contemporain", "Technique Graham", "Jazz", "Modern jazz", "Street jazz", "Hip-hop", "Dancehall", "Reggaeton", "Vogue", "Flamenco", "Danse orientale", "Claquettes"],
     niveaux: ["Débutant", "Intermédiaire", "Avancé", "Professionnel"],
     pratiques: ["Loisirs", "Formation professionnelle", "Enfants", "Adultes", "Cours open"],
     description: "École professionnelle fondée en 1988 avec 47 styles de danse et plus de 100 professeurs. Formation en danse classique, jazz et contemporain.",
-    siteWeb: "https://www.studioharmonic.eu/",
+    siteWeb: "https://www.studioharmonic.fr/",
+    image: "https://www.studioharmonic.fr/wp-content/uploads/2015/04/logo-studio-HD.png",
+    imageAlt: "Logo officiel du Studio Harmonic",
     featured: true
   },
   {
@@ -101,6 +121,7 @@ const ecolesExistantes: EcoleDanse[] = [
     type: "Studio",
     adresse: "18 bis Villa Riberolle, 75020 Paris",
     arrondissement: 20,
+    quartier: "Père-Lachaise",
     lat: 48.8713,
     lng: 2.4052,
     styles: ["Hip-hop", "Breaking", "House dance", "Street jazz", "Contemporain"],
@@ -116,6 +137,7 @@ const ecolesExistantes: EcoleDanse[] = [
     type: "École",
     adresse: "3 Rue de l'Est, 75020 Paris",
     arrondissement: 20,
+    quartier: "Père-Lachaise",
     lat: 48.8716,
     lng: 2.4085,
     styles: ["Popping", "Locking", "House", "Breaking", "Hip-hop", "Waacking"],
@@ -191,6 +213,7 @@ const ecolesExistantes: EcoleDanse[] = [
     type: "Centre de formation",
     adresse: "4 rue Bréguet, 75011 Paris",
     arrondissement: 11,
+    quartier: "Bastille",
     lat: 48.8556,
     lng: 2.3786,
     styles: ["Danse classique", "Contemporain", "Jazz", "Flamenco", "Danse orientale", "Hip-hop"],
@@ -281,6 +304,7 @@ const ecolesExistantes: EcoleDanse[] = [
     type: "Studio",
     adresse: "7/9 Rue des Petites Écuries, 75010 Paris",
     arrondissement: 10,
+    quartier: "Grands Boulevards",
     lat: 48.8738,
     lng: 2.3596,
     styles: ["Danse classique", "Jazz", "Contemporain", "Hip-hop", "Danse orientale"],
@@ -473,7 +497,7 @@ const ecolesExistantes: EcoleDanse[] = [
 ]
 
 export const ecolesDanse: EcoleDanse[] = Array.from(
-  [...ecolesExistantes, ...formationsProfessionnelles].reduce((ecoles, ecole) => {
+  [...ecolesExistantes, ...formationsProfessionnelles, ...parisDirectoryAdditions].reduce((ecoles, ecole) => {
     const precedente = ecoles.get(ecole.id)
     ecoles.set(ecole.id, precedente ? {
       ...precedente,
@@ -483,10 +507,75 @@ export const ecolesDanse: EcoleDanse[] = Array.from(
       pratiques: [...new Set([...precedente.pratiques, ...ecole.pratiques])],
       parcours: [...new Set([...(precedente.parcours ?? []), ...(ecole.parcours ?? [])])],
       programmes: [...new Set([...(precedente.programmes ?? []), ...(ecole.programmes ?? [])])],
+      categories: [...new Set([...(precedente.categories ?? []), ...(ecole.categories ?? [])])],
+      publics: [...new Set([...(precedente.publics ?? []), ...(ecole.publics ?? [])])],
+      sources: [...new Set([...(precedente.sources ?? []), ...(ecole.sources ?? [])])],
     } : ecole)
     return ecoles
   }, new Map<string, EcoleDanse>()).values()
-)
+).map(ecole => {
+  const parisAddress = /750\d{2}\s+Paris/i.test(ecole.adresse ?? '')
+  if (!parisAddress) return ecole
+  return {
+    ...ecole,
+    ville: ecole.ville ?? 'Paris',
+    departement: ecole.departement ?? 'Paris',
+    region: ecole.region ?? 'Île-de-France',
+  }
+})
+
+const includesOne = (value: string, terms: string[]) => terms.some(term => value.includes(term))
+
+export function getEcoleCategories(ecole: EcoleDanse): EcoleCategory[] {
+  const styles = ecole.styles.join(' ').toLocaleLowerCase('fr')
+  const categories = new Set<EcoleCategory>(ecole.categories ?? [])
+  if (includesOne(styles, ['classique', 'ballet'])) categories.add('Classique')
+  if (includesOne(styles, ['jazz', 'modern'])) categories.add('Jazz & Modern Jazz')
+  if (styles.includes('contemporain')) categories.add('Contemporain')
+  if (includesOne(styles, ['hip-hop', 'hip hop', 'breaking', 'popping', 'locking', 'danse urbaine', 'street dance', 'dancehall'])) categories.add('Hip-hop & danses urbaines')
+  if (includesOne(styles, ['house', 'waacking', 'voguing', 'freestyle', 'club'])) categories.add('Club & freestyle')
+  if (includesOne(styles, ['street jazz', 'commercial', 'urban jazz', 'jazz funk'])) categories.add('Street Jazz & Commercial')
+  if (styles.includes('heels')) categories.add('Heels')
+  if (includesOne(styles, ['salsa', 'bachata', 'kizomba', 'reggaeton', 'danses latines', 'tango argentin'])) categories.add('Danses latines')
+  if (includesOne(styles, ['danses de salon', 'rock', 'swing', 'lindy', 'boogie', 'west coast', 'jive', 'tango'])) categories.add('Danses de couple')
+  if (includesOne(styles, ['afro', 'orientale', 'indienne', 'bollywood', 'kathak', 'flamenco', 'capoeira', 'tropical'])) categories.add('Danses du monde')
+  if (ecole.categorie === 'Se former professionnellement' || ecole.pratiques.includes('Formation professionnelle') || (ecole.parcours?.length ?? 0) > 0) categories.add('Formation professionnelle')
+  if (ecole.type === 'Conservatoire') categories.add('Conservatoires')
+  return ECOLE_CATEGORIES.filter(category => categories.has(category))
+}
+
+export function normalizeEcoleSearch(value: string): string {
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('fr')
+}
+
+export function getEcoleSearchText(ecole: EcoleDanse): string {
+  const arrondissement = ecole.arrondissement
+    ? [`${ecole.arrondissement}e`, `${ecole.arrondissement}eme`, `paris ${ecole.arrondissement}`, `750${String(ecole.arrondissement).padStart(2, '0')}`]
+    : []
+
+  return normalizeEcoleSearch([
+    ecole.nom, ecole.adresse, ecole.ville, ecole.region, ecole.quartier, ecole.description, ecole.type, ecole.statut,
+    ...ecole.styles, ...getEcoleCategories(ecole), ...(ecole.parcours ?? []), ...(ecole.programmes ?? []),
+    ...ecole.pratiques, ...ecole.niveaux, ...(ecole.publics ?? []), ...arrondissement,
+  ].filter(Boolean).join(' '))
+}
+
+export function getEcoleLocationLabel(ecole: EcoleDanse): string {
+  const paris = ecole.ville === 'Paris' || /750\d{2}/.test(ecole.adresse)
+  if (paris && ecole.arrondissement) {
+    return `Paris ${ecole.arrondissement}e${ecole.quartier ? ` · ${ecole.quartier}` : ''}`
+  }
+  return [ecole.ville, ecole.departement].filter(Boolean).join(' · ') || ecole.adresse || 'France'
+}
+
+export type EcoleMarkerKind = 'ecole' | 'conservatoire' | 'formation' | 'superieur'
+
+export function getEcoleMarkerKind(ecole: EcoleDanse): EcoleMarkerKind {
+  if (ecole.type === 'Établissement supérieur' || ecole.type === 'Université') return 'superieur'
+  if (ecole.type === 'Conservatoire') return 'conservatoire'
+  if (getEcoleCategories(ecole).includes('Formation professionnelle')) return 'formation'
+  return 'ecole'
+}
 
 export function getEcoleById(id: string): EcoleDanse | undefined {
   return ecolesDanse.find(e => e.id === id)

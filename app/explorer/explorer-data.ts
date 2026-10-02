@@ -73,54 +73,54 @@ export const explorerSections: ExplorerSection[] = [
       "Explorer un style, ce n'est pas seulement apprendre des pas : c'est entrer dans une histoire, une musicalité et une façon de penser le monde.",
   },
   {
-    slug: "choregraphes",
-    label: "Chorégraphes",
-    kicker: "Création",
-    title: "Lire la danse à travers celles et ceux qui l'écrivent.",
+    slug: "auditions",
+    label: "Auditions",
+    kicker: "Opportunités",
+    title: "Les auditions et castings danse à ne pas manquer.",
     intro:
-      "Les chorégraphes composent des mondes : ils inventent des langages, dirigent des interprètes, déplacent les récits et donnent une forme sensible aux idées.",
+      "Compagnies, spectacles, opéras, productions commerciales, CCN, CN D et autres structures du secteur : toutes les opportunités réunies au même endroit.",
     lead: {
-      eyebrow: "Portraits & méthodes",
-      title: "Entrer dans l'atelier chorégraphique",
+      eyebrow: "Base d'auditions Dance Lab",
+      title: "Trouver sa prochaine audition",
       text:
-        "Cette rubrique rassemble les repères pour comprendre les signatures, les processus de création et les grandes trajectoires chorégraphiques.",
+        "Cette rubrique centralise les appels à candidature du secteur danse et spectacle vivant : compagnies chorégraphiques, institutions, opéras, comédies musicales, productions audiovisuelles et projets internationaux.",
     },
     cards: [
       {
-        label: "Signature",
-        title: "Reconnaître une écriture",
+        label: "Scène",
+        title: "Compagnies & institutions",
         text:
-          "Analyser les choix de composition, de rythme, d'espace, de groupe et de présence scénique.",
+          "Créations chorégraphiques, CCN, opéras, ballets et structures de diffusion à la recherche d'interprètes.",
       },
       {
-        label: "Processus",
-        title: "De l'idée au plateau",
+        label: "Spectacle vivant",
+        title: "Comédies musicales & productions",
         text:
-          "Comprendre comment une intuition devient une pièce, une compagnie, une tournée ou une transmission.",
+          "Productions commerciales, comédies musicales, spectacles de divertissement, parcs et événementiel.",
       },
       {
-        label: "Influence",
-        title: "Figures à suivre",
+        label: "Écrans & médias",
+        title: "Audiovisuel & international",
         text:
-          "Préparer une galerie éditoriale de chorégraphes qui marquent la scène actuelle.",
+          "Clips, télévision, cinéma et projets internationaux recherchant des danseur.ses professionnel.les.",
       },
     ],
     collections: [
       {
-        title: "Carnets de création",
-        text: "À compléter avec des extraits de processus, inspirations et méthodes de travail.",
+        title: "Auditions en cours",
+        text: "Toutes les candidatures ouvertes, filtrables par type de projet, style, lieu et date.",
       },
       {
-        title: "Entretiens Dance Lab",
-        text: "Des épisodes à relier aux démarches chorégraphiques déjà documentées.",
+        title: "Alertes & nouveautés",
+        text: "Les opportunités publiées récemment, signalées avec le badge Nouveau.",
       },
       {
-        title: "Œuvres repères",
-        text: "Une sélection future de pièces à connaître pour construire une culture chorégraphique.",
+        title: "Archives",
+        text: "Les auditions passées, conservées pour référence et pour comprendre les tendances du secteur.",
       },
     ],
     quote:
-      "Un chorégraphe ne fabrique pas seulement des formes : il organise une attention, une écoute et une manière de regarder les corps.",
+      "Une audition bien préparée, c'est déjà une présence assumée. Retrouver les opportunités ne devrait pas être un travail à plein temps.",
   },
   {
     slug: "compagnies",

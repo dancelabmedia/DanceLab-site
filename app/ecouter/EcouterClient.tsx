@@ -399,7 +399,7 @@ export default function EcouterClient({ episodes }: Props) {
             <div className="el-stat-sep" aria-hidden="true" />
             <div className="el-stat">
               <strong className="el-listens-desktop">
-                <AnimatedCounter prefix="+" value={100} suffix={"\u00a0000"} duration={1600} />
+                <AnimatedCounter prefix="+" value={400} suffix={"\u00a000"} duration={1600} />
               </strong>
               <strong className="el-listens-mobile">
                 <AnimatedCounter prefix="+" value={400} suffix={"\u00a000"} duration={1600} />

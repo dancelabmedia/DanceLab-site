@@ -15,7 +15,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { recordSearch, getPopularSearches } from '@/lib/db'
-import { searchIndex } from '@/data/search-index'
+import { getSearchIndex } from '@/data/search-index'
 import { searchContent } from '@/data/search'
 
 // On charge plus de résultats bruts pour pouvoir en filtrer
@@ -25,6 +25,7 @@ const POPULAR_FETCH = 30
 
 export async function GET() {
   try {
+    const searchIndex = await getSearchIndex()
     const candidates = getPopularSearches(POPULAR_FETCH)
 
     // Filtre de confidentialité : ne garder que les recherches

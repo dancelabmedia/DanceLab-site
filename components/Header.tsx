@@ -61,6 +61,8 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
   const [showAll, setShowAll] = useState(false)
   const searchInputRef = useRef<HTMLInputElement | null>(null)
   const searchBoxRef = useRef<HTMLDivElement | null>(null)
+  const searchOverlayRef = useRef<HTMLDivElement | null>(null)
+  const searchParallaxFrameRef = useRef<number | null>(null)
   const newsletterScrollTimersRef = useRef<number[]>([])
 
   const allSuggestions = useMemo(
@@ -139,6 +141,15 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
     { label: 'Sortir', directHref: '/sortir' },
     { label: 'Explorer', directHref: '/explorer' },
     { label: 'Apprendre', directHref: '/apprendre' },
+  ]
+
+  const explorerLinks = [
+    { label: 'Styles de danse', href: '/explorer/styles-de-danse' },
+    { label: 'Artistes', href: '/explorer/artistes' },
+    { label: 'Compagnies', href: '/explorer/compagnies' },
+    { label: 'Métiers de la danse', href: '/explorer/metiers-de-la-danse' },
+    { label: 'Écoles de danse', href: '/explorer/ecoles-de-danse' },
+    { label: 'Auditions', href: '/explorer/auditions' },
   ]
 
   useEffect(() => {
@@ -302,6 +313,27 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
     setActiveResult(-1)
   }
 
+  const handleSearchParallax = (event: MouseEvent<HTMLDivElement>) => {
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return
+    const overlay = searchOverlayRef.current
+    if (!overlay) return
+
+    const x = (event.clientX / window.innerWidth - 0.5) * 7
+    const y = (event.clientY / window.innerHeight - 0.5) * 5
+    if (searchParallaxFrameRef.current) window.cancelAnimationFrame(searchParallaxFrameRef.current)
+    searchParallaxFrameRef.current = window.requestAnimationFrame(() => {
+      overlay.style.setProperty('--search-overlay-x', `${x.toFixed(2)}px`)
+      overlay.style.setProperty('--search-overlay-y', `${y.toFixed(2)}px`)
+    })
+  }
+
+  const resetSearchParallax = () => {
+    const overlay = searchOverlayRef.current
+    if (!overlay) return
+    overlay.style.setProperty('--search-overlay-x', '0px')
+    overlay.style.setProperty('--search-overlay-y', '0px')
+  }
+
   /** Enregistre une requête côté serveur (fire-and-forget, sans bloquer la nav). */
   const trackSearch = (q: string) => {
     fetch('/api/search-stats', {
@@ -377,7 +409,25 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
         </Link>
 
         <ul className="nav-links">
-          {navGroups.map((group) => (
+          {navGroups.map((group) => group.label === 'Explorer' ? (
+            <li key={group.label} className="nav-dropdown nav-dropdown--explorer">
+              <Link
+                href={href(publicNavigationHref(group.directHref))}
+                className={privateAccessScope(group.directHref) ? availability.available : undefined}
+                aria-haspopup="true"
+              >
+                {t(group.label)}{privateAccessScope(group.directHref) && <small className={availability.badge}>{t('Bientôt')}</small>}
+              </Link>
+              <div className="dropdown-menu explorer-dropdown" aria-label={t('Rubriques Explorer')}>
+                {explorerLinks.map((item) => (
+                  <Link key={item.href} href={href(publicNavigationHref(item.href))}>
+                    <span>{t(item.label)}</span>
+                    {privateAccessScope(item.href) && <small className={availability.badge}>{t('Bientôt')}</small>}
+                  </Link>
+                ))}
+              </div>
+            </li>
+          ) : (
             <li key={group.label}>
               <Link href={href(publicNavigationHref(group.directHref))} className={privateAccessScope(group.directHref) ? availability.available : undefined}>
                 {t(group.label)}{privateAccessScope(group.directHref) && <small className={availability.badge}>{t('Bientôt')}</small>}
@@ -427,7 +477,7 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
 
       {mobileOpen ? createPortal(
         <nav id="mobile-navigation" className="mobile-nav open" aria-label={t('Menu principal mobile')}>
-          <div className="mobile-nav-shell">
+          <div className={`mobile-nav-shell${mobileSubOpen === 'explorer' ? ' mobile-nav-shell--expanded' : ''}`}>
             <div className="mobile-nav-head">
               <Link href={href('/')} className="mobile-nav-logo" onClick={closeMobileMenu}>
                 <img src="/logo.png" alt="Dance Lab" />
@@ -454,9 +504,28 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
               <Link href={href(publicNavigationHref('/sortir'))} onClick={closeMobileMenu}>
                 <span>{t('Sortir')} <small>{t('Bientôt')}</small></span><IconArrow />
               </Link>
-              <Link href={href(publicNavigationHref('/explorer'))} onClick={closeMobileMenu}>
-                <span>{t('Explorer')} <small>{t('Bientôt')}</small></span><IconArrow />
-              </Link>
+              <div className="mobile-explorer-group">
+                <button
+                  type="button"
+                  className="mobile-explorer-toggle"
+                  aria-expanded={mobileSubOpen === 'explorer'}
+                  aria-controls="mobile-explorer-submenu"
+                  onClick={() => setMobileSubOpen((current) => current === 'explorer' ? null : 'explorer')}
+                >
+                  <span>{t('Explorer')} <small>{t('Bientôt')}</small></span>
+                  <IconArrow />
+                </button>
+                {mobileSubOpen === 'explorer' ? (
+                  <div id="mobile-explorer-submenu" className="mobile-explorer-submenu">
+                    {explorerLinks.map((item) => (
+                      <Link key={item.href} href={href(publicNavigationHref(item.href))} onClick={closeMobileMenu}>
+                        <span>{t(item.label)}</span>
+                        {privateAccessScope(item.href) && <small>{t('Bientôt')}</small>}
+                      </Link>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
               <Link href={href(publicNavigationHref('/apprendre'))} onClick={closeMobileMenu}>
                 <span>{t('Apprendre')} <small>{t('Bientôt')}</small></span><IconArrow />
               </Link>
@@ -490,11 +559,14 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
 
       {searchOpen ? createPortal(
         <div
-          className="search-overlay open"
+          ref={searchOverlayRef}
+          className={`search-overlay open${query.trim() ? ' search-overlay--active' : ''}`}
           role="dialog"
           aria-modal="true"
           aria-label={t('Recherche sur Dance Lab')}
           onKeyDown={handleDialogKeyDown}
+          onMouseMove={handleSearchParallax}
+          onMouseLeave={resetSearchParallax}
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) closeSearch()
           }}

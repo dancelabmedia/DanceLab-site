@@ -7,7 +7,7 @@ export const explorerHomeVisibility: Visibility = 'private'
 
 export const sectionVisibility: Record<SectionKey, Visibility> = {
   danceStyles: 'private',
-  jobs: 'private',
+  jobs: 'public',
   schools: 'private',
 }
 
@@ -33,7 +33,7 @@ export function isPrivateSectionPath(path: string) {
 }
 
 export function safeExplorerReturnTo(value: unknown): string {
-  return typeof value === 'string' && value.length <= 2048 && sectionForPath(value)
-    ? value
-    : explorerAccessSections[0].path
+  if (typeof value !== 'string' || value.length > 2048) return explorerAccessSections[0].path
+  if (value === '/explorer' || value.startsWith('/explorer?') || value.startsWith('/explorer#')) return value
+  return sectionForPath(value) ? value : explorerAccessSections[0].path
 }

@@ -11,7 +11,7 @@
  * Règle éditoriale :
  *   Un tag ne doit apparaître que si le sujet est réellement abordé dans l'épisode.
  *   La détection repose exclusivement sur le contenu textuel (titre, résumé, description)
- *   — jamais sur le profil ou la discipline de l'invité·e.
+ *   — jamais sur le profil ou la discipline de l'invité.e.
  */
 
 export type TagEntry = {
@@ -205,7 +205,7 @@ export const EPISODE_THEME_REFERENCE: TagEntry[] = [
   },
   {
     key: 'inclusion', priority: 'high', label: 'Inclusion & diversité',
-    editorialKeywords: ["inclusif","inclusive","mixité","normaliser des corps différents","place pour les femmes","représentation des femmes","inclusivité","homophobie","personnes dites valides","diversité des corps","danser pour la diversité","chacun peut trouver sa place","public mixé","danse comme outil social","sans couleur sans genre"],
+    editorialKeywords: ["inclusif","inclusive","mixité","normaliser des corps différents","place pour les femmes","place des femmes","représentation des femmes","normes de genre","stéréotypes de genre","inclusivité","homophobie","personnes dites valides","diversité des corps","danser pour la diversité","chacun peut trouver sa place","public mixé","danse comme outil social","sans couleur sans genre"],
     keywords: [
       'inclusion', 'diversité', 'représentation', 'minorité',
       'discrimination', 'racisme', 'sexisme', 'égalité', 'inégalité',
@@ -360,7 +360,7 @@ export const EPISODE_THEME_REFERENCE: TagEntry[] = [
     key: 'sexualisation', label: 'Féminité & sexualisation',
     recommendationOnly: true,
     keywords: ['sexualisation', 'sexualisée', 'sensualité', 'féminité'],
-    editorialKeywords: ['s xualisees', 's xualisation', 'être féminine', 'gestuelle féminine'],
+    editorialKeywords: ['s xualisees', 's xualisation', 'être féminine', 'gestuelle féminine', 'danser comme une femme', 'corps des danseuses', 'regard masculin', 'projections des autres'],
   },
   {
     key: 'pluridisciplinarite', label: 'Pluridisciplinarité artistique',

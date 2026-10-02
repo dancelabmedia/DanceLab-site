@@ -19,6 +19,7 @@
 import { readdirSync }                                          from 'node:fs'
 import path                                                    from 'node:path'
 import { episodesList, type EpisodeListItem }                  from '@/data/episodes-list'
+import { episodes as legacyEpisodeDetails }                    from '@/data/episodes'
 import { episodeExtras }                                       from '@/data/episode-extras'
 import { episodeTranslationsEN, type EpisodeTranslationEN }   from '@/data/episode-translations-en'
 import { episodeNumberFromImageName }                          from '@/lib/episode-image-presentation'
@@ -30,6 +31,7 @@ import {
   type InstagramReel,
 }                                                              from '@/lib/instagram-api'
 import { getResolvedTeaser }                                   from '@/lib/teaser-resolved'
+import { buildEpisodeSearchTags }                              from '@/lib/episode-search-tags'
 
 // ─── Type unifié ──────────────────────────────────────────────────────────────
 
@@ -83,6 +85,15 @@ export type UnifiedEpisode = {
    * Modifie l'affichage de la vignette dans le header et le lien généré.
    */
   isYoutubeShort?: boolean
+  /**
+   * Métier / rôle explicite de l'invité.e (source de vérité unique).
+   * Vide pour la plupart des épisodes legacy ; renseigné manuellement dans
+   * data/episodes.ts. Utilisé comme badge sur les cards et pour la rotation
+   * du carrousel Métiers.
+   */
+  role?: string
+  /** Tags sémantiques non visuels utilisés par le moteur de recherche. */
+  searchTags: string[]
   /**
    * Traductions EN du contenu éditorial.
    * Undefined si aucune traduction n'est encore disponible pour cet épisode.
@@ -160,6 +171,7 @@ function fromLegacy(
   recentReels: InstagramReel[],
 ): UnifiedEpisode {
   const extras   = episodeExtras[ep.number]
+  const details  = legacyEpisodeDetails.find(item => item.number === ep.number)
   const resolved = getResolvedTeaser(ep.number)
   const ytVideo  = youtubeMap.get(ep.number)
 
@@ -204,6 +216,15 @@ function fromLegacy(
     fromRSS:      false,
     instagramReelUrl,
     isYoutubeShort,
+    role:         details?.role || undefined,
+    searchTags: buildEpisodeSearchTags({
+      ...ep,
+      role: details?.role,
+      category: details?.category,
+      description: details?.description,
+      tags: details?.tags,
+      chapters: details?.chapters,
+    }, extras?.searchTags),
     en:           episodeTranslationsEN[ep.number],
   }
 }
@@ -216,7 +237,7 @@ function fromRss(
 ): UnifiedEpisode {
   const extras   = episodeExtras[ep.number]
   const resolved = getResolvedTeaser(ep.number)
-  const guest    = ep.guest || 'Invité·e'
+  const guest    = ep.guest || 'Invité.e'
   const guestSlug = toSlug(guest)
   const slug     = `${ep.number}-${guestSlug}`
   const ytVideo  = youtubeMap.get(ep.number)
@@ -273,6 +294,13 @@ function fromRss(
     fromRSS:      true,
     instagramReelUrl,
     isYoutubeShort,
+    searchTags: buildEpisodeSearchTags({
+      title: extras?.title ?? ep.title,
+      guest,
+      excerpt: ep.subtitle,
+      description: ep.description,
+      quote: extras?.quote ?? ep.quote,
+    }, extras?.searchTags),
     // Traductions EN : depuis episode-translations-en.ts (épisodes ≥ 122 peuvent
     // y être ajoutés au fur et à mesure — même mécanique que les épisodes legacy)
     en:           episodeTranslationsEN[ep.number],

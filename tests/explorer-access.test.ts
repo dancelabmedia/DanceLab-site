@@ -6,7 +6,7 @@ import { sectionForPath, isPrivateSectionPath, safeExplorerReturnTo, sectionVisi
 import { createExplorerSession, validExplorerSession, matchesExplorerCode, EXPLORER_SESSION_SECONDS } from '../lib/explorer-session'
 import { createExplorerRateLimiter } from '../lib/explorer-rate-limit'
 import { middleware } from '../middleware'
-import { searchIndex } from '../data/search-index'
+import { getSearchIndex } from '../data/search-index'
 import { privateAccessScope, publicNavigationHref } from '../data/private-navigation'
 import { isLocalEditorAccess } from '../lib/local-editor-access'
 
@@ -53,16 +53,15 @@ test('Bientôt couvre aussi toutes les anciennes pages protégées et leurs sous
   assert.equal(privateAccessScope('/explorer/styles-de-danse'), 'explorer')
 })
 
-test('édition locale : option explicite, hôte loopback strict, impossible en production ou Vercel', () => {
+test('édition locale : loopback automatique, réseau privé explicite, impossible en production ou Vercel', () => {
   const previous = { NODE_ENV: process.env.NODE_ENV, DANCELAB_LOCAL_EDITOR: process.env.DANCELAB_LOCAL_EDITOR, VERCEL: process.env.VERCEL }
   try {
-    Object.assign(process.env, { NODE_ENV: 'development', DANCELAB_LOCAL_EDITOR: '1' })
+    Object.assign(process.env, { NODE_ENV: 'development', DANCELAB_LOCAL_EDITOR: '0' })
     delete process.env.VERCEL
     for (const host of ['localhost:3010', '127.0.0.1:3010', '[::1]:3010']) assert.ok(isLocalEditorAccess(new Headers({ host })))
     for (const host of ['localhost.evil.test', '127.0.0.1.evil.test', 'dancelabmedia.vercel.app', '192.168.1.2', '']) assert.ok(!isLocalEditorAccess(new Headers({ host })))
-    process.env.DANCELAB_LOCAL_EDITOR = '0'
-    assert.ok(!isLocalEditorAccess(new Headers({ host: 'localhost:3010' })))
     process.env.DANCELAB_LOCAL_EDITOR = '1'
+    for (const host of ['192.168.1.2:3010', '10.0.0.8:3010', '172.16.0.4:3010']) assert.ok(isLocalEditorAccess(new Headers({ host })))
     process.env.VERCEL = '1'
     assert.ok(!isLocalEditorAccess(new Headers({ host: 'localhost:3010' })))
     delete process.env.VERCEL
@@ -76,7 +75,8 @@ test('édition locale : option explicite, hôte loopback strict, impossible en p
   }
 })
 
-test('chaque rubrique peut être publiée indépendamment et la recherche publique reste filtrée', () => {
+test('chaque rubrique peut être publiée indépendamment et la recherche publique reste filtrée', async () => {
+  const searchIndex = await getSearchIndex()
   assert.ok(searchIndex.every(item => !isPrivateSectionPath(item.href)))
   for (const section of explorerAccessSections) {
     try {

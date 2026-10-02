@@ -60,7 +60,7 @@ function shuffleArray<T>(arr: T[]): T[] {
 
 function isMultiGuestEpisode(ep: Episode): boolean {
   // "twins?" retiré : "Les An&Ge Twins" est un nom d'artiste (duo),
-  // non une liste de plusieurs invité·es distincts.
+  // non une liste de plusieurs invité.es distincts.
   // Le `&` sans espaces (An&Ge) ne déclenche pas \s&\s — c'est voulu.
   return /\s&\s|,|\/|\b(?:et|avec)\b/i.test(ep.guest)
 }

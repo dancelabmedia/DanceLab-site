@@ -13,6 +13,7 @@ import { episodeExtras } from "../../../data/episode-extras";
 import { episodeNumberFromImageName, findImagePresentation, resolveImageFrame } from "@/lib/episode-image-presentation";
 import EpisodeInstagramReel from "../../../components/EpisodeInstagramReel";
 import EpisodeShare from "../../../components/EpisodeShare";
+import ThirdPartyEmbed from "../../../components/ThirdPartyEmbed";
 import HistoryBackLink from "../../../components/HistoryBackLink";
 import { episodes, type Episode } from "../../../data/episodes";
 import { episodeTranslationsEN } from "../../../data/episode-translations-en";
@@ -661,7 +662,8 @@ export default async function EpisodePage({ params }: PageProps) {
             {/* ── [col1-2 row2] Lecteur audio ── */}
             {episode.spotifyEmbedUrl ? (
               <div className="ep-col-player" data-ep-reveal>
-                <iframe
+                <ThirdPartyEmbed
+                  provider="Spotify"
                   title={`Lecteur Spotify — ${episode.title}`}
                   src={episode.spotifyEmbedUrl}
                   width="100%"
@@ -942,7 +944,8 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
             {/* Lecteur Spotify — même design que les épisodes statiques */}
             {unified.spotifyEmbedUrl ? (
               <div className="ep-col-player" data-ep-reveal>
-                <iframe
+                <ThirdPartyEmbed
+                  provider="Spotify"
                   title={`Lecteur Spotify — ${unified.title}`}
                   src={unified.spotifyEmbedUrl}
                   width="100%"

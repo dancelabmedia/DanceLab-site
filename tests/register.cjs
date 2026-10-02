@@ -9,10 +9,12 @@ const originalResolve = Module._resolveFilename;
 Module._resolveFilename = function (request, parent, ...args) {
   return originalResolve.call(this, request.startsWith('@/') ? path.join(root, request.slice(2)) : request, parent, ...args);
 };
-require.extensions['.ts'] = (module, filename) => {
+const compileTypeScript = (module, filename) => {
   const { outputText } = ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true, jsx: ts.JsxEmit.ReactJSX },
     fileName: filename,
   });
   module._compile(outputText, filename);
 };
+require.extensions['.ts'] = compileTypeScript;
+require.extensions['.tsx'] = compileTypeScript;

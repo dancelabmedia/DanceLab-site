@@ -18,6 +18,7 @@ import ArticleSidebar, { SidebarFrameContent } from "./ArticleSidebar"
 import ScrollReveal from "../../../../components/ScrollReveal"
 import { buildSidebarFrames } from "@/lib/article-sidebar"
 import PhotoCredit from "../../../../components/PhotoCredit"
+import OfficialWebsiteCard from "../../../../components/OfficialWebsiteCard"
 import ReadingProgress from "../../../../components/ReadingProgress"
 import { requestLocale } from "@/lib/i18n/server"
 import { uiText } from "@/data/i18n/messages"
@@ -155,7 +156,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             aria-hidden="true"
           >
             {article.heroImages && article.heroImages.length > 1 ? (
-              /* Rotation crossfade automatique entre plusieurs invité·es */
+              /* Rotation crossfade automatique entre plusieurs invité.es */
               <ArticleHeroCrossfade images={article.heroImages} />
             ) : article.useHeroSlider && heroSlides.length > 0 ? (
               <ArticleHeroSlider slides={heroSlides} />
@@ -220,6 +221,19 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   )}
                   {section.itemConclusion && (
                     <p className="article-item-conclusion">{section.itemConclusion}</p>
+                  )}
+                  {section.officialUrl && section.officialLogo && section.officialName && (
+                    <OfficialWebsiteCard
+                      name={section.officialName}
+                      logo={section.officialLogo}
+                      url={section.officialUrl}
+                      logoTheme={section.officialLogoTheme}
+                    />
+                  )}
+                  {section.officialUrl && !section.officialLogo && (
+                    <a className="article-official-link" href={section.officialUrl} target="_blank" rel="noopener noreferrer">
+                      Site officiel <span aria-hidden="true">↗</span>
+                    </a>
                   )}
                   {section.sectionImage && (
                     <figure className="article-section-img">

@@ -72,6 +72,11 @@ function getDb(): Database.Database {
     );
   `)
 
+  // Minimisation : l'identifiant anti-abus n'est utile que pour le rate-limit récent.
+  _db.prepare(`UPDATE comments SET ip_hash = NULL WHERE ip_hash IS NOT NULL AND created_at < datetime('now', '-3 months')`).run()
+  // Les tendances de recherche anciennes sont supprimées après 13 mois d'inactivité.
+  _db.prepare(`DELETE FROM search_stats WHERE last_searched_at < datetime('now', '-13 months')`).run()
+
   // ── Données de démarrage (seed) ──────────────────────────────────────────
   // Insérées une seule fois grâce à INSERT OR IGNORE ; les vraies recherches
   // incrémenteront le compteur et prendront naturellement la place des seeds

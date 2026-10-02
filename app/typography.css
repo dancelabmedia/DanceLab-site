@@ -48,8 +48,6 @@ h6,
 .res-title,
 .search-suggestion-placeholder,
 .search-suggestion-copy strong,
-.search-result-placeholder,
-.search-result-copy strong,
 .discover-stack-item strong,
 .explorer-mini-index strong,
 .template-guest-line strong,
@@ -63,7 +61,6 @@ h1,
 .nl-title,
 .about-text h1,
 .episodes-header h1,
-.search-results-hero h1,
 .template-hero-copy h1 {
   font-weight: 800 !important;
   letter-spacing: -0.025em;
@@ -88,7 +85,6 @@ h6,
 .res-title,
 .magazine-article-link strong,
 .search-suggestion-copy strong,
-.search-result-copy strong,
 .discover-stack-item strong,
 .explorer-mini-index strong,
 .template-guest-line strong,
@@ -146,8 +142,7 @@ blockquote,
 
 .btn-primary,
 .btn-outline-w,
-.see-all,
-.footer-newsletter-link {
+.see-all {
   font-family: var(--font-display) !important;
   font-weight: 600;
 }

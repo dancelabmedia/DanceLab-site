@@ -10,7 +10,7 @@ type PageProps = {
 
 // Pages avec une route dédiée — exclues du [slug] dynamique pour éviter
 // un conflit de chunk webpack (deux handlers pour la même URL).
-const DEDICATED_PAGES = ['styles-de-danse', 'metiers-de-la-danse', 'ecoles-de-danse']
+const DEDICATED_PAGES = ['styles-de-danse', 'metiers-de-la-danse', 'ecoles-de-danse', 'auditions']
 
 export function generateStaticParams() {
   return explorerSections
