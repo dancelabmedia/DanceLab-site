@@ -30,6 +30,7 @@ import type { Locale } from '@/lib/i18n/routing'
 export interface EpisodeL10nInput {
   number: number
   title: string
+  guest?: string
   excerpt: string
   quote: string
   description: string

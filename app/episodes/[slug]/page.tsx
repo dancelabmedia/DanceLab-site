@@ -318,7 +318,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  const loc = getLocalizedEpisode({ ...episode, en: episodeTranslationsEN[episode.number] }, locale);
+  // Ausha = source de vérité pour les métadonnées mutables (titre, invité, etc.)
+  // Le unified est déjà mis en cache React par getEpisodeRecommendationCatalog,
+  // donc ce second appel ne déclenche pas de fetch réseau supplémentaire.
+  const unified = await getUnifiedEpisodeBySlug(slug);
+  const loc = getLocalizedEpisode({
+    ...episode,
+    title:   unified?.title   ?? episode.title,
+    guest:   unified?.guest   ?? episode.guest,
+    quote:   unified?.quote   || episode.quote,
+    excerpt: unified?.excerpt || episode.excerpt,
+    en:      episodeTranslationsEN[episode.number],
+  }, locale);
   const { title, seoTitle, seoDescription: seoDesc } = loc;
 
   const episodeUrl = new URL(`/episodes/${episode.slug}`, SITE_URL).toString();
@@ -337,7 +348,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       images: [
         {
           url: imageUrl,
-          alt: `${title} — ${episode.guest}`,
+          alt: `${title} — ${unified?.guest ?? episode.guest}`,
         },
       ],
       type: "article",
@@ -367,8 +378,21 @@ export default async function EpisodePage({ params }: PageProps) {
     return <RssEpisodePage unified={unified!} />;
   }
 
+  // ── Données live Ausha (source de vérité pour les champs mutables) ───────────
+  // Doit être fetché AVANT loc pour que displayTitle reflète le titre Ausha actuel.
+  // Mis en cache React par getEpisodeRecommendationCatalog → pas de double requête.
+  const unified = await getUnifiedEpisodeBySlug(slug);
+
   // ── Localisation centralisée (EN avec fallback FR) ───────────────────────────
-  const loc = getLocalizedEpisode({ ...episode, en: episodeTranslationsEN[episode.number] }, locale);
+  const loc = getLocalizedEpisode({
+    ...episode,
+    // Ausha écrase les champs mutables ; slug/image/numéro restent statiques
+    title:   unified?.title   ?? episode.title,
+    guest:   unified?.guest   ?? episode.guest,
+    quote:   unified?.quote   || episode.quote,
+    excerpt: unified?.excerpt || episode.excerpt,
+    en:      episodeTranslationsEN[episode.number],
+  }, locale);
   const { title: displayTitle, quote: displayQuote, description: displayDesc, chapters: displayChapters } = loc;
 
   const similarEpisodes = await getRecommendedEpisodes(episode.number);
@@ -384,7 +408,6 @@ export default async function EpisodePage({ params }: PageProps) {
   // Identifiant YouTube :
   // 1. URL statique dans episodes.ts → getYouTubeId()
   // 2. Auto-match YouTube RSS ou override manuel dans episode-extras.ts
-  const unified = await getUnifiedEpisodeBySlug(slug);
   const youtubeId = getYouTubeId(episode.youtube) ?? unified?.youtubeId ?? null;
 
   // Article magazine associé à cet épisode (généré automatiquement ou existant)
@@ -397,8 +420,9 @@ export default async function EpisodePage({ params }: PageProps) {
     : null;
 
   // Tags thématiques — détectés automatiquement depuis le texte de l'épisode (max 6)
+  // Utilise le titre Ausha live pour une détection à jour
   const episodeTagKeys = getEpisodeTags(
-    [episode.title, episode.excerpt, episode.description].join(' '), 6
+    [displayTitle, episode.excerpt, episode.description].join(' '), 6
   );
 
   return (
