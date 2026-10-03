@@ -3,9 +3,15 @@
  * Source de données unifiée pour les épisodes Dance Lab.
  *
  * Sources :
- *   • Épisodes 1–121 → données historiques depuis data/episodes-list.ts
- *   • Épisodes ≥ 122  → flux RSS Ausha (ISR 1h)
- *   • YouTube         → flux Atom YouTube (15 dernières vidéos, ISR 1h)
+ *   • Tous les épisodes → flux RSS Ausha (ISR 1h) — source de vérité pour les métadonnées
+ *   • Épisodes 1–121   → data/episodes-list.ts comme fallback (slug permanent, image locale)
+ *                         Les métadonnées Ausha (titre, invité, durée, citation) écrasent
+ *                         les données statiques dès que l'épisode est présent dans le RSS.
+ *   • YouTube          → flux Atom YouTube (15 dernières vidéos, ISR 1h)
+ *
+ * Identification stable : le GUID Ausha est stocké sur chaque UnifiedEpisode.
+ *   Un changement de titre dans Ausha met à jour la fiche existante sans jamais
+ *   créer de doublon ni modifier le slug (URL permanente).
  *
  * Images des encarts :
  *   Priorité : public/images/les-invites/{guest}{number}.png
@@ -75,6 +81,12 @@ export type UnifiedEpisode = {
   spotifyEmbedUrl: string
   /** true si l'épisode provient du flux RSS Ausha live (≥ 122) */
   fromRSS: boolean
+  /**
+   * Identifiant Ausha stable (tag <guid> du RSS).
+   * Reste constant même si le titre change — utilisé pour l'identification
+   * sans ambiguïté. Vide pour les épisodes legacy sans correspondance RSS.
+   */
+  aushaGuid: string
   /**
    * URL du Reel Instagram correspondant à cet épisode.
    * Undefined si aucun Reel n'a été associé → la section n'est pas affichée.
@@ -214,6 +226,7 @@ function fromLegacy(
     youtubeId,
     spotifyEmbedUrl: '',       // legacy : lecteur Spotify géré séparément
     fromRSS:      false,
+    aushaGuid:    '',   // sera écrasé par l'override RSS dans getEpisodes() si disponible
     instagramReelUrl,
     isYoutubeShort,
     role:         details?.role || undefined,
@@ -292,6 +305,7 @@ function fromRss(
       ? `https://open.spotify.com/embed/episode/${extras.spotifyId}?utm_source=generator`
       : ep.spotifyEmbedUrl,
     fromRSS:      true,
+    aushaGuid:    ep.guid,
     instagramReelUrl,
     isYoutubeShort,
     searchTags: buildEpisodeSearchTags({
@@ -338,13 +352,44 @@ export async function getEpisodes(): Promise<UnifiedEpisode[]> {
     getRecentInstagramReels(),
   ])
 
-  // Filet de sécurité : exclure toute rediffusion qui aurait échappé au filtre RSS.
-  // (Cas théorique : titre de la forme "45. REDIFFUSION - …" qui passe parseTitle.)
-  const rssEpisodes = rssAll
-    .filter((e) => e.number > maxLegacyNumber)
-    .filter((e) => !isRediffusion(e.title))
-  const legacy      = episodesList.map((ep) => fromLegacy(ep, youtubeMap, inviteImages, recentReels))
-  const rss         = rssEpisodes.map((ep) => fromRss(ep, youtubeMap, inviteImages, recentReels))
+  // ── Index RSS par numéro d'épisode ──────────────────────────────────────────
+  // Ausha est la source de vérité pour les métadonnées mutables.
+  // On filtre les rediffusions une seule fois ici.
+  const rssMap = new Map<number, RssEpisode>(
+    rssAll
+      .filter((e) => !isRediffusion(e.title))
+      .map((e) => [e.number, e]),
+  )
+
+  // ── Épisodes legacy (1-121) avec surcharge RSS ──────────────────────────────
+  // Pour chaque épisode legacy, si Ausha RSS contient cet épisode, on écrase
+  // les champs mutables (titre, invité, durée, citation, extrait) avec les
+  // données Ausha, tout en conservant le slug et l'image locale (URLs stables).
+  const legacy = episodesList.map((ep) => {
+    const rss = rssMap.get(ep.number)
+    if (!rss) return fromLegacy(ep, youtubeMap, inviteImages, recentReels)
+
+    // Fusion : slug/number/image viennent du statique, contenu vient d'Ausha
+    const merged: EpisodeListItem = {
+      ...ep,
+      title:    rss.title    || ep.title,
+      guest:    rss.guest    || ep.guest,
+      duration: rss.duration || ep.duration,
+      quote:    rss.quote    || ep.quote,
+      excerpt:  rss.subtitle
+        ? rss.subtitle.split('\n')[0].trim().slice(0, 220)
+        : rss.description
+          ? rss.description.slice(0, 220)
+          : ep.excerpt,
+    }
+    const unified = fromLegacy(merged, youtubeMap, inviteImages, recentReels)
+    // Stocker le GUID Ausha pour identification stable future
+    return { ...unified, aushaGuid: rss.guid }
+  })
+
+  // ── Nouveaux épisodes RSS (> seuil legacy) ──────────────────────────────────
+  const rssNew = Array.from(rssMap.values()).filter((e) => e.number > maxLegacyNumber)
+  const rss    = rssNew.map((ep) => fromRss(ep, youtubeMap, inviteImages, recentReels))
 
   return [...rss, ...legacy].sort((a, b) => b.number - a.number)
 }

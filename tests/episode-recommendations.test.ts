@@ -156,7 +156,7 @@ test('Mylène: mental health outranks a briefly outlined secondary theme', () =>
   assert.equal(recommendEpisodes(122, index, 3, {})[0].number, 1)
 })
 
-const card = (input: RecommendationInput): UnifiedEpisode => ({ ...input, guest: 'Invité', duration: '', image: '/image.png', aushaImage: '', excerpt: input.excerpt ?? '', description: input.description ?? '', quote: input.quote ?? '', link: '', pubDate: '', youtubeId: null, spotifyEmbedUrl: '', fromRSS: input.number >= 122, searchTags: [] })
+const card = (input: RecommendationInput): UnifiedEpisode => ({ ...input, guest: 'Invité', duration: '', image: '/image.png', aushaImage: '', excerpt: input.excerpt ?? '', description: input.description ?? '', quote: input.quote ?? '', link: '', pubDate: '', youtubeId: null, spotifyEmbedUrl: '', fromRSS: input.number >= 122, aushaGuid: '', searchTags: [] })
 
 test('historical full descriptions and new RSS are compared bidirectionally', () => {
   const legacy = episodes.filter(e => [22, 25].includes(e.number))
