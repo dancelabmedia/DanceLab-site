@@ -6,26 +6,22 @@ import { uiText } from '@/data/i18n/messages'
 import { useLocale } from './LocaleProvider'
 
 // ── Logique d'affichage (inchangée) ────────────────────────────────────────────
-const STORAGE_KEY   = "dl_newsletter_dismissed"
+const STORAGE_KEY         = "dl_newsletter_dismissed"
 const SESSION_STARTED_KEY = "dl_newsletter_session_started"
-const DELAY_MS      = 10_000
-const SUPPRESS_DAYS = 30
+const DELAY_MS            = 10_000
+const SUPPRESS_DAYS       = 30
 
 function getRemainingDelay(): number {
   try {
-    const now = Date.now()
-    const stored = sessionStorage.getItem(SESSION_STARTED_KEY)
+    const now       = Date.now()
+    const stored    = sessionStorage.getItem(SESSION_STARTED_KEY)
     const startedAt = stored ? parseInt(stored, 10) : now
-
     if (!stored || isNaN(startedAt)) {
       sessionStorage.setItem(SESSION_STARTED_KEY, String(now))
       return DELAY_MS
     }
-
     return Math.max(0, DELAY_MS - (now - startedAt))
-  } catch {
-    return DELAY_MS
-  }
+  } catch { return DELAY_MS }
 }
 
 function wasRecentlyDismissed(): boolean {
@@ -35,15 +31,11 @@ function wasRecentlyDismissed(): boolean {
     const ts = parseInt(raw, 10)
     if (isNaN(ts)) return false
     return Date.now() - ts < SUPPRESS_DAYS * 24 * 60 * 60 * 1000
-  } catch {
-    return false
-  }
+  } catch { return false }
 }
 
 function markDismissed() {
-  try {
-    localStorage.setItem(STORAGE_KEY, String(Date.now()))
-  } catch {}
+  try { localStorage.setItem(STORAGE_KEY, String(Date.now())) } catch {}
 }
 
 type Status = "idle" | "loading" | "success" | "invalid" | "error"
@@ -51,6 +43,7 @@ type Status = "idle" | "loading" | "success" | "invalid" | "error"
 export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { locale?: Locale }) {
   const locale = useLocale()
   const t = (text: string) => uiText(locale, text)
+
   const [visible,   setVisible]   = useState(false)
   const [animating, setAnimating] = useState(false)
   const [status,    setStatus]    = useState<Status>("idle")
@@ -60,14 +53,14 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
   const timeoutRef   = useRef<ReturnType<typeof setTimeout> | null>(null)
   const frameRef     = useRef<HTMLIFrameElement>(null)
 
-  // Déclenchement après délai
+  // Déclenchement après délai (inchangé)
   useEffect(() => {
     if (wasRecentlyDismissed()) return
     const timer = setTimeout(() => setVisible(true), getRemainingDelay())
     return () => clearTimeout(timer)
   }, [])
 
-  // Touche Échap
+  // Touche Échap (inchangée)
   useEffect(() => {
     if (!visible) return
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") close() }
@@ -99,7 +92,7 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
     }, 12_000)
   }
 
-  // Callback iframe Substack (inchangé)
+  // Callback iframe Substack (inchangée)
   const handleFrameLoad = () => {
     if (!submittedRef.current) return
     submittedRef.current = false
@@ -111,19 +104,35 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
   }
 
   if (!visible) return null
-
   const isClosing = animating
+
+  // ── Rubriques éditoriales ───────────────────────────────────────────────────
+  const rubriques = locale === 'en'
+    ? [
+        { label: 'Listen',    desc: 'New episodes',           icon: 'headphones' },
+        { label: 'Read',      desc: 'Our best articles',      icon: 'article'    },
+        { label: 'Discover',  desc: 'Events and performances',icon: 'compass'    },
+      ]
+    : [
+        { label: 'À écouter',  desc: 'Les nouveaux épisodes',         icon: 'headphones' },
+        { label: 'À lire',     desc: 'Nos meilleurs articles',        icon: 'article'    },
+        { label: 'À découvrir',desc: 'Les événements et sorties',     icon: 'compass'    },
+      ]
+
+  const rubriqueLabels = locale === 'en'
+    ? ['Podcast', 'Culture', 'Career', 'Events']
+    : ['Podcast', 'Culture', 'Carrière', 'Sorties']
 
   return (
     <>
-      {/* ── Overlay ───────────────────────────────────────────────── */}
+      {/* ── Overlay ──────────────────────────────────────────────────────── */}
       <div
         className={`nl-overlay${isClosing ? " nl-closing" : ""}`}
         onClick={close}
         aria-hidden="true"
       />
 
-      {/* ── Modal ─────────────────────────────────────────────────── */}
+      {/* ── Popup mini-magazine ───────────────────────────────────────────── */}
       <div
         className={`nl-card${isClosing ? " nl-closing" : ""}`}
         role="dialog"
@@ -134,53 +143,106 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
         {/* ════ GAUCHE — couverture éditoriale ════ */}
         <div className="nl-left" aria-hidden="true">
 
-          <div className="nl-left-top">
-            <span className="nl-brand">Dance Lab</span>
-            <span className="nl-brand-rule" />
+          {/* Repères graphiques discrets */}
+          <div className="nl-left-deco" aria-hidden="true">
+            <span className="nl-deco-line nl-deco-line--h" />
+            <span className="nl-deco-dot" />
+            <span className="nl-deco-line nl-deco-line--v" />
           </div>
 
-          <div className="nl-headline">
-            <p className="nl-hl nl-hl-sm nl-hl-reg">{t('La newsletter')}</p>
-            <p className="nl-hl nl-hl-md nl-hl-reg">{t('qui garde')}</p>
-            <p className="nl-hl nl-hl-lg nl-hl-accent">{t('la danse')}</p>
-            <p className="nl-hl nl-hl-sm nl-hl-reg">{t('en mouvement.')}</p>
+          {/* Masthead */}
+          <div className="nl-masthead">
+            <span className="nl-masthead-brand">Dance Lab</span>
+            <span className="nl-masthead-rule" />
+            <span className="nl-masthead-sub">
+              {locale === 'en' ? 'The dance media' : 'Le média de la danse'}
+            </span>
           </div>
 
-          <div className="nl-left-foot">
-            <span className="nl-foot-rule" />
-            <span className="nl-foot-tags">{locale === 'en' ? 'Podcast · Culture · Careers · Events' : 'Podcast · Culture · Carrière · Sorties'}</span>
+          {/* Espace central */}
+          <div className="nl-left-mid" aria-hidden="true">
+            <span className="nl-mid-rule" />
+          </div>
+
+          {/* Labels rubriques empilés */}
+          <div className="nl-cover-labels">
+            {rubriqueLabels.map((label) => (
+              <span key={label} className="nl-cover-label">{label}</span>
+            ))}
           </div>
         </div>
 
         {/* ════ DROITE — contenu newsletter ════ */}
         <div className="nl-right">
 
-          {/* Fermer */}
+          {/* Bouton fermer */}
           <button type="button" className="nl-close" onClick={close} aria-label={t('Fermer')}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <line x1="18" y1="6"  x2="6"  y2="18" />
-              <line x1="6"  y1="6"  x2="18" y2="18" />
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
 
           <div className="nl-right-inner">
 
-            <span className="nl-eyebrow">{t('Newsletter hebdomadaire')}</span>
+            {/* Eyebrow */}
+            <span className="nl-eyebrow">
+              {locale === 'en' ? 'The Newsletter' : 'La Newsletter'}
+            </span>
 
-            <h2 id="nl-title" className="nl-title">
-              <span className="nl-title-bold">{t('Le meilleur de la danse,')}</span>
-              <em className="nl-title-italic">{t('directement dans ta boîte mail.')}</em>
-            </h2>
+            {/* Titre éditorial */}
+            <div className="nl-title-block">
+              <h2 id="nl-title" className="nl-title">
+                <span className="nl-title-big">
+                  {locale === 'en' ? 'To read' : 'À lire'}
+                </span>
+                <em className="nl-title-sub">
+                  {locale === 'en' ? 'this week' : 'cette semaine'}
+                </em>
+              </h2>
+            </div>
 
-            <p className="nl-desc">
-              {t('Chaque semaine, les nouveaux épisodes, nos meilleurs articles, les événements à ne pas manquer et les ressources qui valent vraiment le détour.')}
-            </p>
+            {/* Rubriques */}
+            <div className="nl-rubriques">
+              {rubriques.map((r) => (
+                <div key={r.label} className="nl-rubrique">
+                  <span className="nl-rubrique-icon" aria-hidden="true">
+                    {r.icon === 'headphones' && (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+                        <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+                      </svg>
+                    )}
+                    {r.icon === 'article' && (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="9" y1="13" x2="15" y2="13" />
+                        <line x1="9" y1="17" x2="15" y2="17" />
+                      </svg>
+                    )}
+                    {r.icon === 'compass' && (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+                      </svg>
+                    )}
+                  </span>
+                  <span className="nl-rubrique-text">
+                    <strong className="nl-rubrique-label">{r.label}</strong>
+                    <span className="nl-rubrique-desc">{r.desc}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
 
-            <p className="nl-meta">{locale === 'en' ? '5-minute read · Once a week · Free' : '5 min de lecture · 1× par semaine · Gratuit'}</p>
+            {/* Séparateur */}
+            <div className="nl-sep" />
 
+            {/* Formulaire */}
             {status === "success" ? (
               <div className="nl-success">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
                 <span>{t('Bienvenue dans la communauté Dance Lab')}</span>
@@ -195,16 +257,15 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
                 noValidate
               >
                 {/* Champs Substack (inchangés) */}
-                <input type="hidden" name="source"               value="dance-lab-modal" />
-                <input type="hidden" name="current_url"          value="https://dancelablemedia.substack.com/" />
-                <input type="hidden" name="current_referrer"     value="" />
-                <input type="hidden" name="first_url"            value="" />
-                <input type="hidden" name="first_referrer"       value="" />
-                <input type="hidden" name="first_session_url"    value="" />
-                <input type="hidden" name="first_session_referrer" value="" />
-                <input type="hidden" name="referral_code"        value="" />
+                <input type="hidden" name="source"                    value="dance-lab-modal" />
+                <input type="hidden" name="current_url"               value="https://dancelablemedia.substack.com/" />
+                <input type="hidden" name="current_referrer"          value="" />
+                <input type="hidden" name="first_url"                 value="" />
+                <input type="hidden" name="first_referrer"            value="" />
+                <input type="hidden" name="first_session_url"         value="" />
+                <input type="hidden" name="first_session_referrer"    value="" />
+                <input type="hidden" name="referral_code"             value="" />
 
-                {/* Formulaire horizontal */}
                 <div className="nl-form-row">
                   <input
                     ref={inputRef}
@@ -222,9 +283,9 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
                     className="nl-btn"
                     disabled={status === "loading"}
                   >
-                    <span>{t(status === "loading" ? "Envoi…" : "S'abonner")}</span>
+                    <span>{t(status === "loading" ? "Envoi…" : "Je m'inscris")}</span>
                     {status !== "loading" && (
-                      <svg className="nl-btn-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <svg className="nl-btn-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
                         <line x1="5" y1="12" x2="19" y2="12" />
                         <polyline points="12 5 19 12 12 19" />
                       </svg>
@@ -238,16 +299,16 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
                 {status === "error" && (
                   <p className="nl-hint-error" role="alert">{t('Une erreur est survenue. Réessaie.')}</p>
                 )}
-
-                <p className="nl-legal">{t('Aucun spam. Désinscription à tout moment.')}</p>
               </form>
             )}
-          </div>
 
-          {/* Signature bas */}
-          <div className="nl-signature">
-            <span className="nl-sig-rule" />
-            <span className="nl-sig-text">{locale === 'en' ? 'Dance Lab — A media platform reference for dance' : 'Dance Lab - Le média référence de la danse'}</span>
+            {/* Méta légale */}
+            <p className="nl-legal">
+              {locale === 'en'
+                ? '1× per week · Free · Unsubscribe at any time.'
+                : '1× par semaine · Gratuit · Désinscription à tout moment.'}
+            </p>
+
           </div>
         </div>
 
@@ -263,268 +324,305 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
       </div>
 
       <style>{`
-        /* ═══════════════════════════════════════
+        /* ═══════════════════════════════════════════════
            OVERLAY
-        ═══════════════════════════════════════ */
+        ═══════════════════════════════════════════════ */
         .nl-overlay {
           position: fixed;
           inset: 0;
           z-index: 10000;
-          background: rgba(8, 15, 18, 0.54);
-          backdrop-filter: blur(4px);
-          -webkit-backdrop-filter: blur(4px);
-          animation: nlFadeIn 0.35s ease forwards;
+          background: rgba(8, 15, 18, 0.56);
+          backdrop-filter: blur(3px);
+          -webkit-backdrop-filter: blur(3px);
+          animation: nlFadeIn 0.32s ease forwards;
         }
 
-        /* ═══════════════════════════════════════
-           CARD — 940 × 560 px éditorial
-        ═══════════════════════════════════════ */
+        /* ═══════════════════════════════════════════════
+           CARD — mini-magazine éditorial
+        ═══════════════════════════════════════════════ */
         .nl-card {
           position: fixed;
           z-index: 10001;
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          width: min(950px, 92vw);
-          height: min(560px, 88vh);
+          width: min(900px, 92vw);
+          height: min(520px, 88vh);
           display: grid;
-          grid-template-columns: 42fr 58fr;
-          border-radius: 14px;
+          grid-template-columns: 35fr 65fr;
+          border-radius: 12px;
           overflow: hidden;
           box-shadow:
-            0 32px 90px rgba(0, 0, 0, 0.28),
-            0 4px 20px rgba(0, 0, 0, 0.12);
-          animation: nlSlideIn 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            0 28px 80px rgba(0, 0, 0, 0.26),
+            0 4px 18px rgba(0, 0, 0, 0.10);
+          animation: nlSlideIn 0.40s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
 
-        /* ═══════════════════════════════════════
-           PARTIE GAUCHE — couverture éditoriale
-        ═══════════════════════════════════════ */
+        /* ═══════════════════════════════════════════════
+           GAUCHE — couverture éditoriale
+        ═══════════════════════════════════════════════ */
         .nl-left {
-          background-color: var(--color-primary-dark, #425659);
-          background-image:
-            linear-gradient(180deg, rgba(35,48,51,.50) 0%, rgba(35,48,51,.72) 100%),
-            url('/images/les-invites-header/imagetest.png');
-          background-size: cover;
-          background-position: center;
-          color: #f0ede8;
-          padding: clamp(32px, 4vw, 48px) clamp(26px, 3.4vw, 42px);
+          background: #1a2a2d;
+          color: #e8e4de;
+          padding: 36px 28px 32px;
           display: flex;
           flex-direction: column;
           position: relative;
           overflow: hidden;
         }
 
-        /* Marque */
-        .nl-left-top {
-          position: relative;
-          z-index: 1;
+        /* Repères graphiques discrets */
+        .nl-left-deco {
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
         }
-        .nl-brand {
-          display: block;
-          font-size: 9px;
-          font-weight: 700;
-          letter-spacing: 0.36em;
-          text-transform: uppercase;
-          color: rgba(240, 237, 232, 0.55);
-          font-family: var(--font-body, sans-serif);
-        }
-        .nl-brand-rule {
-          display: block;
-          width: 32px;
+        .nl-deco-line--h {
+          position: absolute;
+          top: 90px;
+          left: 0; right: 0;
           height: 1px;
-          background: rgba(240, 237, 232, 0.24);
-          margin-top: 11px;
+          background: rgba(255,255,255,.055);
+          display: block;
+        }
+        .nl-deco-line--v {
+          position: absolute;
+          right: 28px;
+          top: 0; bottom: 0;
+          width: 1px;
+          background: rgba(255,255,255,.04);
+          display: block;
+        }
+        .nl-deco-dot {
+          position: absolute;
+          top: 89px;
+          right: 27px;
+          width: 3px;
+          height: 3px;
+          border-radius: 50%;
+          background: rgba(193,208,223,.28);
+          transform: translate(50%, -50%);
+          display: block;
         }
 
-        /* ── Titre éditorial ── */
-        .nl-headline {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          margin: 28px 0 22px;
+        /* Masthead */
+        .nl-masthead {
           position: relative;
           z-index: 1;
-          gap: 0;
         }
-
-        /* Ligne standard : Aileron light uppercase */
-        .nl-hl {
-          margin: 0;
-          font-family: var(--font-display, sans-serif);
-          font-weight: 300;
-          line-height: 0.96;
-          letter-spacing: -0.042em;
+        .nl-masthead-brand {
+          display: block;
+          font-family: var(--font-body, sans-serif);
+          font-size: 8.5px;
+          font-weight: 700;
+          letter-spacing: 0.38em;
           text-transform: uppercase;
+          color: rgba(232, 228, 222, 0.90);
         }
-        /* Taille différenciée par ligne pour créer du rythme */
-        .nl-hl-sm { font-size: clamp(22px, 2.8vw, 36px); }   /* La newsletter / En mouvement. */
-        .nl-hl-md { font-size: clamp(26px, 3.2vw, 42px); }   /* Qui garde */
-        .nl-hl-lg { font-size: clamp(28px, 3.6vw, 48px); }   /* La danse */
-
-        .nl-hl-reg   { color: #f0ede8; }
-
-        /* "LA DANSE" — Aileron italic, bleu-clair, légèrement plus grand */
-        .nl-hl-accent {
-          font-family: var(--font-display, sans-serif);
-          font-weight: 400;
-          font-style: italic;
-          color: #C1D0DF;
-          letter-spacing: -0.048em;
-          line-height: 0.96;
-        }
-
-        /* Bas de page */
-        .nl-left-foot {
-          position: relative;
-          z-index: 1;
-        }
-        .nl-foot-rule {
+        .nl-masthead-rule {
           display: block;
           width: 100%;
           height: 1px;
-          background: rgba(255, 255, 255, 0.10);
-          margin-bottom: 10px;
+          background: rgba(255,255,255,.12);
+          margin: 10px 0 8px;
         }
-        .nl-foot-tags {
-          font-size: 7px;
-          font-weight: 700;
-          letter-spacing: 0.22em;
-          text-transform: uppercase;
-          color: rgba(240, 237, 232, 0.32);
+        .nl-masthead-sub {
+          display: block;
           font-family: var(--font-body, sans-serif);
+          font-size: 8px;
+          font-weight: 400;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: rgba(232, 228, 222, 0.28);
         }
 
-        /* ═══════════════════════════════════════
-           PARTIE DROITE — contenu newsletter
-        ═══════════════════════════════════════ */
+        /* Zone centrale */
+        .nl-left-mid {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          position: relative;
+          z-index: 1;
+        }
+        .nl-mid-rule {
+          display: block;
+          width: 22px;
+          height: 1px;
+          background: rgba(193,208,223,.2);
+        }
+
+        /* Labels rubriques empilés en bas */
+        .nl-cover-labels {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .nl-cover-label {
+          display: block;
+          font-family: var(--font-body, sans-serif);
+          font-size: 8px;
+          font-weight: 700;
+          letter-spacing: 0.42em;
+          text-transform: uppercase;
+          color: rgba(193, 208, 223, 0.35);
+          line-height: 1;
+        }
+
+        /* ═══════════════════════════════════════════════
+           DROITE — contenu newsletter
+        ═══════════════════════════════════════════════ */
         .nl-right {
-          background: #ffffff;
+          background: #fafaf9;
           display: flex;
           flex-direction: column;
           position: relative;
         }
 
-        /* Croix fine */
+        /* Bouton fermer */
         .nl-close {
           position: absolute;
-          top: 18px;
-          right: 18px;
+          top: 16px;
+          right: 16px;
           background: none;
           border: none;
           cursor: pointer;
           color: #a8b5bc;
-          padding: 5px;
+          padding: 6px;
           line-height: 0;
           z-index: 2;
-          transition: color 0.14s;
+          border-radius: 4px;
+          transition: color 0.14s, background 0.14s;
         }
-        .nl-close:hover { color: #1a2f34; }
-        .nl-close:focus-visible { outline: 2px solid #5B7377; outline-offset: 3px; }
+        .nl-close:hover { color: #233033; background: rgba(0,0,0,.05); }
+        .nl-close:focus-visible { outline: 2px solid #5B7377; outline-offset: 2px; }
 
-        /* Contenu principal — flex avec gap régulier */
+        /* Zone principale */
         .nl-right-inner {
           flex: 1;
-          padding: clamp(40px, 5vw, 54px) clamp(44px, 5.5vw, 58px) clamp(24px, 3vw, 32px);
+          padding: 40px 44px 32px;
           display: flex;
           flex-direction: column;
-          gap: clamp(14px, 2vw, 22px);
+          gap: 18px;
+          overflow: hidden;
         }
 
         /* Eyebrow */
         .nl-eyebrow {
           display: block;
-          font-size: 9px;
+          font-family: var(--font-body, sans-serif);
+          font-size: 8px;
           font-weight: 700;
-          letter-spacing: 0.28em;
+          letter-spacing: 0.30em;
           text-transform: uppercase;
           color: #5B7377;
-          font-family: var(--font-body, sans-serif);
         }
 
-        /* Titre — deux registres typographiques distincts */
-        .nl-title {
+        /* Titre éditorial */
+        .nl-title-block { margin: 0; }
+        .nl-title { margin: 0; line-height: 1; }
+        .nl-title-big {
+          display: block;
           font-family: var(--font-display, sans-serif);
-          margin: 0;
-          line-height: 1.06;
+          font-size: clamp(30px, 3.4vw, 44px);
+          font-weight: 600;
+          letter-spacing: -0.04em;
+          color: #1a2a2d;
+          line-height: 0.95;
         }
-        /* Première ligne : gras, contemporain */
-        .nl-title-bold {
+        .nl-title-sub {
           display: block;
-          font-size: clamp(22px, 2.6vw, 32px);
-          font-weight: 700;
-          color: var(--color-text-dark, #233033);
-          letter-spacing: -0.035em;
-        }
-        /* Deuxième ligne : italique éditorial — Aileron 400-italic (fichier réel chargé) */
-        .nl-title-italic {
-          display: block;
-          font-size: clamp(20px, 2.4vw, 29px);
-          font-weight: 400;
+          font-family: var(--font-display, sans-serif);
+          font-size: clamp(22px, 2.4vw, 30px);
+          font-weight: 300;
           font-style: italic;
-          color: var(--color-primary-dark, #425659);
-          letter-spacing: -0.03em;
-          margin-top: 3px;
+          letter-spacing: -0.025em;
+          color: #5B7377;
+          line-height: 1.1;
+          margin-top: 4px;
         }
 
-        /* Description */
-        .nl-desc {
-          font-size: clamp(13px, 1.2vw, 14.5px);
-          color: var(--color-primary, #5B7377);
-          line-height: 1.7;
-          margin: 0;
-          max-width: 40ch;
+        /* Rubriques */
+        .nl-rubriques {
+          display: flex;
+          flex-direction: column;
+          gap: 9px;
         }
-
-        /* Méta */
-        .nl-meta {
-          font-size: 8.5px;
-          font-weight: 700;
-          letter-spacing: 0.22em;
-          text-transform: uppercase;
-          color: #94a3b8;
-          margin: 0;
+        .nl-rubrique {
+          display: flex;
+          align-items: center;
+          gap: 11px;
+        }
+        .nl-rubrique-icon {
+          flex-shrink: 0;
+          width: 28px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid rgba(91,115,119,.20);
+          border-radius: 6px;
+          color: #5B7377;
+        }
+        .nl-rubrique-text {
+          display: flex;
+          align-items: baseline;
+          gap: 8px;
+          min-width: 0;
+        }
+        .nl-rubrique-label {
           font-family: var(--font-body, sans-serif);
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: #1a2a2d;
+          white-space: nowrap;
+        }
+        .nl-rubrique-desc {
+          font-family: var(--font-body, sans-serif);
+          font-size: 11.5px;
+          color: #7F9195;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
-        /* ── Formulaire : pousse vers le bas avec flex-grow ── */
-        .nl-form {
-          display: flex;
-          flex-direction: column;
-          gap: 0;
-          flex-grow: 1;
-          justify-content: flex-end;
+        /* Séparateur */
+        .nl-sep {
+          width: 100%;
+          height: 1px;
+          background: #e4e8ea;
+          margin: 0;
         }
-        .nl-success {
-          flex-grow: 1;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end;
-        }
+
+        /* Formulaire */
+        .nl-form { display: flex; flex-direction: column; gap: 0; }
 
         .nl-form-row {
           display: flex;
-          height: 54px;
-          border: 1px solid #d4dde1;
+          height: 48px;
+          border: 1px solid #d0d9dd;
           border-radius: 6px;
           overflow: hidden;
-          transition: border-color 0.18s, box-shadow 0.18s;
+          background: #fff;
+          transition: border-color 0.16s, box-shadow 0.16s;
         }
         .nl-form-row:focus-within {
           border-color: #5B7377;
-          box-shadow: 0 0 0 3px rgba(91, 115, 119, 0.10);
+          box-shadow: 0 0 0 3px rgba(91,115,119,.10);
         }
 
         .nl-input {
           flex: 1;
           border: none;
           outline: none;
-          padding: 0 16px;
-          font-size: 13.5px;
-          font-family: inherit;
-          color: var(--color-text-dark, #233033);
-          background: #fff;
+          padding: 0 14px;
+          font-size: 13px;
+          font-family: var(--font-body, sans-serif);
+          color: #233033;
+          background: transparent;
           min-width: 0;
         }
         .nl-input::placeholder { color: #9aadb5; }
@@ -533,152 +631,149 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
 
         .nl-btn {
           flex-shrink: 0;
-          padding: 0 clamp(16px, 2.2vw, 26px);
-          background: var(--color-primary-dark, #425659);
-          color: #f0ede8;
+          padding: 0 20px;
+          background: #233033;
+          color: #e8e4de;
           border: none;
           cursor: pointer;
-          font-size: 9px;
-          font-weight: 700;
-          letter-spacing: 0.20em;
-          text-transform: uppercase;
           font-family: var(--font-body, sans-serif);
+          font-size: 8.5px;
+          font-weight: 700;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
           display: flex;
           align-items: center;
-          gap: 8px;
-          transition: background 0.18s;
+          gap: 7px;
+          transition: background 0.16s;
           white-space: nowrap;
         }
-        .nl-btn:hover:not(:disabled) { background: var(--color-text-dark, #233033); }
+        .nl-btn:hover:not(:disabled) { background: #1a2a2d; }
         .nl-btn:hover:not(:disabled) .nl-btn-arrow { transform: translateX(3px); }
-        .nl-btn-arrow { transition: transform 0.20s ease; flex-shrink: 0; }
+        .nl-btn-arrow { transition: transform 0.18s ease; flex-shrink: 0; }
         .nl-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .nl-hint-error {
           font-size: 11px;
           color: #b91c1c;
-          margin: 6px 0 0;
-        }
-
-        .nl-legal {
-          font-size: 10.5px;
-          color: #9ca3af;
-          margin: 9px 0 0;
+          margin: 5px 0 0;
           font-family: var(--font-body, sans-serif);
         }
 
-        /* État succès */
+        /* Méta */
+        .nl-legal {
+          font-family: var(--font-body, sans-serif);
+          font-size: 10px;
+          color: #9ca3af;
+          margin: 0;
+        }
+
+        /* Succès */
         .nl-success {
           display: flex;
           align-items: center;
           gap: 10px;
-          padding: 14px 16px;
+          padding: 12px 14px;
           background: #f0fdf4;
           border: 1px solid #bbf7d0;
           border-radius: 6px;
           color: #166534;
         }
         .nl-success svg { flex-shrink: 0; stroke: #16a34a; }
-        .nl-success span { font-size: 13.5px; font-weight: 500; }
-
-        /* Signature */
-        .nl-signature {
-          padding: 0 clamp(44px, 5.5vw, 58px) 20px;
-        }
-        .nl-sig-rule {
-          display: block;
-          width: 100%;
-          height: 1px;
-          background: #e8ecee;
-          margin-bottom: 10px;
-        }
-        .nl-sig-text {
-          font-size: 8.5px;
-          font-weight: 600;
-          letter-spacing: 0.16em;
-          text-transform: uppercase;
-          color: #a0acb5;
+        .nl-success span {
           font-family: var(--font-body, sans-serif);
+          font-size: 13px;
+          font-weight: 500;
         }
 
         /* iframe cachée */
         .nl-iframe { display: none; width: 0; height: 0; border: none; }
 
-        /* ═══════════════════════════════════════
+        /* ═══════════════════════════════════════════════
            ANIMATIONS
-        ═══════════════════════════════════════ */
+        ═══════════════════════════════════════════════ */
         @keyframes nlFadeIn {
-          from { opacity: 0; }
-          to   { opacity: 1; }
+          from { opacity: 0; } to { opacity: 1; }
         }
         @keyframes nlSlideIn {
-          from { opacity: 0; transform: translate(-50%, calc(-50% + 20px)); }
+          from { opacity: 0; transform: translate(-50%, calc(-50% + 18px)); }
           to   { opacity: 1; transform: translate(-50%, -50%); }
         }
-
-        .nl-overlay.nl-closing { animation: nlFadeOut  0.3s ease forwards; }
-        .nl-card.nl-closing    { animation: nlSlideOut 0.3s ease forwards; }
-
+        .nl-overlay.nl-closing { animation: nlFadeOut  0.28s ease forwards; }
+        .nl-card.nl-closing    { animation: nlSlideOut 0.28s ease forwards; }
         @keyframes nlFadeOut {
           from { opacity: 1; } to { opacity: 0; }
         }
         @keyframes nlSlideOut {
           from { opacity: 1; transform: translate(-50%, -50%); }
-          to   { opacity: 0; transform: translate(-50%, calc(-50% + 12px)); }
+          to   { opacity: 0; transform: translate(-50%, calc(-50% + 10px)); }
         }
 
-        /* ═══════════════════════════════════════
-           TABLETTE (641–900 px)
-        ═══════════════════════════════════════ */
-        @media (min-width: 641px) and (max-width: 900px) {
-          .nl-card { grid-template-columns: 40fr 60fr; height: min(520px, 88vh); }
-          .nl-hl-sm { font-size: clamp(20px, 2.6vw, 30px); }
-          .nl-hl-md { font-size: clamp(24px, 3vw, 36px); }
-          .nl-hl-lg { font-size: clamp(26px, 3.3vw, 42px); }
-          .nl-right-inner { padding: 36px 36px 24px; gap: 16px; }
-          .nl-signature { padding: 0 36px 18px; }
+        /* ═══════════════════════════════════════════════
+           TABLETTE (641–860 px)
+        ═══════════════════════════════════════════════ */
+        @media (min-width: 641px) and (max-width: 860px) {
+          .nl-card {
+            grid-template-columns: 32fr 68fr;
+            height: min(500px, 88vh);
+          }
+          .nl-right-inner { padding: 32px 32px 26px; gap: 14px; }
+          .nl-title-big   { font-size: clamp(26px, 3.2vw, 38px); }
+          .nl-title-sub   { font-size: clamp(18px, 2.2vw, 26px); }
         }
 
-        /* ═══════════════════════════════════════
+        /* ═══════════════════════════════════════════════
            MOBILE (≤ 640 px)
-        ═══════════════════════════════════════ */
+        ═══════════════════════════════════════════════ */
         @media (max-width: 640px) {
           .nl-card {
             top: auto; bottom: 0; left: 0; right: 0;
-            width: 100%; height: auto;
+            width: 100%;
+            height: auto;
             transform: none;
-            border-radius: 14px 14px 0 0;
+            border-radius: 16px 16px 0 0;
             grid-template-columns: 1fr;
-            max-height: 90dvh;
+            max-height: 92dvh;
             overflow-y: auto;
-            animation: nlSlideUp 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation: nlSlideUp 0.36s cubic-bezier(0.22, 1, 0.36, 1) forwards;
           }
-          .nl-card.nl-closing { animation: nlSlideDown 0.3s ease forwards; }
+          .nl-card.nl-closing { animation: nlSlideDown 0.28s ease forwards; }
 
-          .nl-left { padding: 22px 22px 18px; }
-          .nl-headline { margin: 14px 0 0; flex: none; }
-          .nl-hl-sm { font-size: clamp(20px, 6.5vw, 28px); }
-          .nl-hl-md { font-size: clamp(22px, 7vw, 30px); }
-          .nl-hl-lg { font-size: clamp(24px, 7.5vw, 32px); }
-          .nl-left-foot { margin-top: 14px; }
+          /* Gauche : compacte sur mobile */
+          .nl-left {
+            padding: 22px 24px 18px;
+            flex-direction: row;
+            align-items: center;
+            gap: 0;
+          }
+          .nl-left-mid { display: none; }
+          .nl-masthead { flex: 1; }
+          .nl-cover-labels {
+            flex-direction: row;
+            gap: 14px;
+            align-items: center;
+          }
+          .nl-cover-label { font-size: 7px; letter-spacing: 0.28em; }
+          .nl-deco-line--v { display: none; }
+          .nl-deco-line--h { top: 100%; }
 
-          .nl-right-inner { padding: 26px 22px 16px; gap: 12px; }
-          .nl-form { flex-grow: 0; justify-content: flex-start; }
-          .nl-form-row { height: 52px; }
-          .nl-btn { padding: 0 18px; font-size: 9px; }
-          .nl-signature { padding: 0 22px 16px; }
+          /* Droite */
+          .nl-right-inner { padding: 24px 22px 18px; gap: 13px; }
+          .nl-title-big { font-size: clamp(28px, 8vw, 36px); }
+          .nl-title-sub { font-size: clamp(20px, 6vw, 26px); }
+          .nl-rubrique-desc { display: none; }
+          .nl-btn { padding: 0 16px; }
 
           @keyframes nlSlideUp {
-            from { opacity: 0; transform: translateY(26px); }
+            from { opacity: 0; transform: translateY(24px); }
             to   { opacity: 1; transform: translateY(0); }
           }
           @keyframes nlSlideDown {
             from { opacity: 1; transform: translateY(0); }
-            to   { opacity: 0; transform: translateY(26px); }
+            to   { opacity: 0; transform: translateY(24px); }
           }
         }
 
-        /* Préférence réduit-motion */
+        /* Réduit-motion */
         @media (prefers-reduced-motion: reduce) {
           .nl-card, .nl-overlay,
           .nl-card.nl-closing, .nl-overlay.nl-closing { animation: none !important; }
