@@ -92,6 +92,55 @@ export default async function UniversMetiersLayout({
       </section>
 
       {/* ═══════════════════════════════════════════════════════
+          BARRE NAVIGATION CATÉGORIES — collante sous le hero
+          Permet de passer d'une catégorie à l'autre sans revenir
+          à la page générale Métiers.
+      ═══════════════════════════════════════════════════════ */}
+      <div className="met-cat-strip">
+        <div className="container met-cat-strip-inner">
+
+          {/* Retour page générale */}
+          <Link href="/explorer/metiers-de-la-danse" className="met-cat-strip-back">
+            <svg
+              aria-hidden="true"
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="19" y1="12" x2="5" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
+            </svg>
+            <span>Tous les métiers</span>
+          </Link>
+
+          <span className="met-cat-strip-sep" aria-hidden="true" />
+
+          {/* Onglets des 6 catégories */}
+          <nav className="met-cat-strip-tabs" aria-label="Explorer les catégories de métiers">
+            {UNIVERS_ORDER.map((uid) => (
+              <Link
+                key={uid}
+                href={`/explorer/metiers-de-la-danse/${UNIVERS[uid].slug}`}
+                className={`met-cat-tab${uid === universId ? ' is-active' : ''}`}
+                aria-current={uid === universId ? 'page' : undefined}
+              >
+                <span className="met-cat-tab-num" aria-hidden="true">
+                  {UNIVERS[uid].num}
+                </span>
+                <span className="met-cat-tab-label">{UNIVERS[uid].label}</span>
+              </Link>
+            ))}
+          </nav>
+
+        </div>
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════
           CORPS — deux colonnes (client component pour état actif sidebar)
       ═══════════════════════════════════════════════════════ */}
       <MetierUniversLayout universId={universId} metiers={items}>
