@@ -32,6 +32,8 @@ export type AgendaEvent = {
   additionalInfo?: Array<{ label: string; value: string }>
   source: string
   sourceLabel: string
+  /** Fiche d'origine, pour les événements issus de la collecte automatique. */
+  sourceUrl?: string
   lastVerifiedAt: string
   status: AgendaStatus
 }

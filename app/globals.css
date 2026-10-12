@@ -20716,3 +20716,18 @@ a.ep-topic-pill:hover {
   .mobile-secondary-nav svg,
   .mobile-newsletter-cta svg { transition: none !important; }
 }
+
+/* Attribution de la source (événements issus de la collecte automatique) */
+.agenda-detail-side .agenda-detail-source {
+  margin: 18px 0 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.agenda-detail-side .agenda-detail-source a {
+  display: inline;
+  margin: 0;
+  font-weight: 600;
+  color: inherit;
+  text-decoration: underline;
+}

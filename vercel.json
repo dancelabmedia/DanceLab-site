@@ -7,6 +7,14 @@
     {
       "path": "/api/cron/match-teasers",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/collecte-danse",
+      "schedule": "0 3 * * 1"
+    },
+    {
+      "path": "/api/cron/collecte-danse-hiver",
+      "schedule": "0 4 * * 1"
     }
   ]
 }
