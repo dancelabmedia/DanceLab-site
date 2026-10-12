@@ -128,6 +128,14 @@ export default async function SortirEventPage({
           ) : (
             <span>{t('Billetterie à compléter')}</span>
           )}
+          {event.sourceUrl ? (
+            <p className="agenda-detail-source">
+              {t('Source')} :{' '}
+              <a href={event.sourceUrl} target="_blank" rel="noopener noreferrer">
+                {event.sourceLabel}
+              </a>
+            </p>
+          ) : null}
         </aside>
       </section>
     </main>

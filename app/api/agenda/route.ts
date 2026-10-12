@@ -423,11 +423,25 @@ function normalizeName(value: string) {
     .toLowerCase()
 }
 
+function hasValue(property: NotionProperty) {
+  if (property.type === "date") return Boolean(property.date?.start)
+  if (property.type === "files") return Boolean(property.files?.length)
+  if (property.type === "number") return typeof property.number === "number"
+  return getText(property) !== ""
+}
+
 function findProperty(properties: Record<string, NotionProperty>, aliases: string[]) {
   const normalizedAliases = aliases.map(normalizeName)
-  const entry = Object.entries(properties).find(([name]) => normalizedAliases.includes(normalizeName(name)))
+  const matches = Object.entries(properties)
+    .filter(([name]) => normalizedAliases.includes(normalizeName(name)))
+    .sort(([a], [b]) => normalizedAliases.indexOf(normalizeName(a)) - normalizedAliases.indexOf(normalizeName(b)))
+    .map(([, property]) => property)
 
-  if (entry) return entry[1]
+  // Plusieurs colonnes peuvent correspondre (ex. « Lieu » saisi à la main et
+  // « Salle » rempli par la collecte) : on prend la première qui est remplie.
+  const filled = matches.find(hasValue)
+  if (filled) return filled
+  if (matches.length) return matches[0]
 
   return Object.values(properties).find((property) => {
     if (normalizedAliases.includes("title") && property.type === "title") return true
@@ -447,6 +461,7 @@ function getText(property?: NotionProperty) {
   if (property.type === "url") return property.url || ""
   if (property.type === "number") return typeof property.number === "number" ? String(property.number) : ""
   if (property.type === "checkbox") return property.checkbox ? "Oui" : "Non"
+  if (property.type === "date") return property.date?.start?.slice(0, 10) || ""
   if (property.type === "formula") {
     if (typeof property.formula?.string === "string") return property.formula.string
     if (typeof property.formula?.number === "number") return String(property.formula.number)
@@ -574,7 +589,20 @@ function applyVenueFallback(event: AgendaEvent) {
   }
 }
 
+/**
+ * Colonne « Publication » (alimentée par la collecte automatique) :
+ * les fiches en attente de validation ou archivées ne sont pas affichées.
+ * Les fiches sans valeur (saisies à la main) restent publiées comme avant.
+ */
+const HIDDEN_PUBLICATION = new Set(["en attente de validation", "archivee"])
+
+function isPublishable(page: NotionPage) {
+  const publication = getText(findProperty(page.properties, ["Publication"]))
+  return !HIDDEN_PUBLICATION.has(normalizeName(publication))
+}
+
 function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
+  if (!isPublishable(page)) return null
   const properties = page.properties
   const title = getText(findProperty(properties, ["title", "Titre", "Nom", "Name", "Événement", "Evenement", "Event", "Nom de l'événement", "Nom de l'événement"]))
 
@@ -615,6 +643,7 @@ function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
     additionalInfo: getAdditionalInfo(properties),
     source,
     sourceLabel: source,
+    sourceUrl: getText(findProperty(properties, ["URL source"])) || undefined,
     lastVerifiedAt: getText(findProperty(properties, ["Dernière vérification", "Derniere verification", "Vérifié le", "Verifie le"])) || todayIso(),
     status: normalizeStatus(getText(findProperty(properties, ["Statut", "Status", "État", "Etat"])), startDate, endDate),
   }

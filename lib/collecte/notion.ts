@@ -1,0 +1,434 @@
+/**
+ * lib/collecte/notion.ts
+ * Accès Notion pour la collecte : base « Agenda Danse Paris & France »
+ * (celle qu'affiche déjà /sortir via /api/agenda) et base « Journal des
+ * collectes » (historique et rapports).
+ *
+ * Variables d'environnement :
+ *   NOTION_TOKEN (ou NOTION_API_KEY)       — déjà utilisée par /api/agenda
+ *   NOTION_AGENDA_DATABASE_ID             — optionnelle (valeur par défaut ci-dessous)
+ *   NOTION_COLLECTE_LOG_DATABASE_ID       — optionnelle (valeur par défaut ci-dessous)
+ *
+ * Toutes les colonnes ajoutées par la collecte sont créées automatiquement
+ * au premier passage (ensureAgendaSchema) : aucune colonne existante n'est
+ * modifiée ni supprimée.
+ */
+
+import { fetchWithRetry, sleep } from "./http"
+import type { CollectedEvent, PublicationDecision, RunReport, RunStatus } from "./types"
+import { PUBLICATION } from "./types"
+import { dayOf, seasonOf } from "./rules"
+
+const NOTION_VERSION = "2025-09-03"
+export const DEFAULT_AGENDA_DATABASE_ID = "c06a1552cfcc4522ae68d32f833b3cf3"
+/** Base Notion « 📋 Journal des collectes Dance Lab » (page « Bases de données »). */
+export const DEFAULT_LOG_DATABASE_ID = "50f59f082efe4f5bb35ea5d3e6228b39"
+
+/** Noms des colonnes Notion utilisées par la collecte. */
+export const F = {
+  title: "Événement",
+  date: "Date",
+  type: "Type",
+  season: "Saison",
+  statusInfo: "Statut info",
+  ticket: "Lien billetterie",
+  origin: "Origine",
+  price: "Tarif",
+  // Colonnes ajoutées par la collecte
+  sourceId: "ID source",
+  source: "Source",
+  sourceUrl: "URL source",
+  officialUrl: "Lien officiel",
+  venue: "Salle",
+  address: "Adresse",
+  postalCode: "Code postal",
+  city: "Ville",
+  latitude: "Latitude",
+  longitude: "Longitude",
+  description: "Description",
+  schedule: "Horaires",
+  organizer: "Organisateur",
+  disciplines: "Disciplines",
+  publication: "Publication",
+  pendingReason: "Raison de l'attente",
+  locked: "Ne pas mettre à jour",
+  fingerprint: "Empreinte collecte",
+  lastChecked: "Dernière vérification",
+  missingSince: "Absente de la source depuis",
+  lastChange: "Dernière modification auto",
+} as const
+
+export const ORIGIN_AUTO = "🆕 Nouvel ajout (veille auto)"
+
+const DISCIPLINE_OPTIONS = [
+  "Hip-hop / Breaking",
+  "Contemporain",
+  "Classique / Ballet",
+  "Jazz",
+  "Danses de couple",
+  "Danses du monde / traditionnelles",
+  "Voguing / Ballroom",
+  "Claquettes",
+  "Pole dance",
+]
+
+// ─── Client ───────────────────────────────────────────────────────────────────
+
+type NotionPage = {
+  id: string
+  url?: string
+  in_trash?: boolean
+  archived?: boolean
+  properties: Record<string, any>
+}
+
+export class NotionClient {
+  private lastCall = 0
+  constructor(private token: string) {}
+
+  /** Notion limite à ~3 requêtes/s : on espace les appels. */
+  async request<T>(path: string, init: RequestInit = {}): Promise<T> {
+    const wait = 340 - (Date.now() - this.lastCall)
+    if (wait > 0) await sleep(wait)
+    this.lastCall = Date.now()
+
+    const response = await fetchWithRetry(
+      `https://api.notion.com/v1/${path}`,
+      {
+        ...init,
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+          "Content-Type": "application/json",
+          "Notion-Version": NOTION_VERSION,
+          ...(init.headers || {}),
+        },
+      },
+      { attempts: 4, timeoutMs: 30_000 }
+    )
+
+    if (!response.ok) {
+      const body = (await response.json().catch(() => ({}))) as { message?: string; code?: string }
+      throw new Error(`Notion ${response.status} ${body.code ?? ""} : ${body.message ?? "erreur inconnue"}`.trim())
+    }
+    return (await response.json()) as T
+  }
+
+  async dataSourceId(databaseId: string): Promise<string> {
+    const db = await this.request<{ data_sources?: Array<{ id: string }> }>(`databases/${databaseId}`)
+    return db.data_sources?.[0]?.id || databaseId
+  }
+
+  async queryAll(dataSourceId: string, filter?: unknown): Promise<NotionPage[]> {
+    const pages: NotionPage[] = []
+    let cursor: string | undefined
+    do {
+      const data = await this.request<{ results: NotionPage[]; has_more: boolean; next_cursor?: string | null }>(
+        `data_sources/${dataSourceId}/query`,
+        { method: "POST", body: JSON.stringify({ page_size: 100, start_cursor: cursor, ...(filter ? { filter } : {}) }) }
+      )
+      pages.push(...data.results)
+      cursor = data.has_more ? data.next_cursor || undefined : undefined
+    } while (cursor)
+    return pages
+  }
+}
+
+export function notionToken(): string | undefined {
+  return process.env.NOTION_TOKEN || process.env.NOTION_API_KEY
+}
+
+// ─── Lecture / écriture de propriétés ─────────────────────────────────────────
+
+const text = (value: string) => ({ rich_text: value ? [{ type: "text", text: { content: value.slice(0, 1990) } }] : [] })
+const url = (value: string) => ({ url: value || null })
+const num = (value: number | null) => ({ number: value })
+const select = (value: string | null) => ({ select: value ? { name: value } : null })
+
+export function readText(prop: any): string {
+  if (!prop) return ""
+  const parts = prop.title ?? prop.rich_text
+  if (Array.isArray(parts)) return parts.map((p: any) => p.plain_text ?? p.text?.content ?? "").join("").trim()
+  if (prop.type === "select") return prop.select?.name ?? ""
+  if (prop.type === "url") return prop.url ?? ""
+  if (prop.type === "date") return prop.date?.start ?? ""
+  if (prop.type === "checkbox") return prop.checkbox ? "true" : ""
+  if (prop.type === "number") return prop.number === null || prop.number === undefined ? "" : String(prop.number)
+  return ""
+}
+
+// ─── Schéma de l'agenda ───────────────────────────────────────────────────────
+
+/** Ajoute les colonnes manquantes (jamais de suppression ni de renommage). */
+export async function ensureAgendaSchema(client: NotionClient, dataSourceId: string): Promise<string[]> {
+  const ds = await client.request<{ properties: Record<string, { type: string; select?: { options: Array<{ name: string }> } }> }>(
+    `data_sources/${dataSourceId}`
+  )
+  const existing = ds.properties || {}
+  const wanted: Record<string, unknown> = {
+    [F.sourceId]: { rich_text: {} },
+    [F.source]: { rich_text: {} },
+    [F.sourceUrl]: { url: {} },
+    [F.officialUrl]: { url: {} },
+    [F.venue]: { rich_text: {} },
+    [F.address]: { rich_text: {} },
+    [F.postalCode]: { rich_text: {} },
+    [F.city]: { rich_text: {} },
+    [F.latitude]: { number: {} },
+    [F.longitude]: { number: {} },
+    [F.description]: { rich_text: {} },
+    [F.schedule]: { rich_text: {} },
+    [F.organizer]: { rich_text: {} },
+    [F.disciplines]: { multi_select: { options: DISCIPLINE_OPTIONS.map((name) => ({ name })) } },
+    [F.publication]: {
+      select: {
+        options: [
+          { name: PUBLICATION.auto, color: "green" },
+          { name: PUBLICATION.validated, color: "blue" },
+          { name: PUBLICATION.pending, color: "orange" },
+          { name: PUBLICATION.archived, color: "gray" },
+        ],
+      },
+    },
+    [F.pendingReason]: { rich_text: {} },
+    [F.locked]: { checkbox: {} },
+    [F.fingerprint]: { rich_text: {} },
+    [F.lastChecked]: { date: {} },
+    [F.missingSince]: { date: {} },
+    [F.lastChange]: { rich_text: {} },
+  }
+
+  const missing = Object.fromEntries(Object.entries(wanted).filter(([name]) => !existing[name]))
+  if (Object.keys(missing).length) {
+    await client.request(`data_sources/${dataSourceId}`, { method: "PATCH", body: JSON.stringify({ properties: missing }) })
+  }
+  return Object.keys(missing)
+}
+
+// ─── Fiches de l'agenda ───────────────────────────────────────────────────────
+
+export type AgendaPage = {
+  id: string
+  url: string
+  title: string
+  startDate: string | null
+  endDate: string | null
+  sourceId: string
+  publication: string
+  locked: boolean
+  fingerprint: string
+  missingSince: string | null
+}
+
+export async function listAgendaPages(client: NotionClient, dataSourceId: string): Promise<AgendaPage[]> {
+  const pages = await client.queryAll(dataSourceId)
+  return pages
+    .filter((p) => !p.in_trash && !p.archived)
+    .map((p) => {
+      const props = p.properties || {}
+      const titleProp = props[F.title] ?? Object.values(props).find((v: any) => v?.type === "title")
+      return {
+        id: p.id,
+        url: p.url ?? "",
+        title: readText(titleProp),
+        startDate: props[F.date]?.date?.start ?? null,
+        endDate: props[F.date]?.date?.end ?? null,
+        sourceId: readText(props[F.sourceId]),
+        publication: readText(props[F.publication]),
+        locked: Boolean(props[F.locked]?.checkbox),
+        fingerprint: readText(props[F.fingerprint]),
+        missingSince: props[F.missingSince]?.date?.start ?? null,
+      }
+    })
+}
+
+/** Propriétés issues de la source (écrites à la création et à chaque mise à jour). */
+export function sourceProperties(event: CollectedEvent, fp: string, today: string) {
+  const start = event.startDate ? (event.hasTime ? event.startDate : dayOf(event.startDate)) : null
+  const endDay = dayOf(event.endDate)
+  const end = endDay && endDay !== dayOf(event.startDate) ? endDay : null
+
+  return {
+    [F.title]: { title: [{ type: "text", text: { content: event.title.slice(0, 1990) } }] },
+    [F.date]: { date: start ? { start, end } : null },
+    [F.sourceId]: text(event.sourceId),
+    [F.source]: text(event.sourceLabel),
+    [F.sourceUrl]: url(event.sourceUrl),
+    [F.officialUrl]: url(event.officialUrl),
+    [F.ticket]: url(event.ticketUrl),
+    [F.venue]: text(event.venue),
+    [F.address]: text(event.address),
+    [F.postalCode]: text(event.postalCode),
+    [F.city]: text(event.city),
+    [F.latitude]: num(event.latitude),
+    [F.longitude]: num(event.longitude),
+    [F.description]: text(event.description),
+    [F.schedule]: text(event.schedule),
+    [F.organizer]: text(event.organizer),
+    [F.price]: text(event.price),
+    [F.disciplines]: { multi_select: event.disciplines.map((name) => ({ name })) },
+    [F.fingerprint]: text(fp),
+    [F.lastChecked]: { date: { start: today } },
+    [F.missingSince]: { date: null },
+  }
+}
+
+export async function createAgendaPage(
+  client: NotionClient,
+  dataSourceId: string,
+  event: CollectedEvent,
+  decision: PublicationDecision,
+  fp: string,
+  today: string
+) {
+  return client.request<NotionPage>("pages", {
+    method: "POST",
+    body: JSON.stringify({
+      parent: { type: "data_source_id", data_source_id: dataSourceId },
+      properties: {
+        ...sourceProperties(event, fp, today),
+        [F.type]: select(event.type),
+        [F.season]: select(seasonOf(dayOf(event.startDate))),
+        [F.statusInfo]: select("Programmation confirmée"),
+        [F.origin]: select(ORIGIN_AUTO),
+        [F.publication]: select(decision.status),
+        [F.pendingReason]: text(decision.reasons.join(" · ")),
+        [F.lastChange]: text(`${today} : fiche créée par la collecte`),
+      },
+    }),
+  })
+}
+
+export async function updatePageProperties(client: NotionClient, pageId: string, properties: Record<string, unknown>) {
+  return client.request<NotionPage>(`pages/${pageId}`, { method: "PATCH", body: JSON.stringify({ properties }) })
+}
+
+export const props = { text, url, num, select }
+
+// ─── Journal des collectes ────────────────────────────────────────────────────
+
+export const L = {
+  title: "Collecte",
+  started: "Début",
+  finished: "Fin",
+  trigger: "Déclenchement",
+  mode: "Mode",
+  status: "Statut",
+  sources: "Sources consultées",
+  received: "Entrées reçues",
+  created: "Nouvelles publiées",
+  createdPending: "Nouvelles en attente",
+  updated: "Mises à jour",
+  unchanged: "Inchangées",
+  duplicates: "Doublons",
+  archived: "Archivées",
+  missing: "Disparues de la source",
+  pendingTotal: "En attente (total)",
+  errors: "Erreurs",
+} as const
+
+export function logDatabaseId(): string {
+  return process.env.NOTION_COLLECTE_LOG_DATABASE_ID || DEFAULT_LOG_DATABASE_ID
+}
+
+export async function createRunEntry(client: NotionClient, logDsId: string, report: RunReport) {
+  return client.request<NotionPage>("pages", {
+    method: "POST",
+    body: JSON.stringify({
+      parent: { type: "data_source_id", data_source_id: logDsId },
+      properties: runProperties(report),
+    }),
+  })
+}
+
+export async function updateRunEntry(client: NotionClient, pageId: string, report: RunReport) {
+  await updatePageProperties(client, pageId, runProperties(report))
+  if (report.actions.length) {
+    const lines = report.actions.slice(0, 90)
+    if (report.actions.length > lines.length) lines.push(`… et ${report.actions.length - lines.length} autres actions`)
+    await client.request(`blocks/${pageId}/children`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        children: lines.map((line) => ({
+          object: "block",
+          type: "bulleted_list_item",
+          bulleted_list_item: { rich_text: [{ type: "text", text: { content: line.slice(0, 1990) } }] },
+        })),
+      }),
+    })
+  }
+}
+
+function runProperties(report: RunReport) {
+  const c = report.counters
+  const label = new Intl.DateTimeFormat("fr-FR", {
+    timeZone: "Europe/Paris",
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(new Date(report.startedAt))
+  return {
+    [L.title]: { title: [{ type: "text", text: { content: `Collecte du ${label}${report.dryRun ? " (à blanc)" : ""}` } }] },
+    [L.started]: { date: { start: report.startedAt } },
+    [L.finished]: { date: report.finishedAt ? { start: report.finishedAt } : null },
+    [L.trigger]: select(report.trigger),
+    [L.mode]: select(report.dryRun ? "À blanc" : "Réelle"),
+    [L.status]: select(report.status),
+    [L.sources]: num(c.sourcesConsulted),
+    [L.received]: num(c.received),
+    [L.created]: num(c.created),
+    [L.createdPending]: num(c.createdPending),
+    [L.updated]: num(c.updated),
+    [L.unchanged]: num(c.unchanged),
+    [L.duplicates]: num(c.duplicates),
+    [L.archived]: num(c.archived),
+    [L.missing]: num(c.missingFromSource),
+    [L.pendingTotal]: num(c.pendingTotal),
+    [L.errors]: text(report.errors.join(" · ")),
+  }
+}
+
+export type RunSummary = {
+  id: string
+  url: string
+  title: string
+  startedAt: string
+  finishedAt: string
+  trigger: string
+  mode: string
+  status: RunStatus | string
+  counters: Record<string, number>
+  errors: string
+}
+
+export async function listRuns(client: NotionClient, logDsId: string, limit = 20): Promise<RunSummary[]> {
+  const data = await client.request<{ results: NotionPage[] }>(`data_sources/${logDsId}/query`, {
+    method: "POST",
+    body: JSON.stringify({ page_size: limit, sorts: [{ property: L.started, direction: "descending" }] }),
+  })
+  return data.results.map((p) => {
+    const pr = p.properties || {}
+    const n = (name: string) => (typeof pr[name]?.number === "number" ? pr[name].number : 0)
+    return {
+      id: p.id,
+      url: p.url ?? "",
+      title: readText(pr[L.title]),
+      startedAt: pr[L.started]?.date?.start ?? "",
+      finishedAt: pr[L.finished]?.date?.start ?? "",
+      trigger: readText(pr[L.trigger]),
+      mode: readText(pr[L.mode]),
+      status: readText(pr[L.status]),
+      counters: {
+        sources: n(L.sources),
+        received: n(L.received),
+        created: n(L.created),
+        createdPending: n(L.createdPending),
+        updated: n(L.updated),
+        unchanged: n(L.unchanged),
+        duplicates: n(L.duplicates),
+        archived: n(L.archived),
+        missing: n(L.missing),
+        pendingTotal: n(L.pendingTotal),
+      },
+      errors: readText(pr[L.errors]),
+    }
+  })
+}
