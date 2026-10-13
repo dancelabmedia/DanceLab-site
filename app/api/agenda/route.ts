@@ -619,7 +619,15 @@ function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
   const source = getText(findProperty(properties, ["Source", "Organisateur", "Organizer"])) || "Notion"
   const ticketUrl = getText(findProperty(properties, ["Billetterie", "Réservation", "Reservation", "Ticket", "Tickets"]))
   const officialUrl = getText(findProperty(properties, ["Lien", "URL", "Lien officiel", "Site", "OfficialUrl", "Page officielle"])) || ""
-  const image = getCoverUrl(page, findProperty(properties, ["Image", "Photo", "Affiche", "Visuel", "Cover"]))
+  // Visuel : fichier ou couverture déposés dans Notion en priorité, puis le
+  // visuel officiel trouvé par la collecte (sauf s'il a été refusé).
+  const manualImage = getCoverUrl(page, findProperty(properties, ["Image", "Photo", "Affiche", "Visuel", "Cover"]))
+  const imageStatus = normalizeName(getText(findProperty(properties, ["Statut image"])))
+  const collectedImage = imageStatus.startsWith("refus") ? "" : getText(findProperty(properties, ["Image URL"]))
+  const image = manualImage || collectedImage
+  const imageCredit = manualImage ? "" : getText(findProperty(properties, ["Crédit image"]))
+  const imageSourceUrl = manualImage ? "" : getText(findProperty(properties, ["Source image"]))
+  const imageAlt = getText(findProperty(properties, ["Texte alternatif image"]))
 
   const event: AgendaEvent = {
     slug: slugify(`${title}-${startDate}`),
@@ -644,6 +652,9 @@ function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
     source,
     sourceLabel: source,
     sourceUrl: getText(findProperty(properties, ["URL source"])) || undefined,
+    imageCredit: imageCredit || undefined,
+    imageSourceUrl: imageSourceUrl || undefined,
+    imageAlt: imageAlt || undefined,
     lastVerifiedAt: getText(findProperty(properties, ["Dernière vérification", "Derniere verification", "Vérifié le", "Verifie le"])) || todayIso(),
     status: normalizeStatus(getText(findProperty(properties, ["Statut", "Status", "État", "Etat"])), startDate, endDate),
   }

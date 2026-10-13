@@ -26,11 +26,17 @@ import {
   notionToken,
   props,
   sourceProperties,
+  sourceImageProperties,
+  officialImageProperties,
+  noImageProperties,
+  imageIsAutoManaged,
+  type AgendaPage,
   updatePageProperties,
   updateRunEntry,
   DEFAULT_AGENDA_DATABASE_ID,
 } from "./notion"
 import { pendingAfter, planActions, type PlannedAction } from "./plan"
+import { findOfficialImage, findSharedImages, IMAGE_STATUS, type FoundImage } from "./images"
 import { dedupeWithinSource, parisToday } from "./rules"
 import { PUBLICATION, emptyCounters, type CollectedEvent, type RunReport, type RunTrigger } from "./types"
 
@@ -145,6 +151,11 @@ export async function runCollecte(options: RunOptions): Promise<RunReport> {
       }
     }
 
+    // ── 4. Visuels des fiches qui n'en ont pas ───────────────────────────────
+    if (!interrupted) {
+      interrupted = await enrichImages(pages, { client, agendaDsId, today, dryRun: options.dryRun, report }, deadline)
+    }
+
     if (interrupted) {
       report.status = "Partielle"
       report.errors.push("Temps imparti atteint : la prochaine collecte terminera le travail")
@@ -195,6 +206,18 @@ async function apply(action: PlannedAction, ctx: ApplyContext) {
       if (action.contentChanged) {
         Object.assign(changes, sourceProperties(action.event, action.fp, today))
         notes.push("informations mises à jour depuis la source")
+        // Le visuel de la source remplace l'ancien seulement s'il n'a été ni
+        // ajouté ni refusé à la main.
+        if (
+          action.event.imageUrl &&
+          action.event.imageUrl !== action.page.imageUrl &&
+          imageIsAutoManaged(action.page.imageStatus) &&
+          !action.page.hasManualImage
+        ) {
+          Object.assign(changes, sourceImageProperties(action.event, today))
+          if (!action.page.imageUrl) c.imagesAdded++
+          notes.push("visuel mis à jour")
+        }
       }
       if (action.publication) {
         changes[F.publication] = props.select(action.publication.status)
@@ -214,10 +237,26 @@ async function apply(action: PlannedAction, ctx: ApplyContext) {
     case "locked":
       c.skippedLocked++
       return
-    case "duplicate":
+    case "duplicate": {
       c.duplicates++
       report.actions.push(`Doublon ignoré : ${action.event.title} (déjà présent : ${action.page.title})`)
+      // La fiche existante reprend le visuel open data du même événement.
+      const page = action.page
+      if (
+        action.event.imageUrl &&
+        !page.imageUrl &&
+        !page.locked &&
+        !page.hasManualImage &&
+        imageIsAutoManaged(page.imageStatus)
+      ) {
+        await write(() => updatePageProperties(client, page.id, sourceImageProperties(action.event, today)))
+        page.imageUrl = action.event.imageUrl
+        page.imageStatus = IMAGE_STATUS.openData
+        c.imagesAdded++
+        report.actions.push(`Visuel ajouté : ${page.title} (Ville de Paris – Que faire à Paris)`)
+      }
       return
+    }
     case "archive":
       await write(() =>
         updatePageProperties(client, action.page.id, {
@@ -249,6 +288,84 @@ async function apply(action: PlannedAction, ctx: ApplyContext) {
       report.actions.push(`Mise en attente (disparue depuis ${action.days} j) : ${action.page.title}`)
       return
   }
+}
+
+/** Nombre de jours avant de chercher à nouveau un visuel introuvable. */
+const IMAGE_RETRY_DAYS = 28
+const IMAGE_CONCURRENCY = 4
+
+/**
+ * Cherche le visuel officiel des fiches qui n'en ont pas, sur la page de
+ * l'événement (billetterie ou lien officiel). N'écrit que les colonnes image.
+ * Renvoie true si le temps imparti a été atteint avant la fin.
+ */
+async function enrichImages(pages: AgendaPage[], ctx: ApplyContext, deadline: number): Promise<boolean> {
+  const { client, today, dryRun, report } = ctx
+  const c = report.counters
+  const retryBefore = new Date(Date.parse(`${today}T00:00:00Z`) - IMAGE_RETRY_DAYS * 86_400_000).toISOString().slice(0, 10)
+
+  const candidates = pages.filter(
+    (p) =>
+      !p.locked &&
+      !p.sourceId && // les fiches collectées reçoivent le visuel de leur source
+      !p.imageUrl &&
+      !p.hasManualImage &&
+      p.imageStatus !== IMAGE_STATUS.refused &&
+      p.imageStatus !== IMAGE_STATUS.manual &&
+      !(p.imageStatus === IMAGE_STATUS.none && (p.imageChecked ?? "") > retryBefore)
+  )
+
+  const found: Array<{ page: AgendaPage; image: FoundImage | null; reason: string }> = []
+  let index = 0
+  let interrupted = false
+  const worker = async () => {
+    while (index < candidates.length) {
+      if (Date.now() > deadline - 20_000) {
+        interrupted = true
+        return
+      }
+      const page = candidates[index++]
+      let result = { image: null as FoundImage | null, reason: "Pas de lien vers la page de l'événement" }
+      for (const link of page.eventLinks) {
+        result = await findOfficialImage(page.title, link)
+        if (result.image) break
+      }
+      found.push({ page, ...result })
+    }
+  }
+  await Promise.all(Array.from({ length: IMAGE_CONCURRENCY }, worker))
+
+  // Un même visuel pour plusieurs événements différents = bannière générique.
+  const shared = findSharedImages([
+    ...found.map((f) => ({ title: f.page.title, imageUrl: f.image?.url ?? "" })),
+    ...pages.filter((p) => p.imageStatus === IMAGE_STATUS.official).map((p) => ({ title: p.title, imageUrl: p.imageUrl })),
+  ])
+
+  for (const entry of found) {
+    if (Date.now() > deadline) {
+      interrupted = true
+      break
+    }
+    let { image, reason } = entry
+    if (image && shared.has(image.url)) {
+      image = null
+      reason = "Visuel générique utilisé pour plusieurs événements"
+    }
+    try {
+      if (image) {
+        if (!dryRun) await updatePageProperties(client, entry.page.id, officialImageProperties(image, today))
+        c.imagesAdded++
+        report.actions.push(`Visuel ajouté : ${entry.page.title} (${image.credit})`)
+      } else {
+        if (!dryRun) await updatePageProperties(client, entry.page.id, noImageProperties(reason, today))
+        c.imagesMissing++
+        report.actions.push(`Sans visuel : ${entry.page.title} (${reason})`)
+      }
+    } catch (error) {
+      report.errors.push(`Visuel « ${entry.page.title} » : ${message(error)}`)
+    }
+  }
+  return interrupted
 }
 
 function describe(action: PlannedAction): string {

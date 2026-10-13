@@ -40,6 +40,9 @@ type QfapRecord = {
   contact_organisation_name?: string | null
   qfap_tags?: string | null
   updated_at?: string | null
+  cover_url?: string | null
+  cover_alt?: string | null
+  cover_credit?: string | null
 }
 
 const KEYWORD_QUERY = [
@@ -117,6 +120,9 @@ export function normalizeQfapRecord(record: QfapRecord, taggedDance: boolean): C
     organizer: (record.contact_organisation_name || record.contact_url_text || "").trim(),
     taggedDance,
     sourceUpdatedAt: record.updated_at ?? null,
+    imageUrl: cleanUrl(record.cover_url).replace(/^http:/, "https:"),
+    imageCredit: (record.cover_credit ?? "").trim(),
+    imageAlt: (record.cover_alt ?? "").trim() || title,
   }
 }
 

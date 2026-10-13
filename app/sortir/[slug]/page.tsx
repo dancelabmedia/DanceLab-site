@@ -2,6 +2,7 @@ import { headers } from "next/headers"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import HistoryBackLink from "../../../components/HistoryBackLink"
+import AgendaVisual from "../../agenda/AgendaVisual"
 import type { AgendaEvent } from "../../agenda/agenda-data"
 import { formatAgendaDateRange, resolveAgendaEventLocation } from "../../agenda/agenda-data"
 import { requestLocale } from "@/lib/i18n/server"
@@ -44,7 +45,7 @@ export default async function SortirEventPage({
   return (
     <main className="agenda-detail-page">
       <section className="agenda-detail-hero">
-        {event.image ? <img src={event.image} alt={event.title} /> : null}
+        <AgendaVisual variant="hero" priority src={event.image} alt={event.imageAlt || event.title} fallback={null} />
         <div className="agenda-detail-hero-shade" />
         <div className="container agenda-detail-hero-content">
           <HistoryBackLink fallbackHref="/sortir" className="agenda-detail-back">
@@ -128,6 +129,18 @@ export default async function SortirEventPage({
           ) : (
             <span>{t('Billetterie à compléter')}</span>
           )}
+          {event.image && event.imageCredit && !/^inconnu$/i.test(event.imageCredit.trim()) ? (
+            <p className="agenda-detail-source">
+              {t('Visuel')} :{' '}
+              {event.imageSourceUrl ? (
+                <a href={event.imageSourceUrl} target="_blank" rel="noopener noreferrer">
+                  {event.imageCredit}
+                </a>
+              ) : (
+                event.imageCredit
+              )}
+            </p>
+          ) : null}
           {event.sourceUrl ? (
             <p className="agenda-detail-source">
               {t('Source')} :{' '}

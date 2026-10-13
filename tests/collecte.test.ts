@@ -14,6 +14,7 @@ import { normalizeQfapRecord } from '../lib/collecte/sources/que-faire-a-paris'
 import { planActions, pendingAfter } from '../lib/collecte/plan'
 import { PUBLICATION, type CollectedEvent } from '../lib/collecte/types'
 import type { AgendaPage } from '../lib/collecte/notion'
+import { findSharedImages, isGenericPage, isNonDanceSection, pickImage, readMeta, titlesMatch } from '../lib/collecte/images'
 
 const TODAY = '2026-10-12'
 
@@ -43,6 +44,9 @@ function event(overrides: Partial<CollectedEvent> = {}): CollectedEvent {
     organizer: 'Carreau du Temple',
     taggedDance: true,
     sourceUpdatedAt: '2026-10-01',
+    imageUrl: 'https://cdn.paris.fr/qfapv4/exemple.jpg',
+    imageCredit: 'Crédit photo',
+    imageAlt: 'Affiche du spectacle',
     ...overrides,
   }
 }
@@ -59,6 +63,11 @@ function page(overrides: Partial<AgendaPage> = {}): AgendaPage {
     locked: false,
     fingerprint: fingerprint(event()),
     missingSince: null,
+    imageUrl: 'https://cdn.paris.fr/qfapv4/exemple.jpg',
+    imageStatus: 'Officielle (open data Ville de Paris)',
+    imageChecked: null,
+    eventLinks: [],
+    hasManualImage: false,
     ...overrides,
   }
 }
@@ -256,4 +265,58 @@ test('le compteur « en attente » reflète l’état après la collecte', () =>
   const pages = [page({ id: 'a', sourceId: 'qfap:a', title: 'A spectacle danse', publication: PUBLICATION.pending })]
   const actions = planActions([event({ sourceId: 'qfap:b', title: 'Autre spectacle', taggedDance: false })], pages, TODAY, ['qfap:'])
   assert.equal(pendingAfter(pages, actions), 2)
+})
+
+// ─── Visuels ──────────────────────────────────────────────────────────────────
+
+test('le visuel de la source est repris avec son crédit', () => {
+  const e = normalizeQfapRecord(
+    { id: '9', title: 'Danse', cover_url: 'http://cdn.paris.fr/a.jpg', cover_credit: '© Photographe', cover_alt: '' } as never,
+    true
+  )!
+  assert.equal(e.imageUrl, 'https://cdn.paris.fr/a.jpg')
+  assert.equal(e.imageCredit, '© Photographe')
+  assert.equal(e.imageAlt, 'Danse')
+})
+
+test('un changement de visuel dans la source déclenche une mise à jour', () => {
+  const actions = planActions([event({ imageUrl: 'https://cdn.paris.fr/nouvelle.jpg' })], [page()], TODAY, ['qfap:'])
+  assert.equal(actions[0].kind, 'update')
+})
+
+test('les pages générales (accueil, saison, programmation) sont refusées', () => {
+  assert.equal(isGenericPage('https://www.foliesbergere.com'), true)
+  assert.equal(isGenericPage('https://etoiledunord-theatre.mapado.com/en'), true)
+  assert.equal(isGenericPage('https://www.lecarreaudutemple.eu/saison/'), true)
+  assert.equal(isGenericPage('https://www.104.fr/fr/programmation/saison-2026-2027/danse/sequence-danse-paris-2027'), false)
+})
+
+test('la page doit reprendre l’œuvre et l’artiste de la fiche', () => {
+  assert.equal(titlesMatch('R.OSA — Silvia Gribaudi', 'R.OSA - Faits d’hiver. Une pièce de Silvia Gribaudi'), true)
+  assert.equal(titlesMatch('R.OSA — Silvia Gribaudi', 'R.OSA - Faits d’hiver'), false)
+  assert.equal(titlesMatch('Fugaces — Aina Alegre', 'Fugaces — Aina Alegre / CCN de Grenoble | Chaillot'), true)
+  assert.equal(titlesMatch('The Last Hamlet — Ben Duke / Lost Dog (Théâtre de la Ville)', 'Focus Ben Duke | Théâtre de la Ville'), false)
+  assert.equal(titlesMatch('Olivier Dubois — Come Out — L’Onde Vélizy', 'Come Out - Olivier Dubois - L’Onde'), true)
+  assert.equal(titlesMatch('Retour vers le futur, le spectacle musical', 'La Seine Musicale — Accueil'), false)
+})
+
+test('les pages d’opéra ou de concert sont écartées', () => {
+  assert.equal(isNonDanceSection('https://www.operadeparis.fr/saison-26-27/opera/romeo-et-juliette'), true)
+  assert.equal(isNonDanceSection('https://www.operadeparis.fr/saison-26-27/ballet/lhistoire-de-manon'), false)
+})
+
+test('les balises og:image sont lues quel que soit l’ordre des attributs', () => {
+  const meta = readMeta('<head><meta content="/img/a.jpg" property="og:image"><title>Titre &amp; co</title></head>')
+  assert.equal(pickImage(meta, 'https://exemple.fr/page'), 'https://exemple.fr/img/a.jpg')
+  assert.equal(meta['html:title'], 'Titre & co')
+})
+
+test('un même visuel pour trois événements différents est considéré comme générique', () => {
+  const shared = findSharedImages([
+    { title: 'Spectacle Alpha', imageUrl: 'https://x/saison.jpg' },
+    { title: 'Spectacle Bravo', imageUrl: 'https://x/saison.jpg' },
+    { title: 'Spectacle Charlie', imageUrl: 'https://x/saison.jpg' },
+    { title: 'Spectacle Delta', imageUrl: 'https://x/delta.jpg' },
+  ])
+  assert.deepEqual([...shared], ['https://x/saison.jpg'])
 })

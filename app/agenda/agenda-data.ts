@@ -34,6 +34,10 @@ export type AgendaEvent = {
   sourceLabel: string
   /** Fiche d'origine, pour les événements issus de la collecte automatique. */
   sourceUrl?: string
+  /** Crédit et provenance du visuel (images trouvées par la collecte). */
+  imageCredit?: string
+  imageSourceUrl?: string
+  imageAlt?: string
   lastVerifiedAt: string
   status: AgendaStatus
 }

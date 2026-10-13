@@ -226,6 +226,7 @@ export const TRACKED_FIELDS = [
   "ticketUrl",
   "officialUrl",
   "organizer",
+  "imageUrl",
 ] as const
 
 export function fingerprint(event: CollectedEvent): string {

@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import AgendaMap from "./AgendaMap"
+import AgendaVisual from "./AgendaVisual"
 import type { AgendaEvent } from "./agenda-data"
 import { formatAgendaDateRange } from "./agenda-data"
 import { useLocale } from "@/components/LocaleProvider"
@@ -253,17 +254,21 @@ function EventCard({
 
   return (
     <article className="srt-card" style={{ animationDelay: `${animDelay}ms` }}>
-      <div className="srt-card-media">
-        {event.image ? (
-          <img src={event.image} alt={event.title} className="srt-card-img" />
-        ) : (
-          <div
-            className="srt-card-placeholder"
-            style={{ background: `linear-gradient(135deg, ${color}20 0%, ${color}50 100%)` }}
-          >
-            <span className="srt-placeholder-cat" style={{ color }}>{event.category}</span>
-          </div>
-        )}
+      <div className={`srt-card-media${event.image ? " srt-card-media--img" : ""}`}>
+        <AgendaVisual
+          variant="card"
+          src={event.image}
+          alt={event.imageAlt || event.title}
+          credit={event.imageCredit}
+          fallback={
+            <div
+              className="srt-card-placeholder"
+              style={{ background: `linear-gradient(135deg, ${color}20 0%, ${color}50 100%)` }}
+            >
+              <span className="srt-placeholder-cat" style={{ color }}>{event.category}</span>
+            </div>
+          }
+        />
         <span className="srt-badge srt-badge--cat">{event.category}</span>
         <span className={`srt-badge srt-badge--status${isOngoing ? " srt-badge--on" : " srt-badge--soon"}`}>
           {isOngoing ? t("EN COURS") : t("À VENIR")}
