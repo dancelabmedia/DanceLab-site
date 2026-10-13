@@ -45,7 +45,17 @@ et « Image vérifiée le ».
 - Fiches saisies à la main : visuel officiel (`og:image`) de la page de
   l'événement donnée dans « Lien billetterie » ou « Lien officiel ». Si le lien
   mène à une page générale, la collecte y cherche le lien de l'événement.
-- Doublon d'un événement de la Ville de Paris : reprise de son visuel.
+- Doublon d'un événement de la Ville de Paris, ou autre fiche du même
+  spectacle déjà illustrée : reprise de son visuel.
+- Lien imprécis (accueil, saison) ou absent : recherche dans le plan du site
+  (sitemap) du lien ou du lieu (`lib/collecte/venues.ts`), puis adresses
+  probables sur le modèle des pages connues du site (ex. Opéra
+  `/saison-26-27/ballet/<œuvre>`). Fiches « saison » ou « festival » : visuel du
+  site lui-même.
+- Page sans balise `og:image` : image déclarée en données structurées, puis
+  bannière principale de la page (jamais un logo).
+- Page inaccessible : nouvel essai la semaine suivante (28 jours sinon).
+- Relance immédiate : `NOTION_TOKEN=… npx tsx scripts/backfill-images.ts --write`.
 - Contrôles avant d'accepter une image : page propre à l'événement, titre de
   l'œuvre et artiste présents sur la page, rubrique danse (pas opéra ni
   concert), pas de logo ni de visuel par défaut du site, pas de bannière

@@ -14,7 +14,7 @@ import { normalizeQfapRecord } from '../lib/collecte/sources/que-faire-a-paris'
 import { planActions, pendingAfter } from '../lib/collecte/plan'
 import { PUBLICATION, type CollectedEvent } from '../lib/collecte/types'
 import type { AgendaPage } from '../lib/collecte/notion'
-import { findSharedImages, isGenericPage, isNonDanceSection, pickImage, readMeta, titlesMatch } from '../lib/collecte/images'
+import { eventDirectories, findSharedImages, guessedUrls, isGenericPage, isNonDanceSection, isNonEventPath, pickImage, readMeta, seasonYearInPath, titlesMatch } from '../lib/collecte/images'
 
 const TODAY = '2026-10-12'
 
@@ -64,6 +64,9 @@ function page(overrides: Partial<AgendaPage> = {}): AgendaPage {
     fingerprint: fingerprint(event()),
     missingSince: null,
     imageUrl: 'https://cdn.paris.fr/qfapv4/exemple.jpg',
+    imageSource: '',
+    imageCredit: '',
+    imageRightsNote: '',
     imageStatus: 'Officielle (open data Ville de Paris)',
     imageChecked: null,
     eventLinks: [],
@@ -319,4 +322,38 @@ test('un même visuel pour trois événements différents est considéré comme 
     { title: 'Spectacle Delta', imageUrl: 'https://x/delta.jpg' },
   ])
   assert.deepEqual([...shared], ['https://x/saison.jpg'])
+})
+
+test('les anciennes saisons et les articles sont écartés', () => {
+  assert.equal(seasonYearInPath('https://www.operadeparis.fr/saison-15-16/ballet/giselle'), 2015)
+  assert.equal(seasonYearInPath('https://www.104.fr/fr/programmation/saison-2025-2026/danse/x'), 2025)
+  assert.equal(seasonYearInPath('https://www.chatelet.com/programmation/26-27/hammer/'), 2026)
+  assert.equal(seasonYearInPath('https://www.lecarreaudutemple.eu/evenements/border-dance/'), null)
+  assert.equal(isNonEventPath('https://www.theatredelaville-paris.com/fr/theatre-sans-frontieres/entretien-avec-x'), true)
+  assert.equal(isNonEventPath('https://exemple.fr/entretien/avec-x'), true)
+  assert.equal(isNonEventPath('https://www.104.fr/fr/programmation/saison-2025-2026/categorie/x'), true)
+})
+
+test('l’apostrophe ne colle pas les mots (« l’Opéra » ≠ « lopera »)', () => {
+  assert.equal(titlesMatch("L'Histoire de Manon — Ballet de l'Opéra de Paris", "L'Histoire de Manon - Ballet - Opéra national de Paris"), true)
+})
+
+test('sans balise og:image, l’image principale de la page est utilisée (jamais un logo)', () => {
+  const html = '<img src="/m/lieu_logo_x.png"><img src="/m/banner_spectacle_radial.png" class="cover"><img src="/m/autre.jpg">'
+  assert.equal(pickImage(readMeta(html), 'https://www.festival-automne.com/fr/edition-2026/x'), 'https://www.festival-automne.com/m/banner_spectacle_radial.png')
+})
+
+test('l’œuvre peut figurer dans le texte de la page quand le titre ne donne que la compagnie', () => {
+  assert.equal(titlesMatch("The Joffrey Ballet — A Midsummer Night's Dream", 'The Joffrey Ballet | Théâtre des Champs-Elysées', "Midsummer Night's Dream d'Alexander Ekman"), true)
+  assert.equal(titlesMatch("The Joffrey Ballet — A Midsummer Night's Dream", 'Saison danse | TCE', "The Joffrey Ballet, Midsummer Night's Dream"), false)
+})
+
+test('les adresses probables suivent le modèle des pages connues du site', () => {
+  const dirs = eventDirectories(['https://www.operadeparis.fr/saison-26-27/ballet/lhistoire-de-manon'])
+  assert.deepEqual(dirs, ['https://www.operadeparis.fr/saison-26-27/ballet/'])
+  assert.ok(guessedUrls("Kaguyahime — The Tokyo Ballet", dirs).includes('https://www.operadeparis.fr/saison-26-27/ballet/kaguyahime'))
+})
+
+test('« Dance » seul ne suffit pas à reconnaître une œuvre', () => {
+  assert.equal(titlesMatch('Dance ; HØPE — Lucinda Childs, Alessandro Sciarroni', 'Trisha Brown Dance Company | La Villette', 'avec Lucinda Childs'), false)
 })

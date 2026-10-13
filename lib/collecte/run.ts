@@ -29,6 +29,7 @@ import {
   sourceImageProperties,
   officialImageProperties,
   noImageProperties,
+  sameEventImageProperties,
   imageIsAutoManaged,
   type AgendaPage,
   updatePageProperties,
@@ -36,8 +37,8 @@ import {
   DEFAULT_AGENDA_DATABASE_ID,
 } from "./notion"
 import { pendingAfter, planActions, type PlannedAction } from "./plan"
-import { findOfficialImage, findSharedImages, IMAGE_STATUS, type FoundImage } from "./images"
-import { dedupeWithinSource, parisToday } from "./rules"
+import { eventDirectories, findOfficialImage, findSharedImages, IMAGE_STATUS, type FoundImage } from "./images"
+import { dedupeWithinSource, parisToday, sameEvent } from "./rules"
 import { PUBLICATION, emptyCounters, type CollectedEvent, type RunReport, type RunTrigger } from "./types"
 
 type SourceDefinition = { prefix: string; name: string; collect: () => Promise<CollectedEvent[]> }
@@ -292,7 +293,7 @@ async function apply(action: PlannedAction, ctx: ApplyContext) {
 
 /** Nombre de jours avant de chercher à nouveau un visuel introuvable. */
 const IMAGE_RETRY_DAYS = 28
-const IMAGE_CONCURRENCY = 4
+const IMAGE_CONCURRENCY = 6
 
 /**
  * Cherche le visuel officiel des fiches qui n'en ont pas, sur la page de
@@ -302,19 +303,41 @@ const IMAGE_CONCURRENCY = 4
 async function enrichImages(pages: AgendaPage[], ctx: ApplyContext, deadline: number): Promise<boolean> {
   const { client, today, dryRun, report } = ctx
   const c = report.counters
+  // Page inaccessible (site lent ou bloqué) : nouvel essai la semaine suivante.
+  const retryInaccessibleBefore = new Date(Date.parse(`${today}T00:00:00Z`) - 6 * 86_400_000).toISOString().slice(0, 10)
   const retryBefore = new Date(Date.parse(`${today}T00:00:00Z`) - IMAGE_RETRY_DAYS * 86_400_000).toISOString().slice(0, 10)
 
   const candidates = pages.filter(
     (p) =>
       !p.locked &&
+      // Inutile de chercher le visuel d'un événement terminé ou non publié.
+      !((p.endDate ?? p.startDate ?? "9999").slice(0, 10) < today) &&
+      p.publication !== PUBLICATION.archived &&
       !p.sourceId && // les fiches collectées reçoivent le visuel de leur source
       !p.imageUrl &&
       !p.hasManualImage &&
       p.imageStatus !== IMAGE_STATUS.refused &&
       p.imageStatus !== IMAGE_STATUS.manual &&
-      !(p.imageStatus === IMAGE_STATUS.none && (p.imageChecked ?? "") > retryBefore)
+      !(p.imageStatus === IMAGE_STATUS.none && (p.imageChecked ?? "") > (p.imageRightsNote.includes("inaccessible") ? retryInaccessibleBefore : retryBefore))
   )
 
+  // Même spectacle déjà illustré dans une autre fiche : on reprend son visuel.
+  const illustrated = pages.filter((p) => p.imageUrl && p.imageStatus !== IMAGE_STATUS.refused)
+  for (const page of [...candidates]) {
+    const twin = illustrated.find((other) => other.id !== page.id && sameEvent(other, page))
+    if (!twin) continue
+    candidates.splice(candidates.indexOf(page), 1)
+    try {
+      if (!dryRun) await updatePageProperties(client, page.id, sameEventImageProperties(twin, today))
+      page.imageUrl = twin.imageUrl
+      c.imagesAdded++
+      report.actions.push(`Visuel ajouté : ${page.title} (repris de « ${twin.title} »)`)
+    } catch (error) {
+      report.errors.push(`Visuel « ${page.title} » : ${message(error)}`)
+    }
+  }
+
+  const directories = eventDirectories(pages.filter((p) => p.imageStatus === IMAGE_STATUS.official).map((p) => p.imageSource))
   const found: Array<{ page: AgendaPage; image: FoundImage | null; reason: string }> = []
   let index = 0
   let interrupted = false
@@ -327,7 +350,7 @@ async function enrichImages(pages: AgendaPage[], ctx: ApplyContext, deadline: nu
       const page = candidates[index++]
       let result = { image: null as FoundImage | null, reason: "Pas de lien vers la page de l'événement" }
       for (const link of page.eventLinks) {
-        result = await findOfficialImage(page.title, link)
+        result = await findOfficialImage(page.title, link, page.startDate, directories)
         if (result.image) break
       }
       found.push({ page, ...result })
