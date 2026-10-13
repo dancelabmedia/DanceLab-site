@@ -19,6 +19,7 @@ import type { CollectedEvent, PublicationDecision, RunReport, RunStatus } from "
 import { PUBLICATION } from "./types"
 import { dayOf, seasonOf } from "./rules"
 import { IMAGE_RIGHTS, IMAGE_STATUS, type FoundImage } from "./images"
+import { VENUE_SITES } from "./venues"
 
 const NOTION_VERSION = "2025-09-03"
 export const DEFAULT_AGENDA_DATABASE_ID = "c06a1552cfcc4522ae68d32f833b3cf3"
@@ -245,6 +246,10 @@ export type AgendaPage = {
   fingerprint: string
   missingSince: string | null
   imageUrl: string
+  imageSource: string
+  imageCredit: string
+  /** Raison notée quand aucun visuel n'a été trouvé. */
+  imageRightsNote: string
   imageStatus: string
   imageChecked: string | null
   /** Liens vers la page de l'événement, du plus précis au plus général. */
@@ -272,9 +277,14 @@ export async function listAgendaPages(client: NotionClient, dataSourceId: string
         fingerprint: readText(props[F.fingerprint]),
         missingSince: props[F.missingSince]?.date?.start ?? null,
         imageUrl: readText(props[F.imageUrl]),
+        imageSource: readText(props[F.imageSource]),
+        imageCredit: readText(props[F.imageCredit]),
+        imageRightsNote: readText(props[F.imageRights]),
         imageStatus: readText(props[F.imageStatus]),
         imageChecked: props[F.imageChecked]?.date?.start ?? null,
-        eventLinks: [readText(props[F.ticket]), readText(props[F.officialUrl])].filter(Boolean),
+        eventLinks: Array.from(
+          new Set([readText(props[F.ticket]), readText(props[F.officialUrl]), VENUE_SITES[readText(props["Lieu"])] ?? ""].filter(Boolean))
+        ),
         hasManualImage:
           Boolean(p.cover) ||
           ["Image", "Photo", "Affiche", "Visuel", "Cover"].some((name) => props[name]?.files?.length),
@@ -340,6 +350,19 @@ export function officialImageProperties(image: FoundImage, today: string): Recor
     [F.imageAlt]: text(image.alt),
     [F.imageStatus]: select(IMAGE_STATUS.official),
     [F.imageRights]: text(IMAGE_RIGHTS.official),
+    [F.imageChecked]: { date: { start: today } },
+  }
+}
+
+/** Visuel repris d'une autre fiche décrivant le même spectacle. */
+export function sameEventImageProperties(twin: AgendaPage, today: string): Record<string, unknown> {
+  return {
+    [F.imageUrl]: url(twin.imageUrl),
+    [F.imageSource]: url(twin.imageSource),
+    [F.imageCredit]: text(twin.imageCredit),
+    [F.imageAlt]: text(twin.title),
+    [F.imageStatus]: select(twin.imageStatus || IMAGE_STATUS.official),
+    [F.imageRights]: text(`Repris de la fiche « ${twin.title} » (même spectacle)`),
     [F.imageChecked]: { date: { start: today } },
   }
 }
