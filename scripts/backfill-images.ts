@@ -6,9 +6,10 @@
  * Usage : NOTION_TOKEN=… npx tsx scripts/backfill-images.ts [--write] [rapport.json]
  */
 import fs from 'node:fs'
-import { NotionClient, listAgendaPages, officialImageProperties, noImageProperties, sameEventImageProperties, updatePageProperties, DEFAULT_AGENDA_DATABASE_ID } from '../lib/collecte/notion'
-import { eventDirectories, findOfficialImage, findSharedImages, IMAGE_STATUS, type FoundImage } from '../lib/collecte/images'
+import { NotionClient, listAgendaPages, officialImageProperties, sourceImageProperties, noImageProperties, sameEventImageProperties, updatePageProperties, DEFAULT_AGENDA_DATABASE_ID } from '../lib/collecte/notion'
+import { eventDirectories, findOfficialImage, sameProduction, findSharedImages, IMAGE_STATUS, type FoundImage } from '../lib/collecte/images'
 import { PUBLICATION } from '../lib/collecte/types'
+import { findOpenDataTwin } from '../lib/collecte/run'
 import { parisToday, sameEvent } from '../lib/collecte/rules'
 
 async function main() {
@@ -26,7 +27,7 @@ async function main() {
   const illustrated = pages.filter((p) => p.imageUrl && p.imageStatus !== IMAGE_STATUS.refused)
   let copied = 0
   for (const page of [...todo]) {
-    const twin = illustrated.find((o) => o.id !== page.id && sameEvent(o, page))
+    const twin = illustrated.find((o) => o.id !== page.id && (sameEvent(o, page) || sameProduction(o, page)))
     if (!twin) continue
     todo.splice(todo.indexOf(page), 1)
     copied++
@@ -41,6 +42,12 @@ async function main() {
   const worker = async () => {
     while (i < todo.length) {
       const p = todo[i++]
+      const od = await findOpenDataTwin(p)
+      if (od) {
+        if (write) await updatePageProperties(client, p.id, sourceImageProperties(od, today))
+        results.push({ id: p.id, title: p.title, links: [od.sourceUrl], image: { url: od.imageUrl, sourceUrl: od.sourceUrl, credit: od.imageCredit || 'Ville de Paris', alt: p.title }, reason: '', openData: true } as any)
+        continue
+      }
       let r = { image: null as FoundImage | null, reason: "Pas de lien vers la page de l'événement" }
       for (const link of p.eventLinks) { r = await findOfficialImage(p.title, link, p.startDate, directories); if (r.image) break }
       results.push({ id: p.id, title: p.title, links: p.eventLinks, ...r })
@@ -53,7 +60,7 @@ async function main() {
     ...pages.filter((p) => p.imageStatus === IMAGE_STATUS.official).map((p) => ({ title: p.title, imageUrl: p.imageUrl })),
   ])
   for (const r of results) if (r.image && shared.has(r.image.url) && !/^(saison|festival|programmation)/i.test(r.title)) { r.image = null; r.reason = 'Visuel générique utilisé pour plusieurs événements' }
-  if (write) for (const r of results) await updatePageProperties(client, r.id, r.image ? officialImageProperties(r.image, today) : noImageProperties(r.reason, today))
+  if (write) for (const r of results) if (!(r as any).openData) await updatePageProperties(client, r.id, r.image ? officialImageProperties(r.image, today) : noImageProperties(r.reason, today))
   const found = results.filter((r) => r.image).length
   console.log(JSON.stringify({ traitées: results.length, trouvées: found, sans: results.length - found, écrit: write }))
   if (out) fs.writeFileSync(out, JSON.stringify(results, null, 1))

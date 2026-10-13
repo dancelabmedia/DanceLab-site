@@ -13,7 +13,8 @@
  *     « Partielle ») et la suivante reprend là où elle s'est arrêtée.
  */
 
-import { collectQueFaireAParis } from "./sources/que-faire-a-paris"
+import { collectQueFaireAParis, searchQfapByTitle } from "./sources/que-faire-a-paris"
+import { VENUE_SITES } from "./venues"
 import {
   F,
   NotionClient,
@@ -37,7 +38,7 @@ import {
   DEFAULT_AGENDA_DATABASE_ID,
 } from "./notion"
 import { pendingAfter, planActions, type PlannedAction } from "./plan"
-import { eventDirectories, findOfficialImage, findSharedImages, IMAGE_STATUS, type FoundImage } from "./images"
+import { eventDirectories, findOfficialImage, matchesOpenDataEvent, requiredParts, sameProduction, findSharedImages, IMAGE_STATUS, type FoundImage } from "./images"
 import { dedupeWithinSource, parisToday, sameEvent } from "./rules"
 import { PUBLICATION, emptyCounters, type CollectedEvent, type RunReport, type RunTrigger } from "./types"
 
@@ -291,6 +292,14 @@ async function apply(action: PlannedAction, ctx: ApplyContext) {
   }
 }
 
+/** Événement open data de la Ville de Paris correspondant à la fiche (ou null). */
+export async function findOpenDataTwin(page: AgendaPage): Promise<CollectedEvent | null> {
+  const [work] = requiredParts(page.title)
+  if (!work?.length) return null
+  const records = await searchQfapByTitle(work.join(" "))
+  return records.find((r) => matchesOpenDataEvent(page, r, Object.keys(VENUE_SITES))) ?? null
+}
+
 /** Nombre de jours avant de chercher à nouveau un visuel introuvable. */
 const IMAGE_RETRY_DAYS = 28
 const IMAGE_CONCURRENCY = 6
@@ -324,7 +333,7 @@ async function enrichImages(pages: AgendaPage[], ctx: ApplyContext, deadline: nu
   // Même spectacle déjà illustré dans une autre fiche : on reprend son visuel.
   const illustrated = pages.filter((p) => p.imageUrl && p.imageStatus !== IMAGE_STATUS.refused)
   for (const page of [...candidates]) {
-    const twin = illustrated.find((other) => other.id !== page.id && sameEvent(other, page))
+    const twin = illustrated.find((other) => other.id !== page.id && (sameEvent(other, page) || sameProduction(other, page)))
     if (!twin) continue
     candidates.splice(candidates.indexOf(page), 1)
     try {
@@ -348,6 +357,19 @@ async function enrichImages(pages: AgendaPage[], ctx: ApplyContext, deadline: nu
         return
       }
       const page = candidates[index++]
+      // 1. Le même événement dans l'agenda open data de la Ville de Paris.
+      const openData = await findOpenDataTwin(page)
+      if (openData) {
+        try {
+          if (!dryRun) await updatePageProperties(client, page.id, sourceImageProperties(openData, today))
+          c.imagesAdded++
+          report.actions.push(`Visuel ajouté : ${page.title} (Ville de Paris – Que faire à Paris)`)
+        } catch (error) {
+          report.errors.push(`Visuel « ${page.title} » : ${message(error)}`)
+        }
+        continue
+      }
+      // 2. Le visuel officiel sur la page de l'événement.
       let result = { image: null as FoundImage | null, reason: "Pas de lien vers la page de l'événement" }
       for (const link of page.eventLinks) {
         result = await findOfficialImage(page.title, link, page.startDate, directories)

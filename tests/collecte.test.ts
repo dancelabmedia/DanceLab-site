@@ -14,7 +14,7 @@ import { normalizeQfapRecord } from '../lib/collecte/sources/que-faire-a-paris'
 import { planActions, pendingAfter } from '../lib/collecte/plan'
 import { PUBLICATION, type CollectedEvent } from '../lib/collecte/types'
 import type { AgendaPage } from '../lib/collecte/notion'
-import { eventDirectories, findSharedImages, guessedUrls, isGenericPage, isNonDanceSection, isNonEventPath, pickImage, readMeta, seasonYearInPath, titlesMatch } from '../lib/collecte/images'
+import { eventDirectories, findSharedImages, guessedUrls, matchesOpenDataEvent, sameProduction, titledContentImage, isGenericPage, isNonDanceSection, isNonEventPath, pickImage, readMeta, seasonYearInPath, titlesMatch } from '../lib/collecte/images'
 
 const TODAY = '2026-10-12'
 
@@ -66,6 +66,7 @@ function page(overrides: Partial<AgendaPage> = {}): AgendaPage {
     imageUrl: 'https://cdn.paris.fr/qfapv4/exemple.jpg',
     imageSource: '',
     imageCredit: '',
+    venue: '',
     imageRightsNote: '',
     imageStatus: 'Officielle (open data Ville de Paris)',
     imageChecked: null,
@@ -356,4 +357,27 @@ test('les adresses probables suivent le modèle des pages connues du site', () =
 
 test('« Dance » seul ne suffit pas à reconnaître une œuvre', () => {
   assert.equal(titlesMatch('Dance ; HØPE — Lucinda Childs, Alessandro Sciarroni', 'Trisha Brown Dance Company | La Villette', 'avec Lucinda Childs'), false)
+})
+
+test('une image dont le nom reprend l’œuvre est acceptée, pas un logo du lieu', () => {
+  assert.equal(titledContentImage('<img src="/img/dome-de-paris.png"><img src="/f/4-saisons-pdc-web.jpg">', 'Les Quatre Saisons — Paris Ballet Theatre'), '/f/4-saisons-pdc-web.jpg')
+  assert.equal(titledContentImage('<img src="/img/dome-de-paris.png">', 'Le Roi Soleil, le retour — Kamel Ouali'), '')
+  assert.ok(guessedUrls('Muette — Boris Charmatz / Terrain (Festival d’Automne)', ['https://www.festival-automne.com/fr/edition-2026/']).includes('https://www.festival-automne.com/fr/edition-2026/boris-charmatz-terrain-muette'))
+})
+
+test('même production à d’autres dates ou lieux, sans confondre deux versions d’une œuvre', () => {
+  const p = (title: string, venue = '', startDate = '2026-11-12') => ({ title, venue, startDate })
+  assert.equal(sameProduction(p('Olivier Dubois — Come Out — Centre des arts d’Enghien-les-Bains'), p('Come Out — Olivier Dubois (MAC Créteil)', 'MAC Créteil', '2027-01-22')), true)
+  assert.equal(sameProduction(p("L'Histoire de Manon — Adieux Dorothée Gilbert", 'Palais Garnier'), p("L'Histoire de Manon — Ballet de l'Opéra de Paris", 'Palais Garnier')), true)
+  assert.equal(sameProduction(p('Giselle — Johan Inger', 'Palais Garnier', '2027-06-25'), p('Giselle — Ballet de Lettonie', 'Palais des Congrès', '2027-02-01')), false)
+  assert.equal(sameProduction(p('Giselle (classique)', 'Palais des Congrès'), p('Giselle — Johan Inger', 'Palais Garnier')), false)
+})
+
+test('correspondance open data : même lieu, ou titre quasi identique', () => {
+  const rec = (title: string, venue: string, startDate = '2026-11-03') => ({ title, description: '', startDate, endDate: startDate, imageUrl: 'https://cdn.paris.fr/x.jpg', venue, address: '', city: 'Paris' })
+  const known = ['Théâtre de la Bastille', 'Opéra Bastille', 'Chaillot']
+  assert.equal(matchesOpenDataEvent({ title: 'Ix : variations — Marcos Caramés-Blanco & Sacha Starck', startDate: '2026-11-03', venue: 'Théâtre de la Bastille' }, rec('Ix : variations - Marcos Caramés-Blanco et Sacha Starck', 'Théâtre de la Bastille'), known), true)
+  assert.equal(matchesOpenDataEvent({ title: "Le Fantôme de l'Opéra (création française originale)", startDate: '2026-11-03', venue: 'À confirmer' }, rec('Le fantôme de Canterville, spectacle enfants', 'Théâtre X'), known), false)
+  assert.equal(matchesOpenDataEvent({ title: 'Casse-Noisette — Ballet Opéra de Paris', startDate: '2026-12-22', venue: 'Opéra Bastille' }, rec('Casse-noisette', 'Théâtre Le 13e Art', '2026-12-03'), known), false)
+  assert.equal(matchesOpenDataEvent({ title: 'Lac des Cygnes (ballet en tournée)', startDate: '2027-01-22', venue: 'À confirmer' }, rec('Tchaïkovsky : Le Lac des cygnes par l’Orchestre Colonne', 'Salle Gaveau', '2027-01-20'), known), false)
 })
