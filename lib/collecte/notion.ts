@@ -18,6 +18,7 @@ import { fetchWithRetry, sleep } from "./http"
 import type { CollectedEvent, PublicationDecision, RunReport, RunStatus } from "./types"
 import { PUBLICATION } from "./types"
 import { dayOf, seasonOf } from "./rules"
+import { IMAGE_RIGHTS, IMAGE_STATUS, type FoundImage } from "./images"
 
 const NOTION_VERSION = "2025-09-03"
 export const DEFAULT_AGENDA_DATABASE_ID = "c06a1552cfcc4522ae68d32f833b3cf3"
@@ -56,6 +57,14 @@ export const F = {
   lastChecked: "Dernière vérification",
   missingSince: "Absente de la source depuis",
   lastChange: "Dernière modification auto",
+  // Visuel de l'événement
+  imageUrl: "Image URL",
+  imageSource: "Source image",
+  imageCredit: "Crédit image",
+  imageAlt: "Texte alternatif image",
+  imageStatus: "Statut image",
+  imageRights: "Droits image",
+  imageChecked: "Image vérifiée le",
 } as const
 
 export const ORIGIN_AUTO = "🆕 Nouvel ajout (veille auto)"
@@ -79,6 +88,7 @@ type NotionPage = {
   url?: string
   in_trash?: boolean
   archived?: boolean
+  cover?: unknown
   properties: Record<string, any>
 }
 
@@ -195,6 +205,23 @@ export async function ensureAgendaSchema(client: NotionClient, dataSourceId: str
     [F.lastChecked]: { date: {} },
     [F.missingSince]: { date: {} },
     [F.lastChange]: { rich_text: {} },
+    [F.imageUrl]: { url: {} },
+    [F.imageSource]: { url: {} },
+    [F.imageCredit]: { rich_text: {} },
+    [F.imageAlt]: { rich_text: {} },
+    [F.imageStatus]: {
+      select: {
+        options: [
+          { name: IMAGE_STATUS.openData, color: "green" },
+          { name: IMAGE_STATUS.official, color: "blue" },
+          { name: IMAGE_STATUS.manual, color: "purple" },
+          { name: IMAGE_STATUS.refused, color: "red" },
+          { name: IMAGE_STATUS.none, color: "gray" },
+        ],
+      },
+    },
+    [F.imageRights]: { rich_text: {} },
+    [F.imageChecked]: { date: {} },
   }
 
   const missing = Object.fromEntries(Object.entries(wanted).filter(([name]) => !existing[name]))
@@ -217,6 +244,13 @@ export type AgendaPage = {
   locked: boolean
   fingerprint: string
   missingSince: string | null
+  imageUrl: string
+  imageStatus: string
+  imageChecked: string | null
+  /** Liens vers la page de l'événement, du plus précis au plus général. */
+  eventLinks: string[]
+  /** Une image a déjà été déposée à la main (fichier ou couverture Notion). */
+  hasManualImage: boolean
 }
 
 export async function listAgendaPages(client: NotionClient, dataSourceId: string): Promise<AgendaPage[]> {
@@ -237,6 +271,13 @@ export async function listAgendaPages(client: NotionClient, dataSourceId: string
         locked: Boolean(props[F.locked]?.checkbox),
         fingerprint: readText(props[F.fingerprint]),
         missingSince: props[F.missingSince]?.date?.start ?? null,
+        imageUrl: readText(props[F.imageUrl]),
+        imageStatus: readText(props[F.imageStatus]),
+        imageChecked: props[F.imageChecked]?.date?.start ?? null,
+        eventLinks: [readText(props[F.ticket]), readText(props[F.officialUrl])].filter(Boolean),
+        hasManualImage:
+          Boolean(p.cover) ||
+          ["Image", "Photo", "Affiche", "Visuel", "Cover"].some((name) => props[name]?.files?.length),
       }
     })
 }
@@ -272,6 +313,45 @@ export function sourceProperties(event: CollectedEvent, fp: string, today: strin
   }
 }
 
+/** Statuts d'image que la collecte a le droit de remplacer. */
+export function imageIsAutoManaged(status: string): boolean {
+  return status === "" || status === IMAGE_STATUS.openData || status === IMAGE_STATUS.none
+}
+
+/** Propriétés du visuel fourni par la source (vide = rien à écrire). */
+export function sourceImageProperties(event: CollectedEvent, today: string): Record<string, unknown> {
+  if (!event.imageUrl) return {}
+  return {
+    [F.imageUrl]: url(event.imageUrl),
+    [F.imageSource]: url(event.sourceUrl),
+    [F.imageCredit]: text(event.imageCredit),
+    [F.imageAlt]: text(event.imageAlt),
+    [F.imageStatus]: select(IMAGE_STATUS.openData),
+    [F.imageRights]: text(IMAGE_RIGHTS.openData),
+    [F.imageChecked]: { date: { start: today } },
+  }
+}
+
+export function officialImageProperties(image: FoundImage, today: string): Record<string, unknown> {
+  return {
+    [F.imageUrl]: url(image.url),
+    [F.imageSource]: url(image.sourceUrl),
+    [F.imageCredit]: text(image.credit),
+    [F.imageAlt]: text(image.alt),
+    [F.imageStatus]: select(IMAGE_STATUS.official),
+    [F.imageRights]: text(IMAGE_RIGHTS.official),
+    [F.imageChecked]: { date: { start: today } },
+  }
+}
+
+export function noImageProperties(reason: string, today: string): Record<string, unknown> {
+  return {
+    [F.imageStatus]: select(IMAGE_STATUS.none),
+    [F.imageRights]: text(reason),
+    [F.imageChecked]: { date: { start: today } },
+  }
+}
+
 export async function createAgendaPage(
   client: NotionClient,
   dataSourceId: string,
@@ -293,6 +373,7 @@ export async function createAgendaPage(
         [F.publication]: select(decision.status),
         [F.pendingReason]: text(decision.reasons.join(" · ")),
         [F.lastChange]: text(`${today} : fiche créée par la collecte`),
+        ...sourceImageProperties(event, today),
       },
     }),
   })
@@ -323,6 +404,8 @@ export const L = {
   archived: "Archivées",
   missing: "Disparues de la source",
   pendingTotal: "En attente (total)",
+  imagesAdded: "Images ajoutées",
+  imagesMissing: "Sans image",
   errors: "Erreurs",
 } as const
 
@@ -382,6 +465,8 @@ function runProperties(report: RunReport) {
     [L.archived]: num(c.archived),
     [L.missing]: num(c.missingFromSource),
     [L.pendingTotal]: num(c.pendingTotal),
+    [L.imagesAdded]: num(c.imagesAdded),
+    [L.imagesMissing]: num(c.imagesMissing),
     [L.errors]: text(report.errors.join(" · ")),
   }
 }
@@ -427,6 +512,8 @@ export async function listRuns(client: NotionClient, logDsId: string, limit = 20
         archived: n(L.archived),
         missing: n(L.missing),
         pendingTotal: n(L.pendingTotal),
+        imagesAdded: n(L.imagesAdded),
+        imagesMissing: n(L.imagesMissing),
       },
       errors: readText(pr[L.errors]),
     }

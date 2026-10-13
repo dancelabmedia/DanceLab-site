@@ -35,6 +35,28 @@ Sources autorisées → Collecte → Vérification → Dédoublonnage → Notion
 - Disparue de la source : signalée, puis mise en attente au bout de 14 jours.
 - Retour arrière : historique des versions de la page dans Notion.
 
+## Visuels des événements
+
+Chaque fiche porte les colonnes Notion « Image URL », « Source image »,
+« Crédit image », « Texte alternatif image », « Statut image », « Droits image »
+et « Image vérifiée le ».
+
+- Fiches de la Ville de Paris : visuel fourni par l'open data (crédit affiché).
+- Fiches saisies à la main : visuel officiel (`og:image`) de la page de
+  l'événement donnée dans « Lien billetterie » ou « Lien officiel ». Si le lien
+  mène à une page générale, la collecte y cherche le lien de l'événement.
+- Doublon d'un événement de la Ville de Paris : reprise de son visuel.
+- Contrôles avant d'accepter une image : page propre à l'événement, titre de
+  l'œuvre et artiste présents sur la page, rubrique danse (pas opéra ni
+  concert), pas de logo ni de visuel par défaut du site, pas de bannière
+  partagée par plusieurs événements, image qui se charge.
+- Statut « Refusée » : l'image n'est plus affichée ni remplacée.
+  Statut « Ajoutée à la main » ou image déposée dans Notion (fichier ou
+  couverture) : jamais remplacée.
+- « Aucune trouvée » : nouvelle tentative au bout de 28 jours.
+- Sur le site : photo en plein cadre, affiche verticale affichée en entier sur
+  fond flouté, retour au fond coloré si l'image ne se charge pas.
+
 ## Variables Vercel
 
 | Variable | Statut |

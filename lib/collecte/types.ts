@@ -45,6 +45,10 @@ export type CollectedEvent = {
   taggedDance: boolean
   /** Date de dernière mise à jour annoncée par la source. */
   sourceUpdatedAt: string | null
+  /** Visuel fourni par la source (vide si aucun). */
+  imageUrl: string
+  imageCredit: string
+  imageAlt: string
 }
 
 export type PublicationDecision = {
@@ -64,6 +68,8 @@ export type RunCounters = {
   missingFromSource: number
   pendingTotal: number
   skippedLocked: number
+  imagesAdded: number
+  imagesMissing: number
 }
 
 export type RunStatus = "En cours" | "Réussie" | "Partielle" | "Échec" | "Ignorée"
@@ -94,5 +100,7 @@ export function emptyCounters(): RunCounters {
     missingFromSource: 0,
     pendingTotal: 0,
     skippedLocked: 0,
+    imagesAdded: 0,
+    imagesMissing: 0,
   }
 }
