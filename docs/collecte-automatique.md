@@ -46,7 +46,11 @@ et « Image vérifiée le ».
   l'événement donnée dans « Lien billetterie » ou « Lien officiel ». Si le lien
   mène à une page générale, la collecte y cherche le lien de l'événement.
 - Doublon d'un événement de la Ville de Paris, ou autre fiche du même
-  spectacle déjà illustrée : reprise de son visuel.
+  spectacle (ou de la même production à d'autres dates) déjà illustrée :
+  reprise de son visuel.
+- Recherche par titre dans tout l'agenda open data de la Ville de Paris
+  (même œuvre et artiste, dates proches, même lieu ou titre quasi identique).
+- Image nommée d'après l'œuvre sur la page (billetteries sans og:image).
 - Lien imprécis (accueil, saison) ou absent : recherche dans le plan du site
   (sitemap) du lien ou du lieu (`lib/collecte/venues.ts`), puis adresses
   probables sur le modèle des pages connues du site (ex. Opéra

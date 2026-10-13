@@ -248,6 +248,8 @@ export type AgendaPage = {
   imageUrl: string
   imageSource: string
   imageCredit: string
+  /** Colonne « Lieu » (sélection). */
+  venue: string
   /** Raison notée quand aucun visuel n'a été trouvé. */
   imageRightsNote: string
   imageStatus: string
@@ -279,6 +281,7 @@ export async function listAgendaPages(client: NotionClient, dataSourceId: string
         imageUrl: readText(props[F.imageUrl]),
         imageSource: readText(props[F.imageSource]),
         imageCredit: readText(props[F.imageCredit]),
+        venue: readText(props["Lieu"]),
         imageRightsNote: readText(props[F.imageRights]),
         imageStatus: readText(props[F.imageStatus]),
         imageChecked: props[F.imageChecked]?.date?.start ?? null,

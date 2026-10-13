@@ -132,9 +132,26 @@ export function mainContentImage(html: string): string {
     const url = src(tag)
     return url && !/\.svg(\?|$)|^data:/i.test(url) && !/logo|icon|picto|partenaire|sponsor|avatar|gravatar|favicon|placeholder|pixel/i.test(url + tag)
   })
-  const hero = usable.find((tag) => /\b(cover|hero|banner|header|slide|visuel|affiche|main)\b/i.test(tag) || /banner|cover|hero|header|slide|visuel|affiche/i.test(src(tag)))
+  const hero = usable.find((tag) => /\b(cover|hero|banner|header|slide|visuel|affiche|main)\b/i.test(tag) || /banner|banniere|bandeau|cover|hero|header|slide|visuel|affiche/i.test(src(tag)))
   // Uniquement une image identifiée comme visuel principal (bannière, couverture…).
   return src(hero ?? "")
+}
+
+/**
+ * Image du contenu dont le nom de fichier reprend le titre de l'œuvre
+ * (ex. « 4-saisons-pdc-web.jpg » pour « Les Quatre Saisons »).
+ */
+export function titledContentImage(html: string, eventTitle: string): string {
+  const work = requiredParts(eventTitle)[0] ?? []
+  if (!work.length) return ""
+  for (const m of html.matchAll(/<img\b[^>]*>/gi)) {
+    const url = /\b(?:data-src|src)\s*=\s*["']([^"']+)["']/i.exec(m[0])?.[1] ?? ""
+    if (!url || /\.svg(\?|$)|^data:|logo|icon|picto|avatar/i.test(url)) continue
+    const file = decodeURIComponent(url.split("?")[0].split("/").pop() ?? "")
+    const words = new Set(titleTokens(file.replace(/[-_.]+/g, " ")))
+    if (work.some((t) => t.length >= 3 && words.has(t))) return url
+  }
+  return ""
 }
 
 export function pickImage(meta: Record<string, string>, baseUrl: string): string {
@@ -446,7 +463,11 @@ async function checkPage(eventTitle: string, pageUrl: string, collective: boolea
     : titlesMatch(eventTitle, pageText, visibleText(html))
   if (!matches) return { image: null, reason: "La page ne correspond pas au titre de l'événement" }
 
-  const url = pickImage(meta, pageUrl)
+  let url = pickImage(meta, pageUrl)
+  if (!url) {
+    const titled = titledContentImage(html, eventTitle)
+    if (titled) url = pickImage({ image: titled }, pageUrl)
+  }
   if (!url) return { image: null, reason: "Aucun visuel déclaré sur la page" }
   if (isLogoLike(url)) return { image: null, reason: "Le visuel trouvé est un logo ou une image par défaut" }
 
@@ -492,6 +513,9 @@ export function guessedUrls(eventTitle: string, directories: string[]): string[]
     slugs.add(slugify(`${parts[1]} ${parts[0]}`))
     slugs.add(slugify(`${parts[0]} ${parts[1]}`))
   }
+  // Compagnie complète (« Boris Charmatz / Terrain » → « boris-charmatz-terrain-muette »).
+  const fullArtist = cleaned.split(/\s[—–]\s|\s-\s/)[1]?.replace(/\s\/\s/g, " ").trim()
+  if (parts[0] && fullArtist) slugs.add(slugify(`${fullArtist} ${parts[0]}`))
   const urls: string[] = []
   for (const dir of directories) for (const slug of slugs) if (slug.length >= 3) urls.push(dir.replace(/\/?$/, "/") + slug)
   return urls.slice(0, 8)
@@ -555,6 +579,42 @@ export async function findOfficialImage(
  * Un même visuel utilisé pour plusieurs événements différents est un visuel
  * générique (bannière de saison, image de festival…) : on l'écarte.
  */
+/**
+ * Deux fiches décrivent-elles la même production (même œuvre, même artiste),
+ * éventuellement à d'autres dates ou dans un autre lieu ?
+ * Sans artiste sur l'une des fiches, il faut le même lieu et moins d'un an
+ * d'écart (pour ne pas confondre deux « Giselle » différentes).
+ */
+export function sameProduction(
+  a: { title: string; venue: string; startDate: string | null },
+  b: { title: string; venue: string; startDate: string | null }
+): boolean {
+  const pa = requiredParts(a.title)
+  const pb = requiredParts(b.title)
+  if (!pa.length || !pb.length) return false
+  const sets = (parts: string[][]) => parts.map((p) => new Set(p))
+  const [workA, artistA] = sets(pa)
+  const [workB, artistB] = sets(pb)
+  const subset = (x: Set<string>, y: Set<string>) => [...x].every((t) => y.has(t))
+  // L'œuvre peut être écrite « Œuvre — Artiste » ou « Artiste — Œuvre ».
+  const pairs: Array<[Set<string>, Set<string> | undefined, Set<string>, Set<string> | undefined]> = [
+    [workA, artistA, workB, artistB],
+    [workA, artistA, artistB ?? new Set(), workB],
+  ]
+  for (const [wa, aa, wb, ab] of pairs) {
+    const small = wa.size <= wb.size ? wa : wb
+    const large = small === wa ? wb : wa
+    if (!small.size || !subset(small, large) || (small.size < 2 && small.size !== large.size)) continue
+    if (aa?.size && ab?.size) {
+      if ([...aa].some((t) => ab.has(t))) return true
+      continue
+    }
+    const days = a.startDate && b.startDate ? Math.abs(Date.parse(a.startDate.slice(0, 10)) - Date.parse(b.startDate.slice(0, 10))) / 86_400_000 : 9999
+    if (a.venue && a.venue === b.venue && days <= 365) return true
+  }
+  return false
+}
+
 /** Dossiers d'événements déduits des pages officielles déjà trouvées. */
 export function eventDirectories(sourceUrls: string[]): string[] {
   const dirs = new Set<string>()
@@ -580,4 +640,38 @@ export function findSharedImages(entries: Array<{ title: string; imageUrl: strin
     titlesByImage.set(imageUrl, set)
   }
   return new Set(Array.from(titlesByImage.entries()).filter(([, titles]) => titles.size >= 3).map(([url]) => url))
+}
+
+/**
+ * Événement de la Ville de Paris correspondant à une fiche :
+ *   - même œuvre et même artiste (si la fiche en cite un) ;
+ *   - dates qui se recoupent (± 45 jours) ;
+ *   - même lieu si la fiche indique un lieu connu, sinon titre quasi identique
+ *     (évite « Le Fantôme de l'Opéra » ⇔ « Le Fantôme de Canterville »).
+ */
+export function matchesOpenDataEvent(
+  fiche: { title: string; startDate: string | null; endDate?: string | null; venue?: string },
+  record: { title: string; description: string; startDate: string | null; endDate: string | null; imageUrl: string; venue: string; address: string; city: string },
+  knownVenues: string[] = []
+): boolean {
+  if (!record.imageUrl) return false
+  if (!titlesMatch(fiche.title, record.title, record.description)) return false
+
+  const day = (v: string | null | undefined) => (v ? Date.parse(v.slice(0, 10)) : NaN)
+  const fs = day(fiche.startDate), fe = day(fiche.endDate ?? fiche.startDate)
+  const rs = day(record.startDate), re = day(record.endDate ?? record.startDate)
+  if ([fs, fe, rs, re].some(Number.isNaN)) return false
+  const margin = 45 * 86_400_000
+  if (!(rs <= fe + margin && fs <= re + margin)) return false
+
+  const venue = (fiche.venue ?? "").trim()
+  if (venue && knownVenues.includes(venue)) {
+    const wanted = titleTokens(venue).filter((t) => !["palais", "grande", "halle"].includes(t))
+    const where = new Set(titleTokens(`${record.venue} ${record.address} ${record.city}`))
+    return wanted.length > 0 && wanted.some((t) => where.has(t))
+  }
+  const work = requiredParts(fiche.title)[0] ?? []
+  const recordWords = titleTokens(record.title)
+  const shared = work.filter((t) => recordWords.includes(t)).length
+  return shared >= 2 && shared / Math.max(recordWords.length, work.length) >= 0.75
 }

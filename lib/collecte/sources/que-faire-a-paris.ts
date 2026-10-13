@@ -158,3 +158,26 @@ export async function collectQueFaireAParis(): Promise<CollectedEvent[]> {
 
   return events
 }
+
+// ─── Recherche par titre (visuels des fiches saisies à la main) ──────────────
+
+const RECORDS = "https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/que-faire-a-paris-/records"
+
+/**
+ * Cherche dans tout l'agenda de la Ville de Paris (pas seulement les
+ * événements tagués « danse ») un événement portant le même titre. Sert à
+ * trouver le visuel open data d'une fiche saisie à la main.
+ */
+export async function searchQfapByTitle(query: string): Promise<CollectedEvent[]> {
+  const terms = query.replace(/["\\]/g, " ").trim()
+  if (terms.length < 3) return []
+  const url = `${RECORDS}?limit=10&where=${encodeURIComponent(`search("${terms}")`)}`
+  try {
+    const response = await fetchWithRetry(url, { headers: { Accept: "application/json" } }, { attempts: 2, timeoutMs: 20_000 })
+    if (!response.ok) return []
+    const data = (await response.json()) as { results?: QfapRecord[] }
+    return (data.results ?? []).map((r) => normalizeQfapRecord(r, false)).filter((e): e is CollectedEvent => Boolean(e))
+  } catch {
+    return []
+  }
+}
