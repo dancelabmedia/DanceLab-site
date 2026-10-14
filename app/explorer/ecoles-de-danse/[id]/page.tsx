@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import { requireExplorerAccess } from '@/lib/explorer-access'
 import { getPublishedArticles } from '@/app/decouvrir/articles-data'
 import { danceStyles } from '@/app/explorer/styles-de-danse/styles-data'
-import { episodesList } from '@/data/episodes-list'
+import { getEpisodes } from '@/lib/episodes'
 import { ecolesDanse, getEcoleById, getEcoleLocationLabel } from '../ecoles-data'
 
 type Props = { params: Promise<{ id: string }> }
@@ -41,9 +41,10 @@ export default async function EcoleDetailPage({ params }: Props) {
   const ecole = getEcoleById(id)
   if (!ecole) notFound()
 
+  const allEpisodes = await getEpisodes()
   const linkedStyles = linkedStylesFor(ecole.styles).slice(0, 6)
   const episodeSlugs = [...new Set(linkedStyles.flatMap(style => style.episodeLinks.map(episode => episode.slug)))]
-  const linkedEpisodes = episodeSlugs.map(slug => episodesList.find(episode => episode.slug === slug)).filter(Boolean).slice(0, 3)
+  const linkedEpisodes = episodeSlugs.map(slug => allEpisodes.find(episode => episode.slug === slug)).filter(Boolean).slice(0, 3)
   const styleTerms = new Set(linkedStyles.flatMap(style => [style.name, ...(style.aliases ?? [])]).map(normalize))
   const linkedArticles = getPublishedArticles().filter(article => article.tags.some(tag => styleTerms.has(normalize(tag)))).slice(0, 3)
 

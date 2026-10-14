@@ -28,6 +28,33 @@ type CommitResult =
   | { ok: true; sha: string; url: string }
   | { ok: false; error: string }
 
+export async function readFileFromGitHub(path: string, branch = 'main'): Promise<string | null> {
+  const token = process.env.GITHUB_TOKEN
+  const owner = process.env.GITHUB_OWNER
+  const repo = process.env.GITHUB_REPO
+  if (!token || !owner || !repo) return null
+  try {
+    const response = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+        },
+        cache: 'no-store',
+      },
+    )
+    if (!response.ok) return null
+    const data = await response.json() as { content?: string }
+    return data.content
+      ? Buffer.from(data.content.replace(/\n/g, ''), 'base64').toString('utf-8')
+      : null
+  } catch {
+    return null
+  }
+}
+
 // ─── Helper ───────────────────────────────────────────────────────────────────
 
 /**

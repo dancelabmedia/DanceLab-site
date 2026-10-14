@@ -1,19 +1,19 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { existsSync } from 'fs'
 import { join } from 'path'
 import { notFound } from 'next/navigation'
 import { getEpisodes, type UnifiedEpisode } from '@/lib/episodes'
 import MetierHero from './MetierHero'
+import MetierScrollCue from './MetierScrollCue'
+import MetierEpisodesCarousel from './MetierEpisodesCarousel'
+import { getRelatedEpisodeNumbersForMetier } from '../../metier-episode-relations'
 import {
   UNIVERS,
   UNIVERS_ORDER,
   getMetierById,
   getMetiersByUnivers,
   getUniversIdBySlug,
-  type Metier,
-  type MetierUniversId,
 } from '../../metiers-data'
 
 // ── Paramètres statiques ────────────────────────────────────────────────────
@@ -58,127 +58,14 @@ export async function generateMetadata({
   }
 }
 
-// ── Épisodes associés ───────────────────────────────────────────────────────
-
-/**
- * Mots-clés par métier pour filtrer les épisodes associés.
- *
- * RÈGLE ÉDITORIALE STRICTE :
- * Un épisode n'est associé à un métier que si l'invité·e EXERCE réellement ce métier,
- * d'après son rôle déclaré dans le champ `role` de l'épisode.
- * - Parler d'un métier ≠ exercer ce métier.
- * - Travailler avec des personnes de ce métier ≠ exercer ce métier.
- * - Évoluer dans le même secteur ≠ exercer ce métier.
- * En cas de doute, ne pas associer. Une fiche sans épisode est préférable
- * à une fiche avec des associations inexactes.
- */
-const METIER_KEYWORDS: Record<string, string[]> = {
-  // ── Interpréter ────────────────────────────────────────────────────────────
-  'danseur':                   ['danseur', 'danseuse', 'danseurs', 'danseuses'],
-  'performeur':                ['performeur', 'performeuse'],
-  'acrobate':                  ['acrobate', 'cirque', 'aérien'],
-  // figurant, swing, doublure-danse, artiste-pluridisciplinaire → aucun épisode pertinent actuellement
-
-  // ── Créer ──────────────────────────────────────────────────────────────────
-  'choregraphe':               ['chorégraphe', 'choreographe'],
-  'metteur-en-scene':          ['metteur en scène', 'metteure en scène'],
-  'scenographe':               ['scénographe', 'scenographe'],
-  'compositeur':               ['compositeur', 'compositrice', 'auteur compositeur', 'auteure compositrice'],
-  // dramaturge, assistant-choregraphe, notateur-mouvement, dance-captain → aucun épisode pertinent
-
-  // ── Transmettre ────────────────────────────────────────────────────────────
-  'professeur':                ['professeur', 'professeure'],
-  'repetiteur':                ['répétiteur', 'répétitrice', 'assistant chorégraphe'],
-  // pedagogue-scolaire → aucun épisode pertinent
-  'formateur':                 ['formateur', 'formatrice'],
-  // maitre-ballet, coach-choregraphique, mediateur-culturel → aucun épisode pertinent
-
-  // ── Produire & diffuser ────────────────────────────────────────────────────
-  'directeur-compagnie-ecole': ['directeur de compagnie', 'directrice de compagnie', "directeur d'école", "directrice d'école"],
-  'charge-production':         ['cheffe de projet', 'chef de projet'],
-  'diffuseur':                 ['diffuseur', 'programmatrice', 'programmateur'],
-  'agent-artistique':          ["agente d'artiste", "agent d'artiste"],
-  // charge-communication : 'entrepreneur'/'entrepreneuse' ≠ chargé.e de communication —
-  // aucun épisode ne déclare ce métier explicitement dans son rôle pour le moment
-  'charge-communication':      ['chargée de communication', 'chargé de communication', 'responsable communication'],
-  // administrateur-compagnie, directeur-production, charge-diffusion,
-  // charge-relations-publics, booker → aucun épisode pertinent
-
-  // ── Accompagner ────────────────────────────────────────────────────────────
-  'kine':                      ['kinésithérapeute', 'kinesitherapeute'],
-  // coach : 'coach' seul est trop large (vocal, boxe…). On cible les coachings
-  // directement liés à la préparation corporelle des danseur·ses.
-  'coach':                     ['préparateur', 'préparatrice', 'naturopathe', 'coach pilates', 'coach corporel'],
-  'photographe':               ['photographe'],
-  'journaliste':               ['journaliste', 'critique de danse'],
-  'medecin-sport':             ['médecin', 'médecine du sport', 'docteur'],
-  'osteopathe':                ['ostéopathe', 'osteopathe'],
-  'magnetiseur':               ['magnétiseur', 'magnetiseur', 'magnétiseuse'],
-  'directeur-casting':         ['directeur de casting', 'directrice de casting'],
-  // preparateur-physique, nutritionniste, manager-artiste, conseiller-insertion,
-  // avocat-spectacle, comptable-artistes → aucun épisode pertinent actuellement
-
-  // ── Image & scène ──────────────────────────────────────────────────────────
-  'regisseur':                 ['régisseur', 'régisseuse'],
-  // createur-lumiere : 'lumiere'/'eclairage' seul est trop large → aucun épisode
-  // déclare ce rôle explicitement pour le moment
-  'costumier':                 ['costumier', 'costumière', 'costume designer'],
-  'styliste':                  ['styliste'],
-  'videaste':                  ['vidéaste', 'videaste'],
-  // realisateur, cadreur, directeur-photo : aucun épisode ne déclare ce rôle
-  // directement — un tournage ne fait pas de l'invité·e un réalisateur·rice
-}
-
-function normalize(s: string): string {
-  return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
-}
-
 function getRelatedEpisodes(metierId: string, allEpisodes: UnifiedEpisode[]): UnifiedEpisode[] {
-  const keywords = METIER_KEYWORDS[metierId] ?? []
-  if (keywords.length === 0) return []
-  const normKeys = keywords.map(normalize)
+  const episodeNumbers = new Set(getRelatedEpisodeNumbersForMetier(metierId))
+  if (episodeNumbers.size === 0) return []
 
   return allEpisodes
-    .filter(ep => {
-      if (!ep.role) return false
-      const nr = normalize(ep.role)
-      return normKeys.some(k => nr.includes(k))
-    })
+    .filter(ep => episodeNumbers.has(ep.number))
     .sort((a, b) => b.number - a.number)
     .slice(0, 6)
-}
-
-function getProfessionImage(metier: Metier, episodes: UnifiedEpisode[]): string | null {
-  return getRelatedEpisodes(metier.id, episodes)[0]?.image || null
-}
-
-/**
- * Répartit les cartes avec et sans portrait aussi régulièrement que possible.
- * Le groupe majoritaire forme la trame ; le groupe minoritaire est inséré à
- * intervalles réguliers. Aucune donnée ni image n'est créée par cette logique.
- */
-function balanceProfessionVisuals<T extends { image: string | null }>(items: T[]): T[] {
-  const portraits = items.filter(item => item.image)
-  const gradients = items.filter(item => !item.image)
-  if (!portraits.length || !gradients.length) return items
-
-  const majority = portraits.length >= gradients.length ? portraits : gradients
-  const minority = portraits.length >= gradients.length ? gradients : portraits
-
-  if (majority.length === minority.length) {
-    return majority.flatMap((item, index) => [item, minority[index]])
-  }
-
-  const insertAfter = new Map<number, T[]>()
-  minority.forEach((item, index) => {
-    const target = Math.max(
-      0,
-      Math.floor(((index + 1) * majority.length) / (minority.length + 1)) - 1,
-    )
-    insertAfter.set(target, [...(insertAfter.get(target) ?? []), item])
-  })
-
-  return majority.flatMap((item, index) => [item, ...(insertAfter.get(index) ?? [])])
 }
 
 /**
@@ -237,12 +124,7 @@ export default async function MetierDetailPage({
   const relatedEpisodes = getRelatedEpisodes(metierId, allEpisodes)
   const relatedMetiers  = getMetiersByUnivers(universId)
     .filter(item => item.id !== metier.id)
-    .slice(0, 5)
-  const relatedProfessionCards = balanceProfessionVisuals(
-    relatedMetiers.map(item => ({ metier: item, image: getProfessionImage(item, allEpisodes) })),
-  )
   const { images: heroImages, isPortrait: heroIsPortrait } = buildHeroImages(relatedEpisodes)
-  const secondaryImage  = relatedEpisodes[1]?.image || null
   const infoCards = [
     metier.environnement ? { title: 'Environnement de travail', text: metier.environnement } : null,
     metier.competences?.length ? { title: 'Compétences clés', items: metier.competences } : null,
@@ -260,29 +142,82 @@ export default async function MetierDetailPage({
         <div className="met-editorial-shell met-editorial-hero-content">
           <nav className="met-editorial-breadcrumb" aria-label="Fil d'Ariane">
             <Link href="/explorer/metiers-de-la-danse">← Tous les métiers</Link>
-            <span>/</span><span>{universe.label}</span>
+            <span>{universe.label}</span>
           </nav>
-          <span className="met-editorial-pill">{universe.label}</span>
           <h1>{metier.nom}</h1>
           <p>{metier.description}</p>
           {metier.tags && <div className="met-editorial-tags">{metier.tags.map(tag => <span key={tag}>{tag}</span>)}</div>}
           <div className="met-editorial-stats">
             {relatedEpisodes.length > 0 && (
-              <div><strong>{relatedEpisodes.length}</strong><span>Témoignage{relatedEpisodes.length > 1 ? 's' : ''}</span></div>
+              <div><strong>{relatedEpisodes.length}</strong><span>Épisode{relatedEpisodes.length > 1 ? 's' : ''}</span></div>
             )}
             <div><strong>{relatedMetiers.length}</strong><span>Métiers associés</span></div>
             <a href="#contenu-metier" aria-label="Découvrir la fiche">→</a>
           </div>
         </div>
+        <MetierScrollCue />
       </header>
+
+      <div className="met-cat-strip met-cat-strip--detail">
+        <div className="container met-cat-strip-inner">
+          <Link href="/explorer/metiers-de-la-danse" className="met-cat-strip-back">
+            <svg
+              aria-hidden="true"
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="19" y1="12" x2="5" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
+            </svg>
+            <span>Tous les métiers</span>
+          </Link>
+
+          <nav className="met-cat-strip-tabs" aria-label="Explorer les catégories de métiers">
+            {UNIVERS_ORDER.map(uid => (
+              <Link
+                key={uid}
+                href={`/explorer/metiers-de-la-danse/${UNIVERS[uid].slug}`}
+                className={`met-cat-tab${uid === universId ? ' is-active' : ''}`}
+                aria-current={uid === universId ? 'page' : undefined}
+              >
+                <span className="met-cat-tab-num" aria-hidden="true">{UNIVERS[uid].num}</span>
+                <span className="met-cat-tab-label">{UNIVERS[uid].label}</span>
+              </Link>
+            ))}
+          </nav>
+        </div>
+      </div>
 
       <div className="met-editorial-shell met-editorial-flow" id="contenu-metier">
 
-        {/* ── En bref ── */}
-        <section className="met-editorial-brief" aria-labelledby="met-brief-title" data-reveal>
-          <div><h2 id="met-brief-title">En bref</h2><p>{metier.definition ?? metier.description}</p></div>
-          {secondaryImage && <Image src={secondaryImage} alt="" width={520} height={340} className="met-editorial-brief-image" />}
-        </section>
+        {/* ── Premier niveau : En bref + métiers associés ── */}
+        <div className="met-editorial-overview" data-reveal>
+          <section className="met-editorial-brief" aria-labelledby="met-brief-title">
+            <div><h2 id="met-brief-title">En bref</h2><p>{metier.definition ?? metier.description}</p></div>
+          </section>
+
+          {relatedMetiers.length > 0 && (
+            <aside className="met-editorial-related-list" aria-labelledby="met-related-title">
+              <h2 id="met-related-title">Métiers associés</h2>
+              <div>
+                {relatedMetiers.map(item => (
+                  <Link
+                    key={item.id}
+                    href={`/explorer/metiers-de-la-danse/${UNIVERS[item.univers].slug}/${item.id}`}
+                  >
+                    <span>{item.nom}</span><i aria-hidden="true">→</i>
+                  </Link>
+                ))}
+              </div>
+            </aside>
+          )}
+        </div>
 
         {/* ── Missions ── */}
         {metier.missions?.length ? (
@@ -313,65 +248,42 @@ export default async function MetierDetailPage({
         {metier.neConfondreAvec?.length ? (
           <section className="met-editorial-npc" aria-labelledby="met-npc-title" data-reveal>
             <h2 id="met-npc-title">À ne pas confondre</h2>
-            <div>{metier.neConfondreAvec.map(item => <article key={item.titre}>{item.lien ? <Link href={`/explorer/metiers-de-la-danse/${universe.slug}/${item.lien}`}>{item.titre} →</Link> : <h3>{item.titre}</h3>}<p>{item.texte}</p></article>)}</div>
+            <div>{metier.neConfondreAvec.map(item => {
+              const target = item.lien ? getMetierById(item.lien) : null
+              const href = target
+                ? `/explorer/metiers-de-la-danse/${UNIVERS[target.univers].slug}/${target.id}`
+                : null
+
+              return (
+                <article key={item.titre}>
+                  {href ? <Link href={href}>{item.titre}</Link> : <h3>{item.titre}</h3>}
+                  <p>{item.texte}</p>
+                </article>
+              )
+            })}</div>
           </section>
         ) : null}
 
-        {/* ── Épisodes associés — heading + cartes en stagger ── */}
-        {relatedEpisodes.length > 0 && (
-          <section className="met-editorial-episodes" aria-labelledby="met-episodes-title">
-            <div className="met-editorial-section-heading" data-reveal>
-              <div>
-                <span>Podcast Dance Lab</span>
-                <h2 id="met-episodes-title">Épisode{relatedEpisodes.length > 1 ? 's' : ''} associé{relatedEpisodes.length > 1 ? 's' : ''}</h2>
-                <p>Des invité.e.s qui exercent ce métier ont partagé leur expérience dans le podcast.</p>
-              </div>
-            </div>
-            <div className="met-editorial-episode-grid">
-              {relatedEpisodes.map((ep, idx) => (
-                <Link
-                  key={ep.number}
-                  href={`/episodes/${ep.slug}`}
-                  className="met-editorial-episode-card"
-                  data-reveal={(['', 'delay-1', 'delay-2', '', 'delay-1', 'delay-2'] as const)[Math.min(idx, 5)]}
-                >
-                  <Image src={ep.image} alt={ep.guest} width={620} height={400} />
-                  <div><span>Épisode {ep.number}</span><h3>{ep.title}</h3><strong>{ep.guest}</strong>{ep.role && <small>{ep.role}</small>}</div>
-                  <i aria-hidden="true">▶</i>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
+      </div>{/* fin met-editorial-flow */}
 
-        {/* ── Métiers associés — heading + cartes en stagger ── */}
-        <section className="met-editorial-related" aria-labelledby="met-related-title">
-          <div className="met-editorial-section-heading" data-reveal>
-            <div><span>{universe.label}</span><h2 id="met-related-title">Métiers associés</h2><p>Ces métiers collaborent souvent au sein du même univers.</p></div>
-          </div>
-          <div className="met-editorial-related-track">
-            {relatedProfessionCards.map(({ metier: item, image }, idx) => (
-              <Link
-                key={item.id}
-                href={`/explorer/metiers-de-la-danse/${UNIVERS[item.univers].slug}/${item.id}`}
-                className={`met-editorial-related-card${image ? ' has-photo' : ''}`}
-                data-reveal={(['', 'delay-1', 'delay-2', 'delay-1', 'delay-2'] as const)[Math.min(idx, 4)]}
-              >
-                {image && <Image src={image} alt="" fill sizes="240px" />}
-                <span>{item.nom}</span><i aria-hidden="true">→</i>
-              </Link>
-            ))}
+      {/* ── Bas de fiche : séquence éditoriale immersive ── */}
+      <div className="met-fiche-bottom">
+
+        {/* Épisodes : carrousel vertical plein format */}
+        <MetierEpisodesCarousel episodes={relatedEpisodes} />
+
+        {/* CTA final indépendant */}
+        <section className="met-fiche-cta" aria-label="Continuer l'exploration">
+          <div className="met-editorial-shell">
+            <Link href="/explorer/metiers-de-la-danse" className="met-fiche-cta-link">
+              <span>Continuer l&apos;exploration</span>
+              <strong>Tous les métiers</strong>
+              <i>Voir l&apos;annuaire complet →</i>
+            </Link>
           </div>
         </section>
 
-        {/* ── CTA global ── */}
-        <Link href="/explorer/metiers-de-la-danse" className="met-editorial-all-cta" data-reveal>
-          <span>Aller plus loin</span>
-          <strong>Découvrir tous les métiers</strong>
-          <p>Explorez l&apos;ensemble des métiers qui font vivre la danse, sur scène, en coulisses et au-delà.</p>
-          <i aria-hidden="true">Voir tous les métiers →</i>
-        </Link>
-      </div>
+      </div>{/* fin met-fiche-bottom */}
     </article>
   )
 }

@@ -103,6 +103,12 @@ export default async function SortirEventPage({
               <span>{t('Statut')}</span>
               <strong>{event.status}</strong>
             </div>
+            {event.disciplines?.length ? (
+              <div>
+                <span>{t('Disciplines')}</span>
+                <strong>{event.disciplines.join(' · ')}</strong>
+              </div>
+            ) : null}
           </div>
 
           {event.additionalInfo && event.additionalInfo.length > 0 ? (
@@ -124,6 +130,7 @@ export default async function SortirEventPage({
           <h2>{t('Réservation')}</h2>
           <p>{event.venue}</p>
           <p>{location.label || t('Adresse à compléter')}</p>
+          <p className="agenda-detail-source">{event.sourceLabel}</p>
           {reservationUrl ? (
             <a href={reservationUrl} target="_blank" rel="noopener noreferrer">
               {t('Réserver')}

@@ -141,26 +141,47 @@ export function getVillesDisponibles(list: Audition[]): string[] {
 // Pour archiver manuellement avant deadline : passer `archive: true`.
 
 export const auditions: Audition[] = [
-  // Exemple commenté — à décommenter et adapter lors de la première vraie audition :
-  //
-  // {
-  //   id:                   'ccn-exemple-2026',
-  //   titre:                'Audition danseur.se — Nouvelle création 2026',
-  //   structure:            'CCN de Grenoble',
-  //   typeProjet:           'ccn-structure-choregraphique',
-  //   stylesRecherches:     ['contemporain'],
-  //   profilRecherche:      'Interprète professionnel.le, expérience plateau souhaitée',
-  //   ville:                'Grenoble',
-  //   pays:                 'France',
-  //   dateAudition:         '2026-03-15',
-  //   dateAuditionFin:      null,
-  //   deadlineCandidature:  '2026-03-01',
-  //   periodeContrat:       'Avril–Décembre 2026',
-  //   remuneration:         'Selon convention collective CCNEAC',
-  //   typeContrat:          'CDDU',
-  //   description:          'Le CCN de Grenoble recherche des interprètes pour une nouvelle création...',
-  //   sourceOfficielle:     'Site officiel CCN de Grenoble',
-  //   lienCandidature:      'https://example.com',
-  //   datePublication:      '2026-01-10',
-  // },
+  // ── Ajouter chaque nouvelle audition ci-dessous (la plus récente en tête) ──
+  // Copier-coller le bloc suivant et adapter. Le statut est calculé automatiquement.
+  // Pour archiver avant deadline : ajouter archive: true.
+
+  {
+    id:                  'bnm-lahorde-2026',
+    titre:               'Danseur.ses professionnel.les',
+    structure:           'Ballet national de Marseille / (LA)HORDE',
+    typeProjet:          'compagnie-choregraphique',
+    stylesRecherches:    ['contemporain'],
+    profilRecherche:     'Danseur.ses professionnel.les, toutes disciplines',
+    ville:               'Marseille',
+    pays:                'France',
+    dateAudition:        null,
+    deadlineCandidature: '2026-11-15',
+    periodeContrat:      'Saison 2027',
+    remuneration:        'Selon convention CCNEAC',
+    typeContrat:         'CDD',
+    description:         'Le Ballet national de Marseille, sous la direction de Marine Brutti et Jonathan Debrouwer ((LA)HORDE), recherche des interprètes pour la prochaine saison.',
+    sourceOfficielle:    'Site officiel Ballet national de Marseille',
+    lienCandidature:     'https://www.ballet-de-marseille.com/',
+    datePublication:     '2026-10-01',
+  },
+
+  {
+    id:                  'cndc-angers-2026',
+    titre:               'Interprètes contemporain.es — Nouvelle création',
+    structure:           'Centre national de danse contemporaine d\'Angers',
+    typeProjet:          'ccn-structure-choregraphique',
+    stylesRecherches:    ['contemporain'],
+    profilRecherche:     'Interprètes contemporain.es, expérience plateau requise',
+    ville:               'Angers',
+    pays:                'France',
+    dateAudition:        '2026-11-25',
+    deadlineCandidature: '2026-11-10',
+    periodeContrat:      'Janvier–Juin 2027',
+    remuneration:        'Selon convention collective du spectacle vivant',
+    typeContrat:         'CDDU',
+    description:         'Le CNDC d\'Angers ouvre ses auditions pour une nouvelle création prévue en résidence dès janvier 2027. Dossier de candidature à envoyer par email.',
+    sourceOfficielle:    'Site officiel CNDC Angers',
+    lienCandidature:     'https://www.cndc.fr/',
+    datePublication:     '2026-10-03',
+  },
 ]

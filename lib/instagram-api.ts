@@ -31,8 +31,8 @@
  *      (ex : "#126", "épisode 126", "ep. 126", "Ep126"…)
  *   2. + au moins un des : prénom de l'invité.e OU hashtag #DanceLab
  *      → confiance HAUTE → association automatique
- *   3. Numéro seul dans le caption (sans guest ni hashtag) :
- *      → confiance MOYENNE → association quand même (faux positifs rares)
+ * Une référence au numéro seule n'est jamais suffisante : elle pourrait
+ * associer une publication au mauvais épisode.
  *
  * Note : on ne cherche que dans les 50 médias les plus récents.
  * Les Reels d'épisodes très anciens doivent être ajoutés manuellement
@@ -102,7 +102,8 @@ function captionContainsGuest(caption: string, guestName: string): boolean {
 
 /**
  * Récupère les médias récents du compte Instagram.
- * Filtre pour ne garder que les Reels (VIDEO + permalink /reel/).
+ * Filtre pour ne garder que les vidéos Instagram. Instagram peut fournir une
+ * URL `/reel/` ou `/p/` selon la manière dont la publication a été créée.
  *
  * Cache ISR : 1 h (partagé avec le cycle de revalidation du site).
  * Renvoie [] si INSTAGRAM_ACCESS_TOKEN est absent ou si l'API échoue.
@@ -136,12 +137,12 @@ export async function getRecentInstagramReels(): Promise<InstagramReel[]> {
       return []
     }
 
-    // Garde uniquement les Reels (VIDEO dont le permalink contient /reel/)
+    // Garde uniquement les vidéos publiées comme Reel ou publication classique.
     return (data.data ?? []).filter(
       (item) =>
         item.media_type === 'VIDEO' &&
         typeof item.permalink === 'string' &&
-        item.permalink.includes('/reel/'),
+        (item.permalink.includes('/reel/') || item.permalink.includes('/p/')),
     )
   } catch (err) {
     console.warn('[instagram-api] Erreur réseau :', (err as Error).message)
@@ -159,8 +160,7 @@ export async function getRecentInstagramReels(): Promise<InstagramReel[]> {
  * Règles (du plus fiable au moins fiable) :
  *   1. Caption contient le numéro ET le prénom de l'invité.e → HAUTE confiance ✅
  *   2. Caption contient le numéro ET #DanceLab ou #dancelab → HAUTE confiance ✅
- *   3. Caption contient le numéro seul → MOYENNE confiance ✅
- *      (acceptable car les numéros d'épisode sont des entiers spécifiques)
+ * Une caption contenant seulement le numéro est refusée.
  */
 export function matchReelToEpisode(
   reels: InstagramReel[],
@@ -181,8 +181,6 @@ export function matchReelToEpisode(
       return reel.permalink
     }
 
-    // Confiance moyenne : numéro seul (on l'accepte tout de même)
-    return reel.permalink
   }
 
   return null

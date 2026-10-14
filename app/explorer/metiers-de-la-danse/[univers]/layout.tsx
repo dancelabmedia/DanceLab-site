@@ -7,6 +7,16 @@ import {
   getUniversIdBySlug,
 } from '../metiers-data'
 import MetierUniversLayout from './MetierUniversLayout'
+import CategoryUniverseHero from './CategoryUniverseHero'
+
+const CATEGORY_DESCRIPTIONS = {
+  interpreter: "Être sur scène, porter une œuvre, un personnage ou une intention. Les métiers de l'interprétation sont ceux qui donnent corps à la danse et au spectacle face au public, sur scène comme devant une caméra.",
+  creer: "Imaginer ce qui sera donné à voir, à entendre ou à ressentir. Les métiers de la création construisent les œuvres, les mouvements, les espaces, les univers et les intentions artistiques qui donnent naissance à un projet.",
+  transmettre: "Faire circuler un geste, une technique, une pratique ou une expérience. Les métiers de la transmission accompagnent l'apprentissage de la danse et permettent aux savoirs de se partager et d'évoluer.",
+  'produire-diffuser': "Faire en sorte qu'un projet puisse réellement exister et rencontrer son public. Production, administration, financement, diffusion, programmation : ces métiers structurent les projets et les accompagnent de leur création jusqu'à leur exploitation.",
+  accompagner: "Prendre soin des corps, des carrières et des personnes qui font la danse. Santé, préparation, récupération, accompagnement physique ou mental : ces métiers permettent aux artistes d'évoluer et de durer.",
+  'image-scene': "Construire tout ce qui permet à la danse d'être vue, entendue, mise en lumière, captée et racontée. De la scène à l'image, ces métiers participent directement à la manière dont une œuvre est présentée au public.",
+} as const
 
 /**
  * Layout persistant pour toutes les pages de type /[univers]/[metier].
@@ -32,7 +42,7 @@ export default async function UniversMetiersLayout({
   const universe = UNIVERS[universId]
   const items    = getMetiersByUnivers(universId)
 
-  // Navigation entre univers (points)
+  // Navigation entre univers
   const currentIndex = UNIVERS_ORDER.indexOf(universId)
   const prevId = currentIndex > 0                         ? UNIVERS_ORDER[currentIndex - 1] : null
   const nextId = currentIndex < UNIVERS_ORDER.length - 1 ? UNIVERS_ORDER[currentIndex + 1] : null
@@ -42,54 +52,17 @@ export default async function UniversMetiersLayout({
       {/* ═══════════════════════════════════════════════════════
           HERO — identité de l'univers (stable à travers la navigation)
       ═══════════════════════════════════════════════════════ */}
-      <section className="met-univers-page-hero" aria-label={`Univers ${universe.label}`}>
-
-        {/* Décorations géométriques */}
-        <div className="met-hero-deco" aria-hidden="true">
-          <div className="met-hero-deco-circle met-hero-deco-circle-1" />
-          <div className="met-hero-deco-circle met-hero-deco-circle-2" />
-          <div className="met-hero-deco-line" />
-        </div>
-
-        <div className="container">
-
-          {/* Fil d'Ariane + retour */}
-          <nav className="met-univers-breadcrumb" aria-label="Fil d'Ariane">
-            <Link href="/explorer/metiers-de-la-danse" className="met-univers-back">
-              <span aria-hidden="true">←</span> Tous les métiers
-            </Link>
-            <span className="met-univers-breadcrumb-sep" aria-hidden="true">/</span>
-            <span className="met-univers-breadcrumb-current" aria-current="page">
-              {universe.label}
-            </span>
-          </nav>
-
-          <span className="met-univers-page-num" aria-hidden="true">{universe.num}</span>
-          <h1 className="met-univers-page-title">{universe.label}</h1>
-          <p className="met-univers-page-desc">{universe.description}</p>
-
-          <div className="met-univers-hero-foot">
-            <span className="met-univers-page-badge">
-              {items.length} métier{items.length > 1 ? 's' : ''}
-            </span>
-
-            {/* Dots de navigation entre les 6 univers */}
-            <nav className="met-univers-hero-dots" aria-label="Naviguer entre les univers">
-              {UNIVERS_ORDER.map((uid) => (
-                <Link
-                  key={uid}
-                  href={`/explorer/metiers-de-la-danse/${UNIVERS[uid].slug}`}
-                  className={`met-univers-hero-dot${uid === universId ? ' is-active' : ''}`}
-                  aria-label={UNIVERS[uid].label}
-                  aria-current={uid === universId ? 'page' : undefined}
-                  title={UNIVERS[uid].label}
-                />
-              ))}
-            </nav>
-          </div>
-
-        </div>
-      </section>
+      <CategoryUniverseHero
+        label={universe.label}
+        description={CATEGORY_DESCRIPTIONS[universId]}
+        count={items.length}
+        professions={items.map((item) => ({
+            id: item.id,
+            nom: item.nom,
+            description: item.description,
+            href: `/explorer/metiers-de-la-danse/${universe.slug}/${item.id}`,
+          }))}
+      />
 
       {/* ═══════════════════════════════════════════════════════
           BARRE NAVIGATION CATÉGORIES — collante sous le hero

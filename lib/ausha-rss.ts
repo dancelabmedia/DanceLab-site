@@ -52,8 +52,24 @@ export type RssEpisode = {
    * Vide si spotifyId est null.
    */
   spotifyEmbedUrl: string
+  /** Liens d'écoute détectés sur la smartlink Ausha. */
+  platformLinks: EpisodePlatformLinks
+  /** Chapitres Podcasting 2.0 fournis par Ausha, lorsqu'ils existent. */
+  chapters: EpisodeChapter[]
   /** true si c'est un EXTRAIT (court clip promotionnel) */
   isExtrait: boolean
+}
+
+export type EpisodeChapter = { time: string; title: string; url?: string }
+
+export type EpisodePlatformLinks = {
+  spotify?: string
+  apple?: string
+  deezer?: string
+  amazonMusic?: string
+  podcastAddict?: string
+  pocketCasts?: string
+  castro?: string
 }
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
@@ -179,6 +195,33 @@ function formatDuration(raw: string): string {
   return raw
 }
 
+function formatChapterTime(raw: string): string {
+  if (!raw) return ''
+  if (/^\d{1,2}:\d{2}(?::\d{2})?$/.test(raw)) return raw
+  const seconds = Number(raw)
+  if (!Number.isFinite(seconds)) return raw
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  const rest = Math.floor(seconds % 60)
+  return hours > 0
+    ? `${hours}:${String(minutes).padStart(2, '0')}:${String(rest).padStart(2, '0')}`
+    : `${minutes}:${String(rest).padStart(2, '0')}`
+}
+
+/** Parse les chapitres intégrés au RSS (Podcasting 2.0 / PSC). */
+export function parseRssChapters(itemXml: string): EpisodeChapter[] {
+  const container = extractTag(itemXml, 'psc:chapters') || extractTag(itemXml, 'podcast:chapters')
+  const source = container || itemXml
+  const chapterTags = source.match(/<(?:psc:chapter|podcast:chapter)\b[^>]*\/?\s*>/gi) ?? []
+  return chapterTags.flatMap((tag) => {
+    const start = tag.match(/\b(?:start|startTime)="([^"]+)"/i)?.[1] ?? ''
+    const title = tag.match(/\btitle="([^"]+)"/i)?.[1] ?? ''
+    const url = tag.match(/\b(?:href|url)="([^"]+)"/i)?.[1]
+    if (!start || !title) return []
+    return [{ time: formatChapterTime(start), title: stripHtml(title), ...(url ? { url } : {}) }]
+  })
+}
+
 // ─── Parsing du titre ─────────────────────────────────────────────────────────
 
 function parseTitle(raw: string): {
@@ -193,7 +236,13 @@ function parseTitle(raw: string): {
 
   const isExtrait = /^EXTRAIT\b/i.test(rest)
 
-  const guestMatch = rest.match(/,\s*avec\s+(.+)$/i)
+  // Cas 1 : ", avec Prénom Nom" (virgule — format standard Ausha)
+  // Cas 2 : " avec DANC.R" (sans virgule — nom commence par une majuscule)
+  //         La majuscule distingue le suffixe invité ("avec DANC.R")
+  //         du sujet du titre ("avec le coeur", "avec ses jambes"…)
+  const guestMatch =
+    rest.match(/,\s*avec\s+(.+)$/i) ??
+    rest.match(/\s+avec\s+([A-ZÀÂÄÉÈÊËÎÏÔÙÛÜÆŒ].+)$/)
   const guest = guestMatch ? guestMatch[1].trim() : ''
   if (guestMatch) {
     rest = rest.slice(0, rest.length - guestMatch[0].length)
@@ -206,6 +255,56 @@ function parseTitle(raw: string): {
   title = title.replace(/,\s*$/, '').trim()
 
   return { number, title, guest, isExtrait }
+}
+
+/** Reconnaît uniquement les libellés de secours, jamais un vrai nom. */
+export function isGenericGuestLabel(value: string | null | undefined): boolean {
+  if (!value) return true
+  const normalized = value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('fr')
+    .replace(/[^a-z]/g, '')
+  return ['invite', 'invitee', 'invites', 'invitees'].includes(normalized)
+}
+
+function normalizeGuestCandidate(value: string): string {
+  return stripHtml(value)
+    .replace(/^[\s:,-]+|[\s:,-]+$/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function isReliableGuestCandidate(value: string): boolean {
+  if (!value || isGenericGuestLabel(value) || value.length > 100) return false
+  const words = value.split(/\s+/)
+  if (words.length > 10) return false
+  // Au moins un nom propre, sigle ou nom artistique identifiable.
+  return words.some((word) => /^\p{Lu}[\p{L}'’.-]{1,}$/u.test(word) || /^\p{Lu}{2,}$/u.test(word))
+}
+
+/**
+ * Recherche prudente d'un nom dans les formulations éditoriales habituelles
+ * d'Ausha. Cette fonction n'est appelée que lorsque le titre ne fournit aucun
+ * invité et refuse les phrases longues ou sans nom propre.
+ */
+export function extractGuestFromDescription(description: string): string {
+  if (!description) return ''
+  const intro = description.slice(0, 1800)
+  const patterns = [
+    /(?:je\s+reçois|j['’]accueille|nous\s+recevons|nous\s+accueillons)\s+(.+?)(?=,|\n|\.\s)/iu,
+    /(?:conversation|épisode|entretien)\s+avec\s+(.+?)(?=,|\n|\.\s|\s+pour\s|\s+qui\s)/iu,
+    /^[\p{Emoji_Presentation}\p{Extended_Pictographic}✨🎤]*\s*([^\n–—|]{3,100})\s*[–—|]/mu,
+  ]
+
+  for (const pattern of patterns) {
+    const raw = intro.match(pattern)?.[1] ?? ''
+    // Certaines introductions placent une qualification avant les noms :
+    // "mes invitées : Prénom Nom et Prénom Nom".
+    const candidate = normalizeGuestCandidate(raw.split(/\s*:\s*/).pop() ?? raw)
+    if (isReliableGuestCandidate(candidate)) return candidate
+  }
+  return ''
 }
 
 // ─── Détection automatique du lien Spotify ────────────────────────────────────
@@ -221,7 +320,7 @@ function parseTitle(raw: string): {
  * Timeout : 5 s — retourne null silencieusement en cas d'erreur réseau.
  * Cache Next.js : 24 h (l'ID Spotify d'un épisode ne change jamais).
  */
-async function fetchSpotifyId(aushaSlug: string): Promise<string | null> {
+async function fetchPlatformLinks(aushaSlug: string): Promise<EpisodePlatformLinks> {
   try {
     const controller = new AbortController()
     const timerId    = setTimeout(() => controller.abort(), 5000)
@@ -231,27 +330,27 @@ async function fetchSpotifyId(aushaSlug: string): Promise<string | null> {
       {
         signal: controller.signal,
         // L'ID Spotify d'un épisode est permanent → cache long
-        next: { revalidate: 86400 },
+        next: { revalidate: 86400, tags: ['ausha-episodes'] },
       },
     )
     clearTimeout(timerId)
 
-    if (!res.ok) return null
+    if (!res.ok) return {}
     const html = await res.text()
-
-    // Parcourt tous les liens Spotify épisode dans la page.
-    // Seul le bouton plateforme (class "ListeningLink") est le bon lien ;
-    // les autres apparaissent dans la description (épisodes mentionnés).
-    const re = /<a\s[^>]*href="https:\/\/open\.spotify\.com\/episode\/([A-Za-z0-9]+)"[^>]*>/gi
-    let m: RegExpExecArray | null
-    while ((m = re.exec(html)) !== null) {
-      // Les 350 caractères suivant l'ouverture du <a> contiennent la div ListeningLink
-      const after = html.slice(m.index, m.index + 350)
-      if (after.includes('ListeningLink')) return m[1]
+    const links = [...html.matchAll(/href="(https?:\/\/[^"#]+)"/gi)]
+      .map((match) => match[1].replace(/&amp;/g, '&'))
+    const find = (pattern: RegExp) => links.find((link) => pattern.test(link))
+    return {
+      spotify: find(/open\.spotify\.com\/episode\//i),
+      apple: find(/podcasts\.apple\.com\//i),
+      deezer: find(/(?:www\.)?deezer\.com\//i),
+      amazonMusic: find(/music\.amazon\.[^/]+\/podcasts\//i),
+      podcastAddict: find(/podcastaddict\.com\//i),
+      pocketCasts: find(/pocketcasts\.com\//i),
+      castro: find(/castro\.fm\//i),
     }
-    return null
   } catch {
-    return null
+    return {}
   }
 }
 
@@ -286,7 +385,7 @@ export async function getEpisodesFromRSS(
   includeExtraits = false,
 ): Promise<RssEpisode[]> {
   const res = await fetch(RSS_URL, {
-    next: { revalidate: RSS_REVALIDATE },
+    next: { revalidate: RSS_REVALIDATE, tags: ['ausha-episodes'] },
   })
 
   if (!res.ok) {
@@ -309,7 +408,8 @@ export async function getEpisodesFromRSS(
   // utiliser le titre de l'extrait comme citation de fallback.
   const allParsed = nonRediffusionItems.map((item) => {
     const rawTitle = extractTag(item, 'title')
-    const { number, title, guest, isExtrait } = parseTitle(rawTitle)
+    const parsedTitle = parseTitle(rawTitle)
+    const { number, title, isExtrait } = parsedTitle
 
     const rawDuration = extractTag(item, 'itunes:duration')
     const duration = formatDuration(rawDuration)
@@ -333,6 +433,9 @@ export async function getEpisodesFromRSS(
 
     // Texte brut complet, sans boilerplate Ausha
     const description = cleanDescription(stripHtml(descRaw))
+    const guest = isGenericGuestLabel(parsedTitle.guest)
+      ? extractGuestFromDescription(description)
+      : parsedTitle.guest
 
     // pubDate normalisé en YYYY-MM-DD dès le parsing RSS
     const pubDate = normalizeRssDate(extractTag(item, 'pubDate'))
@@ -342,6 +445,7 @@ export async function getEpisodesFromRSS(
 
     // Identifiant interne Ausha (tag <guid>)
     const guid = extractTag(item, 'guid')
+    const chapters = parseRssChapters(item)
 
     return {
       number,
@@ -359,6 +463,8 @@ export async function getEpisodesFromRSS(
       guid,
       spotifyId:       null,
       spotifyEmbedUrl: '',
+      platformLinks:   {},
+      chapters,
       isExtrait,
     } satisfies RssEpisode
   })
@@ -387,15 +493,17 @@ export async function getEpisodesFromRSS(
   // On récupère l'ID Spotify de chaque épisode depuis sa smartlink Ausha.
   // Promise.allSettled garantit qu'une erreur sur un épisode ne bloque pas les autres.
   const spotifyResults = await Promise.allSettled(
-    episodes.map((ep) => fetchSpotifyId(ep.aushaSlug)),
+    episodes.map((ep) => fetchPlatformLinks(ep.aushaSlug)),
   )
 
   return episodes.map((ep, i) => {
     const result    = spotifyResults[i]
-    const spotifyId = result.status === 'fulfilled' ? result.value : null
+    const platformLinks = result.status === 'fulfilled' ? result.value : {}
+    const spotifyId = platformLinks.spotify?.match(/\/episode\/([A-Za-z0-9]+)/i)?.[1] ?? null
     return {
       ...ep,
       spotifyId,
+      platformLinks,
       spotifyEmbedUrl: spotifyId
         ? `https://open.spotify.com/embed/episode/${spotifyId}?utm_source=generator`
         : '',

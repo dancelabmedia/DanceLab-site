@@ -21,7 +21,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { type Episode } from '../../data/episodes'
+import { type UnifiedEpisode } from '@/lib/episodes'
 import { useLocale } from '@/components/LocaleProvider'
 import { uiText } from '@/data/i18n/messages'
 
@@ -58,17 +58,17 @@ function shuffleArray<T>(arr: T[]): T[] {
   return a
 }
 
-function isMultiGuestEpisode(ep: Episode): boolean {
+function isMultiGuestEpisode(ep: UnifiedEpisode): boolean {
   // "twins?" retiré : "Les An&Ge Twins" est un nom d'artiste (duo),
   // non une liste de plusieurs invité.es distincts.
   // Le `&` sans espaces (An&Ge) ne déclenche pas \s&\s — c'est voulu.
   return /\s&\s|,|\/|\b(?:et|avec)\b/i.test(ep.guest)
 }
 
-function getMultiGuestImage(ep: Episode): string | null {
+function getMultiGuestImage(ep: UnifiedEpisode): string | null {
   if (!isMultiGuestEpisode(ep)) return null
 
-  const filename = (ep.image !== '/logo.png' ? ep.image : ep.sourceImage)
+  const filename = ep.image
     .split('/')
     .pop()
     ?.replace(/\.png\.png$/i, '.png')
@@ -79,11 +79,11 @@ function getMultiGuestImage(ep: Episode): string | null {
 /* ── Types ───────────────────────────────────────────────────────── */
 interface Props {
   /** Tous les épisodes éligibles (non filtrés, non mélangés) */
-  pool: Episode[]
+  pool: UnifiedEpisode[]
   /** Slug du dernier épisode — exclu de la sélection */
   latestSlug: string
   /** Fonction de page.tsx pour obtenir l'image optimisée d'un invité */
-  getGuestImage: (ep: Episode) => string
+  getGuestImage: (ep: UnifiedEpisode) => string
 }
 
 /* ── Composant ───────────────────────────────────────────────────── */
@@ -105,7 +105,7 @@ export default function IvwCarousel({ pool, latestSlug, getGuestImage }: Props) 
   const suppressClickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   /* État vide au SSR → hydratation propre, sans mismatch */
-  const [episodes, setEpisodes] = useState<Episode[]>([])
+  const [episodes, setEpisodes] = useState<UnifiedEpisode[]>([])
 
   const setAutoplayPaused = (reason: string, paused: boolean) => {
     if (paused) {
@@ -518,7 +518,7 @@ export default function IvwCarousel({ pool, latestSlug, getGuestImage }: Props) 
                         img.src = getGuestImage(ep)
                       } else if (fallbackStep <= 1) {
                         img.fb = 2
-                        img.src = ep.image !== '/logo.png' ? ep.image : ep.sourceImage
+                        img.src = ep.image || ep.aushaImage
                       }
                     }}
                   />

@@ -159,9 +159,13 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
             </span>
           </div>
 
-          {/* Espace central */}
-          <div className="nl-left-mid" aria-hidden="true">
-            <span className="nl-mid-rule" />
+          {/* Accroche de couverture */}
+          <div className="nl-cover-headline">
+            {locale === 'en' ? (
+              <span>The newsletter<br />that keeps<br /><em>dance</em><br />in motion.</span>
+            ) : (
+              <span>La newsletter<br />qui garde<br /><em>la danse</em><br />en mouvement.</span>
+            )}
           </div>
 
           {/* Labels rubriques empilés */}
@@ -187,47 +191,31 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
 
             {/* Eyebrow */}
             <span className="nl-eyebrow">
-              {locale === 'en' ? 'The Newsletter' : 'La Newsletter'}
+              {locale === 'en' ? 'The weekly newsletter' : 'La newsletter hebdomadaire'}
             </span>
 
             {/* Titre éditorial */}
             <div className="nl-title-block">
               <h2 id="nl-title" className="nl-title">
                 <span className="nl-title-big">
-                  {locale === 'en' ? 'To read' : 'À lire'}
+                  {locale === 'en' ? 'The best of dance,' : 'Le meilleur de la danse,'}
                 </span>
                 <em className="nl-title-sub">
-                  {locale === 'en' ? 'this week' : 'cette semaine'}
+                  {locale === 'en' ? 'straight to your inbox.' : 'directement dans ta boîte mail.'}
                 </em>
               </h2>
             </div>
+
+            <p className="nl-intro">
+              {locale === 'en'
+                ? 'Every week: new episodes, our best articles, unmissable events and resources truly worth discovering.'
+                : 'Chaque semaine, les nouveaux épisodes, nos meilleurs articles, les événements à ne pas manquer et les ressources qui valent vraiment le détour.'}
+            </p>
 
             {/* Rubriques */}
             <div className="nl-rubriques">
               {rubriques.map((r) => (
                 <div key={r.label} className="nl-rubrique">
-                  <span className="nl-rubrique-icon" aria-hidden="true">
-                    {r.icon === 'headphones' && (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
-                        <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
-                      </svg>
-                    )}
-                    {r.icon === 'article' && (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        <polyline points="14 2 14 8 20 8" />
-                        <line x1="9" y1="13" x2="15" y2="13" />
-                        <line x1="9" y1="17" x2="15" y2="17" />
-                      </svg>
-                    )}
-                    {r.icon === 'compass' && (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10" />
-                        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
-                      </svg>
-                    )}
-                  </span>
                   <span className="nl-rubrique-text">
                     <strong className="nl-rubrique-label">{r.label}</strong>
                     <span className="nl-rubrique-desc">{r.desc}</span>
@@ -346,11 +334,11 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          width: min(900px, 92vw);
-          height: min(520px, 88vh);
+          width: min(980px, 92vw);
+          height: min(500px, 88vh);
           display: grid;
-          grid-template-columns: 35fr 65fr;
-          border-radius: 12px;
+          grid-template-columns: 40fr 60fr;
+          border-radius: 18px;
           overflow: hidden;
           box-shadow:
             0 28px 80px rgba(0, 0, 0, 0.26),
@@ -362,9 +350,11 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
            GAUCHE — couverture éditoriale
         ═══════════════════════════════════════════════ */
         .nl-left {
-          background: #1a2a2d;
-          color: #e8e4de;
-          padding: 36px 28px 32px;
+          background:
+            radial-gradient(circle at 92% 8%, rgba(205,220,225,.42), transparent 38%),
+            linear-gradient(145deg, #6f898e 0%, #5b7377 48%, #405b61 100%);
+          color: #fff;
+          padding: 38px 34px 30px;
           display: flex;
           flex-direction: column;
           position: relative;
@@ -412,12 +402,12 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
         }
         .nl-masthead-brand {
           display: block;
-          font-family: var(--font-body, sans-serif);
-          font-size: 8.5px;
+          font-family: var(--font-editorial, var(--font-display, serif));
+          font-size: 19px;
           font-weight: 700;
-          letter-spacing: 0.38em;
+          letter-spacing: -0.035em;
           text-transform: uppercase;
-          color: rgba(232, 228, 222, 0.90);
+          color: rgba(255,255,255,.98);
         }
         .nl-masthead-rule {
           display: block;
@@ -433,22 +423,29 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
           font-weight: 400;
           letter-spacing: 0.14em;
           text-transform: uppercase;
-          color: rgba(232, 228, 222, 0.28);
+          color: rgba(255,255,255,.72);
         }
 
-        /* Zone centrale */
-        .nl-left-mid {
+        /* Accroche de couverture */
+        .nl-cover-headline {
           flex: 1;
           display: flex;
           align-items: center;
           position: relative;
           z-index: 1;
+          padding: 24px 0 18px;
+          font-family: var(--font-display, sans-serif);
+          font-size: clamp(29px, 3.1vw, 43px);
+          font-weight: 600;
+          line-height: .96;
+          letter-spacing: -.055em;
+          text-transform: uppercase;
         }
-        .nl-mid-rule {
-          display: block;
-          width: 22px;
-          height: 1px;
-          background: rgba(193,208,223,.2);
+        .nl-cover-headline em {
+          font-family: var(--font-editorial, var(--font-display, serif));
+          font-weight: 400;
+          text-transform: none;
+          letter-spacing: -.035em;
         }
 
         /* Labels rubriques empilés en bas */
@@ -456,8 +453,10 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
           position: relative;
           z-index: 1;
           display: flex;
-          flex-direction: column;
-          gap: 10px;
+          flex-direction: row;
+          flex-wrap: wrap;
+          gap: 6px 9px;
+          align-items: center;
         }
         .nl-cover-label {
           display: block;
@@ -466,9 +465,10 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
           font-weight: 700;
           letter-spacing: 0.42em;
           text-transform: uppercase;
-          color: rgba(193, 208, 223, 0.35);
+          color: rgba(255,255,255,.76);
           line-height: 1;
         }
+        .nl-cover-label:not(:first-child)::before { content: '·'; margin-right: 9px; opacity: .55; }
 
         /* ═══════════════════════════════════════════════
            DROITE — contenu newsletter
@@ -501,10 +501,10 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
         /* Zone principale */
         .nl-right-inner {
           flex: 1;
-          padding: 40px 44px 32px;
+          padding: 38px 46px 30px;
           display: flex;
           flex-direction: column;
-          gap: 18px;
+          gap: 15px;
           overflow: hidden;
         }
 
@@ -512,7 +512,7 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
         .nl-eyebrow {
           display: block;
           font-family: var(--font-body, sans-serif);
-          font-size: 8px;
+          font-size: 9px;
           font-weight: 700;
           letter-spacing: 0.30em;
           text-transform: uppercase;
@@ -525,7 +525,7 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
         .nl-title-big {
           display: block;
           font-family: var(--font-display, sans-serif);
-          font-size: clamp(30px, 3.4vw, 44px);
+          font-size: clamp(30px, 3.25vw, 43px);
           font-weight: 600;
           letter-spacing: -0.04em;
           color: #1a2a2d;
@@ -534,7 +534,7 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
         .nl-title-sub {
           display: block;
           font-family: var(--font-display, sans-serif);
-          font-size: clamp(22px, 2.4vw, 30px);
+          font-size: clamp(21px, 2.35vw, 30px);
           font-weight: 300;
           font-style: italic;
           letter-spacing: -0.025em;
@@ -543,37 +543,38 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
           margin-top: 4px;
         }
 
+        .nl-intro {
+          max-width: 530px;
+          margin: 0;
+          color: #52656a;
+          font-family: var(--font-body, sans-serif);
+          font-size: 12.5px;
+          line-height: 1.55;
+        }
+
         /* Rubriques */
         .nl-rubriques {
           display: flex;
           flex-direction: column;
-          gap: 9px;
+          gap: 0;
+          border-top: 1px solid #dce3e5;
         }
         .nl-rubrique {
           display: flex;
           align-items: center;
-          gap: 11px;
-        }
-        .nl-rubrique-icon {
-          flex-shrink: 0;
-          width: 28px;
-          height: 28px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border: 1px solid rgba(91,115,119,.20);
-          border-radius: 6px;
-          color: #5B7377;
+          min-height: 34px;
+          border-bottom: 1px solid #dce3e5;
         }
         .nl-rubrique-text {
           display: flex;
           align-items: baseline;
-          gap: 8px;
+          gap: 12px;
           min-width: 0;
         }
         .nl-rubrique-label {
           font-family: var(--font-body, sans-serif);
-          font-size: 10px;
+          min-width: 104px;
+          font-size: 9.5px;
           font-weight: 700;
           letter-spacing: 0.14em;
           text-transform: uppercase;
@@ -582,8 +583,8 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
         }
         .nl-rubrique-desc {
           font-family: var(--font-body, sans-serif);
-          font-size: 11.5px;
-          color: #7F9195;
+          font-size: 12px;
+          color: #687b80;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -593,7 +594,7 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
         .nl-sep {
           width: 100%;
           height: 1px;
-          background: #e4e8ea;
+          background: transparent;
           margin: 0;
         }
 
@@ -713,9 +714,11 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
         ═══════════════════════════════════════════════ */
         @media (min-width: 641px) and (max-width: 860px) {
           .nl-card {
-            grid-template-columns: 32fr 68fr;
+            grid-template-columns: 40fr 60fr;
             height: min(500px, 88vh);
           }
+          .nl-left { padding-inline: 26px; }
+          .nl-cover-headline { font-size: clamp(25px, 3.6vw, 31px); }
           .nl-right-inner { padding: 32px 32px 26px; gap: 14px; }
           .nl-title-big   { font-size: clamp(26px, 3.2vw, 38px); }
           .nl-title-sub   { font-size: clamp(18px, 2.2vw, 26px); }
@@ -741,17 +744,17 @@ export default function NewsletterModal({ locale: _initialLocale = 'fr' }: { loc
           /* Gauche : compacte sur mobile */
           .nl-left {
             padding: 22px 24px 18px;
-            flex-direction: row;
-            align-items: center;
+            flex-direction: column;
+            align-items: stretch;
             gap: 0;
           }
-          .nl-left-mid { display: none; }
-          .nl-masthead { flex: 1; }
-          .nl-cover-labels {
-            flex-direction: row;
-            gap: 14px;
-            align-items: center;
+          .nl-cover-headline {
+            flex: none;
+            padding: 12px 0 0;
+            font-size: clamp(20px, 6vw, 28px);
           }
+          .nl-masthead { width: 100%; }
+          .nl-cover-labels { display: none; }
           .nl-cover-label { font-size: 7px; letter-spacing: 0.28em; }
           .nl-deco-line--v { display: none; }
           .nl-deco-line--h { top: 100%; }

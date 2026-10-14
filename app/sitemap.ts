@@ -5,10 +5,12 @@ import { danceStyles } from './explorer/styles-de-danse/styles-data'
 import { getEpisodes } from '@/lib/episodes'
 import { getAllPublishedArticles } from '@/lib/all-articles'
 import { hasPublishedEnglish, localizedHref } from '@/lib/i18n/routing'
+import { collectedAgendaEvents } from './agenda/collected-events'
 
 export const revalidate = 3600
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const paths = ['/', '/a-propos', '/ecouter', '/ecouter/incontournables', '/ecouter/playlists-thematiques', '/decouvrir', '/decouvrir/articles-culture']
+  const paths = ['/', '/a-propos', '/ecouter', '/ecouter/incontournables', '/ecouter/playlists-thematiques', '/decouvrir', '/decouvrir/articles-culture', '/sortir']
+  paths.push(...collectedAgendaEvents.map(event => `/sortir/${event.slug}`))
   if (explorerHomeVisibility === 'public') paths.push('/explorer')
   for (const section of explorerAccessSections) {
     if (sectionVisibility[section.key] === 'public') paths.push(section.path)

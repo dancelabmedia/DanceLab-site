@@ -42,7 +42,7 @@ export default function Footer({ locale: _initialLocale = 'fr' }: { locale?: Loc
     { label: 'Magazine', href: '/decouvrir' },
     { label: 'Écouter', href: '/ecouter' },
     { label: 'Sortir', href: '/sortir' },
-    { label: 'Explorer', href: '/explorer' },
+    { label: 'Explorer', href: '/explorer/metiers-de-la-danse' },
     { label: 'Apprendre', href: '/apprendre' },
     { label: 'À propos', href: '/a-propos' },
   ]

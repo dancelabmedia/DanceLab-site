@@ -8,6 +8,7 @@ import { useLocale } from '@/components/LocaleProvider'
 import { uiText } from '@/data/i18n/messages'
 import AnimatedCounter from "../components/AnimatedCounter"
 import { useBackNavigationState } from '@/lib/use-back-navigation-state'
+import { normalizeSearchText } from '@/data/search'
 
 const EPISODES_PAGE_SIZE = 12
 
@@ -257,13 +258,15 @@ export default function EcouterClient({ episodes }: Props) {
   const filtered = useMemo(() => {
     let result = [...episodes]
     if (search.trim()) {
-      const q = search.toLowerCase()
+      // Normalisation NFD : insensible aux accents ET à la casse
+      // "joel" trouve Joël, "maiwenn" trouve Maïwenn, "elodie" trouve Élodie…
+      const q = normalizeSearchText(search)
       result = result.filter(
         e =>
-          e.title.toLowerCase().includes(q) ||
-          e.guest.toLowerCase().includes(q) ||
+          normalizeSearchText(e.title).includes(q) ||
+          normalizeSearchText(e.guest).includes(q) ||
           String(e.number).includes(q) ||
-          e.excerpt.toLowerCase().includes(q)
+          normalizeSearchText(e.excerpt).includes(q)
       )
     }
     if (inviteFilter !== "Tous") result = result.filter(e => e.guest === inviteFilter)

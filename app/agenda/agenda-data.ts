@@ -7,6 +7,11 @@ export type AgendaCategory =
   | "Ballet"
   | "Performance"
   | "Rencontre"
+  | "Cours / atelier"
+  | "Stage / workshop"
+  | "Bal / soirée"
+  | "Conférence / rencontre"
+  | "Exposition"
 
 export type AgendaStatus = "En cours" | "À venir" | "Complet" | "Reporté" | "Annulé"
 
@@ -27,6 +32,7 @@ export type AgendaEvent = {
   price: string
   time?: string
   category: AgendaCategory
+  disciplines?: string[]
   officialUrl: string
   ticketUrl?: string
   additionalInfo?: Array<{ label: string; value: string }>

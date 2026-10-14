@@ -101,11 +101,11 @@ export const metiers: Metier[] = [
   {
     id:          'danseur',
     nom:         'Danseur.se',
-    description: "Au coeur de la danse. Interprète d'oeuvres chorégraphiques, dans des esthétiques allant du classique aux danses urbaines, du contemporain à la danse de salon.",
+    description: "Le.la danseur.se interprète des chorégraphies sur scène, à l'écran ou lors d'événements, dans des univers et des styles très différents.",
     univers:     'interpreter',
     featured:    true,
 
-    definition: "Quand on pense aux métiers de la danse, c'est lui, ou elle, qui vient en tête en premier. Mais être danseur.se professionnel.le, c'est bien plus complexe qu'apprendre des chorégraphies et monter sur scène. Le quotidien peut être radicalement différent d'un contrat à l'autre : une semaine en résidence de création avec une compagnie contemporaine, la suivante en tournée dans un théâtre national, et quelques jours plus tard sur le plateau d'une émission télévisée. La discipline pratiquée, le réseau constitué et le moment de la carrière déterminent énormément. Ce qui ne change pas : un corps qu'on entretient chaque jour comme un instrument, une présence scénique qu'on travaille en permanence, et une capacité à recevoir des directions artistiques très différentes selon les projets.",
+    definition: "Quand on pense aux métiers de la danse, c'est lui ou elle qui vient en tête en premier. Mais être danseur.se professionnel.le, c'est bien plus complexe qu'apprendre des chorégraphies et monter sur scène. Le quotidien peut être radicalement différent d'un contrat à l'autre : une semaine en résidence de création avec une compagnie contemporaine, la suivante en tournée dans un théâtre national et quelques jours plus tard sur le plateau d'une émission télévisée. La discipline pratiquée, le réseau constitué et le moment de la carrière déterminent énormément. Ce qui ne change pas : un corps qu'on entretient chaque jour comme un instrument, une présence scénique qu'on travaille en permanence et une capacité à recevoir des directions artistiques très différentes selon les projets.",
 
     missions: [
       "Apprendre et mémoriser des pièces chorégraphiques, parfois dans des esthétiques très différentes d'un projet à l'autre.",
@@ -115,9 +115,9 @@ export const metiers: Metier[] = [
       "Contribuer parfois à la création elle-même : improvisations, propositions de mouvement, co-écriture.",
     ],
 
-    environnement: "Les contextes de travail sont très variés. Compagnies contemporaines, ballets, compagnies hip-hop, productions de comédies musicales, opéras, grandes cérémonies, clips, publicités... Un.e même danseur.se peut naviguer entre plusieurs de ces univers au cours d'une carrière, ou même d'une seule saison. Les répétitions se font en studio, souvent en ville, et les représentations peuvent emmener partout en France et à l'étranger.",
+    environnement: "Les contextes de travail sont très variés. Compagnies contemporaines, ballets, compagnies hip-hop, productions de comédies musicales, opéras, grandes cérémonies, clips, publicités... Un.e même danseur.se peut naviguer entre plusieurs de ces univers au cours d'une carrière ou même d'une seule saison. Les répétitions se font en studio, souvent en ville, et les représentations peuvent emmener partout en France et à l'étranger.",
 
-    formation: "Il n'existe pas de diplôme légalement obligatoire pour se produire en tant qu'interprète. Dans les faits, la plupart des danseurs.euses professionnel.les ont suivi une formation longue : une grande école nationale (CNSMD de Paris ou Lyon, CNDC d'Angers), une école privée agréée, ou un parcours construit autrement. Dans les danses urbaines, l'autodidaxie et la scène ont souvent remplacé les cursus académiques.",
+    formation: "Il n'existe pas de diplôme légalement obligatoire pour se produire en tant qu'interprète. Dans les faits, la plupart des danseurs.euses professionnel.les ont suivi une formation longue : une grande école nationale (CNSMD de Paris ou Lyon, CNDC d'Angers), une école privée agréée ou un parcours construit autrement. Dans les danses urbaines, l'autodidaxie et la scène ont souvent remplacé les cursus académiques.",
 
     statut: "La majorité des interprètes travaillent sous le régime de l'intermittence du spectacle, annexe 8. Les conditions d'accès, en nombre d'heures, évoluent régulièrement, il vaut mieux vérifier les seuils actuels directement auprès de Pôle Emploi Spectacles ou d'un syndicat comme le SFA.",
 
@@ -134,6 +134,11 @@ export const metiers: Metier[] = [
         titre: "Performeur.se",
         texte: "La performance implique souvent un dispositif singulier, un cadre conceptuel ou une présence hors du cadre scénique traditionnel. Le danseur ou la danseuse interprète en général une chorégraphie dans un espace et un temps définis.",
         lien:  'performeur',
+      },
+      {
+        titre: "Acrobate",
+        texte: "L'acrobate mobilise des techniques circassiennes précises comme les portés, l'aérien ou l'acrobatie. Le danseur ou la danseuse travaille d'abord l'interprétation chorégraphique, même si certaines créations croisent les deux pratiques.",
+        lien:  'acrobate',
       },
     ],
   },
@@ -173,6 +178,11 @@ export const metiers: Metier[] = [
         titre: "Danseur.se",
         texte: "Le danseur ou la danseuse interprète en général une chorégraphie dans un cadre scénique défini, avec une partition donnée. La performance revendique davantage l'indéfinition du cadre comme outil artistique.",
         lien:  'danseur',
+      },
+      {
+        titre: "Artiste pluridisciplinaire",
+        texte: "L'artiste pluridisciplinaire combine durablement plusieurs pratiques comme la danse, le théâtre, le chant ou la musique. Le ou la performeur.se se définit davantage par la nature de l'acte artistique et du dispositif proposé.",
+        lien:  'artiste-pluridisciplinaire',
       },
     ],
   },
@@ -388,6 +398,11 @@ export const metiers: Metier[] = [
         texte: "Le metteur ou la metteuse en scène organise l'espace théâtral, la narration et la direction des comédiens.nes. Même si les frontières sont de plus en plus poreuses, le chorégraphe compose spécifiquement le mouvement comme matière première.",
         lien:  'metteur-en-scene',
       },
+      {
+        titre: "Assistant.e chorégraphe",
+        texte: "Le ou la chorégraphe porte la vision et signe la création. L'assistant.e chorégraphe accompagne sa mise en oeuvre, transmet les matériaux et veille à leur cohérence sans se substituer à l'auteur.rice de la pièce.",
+        lien:  'assistant-choregraphe',
+      },
     ],
   },
 
@@ -409,7 +424,7 @@ export const metiers: Metier[] = [
 
     environnement: "Théâtres, compagnies mixtes danse/théâtre, opéras, festivals pluridisciplinaires. Les mises en scène d'opéra ou de spectacles musicaux font régulièrement appel à des chorégraphes ou des metteurs.ses en scène venu.es de la danse.",
 
-    formation: "Pas de diplôme obligatoire. Formation théâtrale (ENSATT, CNSAD, Conservatoires nationaux), masters en arts de la scène, ou apprentissage par compagnonnage au sein d'équipes artistiques.",
+    formation: "Pas de diplôme obligatoire. Formation théâtrale (ENSATT, CNSAD, Conservatoires nationaux), masters en arts de la scène ou apprentissage par compagnonnage au sein d'équipes artistiques.",
 
     statut: "Artiste-auteur.e (Maison des artistes / AGESSA) pour les droits sur la mise en scène, parfois salarié.e en CDDU lors des périodes de répétition.",
 
@@ -426,6 +441,11 @@ export const metiers: Metier[] = [
         titre: "Chorégraphe",
         texte: "Le chorégraphe ou la chorégraphe compose spécifiquement le mouvement comme matière première artistique. Le metteur ou la metteuse en scène pilote l'ensemble du dispositif scénique, sans que le mouvement soit nécessairement au centre.",
         lien:  'choregraphe',
+      },
+      {
+        titre: "Dramaturge",
+        texte: "Le ou la dramaturge accompagne la structure, le sens et la cohérence d'une oeuvre par son regard extérieur. Le metteur ou la metteuse en scène dirige concrètement l'ensemble de la réalisation scénique.",
+        lien:  'dramaturge',
       },
     ],
   },
@@ -448,7 +468,7 @@ export const metiers: Metier[] = [
 
     environnement: "Ateliers de construction, studios de répétition, théâtres. Le ou la scénographe travaille souvent sur plusieurs projets en parallèle, pour des compagnies de danse, des théâtres ou des maisons d'opéra.",
 
-    formation: "École nationale supérieure des arts décoratifs (ENSAD), École Boulle, HEAR, HEAD, ou formations spécifiques en scénographie à l'ENSATT. Certains scénographes viennent de l'architecture ou des beaux-arts.",
+    formation: "École nationale supérieure des arts décoratifs (ENSAD), École Boulle, HEAR, HEAD ou formations spécifiques en scénographie à l'ENSATT. Certains scénographes viennent de l'architecture ou des beaux-arts.",
 
     statut: "Artiste-auteur.e ou salarié.e selon les configurations. Les droits sur une scénographie font l'objet d'un contrat spécifique. Se rapprocher du SYNDEAC ou d'un.e conseiller.e juridique spécialisé.e.",
 
@@ -529,7 +549,7 @@ export const metiers: Metier[] = [
     description: "Bras droit du ou de la chorégraphe en répétition. Transmet les matériaux de mouvement, structure les sessions, assure la continuité créative.",
     univers:     'creer',
 
-    definition: "L'assistant.e chorégraphe est la personne qui permet à un projet de création de tenir dans la durée. Pendant que le ou la chorégraphe prend du recul, regarde, réfléchit, l'assistant.e est sur le plateau : il ou elle transmet les matériaux de mouvement aux interprètes, structure les sessions, maintient la cohérence de ce qui a été travaillé. C'est un rôle qui exige une compréhension intime de la vision artistique du ou de la chorégraphe, et la capacité de la relayer sans la dénaturer.",
+    definition: "L'assistant.e chorégraphe est la personne qui permet à un projet de création de tenir dans la durée. Pendant que le ou la chorégraphe prend du recul, regarde, réfléchit, l'assistant.e est sur le plateau : il ou elle transmet les matériaux de mouvement aux interprètes, structure les sessions, maintient la cohérence de ce qui a été travaillé. C'est un rôle qui exige une compréhension intime de la vision artistique du ou de la chorégraphe et la capacité de la relayer sans la dénaturer.",
 
     missions: [
       "Apprendre et transmettre les matériaux chorégraphiques aux interprètes.",
@@ -611,7 +631,7 @@ export const metiers: Metier[] = [
 
     environnement: "Productions de comédie musicale longue durée, grandes tournées, productions internationales. Le dance captain est souvent aussi interprète dans le spectacle.",
 
-    formation: "Expérience de longue durée comme interprète dans des productions de grande envergure, et une connaissance intime de la production concernée. Pas de formation spécifique.",
+    formation: "Expérience de longue durée comme interprète dans des productions de grande envergure et connaissance intime de la production concernée. Pas de formation spécifique.",
 
     statut: "Salarié.e du spectacle vivant, souvent avec une responsabilité artistique supplémentaire intégrée dans le contrat d'interprète.",
 
@@ -641,7 +661,7 @@ export const metiers: Metier[] = [
     univers:     'transmettre',
     featured:    true,
 
-    definition: "C'est souvent le premier métier auquel on pense quand on envisage de travailler dans la danse sans monter sur scène. Et c'est un métier à part entière, pas une reconversion par défaut. Enseigner la danse, c'est transmettre une technique, une culture, un rapport au corps. C'est aussi accompagner des parcours très différents : les enfants qui débutent, les adolescent.es qui progressent, les adultes qui pratiquent par plaisir, et parfois les futur.es professionnel.les.",
+    definition: "C'est souvent le premier métier auquel on pense quand on envisage de travailler dans la danse sans monter sur scène. Et c'est un métier à part entière, pas une reconversion par défaut. Enseigner la danse, c'est transmettre une technique, une culture, un rapport au corps. C'est aussi accompagner des parcours très différents : les enfants qui débutent, les adolescent.es qui progressent, les adultes qui pratiquent par plaisir et parfois les futur.es professionnel.les.",
 
     missions: [
       "Préparer et dispenser des cours adaptés au niveau et à l'âge des élèves.",
@@ -909,7 +929,7 @@ export const metiers: Metier[] = [
     univers:     'produire',
     featured:    true,
 
-    definition: "Diriger une compagnie ou une école de danse, c'est cumuler des responsabilités qui n'ont souvent rien à voir entre elles : la vision artistique, la gestion administrative, les relations avec les institutions, le management d'une équipe, et parfois la création elle-même. La plupart des directeurs.rices de compagnie en France sont les chorégraphes fondateur.rices. Ce qui veut dire qu'on leur demande d'être à la fois artiste, patron.ne, représentant.e institutionnel.le et stratège. C'est un métier en soi.",
+    definition: "Diriger une compagnie ou une école de danse, c'est cumuler des responsabilités qui n'ont souvent rien à voir entre elles : la vision artistique, la gestion administrative, les relations avec les institutions, le management d'une équipe et parfois la création elle-même. La plupart des directeurs.rices de compagnie en France sont les chorégraphes fondateur.rices. Ce qui veut dire qu'on leur demande d'être à la fois artiste, patron.ne, représentant.e institutionnel.le et stratège. C'est un métier en soi.",
 
     missions: [
       "Définir et porter le projet artistique ou pédagogique de la structure.",
@@ -1284,7 +1304,7 @@ export const metiers: Metier[] = [
 
     formation: "Diplôme d'État de Masseur-Kinésithérapeute (DEMK, Bac+4). La spécialisation en danse s'acquiert par la pratique, des formations complémentaires (pilates, méthode Mézières, Feldenkrais) et l'expérience au contact de danseurs.euses.",
 
-    statut: "Libéral.e, salarié.e, ou les deux. Conventionné.e Sécurité Sociale dans la plupart des cas.",
+    statut: "Libéral.e, salarié.e ou les deux. Conventionné.e Sécurité Sociale dans la plupart des cas.",
 
     competences: [
       "Connaissance approfondie de la biomécanique spécifique à la danse.",
@@ -1299,6 +1319,11 @@ export const metiers: Metier[] = [
         titre: "Coach de scène / Préparateur.rice mental.e",
         texte: "Le coaching de scène et la préparation mentale travaillent sur la performance globale, la confiance et la gestion du trac. La kinésithérapie intervient sur le corps physique, les blessures et la rééducation.",
         lien:  'coach',
+      },
+      {
+        titre: "Médecin du sport",
+        texte: "Le médecin ou la médecin du sport pose un diagnostic, prescrit les examens et coordonne le parcours de soin. Le ou la kinésithérapeute assure la rééducation fonctionnelle et accompagne la reprise du mouvement.",
+        lien:  'medecin-sport',
       },
     ],
   },
@@ -1338,6 +1363,11 @@ export const metiers: Metier[] = [
         titre: "Kinésithérapeute spécialisé.e",
         texte: "La kinésithérapie intervient sur le corps physique, les blessures et la rééducation. Le coaching de scène et la préparation mentale travaillent sur la dimension psychologique et la performance artistique globale.",
         lien:  'kine',
+      },
+      {
+        titre: "Psychologue",
+        texte: "Le ou la psychologue accompagne la santé psychique dans un cadre clinique réglementé. Le coaching de scène se concentre sur des objectifs de performance, de confiance et de présence artistique sans se substituer à une thérapie.",
+        lien:  'psychologue',
       },
     ],
   },
@@ -1449,7 +1479,7 @@ export const metiers: Metier[] = [
     description: "Accompagne la mobilité, les équilibres du corps et la récupération, en tenant compte des contraintes propres à la danse.",
     univers:     'accompagner',
 
-    definition: "Beaucoup de danseurs.euses consultent un.e ostéopathe régulièrement, pas forcément parce qu'ils.elles sont blessé.es, mais pour maintenir un équilibre global du corps, repérer les tensions avant qu'elles deviennent des blessures, et récupérer plus vite entre les projets. L'approche globale de l'ostéopathie s'accorde assez bien avec la façon dont les danseurs.euses habitent leur corps.",
+    definition: "Beaucoup de danseurs.euses consultent un.e ostéopathe régulièrement, pas forcément parce qu'ils.elles sont blessé.es, mais pour maintenir un équilibre global du corps, repérer les tensions avant qu'elles deviennent des blessures et récupérer plus vite entre les projets. L'approche globale de l'ostéopathie s'accorde assez bien avec la façon dont les danseurs.euses habitent leur corps.",
 
     missions: [
       "Évaluer et traiter les tensions musculo-squelettiques, articulaires et viscérales.",
@@ -1744,6 +1774,658 @@ export const metiers: Metier[] = [
     ],
   },
 
+  {
+    id:          'acupuncteur',
+    nom:         'Acupuncteur.rice',
+    description: "Mobilise les ressources du corps par la stimulation de points spécifiques, dans une approche complémentaire au suivi médical des danseurs.euses.",
+    univers:     'accompagner',
+
+    definition: "L'acupuncture est parfois intégrée dans le suivi des artistes, notamment pour la gestion de la douleur chronique, la récupération et les états de tension. Ce n'est pas une médecine de substitution, mais une pratique complémentaire qui peut s'inscrire dans une approche globale du corps. En France, l'acupuncture médicale ne peut légalement être pratiquée que par des médecins, sages-femmes ou chirurgiens-dentistes ayant suivi une formation reconnue.",
+
+    missions: [
+      "Évaluer les déséquilibres et les besoins spécifiques de l'artiste.",
+      "Proposer des séances d'acupuncture adaptées aux pathologies ou aux objectifs de récupération.",
+      "Travailler en complémentarité avec le suivi médical conventionnel.",
+      "Adapter la pratique aux contraintes du corps en pratique intense.",
+      "Orienter systématiquement vers un médecin pour tout symptôme nécessitant un diagnostic.",
+    ],
+
+    environnement: "Cabinet libéral, structures médicales ou de médecine du sport, parfois en compagnie à la demande.",
+
+    formation: "En France, l'acupuncture médicale ne peut être pratiquée que par des médecins, sages-femmes ou chirurgiens-dentistes ayant obtenu un Diplôme Interuniversitaire (DIU) ou une capacité en acupuncture. Des formations privées non médicales existent mais n'autorisent pas l'exercice médical de l'acupuncture.",
+
+    statut: "Médecin, sage-femme ou chirurgien.ne-dentiste avec capacité complémentaire en acupuncture. L'acupuncture pratiquée hors cadre médical relève des pratiques de bien-être non réglementées.",
+
+    competences: [
+      "Maîtrise des techniques d'acupuncture et connaissance des méridiens.",
+      "Capacité d'évaluation globale et d'écoute du patient.",
+      "Connaissance des pathologies spécifiques aux pratiques corporelles intensives.",
+      "Collaboration avec l'équipe médicale pluridisciplinaire.",
+      "Éthique et transparence sur les limites et le cadre de la pratique.",
+    ],
+  },
+
+  {
+    id:          'masseur-bien-etre',
+    nom:         'Masseur.se',
+    description: "Propose des soins de massage à visée de bien-être, de détente et de récupération, en dehors du cadre médical de la kinésithérapie.",
+    univers:     'accompagner',
+
+    definition: "Le massage bien-être est distinct du massage médical pratiqué par les masseurs-kinésithérapeutes. Il n'a pas vocation à traiter des pathologies, mais à favoriser la détente, la récupération musculaire et le confort corporel. De nombreux danseurs.euses y ont recours régulièrement en complément de leur suivi médical. La profession n'est pas réglementée en France sur le plan des titres, ce qui implique une grande variété de pratiques et de formations.",
+
+    missions: [
+      "Pratiquer des massages de bien-être adaptés aux corps très sollicités.",
+      "Identifier les zones de tension et adapter la pression en conséquence.",
+      "Maintenir des conditions d'hygiène irréprochables à chaque séance.",
+      "Orienter vers un professionnel de santé en cas de douleur nécessitant un suivi médical.",
+      "Adapter les techniques selon les préférences et l'état physique du moment.",
+    ],
+
+    environnement: "Cabinet, spa, studio de danse, à domicile, structures dédiées au bien-être. Certains masseurs.euses se déplacent directement au sein des compagnies.",
+
+    formation: "Aucun diplôme d'État spécifique pour le massage bien-être (à distinguer du Diplôme d'État de Masseur-Kinésithérapeute, qui est une profession médicale réglementée). Des formations privées existent, de quelques jours à plusieurs centaines d'heures selon les techniques.",
+
+    statut: "Travailleur.se indépendant.e ou salarié.e d'une structure. Attention à ne jamais exercer sous le titre de masseur-kinésithérapeute sans le diplôme correspondant : cela constituerait une usurpation de titre protégé.",
+
+    competences: [
+      "Maîtrise d'une ou plusieurs techniques de massage.",
+      "Connaissance de l'anatomie de base et des zones à risque.",
+      "Sens de l'écoute et capacité d'adaptation à chaque client.e.",
+      "Éthique professionnelle et clarté sur le cadre non médical de la pratique.",
+      "Hygiène et respect du confort des personnes.",
+    ],
+  },
+
+  {
+    id:          'masseur-kine',
+    nom:         'Masseur.se-kinésithérapeute',
+    description: "Professionnel.le de santé diplômé.e d'État, autorisé.e à pratiquer la kinésithérapie, la rééducation et le massage thérapeutique.",
+    univers:     'accompagner',
+
+    definition: "Masseur.se-kinésithérapeute est le titre officiel et protégé de la profession de kinésithérapeute en France. Il recouvre la même réalité que la fiche 'Kinésithérapeute spécialisé.e' du Dance Lab, qui décrit ce même professionnel dans sa pratique auprès des danseurs.euses. Le diplôme d'État de Masseur-Kinésithérapeute (DEMK) est requis pour exercer légalement. La spécialisation en danse s'acquiert ensuite par l'expérience au contact des compagnies et des écoles.",
+
+    missions: [
+      "Traiter les blessures et les pathologies musculo-squelettiques par la rééducation.",
+      "Pratiquer des massages thérapeutiques sur prescription médicale.",
+      "Proposer des bilans fonctionnels et des programmes de prévention.",
+      "Accompagner les reprises d'entraînement après blessure.",
+      "Collaborer avec l'ensemble de l'équipe médicale autour de l'artiste.",
+    ],
+
+    environnement: "Cabinet libéral, structures médicales, compagnies, écoles supérieures de danse. Certains accompagnent les compagnies en tournée.",
+
+    formation: "Diplôme d'État de Masseur-Kinésithérapeute (DEMK, Bac+4). Accès par concours ou Parcoursup selon les IFMK (instituts de formation). La spécialisation danse s'acquiert par la pratique et les formations complémentaires.",
+
+    statut: "Libéral.e, salarié.e ou les deux. Conventionné.e Sécurité Sociale dans la plupart des cas.",
+
+    competences: [
+      "Maîtrise des techniques de rééducation et de massage thérapeutique.",
+      "Connaissance approfondie de l'anatomie et de la biomécanique.",
+      "Capacité à travailler sur prescription et en équipe pluridisciplinaire.",
+      "Empathie et sens de l'accompagnement dans la durée.",
+      "Intérêt et connaissance de la pratique chorégraphique.",
+    ],
+
+    neConfondreAvec: [
+      {
+        titre: "Masseur.se",
+        texte: "Le masseur ou la masseuse bien-être intervient dans un cadre non médical. Le ou la masseur.se-kinésithérapeute est un professionnel de santé diplômé.e d'État, habilité.e à pratiquer la rééducation et les soins thérapeutiques sur prescription.",
+        lien:  'masseur-bien-etre',
+      },
+    ],
+  },
+
+  {
+    id:          'chiropracteur',
+    nom:         'Chiropracteur.rice',
+    description: "Traite les troubles musculo-squelettiques par des ajustements manuels, notamment au niveau des articulations vertébrales. Une approche complémentaire parfois sollicitée par les danseurs.euses.",
+    univers:     'accompagner',
+
+    definition: "La chiropraxie est une profession de santé réglementée en France depuis 2002. Elle se concentre sur les troubles fonctionnels du système musculo-squelettique et nerveux, principalement par des manipulations vertébrales et articulaires. Certains danseurs.euses consultent un.e chiropracteur.rice pour des douleurs rachidiennes, des blocages ou des problèmes de mobilité, en complément du suivi kinésithérapeutique.",
+
+    missions: [
+      "Évaluer les troubles musculo-squelettiques par un bilan complet.",
+      "Pratiquer des ajustements articulaires ciblés selon les besoins.",
+      "Conseiller sur la posture et les habitudes corporelles hors pratique.",
+      "Orienter vers d'autres professionnels de santé si nécessaire.",
+      "Adapter la pratique aux contraintes physiques spécifiques des artistes.",
+    ],
+
+    environnement: "Cabinet libéral. La chiropraxie n'est pas remboursée par la Sécurité Sociale mais prise en charge par certaines mutuelles.",
+
+    formation: "Diplôme en chiropraxie délivré par un établissement agréé par le Ministère de la Santé (l'IFEC à Paris est le principal établissement en France). La formation dure 6 ans après le baccalauréat. Le titre de chiropracteur est strictement protégé.",
+
+    statut: "Profession de santé réglementée depuis 2002, exercée exclusivement en libéral. Non conventionné.e Sécurité Sociale.",
+
+    competences: [
+      "Maîtrise des techniques chiropratiques et connaissance de la neurologie fonctionnelle.",
+      "Capacité d'évaluation clinique et de diagnostic différentiel.",
+      "Connaissance des pathologies spécifiques aux pratiques corporelles intensives.",
+      "Sens de la communication avec les artistes et les équipes médicales.",
+      "Approche préventive autant que curative.",
+    ],
+  },
+
+  {
+    id:          'medecin-mesotherapie',
+    nom:         'Médecin pratiquant la mésothérapie',
+    description: "Utilise des micro-injections locales pour traiter les douleurs musculaires, les contractures et les tendinites. Une technique parfois utilisée dans le milieu chorégraphique.",
+    univers:     'accompagner',
+
+    definition: "La mésothérapie consiste en l'injection intradermique de petites quantités de médicaments directement dans la zone à traiter. Elle est utilisée pour les douleurs localisées, les contractures et certaines tendinites. C'est une technique médicale réservée aux médecins, qui peut s'intégrer dans le suivi des danseurs.euses en complément des soins conventionnels.",
+
+    missions: [
+      "Évaluer les douleurs et les pathologies localisées en lien avec la pratique.",
+      "Pratiquer des séances de mésothérapie adaptées aux besoins de l'artiste.",
+      "Suivre l'évolution et ajuster le protocole au fil des séances.",
+      "Coordonner le suivi avec les autres professionnels de santé.",
+      "Informer clairement sur la nature et les effets attendus de la technique.",
+    ],
+
+    environnement: "Cabinet médical ou centre de médecine du sport. Pratiqué par des médecins généralistes ou du sport ayant une formation spécifique.",
+
+    formation: "Diplôme d'État de Médecin, complété par un Diplôme Interuniversitaire (DIU) ou un Diplôme Universitaire (DU) de mésothérapie. La pratique est strictement réservée aux médecins.",
+
+    statut: "Médecin libéral.e ou salarié.e ayant acquis une formation complémentaire. La technique est reconnue par le Conseil national de l'Ordre des médecins.",
+
+    competences: [
+      "Maîtrise des protocoles de mésothérapie et de leurs indications.",
+      "Connaissance des pathologies liées à la pratique chorégraphique intensive.",
+      "Sens de l'écoute et approche individualisée.",
+      "Capacité à travailler en coordination avec l'équipe médicale pluridisciplinaire.",
+      "Rigueur dans le suivi et l'évaluation des résultats.",
+    ],
+  },
+
+  {
+    id:          'pedicure-podologue',
+    nom:         'Pédicure-podologue',
+    description: "Prend en charge la santé des pieds, essentielle chez les danseurs.euses. Du soin courant à l'orthèse plantaire, un suivi souvent indispensable.",
+    univers:     'accompagner',
+
+    definition: "Les pieds sont l'un des outils de travail les plus sollicités chez un.e danseur.se. Les cors, ampoules, ongles incarnés, hallux valgus, métatarsalgies : les pathologies du pied sont fréquentes et parfois invalidantes dans la pratique chorégraphique. Le ou la pédicure-podologue est souvent l'un des praticiens les plus régulièrement consultés par les danseurs.euses professionnel.les.",
+
+    missions: [
+      "Réaliser les soins de pédicurie médicale courante.",
+      "Diagnostiquer et traiter les pathologies du pied spécifiques à la pratique de la danse.",
+      "Concevoir des orthèses plantaires adaptées aux contraintes chorégraphiques.",
+      "Conseiller sur le soin des pieds, le choix des chaussures et la prévention des blessures.",
+      "Orienter vers un médecin ou un chirurgien si une pathologie dépasse le champ podologique.",
+    ],
+
+    environnement: "Cabinet libéral, structures médicales. Certains pédicures-podologues se spécialisent dans l'accompagnement des danseurs.euses et des sportifs de haut niveau.",
+
+    formation: "Diplôme d'État de Pédicure-Podologue (DEP, Bac+3). Profession médicale réglementée, conventionnée Sécurité Sociale pour les soins de pédicurie médicale remboursables.",
+
+    statut: "Libéral.e dans la majorité des cas. Conventionné.e Sécurité Sociale pour les actes remboursables selon les conditions.",
+
+    competences: [
+      "Maîtrise des soins podologiques et des techniques de pose d'orthèses.",
+      "Connaissance des pathologies du pied liées à la danse et aux pratiques corporelles intensives.",
+      "Précision technique et sens du détail.",
+      "Capacité à conseiller sur la prévention et le suivi à long terme.",
+      "Collaboration avec les kinésithérapeutes et médecins du sport.",
+    ],
+  },
+
+  {
+    id:          'posturologue',
+    nom:         'Posturologue',
+    description: "Analyse et traite les déséquilibres posturaux qui peuvent affecter les performances et la santé corporelle des danseurs.euses.",
+    univers:     'accompagner',
+
+    definition: "La posturologie est une discipline qui étudie les mécanismes de régulation de la posture à partir des capteurs sensoriels du corps : le pied, l'oeil, l'oreille interne, l'appareil manducateur. Pour un.e danseur.se, des déséquilibres posturaux peuvent être à l'origine de compensations et de blessures chroniques difficiles à identifier autrement. La posturologie reste une spécialité aux contours encore en construction sur le plan de la recherche scientifique.",
+
+    missions: [
+      "Évaluer les déséquilibres posturaux par des tests cliniques spécifiques.",
+      "Identifier les capteurs sensoriels défaillants ou surchargés.",
+      "Proposer des séances de rééducation posturale globale.",
+      "Collaborer avec les kinésithérapeutes, podologues et ophtalmologistes.",
+      "Suivre l'évolution dans le temps et ajuster les protocoles.",
+    ],
+
+    environnement: "Cabinet libéral, centres de médecine du sport ou de rééducation. La posturologie est souvent exercée par des kinésithérapeutes ou des médecins ayant une formation complémentaire spécifique.",
+
+    formation: "Il n'existe pas de diplôme d'État spécifique en posturologie. La spécialisation s'acquiert par des formations continues proposées notamment par l'Association Posture & Équilibre (APE) ou des instituts spécialisés.",
+
+    statut: "Praticien.ne de santé (kinésithérapeute, médecin, podologue) ayant acquis une formation complémentaire en posturologie. Exercice en libéral ou en structure médicale.",
+
+    competences: [
+      "Connaissance des systèmes sensori-moteurs impliqués dans la régulation posturale.",
+      "Maîtrise des tests posturologiques et de leur interprétation.",
+      "Approche globale et pluridisciplinaire du corps.",
+      "Sens de l'explication pour transmettre des concepts complexes aux artistes.",
+      "Rigueur dans le suivi et l'évaluation des résultats.",
+    ],
+  },
+
+  {
+    id:          'ergotherapeute',
+    nom:         'Ergothérapeute',
+    description: "Accompagne l'adaptation du geste et de l'environnement pour prévenir les troubles liés à la surcharge physique ou faciliter la réadaptation après blessure.",
+    univers:     'accompagner',
+
+    definition: "L'ergothérapeute travaille sur la relation entre la personne et son activité. Pour un.e danseur.se, cela peut concerner la phase de réadaptation après une blessure invalidante, l'adaptation des conditions de pratique ou l'accompagnement lors d'une transition professionnelle. C'est une profession de santé encore peu connue dans le monde de la danse, mais dont l'approche peut être précieuse dans certaines situations.",
+
+    missions: [
+      "Évaluer les capacités fonctionnelles et les besoins d'adaptation liés à la pratique.",
+      "Concevoir des programmes de réadaptation fonctionnelle après blessure.",
+      "Adapter les outils et les environnements de pratique si nécessaire.",
+      "Accompagner la transition vers d'autres activités corporelles ou professionnelles.",
+      "Travailler en lien étroit avec l'équipe médicale pluridisciplinaire.",
+    ],
+
+    environnement: "Hôpitaux, centres de rééducation, cabinets libéraux. La présence d'ergothérapeutes dans le secteur chorégraphique reste rare mais pertinente dans certaines situations de réadaptation ou de transition.",
+
+    formation: "Diplôme d'État d'Ergothérapeute (DEr, Bac+3). Profession médicale réglementée.",
+
+    statut: "Salarié.e en établissement de santé ou libéral.e. Conventionné.e Sécurité Sociale.",
+
+    competences: [
+      "Connaissance des capacités fonctionnelles du corps en lien avec l'activité.",
+      "Maîtrise des techniques de réadaptation adaptées aux pratiques corporelles.",
+      "Sens de l'écoute et approche centrée sur la personne.",
+      "Capacité à travailler en équipe pluridisciplinaire.",
+      "Créativité dans la conception des adaptations.",
+    ],
+  },
+
+  {
+    id:          'psychomotricien',
+    nom:         'Psychomotricien.ne',
+    description: "Travaille sur la relation entre le corps et le psychisme, la conscience du schéma corporel et la régulation tonique. Un accompagnement utile dans certaines phases de la carrière d'un.e danseur.se.",
+    univers:     'accompagner',
+
+    definition: "La psychomotricité s'intéresse aux liens entre les fonctions psychiques et la motricité. Pour un.e danseur.se, cela peut avoir du sens dans le cadre d'une rééducation après traumatisme, d'un accompagnement de jeunes artistes dans leur rapport au corps, ou de situations de blocage expressif ou sensoriel. C'est une profession de santé qui intervient à l'intersection du corps et du soin psychologique.",
+
+    missions: [
+      "Évaluer les difficultés psychomotrices ou corporelles spécifiques.",
+      "Proposer des séances de rééducation psychomotrice adaptées.",
+      "Travailler sur la conscience corporelle et la régulation émotionnelle.",
+      "Collaborer avec l'équipe pédagogique ou médicale.",
+      "Adapter l'accompagnement au projet artistique et aux besoins de l'artiste.",
+    ],
+
+    environnement: "Hôpitaux, structures éducatives, centres de rééducation, cabinets libéraux. Peu répandu dans le secteur chorégraphique, mais des collaborations existent avec certaines écoles ou compagnies.",
+
+    formation: "Diplôme d'État de Psychomotricien.ne (Bac+3). Profession médicale réglementée.",
+
+    statut: "Salarié.e en établissement de santé ou libéral.e. Remboursement Sécurité Sociale sous certaines conditions.",
+
+    competences: [
+      "Connaissance des liens entre psychisme et motricité.",
+      "Maîtrise des techniques de rééducation psychomotrice.",
+      "Sens de l'observation corporelle fine.",
+      "Capacité à travailler avec des profils très divers.",
+      "Approche globale intégrant les dimensions corporelle et émotionnelle.",
+    ],
+  },
+
+  {
+    id:          'coach-sportif',
+    nom:         'Coach sportif.ve',
+    description: "Accompagne les danseurs.euses dans le développement de leurs capacités physiques générales, en complément de la formation artistique.",
+    univers:     'accompagner',
+
+    definition: "Le ou la coach sportif.ve n'est pas un.e préparateur.rice physique spécialisé.e en danse, mais peut intervenir de façon complémentaire sur la condition physique générale, la force fonctionnelle, la gestion de l'effort ou la récupération active. Certains danseurs.euses font appel à un.e coach sportif.ve en période de reprise, pour travailler sur des lacunes spécifiques, ou simplement pour maintenir un niveau physique élevé en dehors des cours.",
+
+    missions: [
+      "Évaluer les capacités physiques générales et définir des objectifs réalistes.",
+      "Concevoir des programmes d'entraînement adaptés aux contraintes artistiques.",
+      "Accompagner les séances en studio, en salle ou en ligne.",
+      "Suivre les progrès et ajuster les protocoles au fil du temps.",
+      "Veiller à la récupération et à la prévention des surcharges.",
+    ],
+
+    environnement: "Salle de sport, studio, domicile du.de la danseur.se, en ligne. En freelance dans la grande majorité des cas.",
+
+    formation: "Brevet Professionnel de la Jeunesse, de l'Éducation Populaire et du Sport (BPJEPS), DEJEPS ou DESJEPS selon la spécialité. La connaissance des contraintes spécifiques à la danse s'acquiert par l'intérêt personnel et l'expérience au contact des artistes.",
+
+    statut: "Travailleur.se indépendant.e ou salarié.e d'une structure sportive. Attention : l'appellation « coach sportif » n'est pas une désignation officielle protégée — vérifier les diplômes réels.",
+
+    competences: [
+      "Maîtrise de la physiologie de l'effort et des principes d'entraînement.",
+      "Capacité à adapter les programmes aux corps de danseurs.euses.",
+      "Pédagogie et sens de la motivation.",
+      "Connaissance des rythmes et contraintes de la vie artistique.",
+      "Collaboration avec les autres intervenants autour de l'artiste.",
+    ],
+
+    neConfondreAvec: [
+      {
+        titre: "Préparateur.rice physique",
+        texte: "Le ou la préparateur.rice physique spécialisé.e danse connaît précisément les contraintes chorégraphiques et travaille souvent en lien direct avec les compagnies. Le ou la coach sportif.ve intervient sur la condition physique générale, sans nécessairement cette spécialisation.",
+        lien:  'preparateur-physique',
+      },
+    ],
+  },
+
+  {
+    id:          'sophrologue',
+    nom:         'Sophrologue',
+    description: "Propose des techniques de relaxation, de visualisation et de conscience corporelle pour accompagner les artistes dans la gestion du stress et de la performance.",
+    univers:     'accompagner',
+
+    definition: "La sophrologie combine des techniques de respiration, de relaxation musculaire progressive et de visualisation positive. Pour les danseurs.euses, elle peut être utile dans la gestion du trac, la préparation aux auditions, la récupération entre les périodes intenses ou le rapport à la douleur. Elle ne se substitue pas à un suivi psychologique ou médical, mais constitue un outil complémentaire accessible.",
+
+    missions: [
+      "Guider des séances individuelles ou collectives de relaxation dynamique.",
+      "Travailler sur la gestion du stress, du trac et de la pression de la performance.",
+      "Utiliser la visualisation pour préparer mentalement les représentations.",
+      "Accompagner les artistes dans une meilleure connaissance de leurs ressources.",
+      "Orienter vers d'autres professionnels de santé si nécessaire.",
+    ],
+
+    environnement: "Cabinet, studio, en compagnie ou en école supérieure. Missions ponctuelles ou régulières selon les besoins des artistes.",
+
+    formation: "Il n'existe pas de diplôme d'État de sophrologue. Des formations privées existent, de durée et de sérieux variables. La sophrologie n'est pas une profession médicale réglementée en France.",
+
+    statut: "Travailleur.se indépendant.e dans la plupart des cas. Le titre n'est pas protégé : il est important de vérifier la formation et l'expérience du ou de la praticien.ne.",
+
+    competences: [
+      "Maîtrise des techniques sophrologiques (relaxation, respiration, visualisation).",
+      "Sens de l'écoute et de la relation d'accompagnement.",
+      "Connaissance des spécificités psychologiques de la performance artistique.",
+      "Éthique et discrétion dans la relation d'aide.",
+      "Capacité à adapter les outils aux contextes individuels.",
+    ],
+
+    neConfondreAvec: [
+      {
+        titre: "Coach de scène / Préparateur.rice mental.e",
+        texte: "Le coach de scène ou le préparateur ou la préparatrice mental.e travaille directement sur la performance artistique et la présence scénique. La sophrologie propose des outils de bien-être et de gestion du stress plus larges, applicables aussi hors contexte de performance.",
+        lien:  'coach',
+      },
+    ],
+  },
+
+  {
+    id:          'psychologue',
+    nom:         'Psychologue',
+    description: "Accompagne les danseurs.euses dans les dimensions psychologiques de leur vie professionnelle : pression du milieu, blessures, transitions, rapport au corps.",
+    univers:     'accompagner',
+
+    definition: "La carrière d'interprète comporte une dimension psychologique souvent sous-estimée : pression sur le corps et le look, auditions répétées, précarité, fins de carrière parfois brutales. Un.e psychologue accompagne les artistes dans ces réalités. Le suivi peut être ponctuel ou s'inscrire dans la durée. Il peut concerner des difficultés spécifiques comme une blessure, ou des problématiques plus larges comme l'estime de soi, les relations professionnelles ou l'orientation de carrière.",
+
+    missions: [
+      "Proposer un espace de parole confidentiel et bienveillant.",
+      "Accompagner les artistes dans les transitions professionnelles et les situations de crise.",
+      "Travailler sur les enjeux liés à l'image du corps et à la pression du milieu.",
+      "Collaborer avec les équipes médicales et pédagogiques dans une approche pluridisciplinaire.",
+      "Orienter vers un médecin psychiatre si une prise en charge médicamenteuse est nécessaire.",
+    ],
+
+    environnement: "Cabinet libéral, structures médicales, établissements d'enseignement supérieur de la danse, associations de soutien aux artistes.",
+
+    formation: "Master 2 en psychologie (Bac+5). Le titre de psychologue est strictement protégé par la loi française et inscrit sur la liste ADELI. Certains psychologues suivent une formation complémentaire spécialisée dans le sport de haut niveau ou les arts du spectacle.",
+
+    statut: "Libéral.e ou salarié.e. Le titre de psychologue est strictement protégé : son usage sans le diplôme requis constitue une infraction pénale.",
+
+    competences: [
+      "Maîtrise des approches thérapeutiques adaptées aux contextes artistiques.",
+      "Sens de l'écoute et capacité à créer un cadre de confiance.",
+      "Connaissance des enjeux spécifiques au milieu chorégraphique.",
+      "Éthique et secret professionnel.",
+      "Capacité à collaborer avec d'autres professionnels de santé.",
+    ],
+  },
+
+  {
+    id:          'hypnotherapeute',
+    nom:         'Hypnothérapeute',
+    description: "Utilise des techniques d'hypnose thérapeutique pour accompagner les artistes dans la gestion de la douleur, du trac ou de certains blocages.",
+    univers:     'accompagner',
+
+    definition: "L'hypnose thérapeutique est reconnue comme outil complémentaire dans certains contextes médicaux et de bien-être, notamment pour la gestion de la douleur chronique, des phobies ou du stress. Dans le milieu de la danse, certains artistes y ont recours pour des problèmes de trac, de confiance en scène ou de récupération psychologique après un traumatisme. L'hypnothérapie ne se substitue pas à un suivi médical ou psychologique.",
+
+    missions: [
+      "Mener des séances d'hypnose thérapeutique adaptées aux objectifs de l'artiste.",
+      "Travailler sur des problématiques spécifiques : trac, douleur, blocage, confiance.",
+      "Expliquer clairement le cadre et les limites de la pratique.",
+      "Orienter vers des professionnels de santé si nécessaire.",
+      "Maintenir une relation éthique et transparente tout au long du suivi.",
+    ],
+
+    environnement: "Cabinet privé, studio. L'exercice est non réglementé en France sauf lorsqu'il est pratiqué dans un cadre médical par un.e professionnel.le de santé diplômé.e.",
+
+    formation: "Il n'existe pas de diplôme d'État d'hypnothérapeute. Des formations privées existent. Lorsqu'elle est pratiquée dans un contexte médical, l'hypnose doit l'être par des professionnels de santé diplômés.",
+
+    statut: "Travailleur.se indépendant.e ou professionnel.le de santé avec formation complémentaire. Le titre n'est pas protégé en dehors du cadre médical.",
+
+    competences: [
+      "Maîtrise des techniques d'induction et de travail hypnotique.",
+      "Sens de l'écoute et capacité à établir un cadre de confiance.",
+      "Éthique et transparence sur les limites de la pratique.",
+      "Connaissance des enjeux psychologiques spécifiques au monde artistique.",
+      "Capacité à orienter vers des professionnels de santé si nécessaire.",
+    ],
+  },
+
+  {
+    id:          'naturopathe',
+    nom:         'Naturopathe',
+    description: "Propose une approche globale du bien-être par des moyens naturels : alimentation, phytothérapie, hygiène de vie. Une démarche de prévention plutôt que de traitement.",
+    univers:     'accompagner',
+
+    definition: "La naturopathie est une approche de bien-être qui vise à soutenir les capacités naturelles du corps par des moyens non médicamenteux : alimentation, plantes, gestion du stress, sommeil. Elle ne constitue pas une médecine à proprement parler et ne peut se substituer à un suivi médical. Certains artistes y ont recours dans une démarche de prévention et d'équilibre global, en complément de leur suivi conventionnel.",
+
+    missions: [
+      "Réaliser un bilan de vitalité et des habitudes de vie.",
+      "Proposer des programmes d'hygiène de vie personnalisés.",
+      "Conseiller sur l'alimentation, la phytothérapie et la gestion du stress.",
+      "Orienter systématiquement vers un médecin pour tout symptôme nécessitant un diagnostic.",
+      "Maintenir une communication transparente sur les limites de la pratique.",
+    ],
+
+    environnement: "Cabinet privé, à domicile, structures de bien-être. Pratique non réglementée en France.",
+
+    formation: "Il n'existe pas de diplôme d'État de naturopathe. Des formations privées de durée variable existent. La profession n'est pas reconnue par le Code de la Santé Publique français.",
+
+    statut: "Travailleur.se indépendant.e. Attention à ne jamais présenter la naturopathie comme un traitement médical ou un substitut aux soins conventionnels.",
+
+    competences: [
+      "Connaissance des approches naturelles de soutien à la santé.",
+      "Capacité à construire des programmes personnalisés adaptés aux artistes.",
+      "Éthique et clarté sur les limites non médicales de la pratique.",
+      "Sens de l'écoute et approche globale de la personne.",
+      "Capacité à collaborer avec les professionnels de santé.",
+    ],
+  },
+
+  {
+    id:          'reflexologue',
+    nom:         'Réflexologue',
+    description: "Stimule des zones réflexes du corps, principalement sur les pieds, pour soutenir la détente et le bien-être général.",
+    univers:     'accompagner',
+
+    definition: "La réflexologie est une pratique de bien-être basée sur la stimulation de zones réflexes localisées principalement sur les pieds, les mains ou les oreilles. Elle ne traite pas de pathologies au sens médical du terme, mais peut contribuer à la détente et à la récupération. Elle n'est pas reconnue comme une médecine par les autorités sanitaires françaises.",
+
+    missions: [
+      "Accueillir et écouter les personnes pour orienter la séance.",
+      "Pratiquer des techniques de stimulation des zones réflexes.",
+      "Adapter la pression et l'approche selon les réactions de la personne.",
+      "Orienter vers un professionnel de santé en cas de symptôme médical.",
+      "Informer clairement sur le cadre non médical de la pratique.",
+    ],
+
+    environnement: "Cabinet, spa, studio, à domicile. Pratique de bien-être non réglementée.",
+
+    formation: "Aucun diplôme d'État spécifique. Des formations privées existent. La réflexologie n'est pas reconnue par le Code de la Santé Publique.",
+
+    statut: "Travailleur.se indépendant.e dans la majorité des cas.",
+
+    competences: [
+      "Maîtrise des techniques de réflexologie et connaissance des zones réflexes.",
+      "Sens de l'écoute et de l'observation.",
+      "Éthique et transparence sur le cadre non médical de la pratique.",
+      "Hygiène rigoureuse.",
+      "Capacité à orienter vers un professionnel de santé si nécessaire.",
+    ],
+  },
+
+  {
+    id:          'praticien-shiatsu',
+    nom:         'Praticien.ne shiatsu',
+    description: "Pratique une technique de pression manuelle sur les méridiens du corps, d'origine japonaise, à visée de relaxation et d'équilibre.",
+    univers:     'accompagner',
+
+    definition: "Le shiatsu est une pratique manuelle d'origine japonaise qui consiste à exercer des pressions avec les doigts, les paumes ou les coudes le long des méridiens du corps. Il est parfois utilisé par les danseurs.euses pour la détente, la récupération et l'équilibre corporel global. Ce n'est pas une médecine reconnue en France, mais une pratique de bien-être.",
+
+    missions: [
+      "Accueillir la personne et recueillir ses besoins et son état du moment.",
+      "Pratiquer des séances de shiatsu adaptées à la personne.",
+      "Travailler sur la détente musculaire et la circulation de l'énergie.",
+      "Adapter la pratique aux particularités physiques des artistes.",
+      "Orienter vers un médecin si des symptômes médicaux apparaissent.",
+    ],
+
+    environnement: "Cabinet, studio, à domicile. Pratique de bien-être non médicale.",
+
+    formation: "Il n'existe pas de diplôme d'État. La Fédération Française de Shiatsu Traditionnel (FFST) délivre des certifications professionnelles de référence. Des formations privées sérieuses existent.",
+
+    statut: "Travailleur.se indépendant.e dans la plupart des cas.",
+
+    competences: [
+      "Maîtrise des techniques et des principes du shiatsu.",
+      "Connaissance de l'anatomie de surface et de la cartographie des méridiens.",
+      "Sens de l'écoute et de la présence.",
+      "Éthique et transparence sur le cadre non médical de la pratique.",
+      "Capacité à s'adapter aux différents profils de praticants.",
+    ],
+  },
+
+  {
+    id:          'praticien-massage-bien-etre',
+    nom:         'Praticien.ne en massage bien-être',
+    description: "Propose des massages à visée de détente, de récupération et de confort corporel, en dehors du cadre médical. Une pratique régulière chez les danseurs.euses professionnel.les.",
+    univers:     'accompagner',
+
+    definition: "Les praticiens.nes en massage bien-être sont formé.es à diverses techniques (massage suédois, relaxation, massage sportif non médical, massage californien, etc.) ayant pour objectif commun le confort et la détente du corps. Contrairement au ou à la masseur.se-kinésithérapeute, qui est un.e professionnel.le de santé, le praticien ou la praticienne bien-être intervient dans un cadre non médical. De nombreux artistes intègrent des séances régulières dans leur routine de récupération.",
+
+    missions: [
+      "Proposer des séances adaptées aux besoins et à l'état physique de la personne.",
+      "Pratiquer des techniques variées selon les demandes et les objectifs.",
+      "Adapter la pression et le rythme selon les zones et les états de tension.",
+      "Veiller à l'hygiène et à la création d'un cadre sécurisant.",
+      "Orienter vers un professionnel de santé si des symptômes médicaux apparaissent.",
+    ],
+
+    environnement: "Cabinet, spa, studio, à domicile ou en compagnie. Activité le plus souvent indépendante.",
+
+    formation: "Aucun diplôme d'État spécifique. Des formations privées de durée variable existent, de la courte initiation aux cursus longs de 500 heures ou plus. La qualité des formations est très inégale : il est important de s'en informer.",
+
+    statut: "Travailleur.se indépendant.e ou salarié.e. Attention à ne jamais s'arroger le titre de masseur.se-kinésithérapeute sans le diplôme d'État correspondant.",
+
+    competences: [
+      "Maîtrise d'une ou plusieurs techniques de massage bien-être.",
+      "Connaissance de l'anatomie de base et des zones à respecter.",
+      "Sens de l'écoute et capacité d'adaptation.",
+      "Éthique et clarté sur le cadre non médical de la pratique.",
+      "Hygiène et attention portée au confort de la personne.",
+    ],
+
+    neConfondreAvec: [
+      {
+        titre: "Kinésithérapeute spécialisé.e",
+        texte: "Le ou la kinésithérapeute est un.e professionnel.le de santé diplômé.e d'État, habilité.e à pratiquer la rééducation sur prescription médicale. Le praticien ou la praticienne en massage bien-être intervient en dehors de ce cadre médical.",
+        lien:  'kine',
+      },
+    ],
+  },
+
+  {
+    id:          'professeur-pilates',
+    nom:         'Professeur.e de Pilates',
+    description: "Enseigne la méthode Pilates, un travail de renforcement profond et de conscience corporelle très utilisé par les danseurs.euses en complément de leur entraînement.",
+    univers:     'accompagner',
+
+    definition: "Le Pilates est une méthode de travail corporel développée au début du XXe siècle par Joseph Pilates, initialement conçue pour la réhabilitation des danseurs blessés. Elle met l'accent sur le gainage profond, la mobilité articulaire, la conscience de l'axe corporel et la coordination. Elle est aujourd'hui largement intégrée dans la pratique des danseurs.euses professionnel.les, aussi bien en prévention qu'en rééducation.",
+
+    missions: [
+      "Enseigner la méthode Pilates au sol (matwork) ou sur appareils (reformer, cadillac, barrel).",
+      "Adapter les exercices aux besoins spécifiques de chaque danseur.se.",
+      "Travailler sur la conscience corporelle, le gainage profond et l'alignement.",
+      "Collaborer avec les kinésithérapeutes et médecins dans le cadre de programmes de rééducation.",
+      "Assurer la sécurité et la progressivité des séances.",
+    ],
+
+    environnement: "Studio de Pilates, studio de danse, cabinet de kinésithérapie, compagnies en résidence. Certains professeurs.es interviennent directement au sein d'écoles supérieures de danse.",
+
+    formation: "Il n'existe pas de diplôme d'État de professeur.e de Pilates en France. Des certifications professionnelles sérieuses existent (Body Control Pilates, STOTT Pilates, Balanced Body, BASI Pilates). La qualité et la durée des formations varient considérablement : une formation complète approfondie est fortement recommandée.",
+
+    statut: "Travailleur.se indépendant.e ou salarié.e d'un studio. Le titre n'est pas protégé.",
+
+    competences: [
+      "Maîtrise des principes fondamentaux du Pilates et de ses applications.",
+      "Connaissance approfondie de l'anatomie et de la biomécanique.",
+      "Capacité à lire les corps et à personnaliser les exercices.",
+      "Sens de la pédagogie et de la progression.",
+      "Connaissance des pathologies fréquentes chez les danseurs.euses.",
+    ],
+  },
+
+  {
+    id:          'professeur-yoga',
+    nom:         'Professeur.e de yoga',
+    description: "Enseigne une pratique qui associe postures, respiration et présence, souvent recherchée par les danseurs.euses pour la mobilité, la récupération et l'équilibre.",
+    univers:     'accompagner',
+
+    definition: "Le yoga recouvre une grande diversité de styles (hatha, yin, ashtanga, iyengar, vinyasa, etc.) aux effets et aux exigences très différents. Certains danseurs.euses l'utilisent pour compléter leur pratique : assouplissement, récupération active, travail de la respiration, ancrage. D'autres y trouvent un espace de récupération mentale. Le yoga n'est pas une médecine, mais une pratique corporelle aux effets documentés sur la flexibilité, la force et la gestion du stress.",
+
+    missions: [
+      "Animer des cours collectifs ou individuels adaptés au niveau des pratiquants.",
+      "Enseigner les postures (asanas), la respiration (pranayama) et la détente.",
+      "Adapter la pratique aux besoins spécifiques des danseurs.euses.",
+      "Assurer la sécurité et éviter les blessures liées à une pratique inadaptée.",
+      "Créer un espace propice à la présence et à la conscience corporelle.",
+    ],
+
+    environnement: "Studio de yoga, studio de danse, salles de sport, entreprises, à domicile, en ligne. Activité souvent indépendante.",
+
+    formation: "Il n'existe pas de diplôme d'État de professeur.e de yoga. Des formations reconnues dans le milieu existent (formations 200h ou 500h selon les standards Yoga Alliance). La qualité varie considérablement selon les cursus et les lignées.",
+
+    statut: "Travailleur.se indépendant.e ou salarié.e. Le titre n'est pas protégé en France.",
+
+    competences: [
+      "Maîtrise d'un ou plusieurs styles de yoga et de leurs applications.",
+      "Connaissance de l'anatomie appliquée aux postures.",
+      "Sens de l'observation et de l'ajustement individuel.",
+      "Pédagogie adaptée à des corps de danseurs.euses déjà très entraîné.es.",
+      "Capacité à créer un cadre sécurisant et bienveillant.",
+    ],
+  },
+
+  {
+    id:          'professeur-gyrotonic',
+    nom:         'Professeur.e de Gyrotonic / Gyrokinesis',
+    description: "Enseigne le Gyrotonic et le Gyrokinesis, deux méthodes de mouvement tridimensionnel créées par un.e danseur.se, très utilisées dans le monde chorégraphique.",
+    univers:     'accompagner',
+
+    definition: "Le Gyrotonic et le Gyrokinesis sont deux méthodes de travail corporel créées par Juliu Horvath, danseur d'origine roumaine. Elles s'appuient sur des mouvements circulaires et ondulatoires qui mobilisent les articulations dans toutes les directions, en lien avec le souffle. Le Gyrotonic s'effectue sur des appareils spécifiques, le Gyrokinesis au sol. Ces méthodes sont particulièrement adaptées aux danseurs.euses, qui y trouvent souvent un complément idéal à leur entraînement ou à leur rééducation.",
+
+    missions: [
+      "Enseigner les exercices et protocoles Gyrotonic ou Gyrokinesis.",
+      "Adapter la pratique aux besoins et niveaux des danseurs.euses.",
+      "Utiliser les appareils spécifiques (Pulley Tower, Jumping Stretching Board) en toute sécurité.",
+      "Accompagner la récupération, la mobilité et la prévention des blessures.",
+      "Collaborer avec les équipes médicales dans le cadre de rééducations.",
+    ],
+
+    environnement: "Studio Gyrotonic certifié, studio de danse, structures médicales partenaires. Les équipements sont coûteux, ce qui limite la diffusion à des structures spécialisées.",
+
+    formation: "Formation officielle et certifiante dispensée par des formateurs.rices agréé.es par Gyrotonic Expansion System. La formation est progressive : niveau 1, niveau 2, spécialisations. Les certifications ne sont délivrées que par les voies officielles.",
+
+    statut: "Travailleur.se indépendant.e ou salarié.e d'un studio certifié. La certification est obligatoire pour utiliser les noms Gyrotonic et Gyrokinesis, qui sont des marques déposées.",
+
+    competences: [
+      "Maîtrise de la méthode et de ses progressions.",
+      "Connaissance de l'anatomie et des applications thérapeutiques.",
+      "Capacité à adapter la pratique aux danseurs.euses de tous niveaux.",
+      "Sens de l'observation du mouvement et de l'ajustement individuel.",
+      "Certification officielle à jour (obligatoire pour pratiquer sous ce nom).",
+    ],
+  },
+
   // ── 06 · Image & scène ───────────────────────────────────────────────────
 
   {
@@ -1753,7 +2435,7 @@ export const metiers: Metier[] = [
     univers:     'image',
     featured:    true,
 
-    definition: "Le ou la régisseur.euse est la personne sans qui rien ne se passe. Pendant la représentation, c'est lui ou elle qui coordonne le son, la lumière, les décors, le plateau, et qui s'assure que tout tient ensemble, soir après soir, dans des salles différentes avec des équipes différentes. Un travail très technique, qui demande aussi une capacité à gérer l'imprévu sans que ça se voie.",
+    definition: "Le ou la régisseur.euse est la personne sans qui rien ne se passe. Pendant la représentation, c'est lui ou elle qui coordonne le son, la lumière, les décors, le plateau et qui s'assure que tout tient ensemble, soir après soir, dans des salles différentes avec des équipes différentes. Un travail très technique, qui demande aussi une capacité à gérer l'imprévu sans que ça se voie.",
 
     missions: [
       "Coordonner l'ensemble des éléments techniques du spectacle : son, lumière, décors, costumes.",
@@ -1831,7 +2513,7 @@ export const metiers: Metier[] = [
     description: "Habille les corps, amplifie le propos chorégraphique, travaille avec les contraintes du mouvement et du plateau.",
     univers:     'image',
 
-    definition: "En danse, le costume ne peut pas se permettre d'être beau sans être fonctionnel. Il doit se déplacer avec le corps, résister à la sueur et aux frottements, ne pas gêner l'amplitude, et parfois être portable pendant une heure sans broncher. Le ou la costumier.ère part de ces contraintes et les transforme en langage artistique, au service du propos chorégraphique.",
+    definition: "En danse, le costume ne peut pas se permettre d'être beau sans être fonctionnel. Il doit se déplacer avec le corps, résister à la sueur et aux frottements, ne pas gêner l'amplitude et parfois être portable pendant une heure sans broncher. Le ou la costumier.ère part de ces contraintes et les transforme en langage artistique, au service du propos chorégraphique.",
 
     missions: [
       "Concevoir les costumes en dialogue avec le ou la chorégraphe et la scénographie.",
@@ -1856,6 +2538,11 @@ export const metiers: Metier[] = [
     ],
 
     neConfondreAvec: [
+      {
+        titre: "Habilleuse / Habilleur",
+        texte: "L'habilleuse ou l'habilleur prépare, organise et entretient les costumes déjà conçus, puis accompagne leur utilisation en coulisses, notamment lors des changements de tenue. Le ou la costumier.ère intervient davantage dans leur création, leur adaptation et leur suivi artistique.",
+        lien:  'habilleur',
+      },
       {
         titre: "Styliste",
         texte: "Le styliste ou la styliste travaille sur l'image publique d'un artiste, pour des contextes de communication ou de scène. Le costumier ou la costumière conçoit à partir des exigences dramaturgiques et chorégraphiques d'une oeuvre.",
@@ -1900,6 +2587,11 @@ export const metiers: Metier[] = [
         titre: "Costumier.ère",
         texte: "Le costumier ou la costumière conçoit à partir des exigences dramaturgiques et chorégraphiques d'un spectacle. Le ou la styliste travaille davantage sur l'image publique et l'identité visuelle d'un artiste.",
         lien:  'costumier',
+      },
+      {
+        titre: "Habilleuse / Habilleur",
+        texte: "L'habilleuse ou l'habilleur prépare, entretient et organise les costumes pendant l'exploitation d'un spectacle ou d'un tournage. Le ou la styliste définit en amont l'identité vestimentaire et sélectionne les silhouettes.",
+        lien:  'habilleur',
       },
     ],
   },
@@ -1982,7 +2674,7 @@ export const metiers: Metier[] = [
   {
     id:          'influenceur-danse',
     nom:         'Influenceur.se danse',
-    description: "Développe une audience autour de son univers et de son expertise dans la danse, et peut collaborer avec des marques, institutions ou événements.",
+    description: "Développe une audience autour de son univers et de son expertise dans la danse et peut collaborer avec des marques, institutions ou événements.",
     univers:     'image',
 
     definition: "Dans la danse comme ailleurs, certaines personnes ont construit une communauté qui leur fait confiance. L'influenceur.se danse ne se contente pas de publier des vidéos : il ou elle incarne un univers, un rapport à la danse, un point de vue. Cette position permet des collaborations avec des marques de vêtements, des événements, des écoles ou des institutions culturelles qui cherchent à toucher un public engagé. Ce n'est pas un métier réservé aux danseur.ses confirmé.es, mais il suppose d'avoir quelque chose à dire et la régularité de le dire.",
@@ -2604,11 +3296,12 @@ export const metiers: Metier[] = [
 
   {
     id:          'habilleur',
-    nom:         'Habilleur.se',
-    description: "Aide les artistes à s'habiller et à changer de costume en coulisses pendant les spectacles. Poste discret et indispensable à la fluidité des représentations.",
+    nom:         'Habilleuse / Habilleur',
+    description: "Prépare, organise et entretient les costumes portés par les artistes, puis accompagne les changements de tenue en coulisses.",
     univers:     'image',
+    tags:        ['Costume', 'Coulisses', 'Spectacle', 'Tournage', 'Événement', 'Changements rapides'],
 
-    definition: "Entre deux tableaux, le changement de costume peut durer trente secondes. L'habilleur.se est là pour que ça ne se voie pas : il ou elle connaît chaque costume, chaque fermeture, chaque accessoire. Il ou elle prépare tout avant le spectacle, suit le conducteur technique, est à la bonne place au bon moment. C'est un métier de coulisses, mais sans lui ou elle, les spectacles qui impliquent plusieurs tenues seraient impossibles à tenir sur la durée d'une tournée.",
+    definition: "L'habilleuse ou l'habilleur prépare, organise et entretient les costumes portés par les artistes pendant un spectacle, un tournage ou un événement. En coulisses, iel accompagne les changements de tenues, parfois très rapides, et veille à ce que chaque costume soit prêt au bon moment.",
 
     missions: [
       "Préparer les costumes et les accessoires avant chaque représentation.",
@@ -2635,8 +3328,13 @@ export const metiers: Metier[] = [
     neConfondreAvec: [
       {
         titre: "Costumier.ère",
-        texte: "Le ou la costumier.ère conçoit, fabrique et gère les costumes du spectacle. L'habilleur.se assiste les artistes lors des représentations pour les changements de tenue en coulisses.",
+        texte: "Le ou la costumier.ère intervient davantage dans la préparation, la création, l'adaptation ou le suivi des costumes. L'habilleuse ou l'habilleur se concentre sur leur préparation, leur entretien et leur utilisation avec les artistes en coulisses.",
         lien:  'costumier',
+      },
+      {
+        titre: "Styliste",
+        texte: "Le ou la styliste construit une identité vestimentaire et choisit les silhouettes d'un artiste ou d'une production. L'habilleuse ou l'habilleur intervient ensuite dans la gestion concrète des tenues et des changements en coulisses.",
+        lien:  'styliste',
       },
     ],
   },
@@ -2885,8 +3583,36 @@ export const metiers: Metier[] = [
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+function normalizeMetierSortLabel(label: string): string {
+  return label
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[.·]/g, '')
+    .toLocaleLowerCase('fr')
+    .trim()
+}
+
+/** Comparateur commun : français, sans distinction de casse, accent ou point inclusif. */
+export function compareMetiersAlphabetically(
+  a: Pick<Metier, 'nom'>,
+  b: Pick<Metier, 'nom'>,
+): number {
+  return normalizeMetierSortLabel(a.nom).localeCompare(
+    normalizeMetierSortLabel(b.nom),
+    'fr',
+    { sensitivity: 'base', ignorePunctuation: true },
+  )
+}
+
+/** Retourne toujours une copie triée et ne modifie jamais la source. */
+export function sortMetiersAlphabetically<T extends Pick<Metier, 'nom'>>(
+  items: readonly T[],
+): T[] {
+  return [...items].sort(compareMetiersAlphabetically)
+}
+
 export function getMetiersByUnivers(id: MetierUniversId): Metier[] {
-  return metiers.filter(m => m.univers === id)
+  return sortMetiersAlphabetically(metiers.filter(m => m.univers === id))
 }
 
 /** Retrouve un Metier par son id (= segment d'URL). */

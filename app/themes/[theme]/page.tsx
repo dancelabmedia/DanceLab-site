@@ -72,28 +72,14 @@ export default async function ThemePage({ params }: PageProps) {
   const locale = await requestLocale();
   const t = (text: string) => uiText(locale, text);
 
-  // ── Épisodes statiques (1–121) ─────────────────────────────────────────────
-  const matchingStatic = episodes
-    .filter((ep) => {
-      const text = [ep.title, ep.excerpt, ep.description].join(" ");
-      return getEpisodeTags(text, 99).includes(key);
-    })
-    .map((ep) => ({
-      number: ep.number,
-      slug:   ep.slug,
-      title:  ep.title,
-      guest:  ep.guest,
-      image:  ep.image,
-      excerpt: ep.excerpt,
-      fromRSS: false as const,
-    }));
-
-  // ── Épisodes RSS (≥ 122) ───────────────────────────────────────────────────
   const allUnified = await getEpisodes();
-  const matchingRSS = allUnified
-    .filter((ep) => ep.fromRSS) // évite les doublons avec matchingStatic
+  const legacyByNumber = new Map(episodes.map((episode) => [episode.number, episode]));
+  const allMatching = allUnified
     .filter((ep) => {
-      const text = [ep.title, ep.excerpt, ep.description].join(" ");
+      const legacy = legacyByNumber.get(ep.number);
+      // Le contenu long historique enrichit le classement thématique, mais les
+      // métadonnées affichées restent toujours celles du catalogue Ausha unifié.
+      const text = [ep.title, ep.excerpt, ep.description, legacy?.description ?? ''].join(" ");
       return getEpisodeTags(text, 99).includes(key);
     })
     .map((ep) => ({
@@ -103,13 +89,8 @@ export default async function ThemePage({ params }: PageProps) {
       guest:   ep.guest,
       image:   ep.image,
       excerpt: ep.excerpt,
-      fromRSS: true as const,
+      fromRSS: ep.fromRSS,
     }));
-
-  // Tous les épisodes, du plus récent au plus ancien
-  const allMatching = [...matchingRSS, ...matchingStatic].sort(
-    (a, b) => b.number - a.number
-  );
 
   // Tous les tags (pour la navigation en bas de page)
   const allTags = TAG_TAXONOMY.map(({ key: k, label: l }) => ({

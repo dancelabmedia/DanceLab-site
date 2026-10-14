@@ -1,9 +1,10 @@
-import { episodes } from "../../../data/episodes"
+import { getEpisodes } from '@/lib/episodes'
 import Link from "next/link"
 import { requestLocale } from "@/lib/i18n/server"
 import { uiText } from "@/data/i18n/messages"
 
 export default async function DerniersEpisodesPage() {
+  const episodes = await getEpisodes()
   const locale = await requestLocale()
   const t = (text: string) => uiText(locale, text)
   return (

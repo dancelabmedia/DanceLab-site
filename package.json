@@ -5,7 +5,7 @@
     "start": "next start",
     "lint": "node scripts/audit-source.mjs",
     "typecheck": "tsc --noEmit",
-    "test:audit": "node --test --require ./tests/register.cjs tests/production-guardrails.test.ts tests/site-stats.test.ts tests/episode-recommendations.test.ts tests/assistant-context.test.ts tests/dance-schools-directory.test.ts",
+    "test:audit": "node --test --require ./tests/register.cjs tests/production-guardrails.test.ts tests/site-stats.test.ts tests/episode-recommendations.test.ts tests/assistant-context.test.ts tests/dance-schools-directory.test.ts tests/collected-agenda.test.ts",
     "check": "npm run lint && npm run typecheck && npm run test:audit",
     "generate": "tsx scripts/generate-articles.ts",
     "generate:episode": "tsx scripts/generate-articles.ts --episode",
@@ -24,11 +24,13 @@
     "better-sqlite3": "^13.0.3",
     "leaflet": "^1.9.4",
     "next": "15.5.24",
+    "qrcode": "^1.5.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@types/node": "latest",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "tsx": "^4.19.2",

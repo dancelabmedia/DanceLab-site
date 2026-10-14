@@ -1,14 +1,12 @@
-import Link from 'next/link'
 import { auditions, getAuditionsActives } from './auditions-data'
 import AuditionsClient from './AuditionsClient'
 
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: 'Auditions & castings danse | Explorer | Dance Lab',
+  title: 'Auditions danse — opportunités et castings | Explorer | Dance Lab',
   description:
-    'Les auditions et castings danse à ne pas manquer : compagnies, spectacles, opéras, productions commerciales, CCN, CN D et autres structures du secteur.',
-  robots: { index: false, follow: false },
+    'Compagnies, ballets, comédies musicales, productions, clips, parcs… Les auditions et castings à suivre en France et à l\'international.',
 }
 
 export default function AuditionsPage() {
@@ -21,15 +19,18 @@ export default function AuditionsPage() {
       <section className="explorer-hero explorer-hero--detail">
         <div className="container">
           <nav className="explorer-breadcrumb" aria-label="Fil d'Ariane">
-            <Link href="/explorer">← Explorer</Link>
+            <span>Explorer</span>
             <span>/</span>
             <span>Auditions</span>
           </nav>
           <span className="section-label">Explorer · Opportunités</span>
-          <h1>Auditions & castings danse</h1>
-          <p>
-            Les auditions et castings danse à ne pas manquer : compagnies, spectacles, opéras,
-            productions commerciales, CCN, CN D et autres structures du secteur.
+          <h1>Auditions</h1>
+          <p className="aud2-hero-intro">
+            Les opportunités pour danser, créer et travailler dans le secteur.
+          </p>
+          <p className="aud2-hero-body">
+            Compagnies, ballets, comédies musicales, productions, clips, parcs…
+            Retrouvez les auditions et castings à suivre en France et à l&apos;international.
           </p>
           {actives.length > 0 && (
             <p className="aud-hero-count">
@@ -39,41 +40,7 @@ export default function AuditionsPage() {
         </div>
       </section>
 
-      {/* ── État vide ────────────────────────────────────────────────────── */}
-      {auditions.length === 0 ? (
-        <section className="aud-coming-soon">
-          <div className="container">
-            <div className="aud-coming-soon-inner">
-              <span className="section-label">Bientôt disponible</span>
-              <h2>La base d'auditions se prépare</h2>
-              <p>
-                Cette rubrique centralisera toutes les auditions et candidatures ouvertes dans
-                le secteur danse et spectacle vivant. Revenez bientôt ou abonnez-vous à la
-                newsletter Dance Lab pour être notifié.e à chaque nouvelle opportunité.
-              </p>
-              <div className="aud-coming-soon-categories">
-                {[
-                  'Compagnies chorégraphiques',
-                  'CCN & structures',
-                  'Opéras & ballets',
-                  'Comédies musicales',
-                  'Productions commerciales',
-                  'Audiovisuel & clips',
-                  'Parcs & événementiel',
-                  'Projets internationaux',
-                ].map(cat => (
-                  <span key={cat} className="aud-tag">{cat}</span>
-                ))}
-              </div>
-              <Link href="/explorer" className="aud-back-link">
-                ← Retour à Explorer
-              </Link>
-            </div>
-          </div>
-        </section>
-      ) : (
-        <AuditionsClient auditions={auditions} />
-      )}
+      <AuditionsClient auditions={auditions} />
 
     </main>
   )

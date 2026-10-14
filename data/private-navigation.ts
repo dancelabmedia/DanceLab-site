@@ -4,7 +4,7 @@ import { isPrivateSectionPath } from './section-visibility'
 // Note : '/explorer' retiré — la page d'accueil Explorer gère sa propre visibilité via
 // explorerHomeVisibility + canViewExplorerHome(). Les sous-rubriques fonctionnelles
 // (métiers-de-la-danse, etc.) sont gérées section par section dans sectionVisibility.
-export const previewPaths = ['/sortir', '/apprendre', '/explorer/artistes', '/explorer/auditions', '/explorer/compagnies'] as const
+export const previewPaths = ['/sortir', '/apprendre', '/explorer/artistes', '/explorer/compagnies'] as const
 export type PrivateAccessScope = 'explorer' | 'preview'
 export function privateAccessScope(value: string): PrivateAccessScope | null {
   if (isPrivateSectionPath(value)) return 'explorer'

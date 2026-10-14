@@ -44,5 +44,5 @@ export default async function DanceLabPage() {
   const latestEpisode = episodes[0]
   // Dernier article publié — null si aucun article n'est encore publié
   const latestArticle = getPublishedArticles()[0] ?? null
-  return <HomeClient latestEpisode={latestEpisode} latestArticle={latestArticle} />
+  return <HomeClient episodes={episodes} latestEpisode={latestEpisode} latestArticle={latestArticle} />
 }

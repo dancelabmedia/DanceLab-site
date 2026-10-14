@@ -3,11 +3,10 @@
 import { useRef, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { isPrivateSectionPath } from '@/data/section-visibility'
-import { privateAccessScope } from '@/data/private-navigation'
 import { localizedHref } from '@/lib/i18n/routing'
 import type { MagazineArticle } from '../decouvrir/articles-data'
 import { getArticleCardObjectPosition, getReadTime, getPublishedArticles } from '../decouvrir/articles-data'
-import { formatAgendaDate, type AgendaEvent, featuredAgendaEvents } from '../agenda/agenda-data'
+import type { AgendaEvent } from '../agenda/agenda-data'
 import { useLocale } from '@/components/LocaleProvider'
 import { uiText } from '@/data/i18n/messages'
 
@@ -98,12 +97,7 @@ const MAGAZINE_IMAGES: ImageSlot[] = getPublishedArticles()
 
 const EXPLORER_IMAGES: ImageSlot[] = EXPLORER_FEATURES.map(f => ({ src: f.image }))
 
-const SORTIR_IMAGES: ImageSlot[] = (() => {
-  const imgs = featuredAgendaEvents.map(e => ({
-    src: e.image || '/images/sorties/parisfestivalete.png',
-  }))
-  return imgs.length > 0 ? imgs : [{ src: '/images/sorties/parisfestivalete.png' }]
-})()
+const METIERS_IMAGES: ImageSlot[] = [{ src: '/images/fondlaptop.png' }]
 
 /* ─────────────────────────────────────────────────────────
    Hook — carrousel deux slots A/B avec crossfade
@@ -216,7 +210,7 @@ function lerp(a: number, b: number, t: number) {
 /* ─────────────────────────────────────────────────────────
    Component
 ───────────────────────────────────────────────────────── */
-export default function MediaReveal({ article, event }: Props) {
+export default function MediaReveal({ article }: Props) {
   const locale = useLocale()
   const t = (text: string) => uiText(locale, text)
 
@@ -241,18 +235,17 @@ export default function MediaReveal({ article, event }: Props) {
   const syncMobileCard = () => {
     const track = mobileTrackRef.current
     if (!track || !track.clientWidth) return
-    setMobileIndex(clamp(Math.round(track.scrollLeft / track.clientWidth), 0, event ? 2 : 1))
+    setMobileIndex(clamp(Math.round(track.scrollLeft / track.clientWidth), 0, 2))
   }
 
   /* ── Feature Explorer — toujours Styles de danse ─────────────────────── */
   const explorerFeature = EXPLORER_FEATURES[0]
-  const sortirIsPrivate = privateAccessScope('/sortir') !== null
-  const sortirHref = localizedHref(sortirIsPrivate ? '/sortir' : `/sortir/${event?.slug ?? ''}`, locale)
+  const metiersHref = localizedHref('/explorer/metiers-de-la-danse', locale)
 
   /* ── Crossfade cycling — images indépendantes par carte ─────────────── */
   const magSlot  = useTwoSlot(MAGAZINE_IMAGES,  7000,    0)
   const expSlot  = useTwoSlot(EXPLORER_IMAGES, 11000, 3500)
-  const sortSlot = useTwoSlot(SORTIR_IMAGES,    9000, 1500)
+  const metiersSlot = useTwoSlot(METIERS_IMAGES, 9000, 1500)
 
   /* ── Breathing light — cycles décalés, indépendants par carte ────────
      [0] Magazine  : démarre à 1 500ms, alterne toutes les 2 500ms
@@ -264,24 +257,6 @@ export default function MediaReveal({ article, event }: Props) {
     { delay: 2800, halfPeriod: 3000 },
     { delay: 4200, halfPeriod: 3500 },
   ])
-
-  /* ── Informations pratiques de l'événement Sortir ─────────────────────── */
-  const eventDates = event
-    ? event.dates !== 'À compléter'
-      ? event.dates
-      : event.endDate && event.endDate !== event.startDate
-        ? `${formatAgendaDate(event.startDate)} au ${formatAgendaDate(event.endDate)}`
-        : formatAgendaDate(event.startDate)
-    : ''
-
-  const eventVenue = event
-    ? [event.venue, event.city]
-        .filter((v) => v && v !== 'À compléter')
-        .join(' · ')
-    : ''
-
-  const eventPrice = event?.price !== 'À compléter' ? event?.price ?? null : null
-  const eventTimes = event?.time ?? null
 
   useEffect(() => {
     const section = sectionRef.current
@@ -534,67 +509,62 @@ export default function MediaReveal({ article, event }: Props) {
           </div>
 
           {/* ════════════════════════════════════════
-              Carte 3 — Sortir (événement agenda)
-              Apparaît en DERNIER
-              ref={card4Ref} → animation [0.39 → 0.48]
+              Carte 3 — Explorer · Métiers de la danse
+              Conserve le gabarit et les animations de l'ancienne carte Sortir.
           ════════════════════════════════════════ */}
-          {event && (
-            <div ref={card4Ref} className={`mfr-card mfr-card--sortir${breathe[2] ? ' mfr-card--lit' : ''}`}>
-              <Link
-                href={sortirHref}
-                className="mfr-card-inner"
-                aria-label={event.title}
-              >
-                <div className="mfr-card-face mfr-card-face--front">
-                  <div className="mfr-imgwrap">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={sortSlot.a.src}
-                      alt="" aria-hidden="true"
-                      className={`mfr-cfi${sortSlot.active === 'a' ? ' mfr-cfi--active' : ''}`}
-                      loading="lazy"
-                    />
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={sortSlot.b.src}
-                      alt="" aria-hidden="true"
-                      className={`mfr-cfi${sortSlot.active === 'b' ? ' mfr-cfi--active' : ''}`}
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="mfr-card-gradient" />
-                  <div className="mfr-card-body mfr-card-body--lower">
-                    <span className="mfr-badge mfr-badge--sort">{t('Sortir')}</span>
-                    <span className="mfr-card-cat">{event.category}&thinsp;·&thinsp;{event.city}</span>
-                    <h2 className="mfr-card-title">{event.title}</h2>
-                    <p className="mfr-card-chapo">{event.description}</p>
-                    <div className="mfr-card-foot">
-                      <span className="mfr-card-meta">{eventDates}</span>
-                      <span className="mfr-card-cta mfr-card-cta--sort">{t(sortirIsPrivate ? 'Bientôt' : "Voir l'événement →")}</span>
-                    </div>
+          <div ref={card4Ref} className={`mfr-card mfr-card--sortir${breathe[2] ? ' mfr-card--lit' : ''}`}>
+            <Link
+              href={metiersHref}
+              className="mfr-card-inner"
+              aria-label={t('Les métiers de la danse')}
+            >
+              <div className="mfr-card-face mfr-card-face--front">
+                <div className="mfr-imgwrap">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={metiersSlot.a.src}
+                    alt="" aria-hidden="true"
+                    className={`mfr-cfi${metiersSlot.active === 'a' ? ' mfr-cfi--active' : ''}`}
+                    loading="lazy"
+                  />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={metiersSlot.b.src}
+                    alt="" aria-hidden="true"
+                    className={`mfr-cfi${metiersSlot.active === 'b' ? ' mfr-cfi--active' : ''}`}
+                    loading="lazy"
+                  />
+                </div>
+                <div className="mfr-card-gradient" />
+                <div className="mfr-card-body mfr-card-body--lower">
+                  <span className="mfr-badge mfr-badge--sort">{t('Explorer')}</span>
+                  <span className="mfr-card-cat">{t('Métiers de la danse')}</span>
+                  <h2 className="mfr-card-title">{t('Les métiers de la danse')}</h2>
+                  <p className="mfr-card-chapo">{t('Découvrez les métiers qui font vivre la danse, sur scène comme en coulisses.')}</p>
+                  <div className="mfr-card-foot">
+                    <span className="mfr-card-cta mfr-card-cta--sort">{t('Découvrir →')}</span>
                   </div>
                 </div>
-                <div className="mfr-card-face mfr-card-face--back mfr-card-back mfr-card-back--event">
-                  <span className="mfr-preview-kicker">{t('Informations pratiques')}</span>
-                  <h3 className="mfr-preview-title">{event.title}</h3>
-                  <dl className="mfr-event-facts">
-                    <div><dt>{t('Dates')}</dt><dd>{eventDates}</dd></div>
-                    {eventVenue && <div><dt>{t('Lieu')}</dt><dd>{eventVenue}</dd></div>}
-                    {eventTimes ? <div><dt>{t('Horaires')}</dt><dd>{eventTimes}</dd></div> : null}
-                    {eventPrice ? <div><dt>{t('Tarifs')}</dt><dd>{eventPrice}</dd></div> : null}
-                  </dl>
-                  <span className="mfr-preview-cta">{t(sortirIsPrivate ? 'Bientôt' : "Voir l'événement →")}</span>
+              </div>
+              <div className="mfr-card-face mfr-card-face--back mfr-card-back mfr-card-back--event">
+                <div className="mfr-preview-image">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/images/fondlaptop.png" alt="" aria-hidden="true" loading="lazy" />
                 </div>
-              </Link>
-            </div>
-          )}
+                <span className="mfr-preview-kicker">{t('Explorer')} · {t('Métiers de la danse')}</span>
+                <h3 className="mfr-preview-title">{t('Les métiers de la danse')}</h3>
+                <p className="mfr-preview-copy">{t('Découvrez les métiers qui font vivre la danse, sur scène comme en coulisses.')}</p>
+                <span className="mfr-preview-cta">{t('Découvrir →')}</span>
+              </div>
+            </Link>
+          </div>
           </div>{/* /mfr-track — display: contents sur desktop */}
 
           <div className="mfr-mobile-tabs" role="group" aria-label={t('Choisir un univers Dance Lab')}>
             {[
               { label: t('Magazine'), key: 'mag' },
               { label: t('Explorer'), key: 'exp' },
-              ...(event ? [{ label: t('Sortir'), key: 'sort' }] : []),
+              { label: t('Métiers'), key: 'sort' },
             ].map((tab, index) => (
               <button
                 key={tab.key}
@@ -613,12 +583,8 @@ export default function MediaReveal({ article, event }: Props) {
             <span className="mfr-label-tag mfr-label-tag--mag">{t('Magazine')}</span>
             <span className="mfr-label-sep">·</span>
             <span className="mfr-label-tag mfr-label-tag--exp">{t('Explorer')}</span>
-            {event && (
-              <>
-                <span className="mfr-label-sep">·</span>
-                <span className="mfr-label-tag mfr-label-tag--sort">{t('Sortir')}</span>
-              </>
-            )}
+            <span className="mfr-label-sep">·</span>
+            <span className="mfr-label-tag mfr-label-tag--sort">{t('Métiers')}</span>
           </div>
 
         </div>{/* /mfr-canvas */}

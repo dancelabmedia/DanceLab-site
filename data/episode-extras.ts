@@ -35,6 +35,14 @@
 import type { EpisodeImagePresentation } from '../lib/episode-image-presentation'
 
 export type EpisodeExtra = {
+  /**
+   * GUID Ausha stable auquel les associations sociales manuelles appartiennent.
+   * Empêche qu'une URL soit réutilisée sur le mauvais épisode si les données
+   * locales sont déplacées ou renumérotées par erreur.
+   */
+  aushaGuid?: string
+  /** Nom corrigé si le flux Ausha ne fournit pas correctement l'invité.e. */
+  guest?: string
   /** Tags éditoriaux supplémentaires utilisés uniquement par la recherche. */
   searchTags?: string[]
   /** Citation mise en avant */
@@ -94,6 +102,19 @@ export type EpisodeExtra = {
  */
 export const episodeExtras: Record<number, EpisodeExtra> = {
 
+  132: {
+    aushaGuid: '65b27a729aa4e9f7b0cddd15b932a2bc6376155e',
+    instagramReelUrl: 'https://www.instagram.com/reel/DecWLeNIUyM/',
+  },
+
+  131: {
+    aushaGuid: 'c209aecfa563cd3a89d430f5481a23ad6d3e98fe',
+    guest: 'Samuela Berdah et Raphaëlle Petitperrin',
+    image: '/images/les-invites/samuelaetraphaelle131.png',
+    headerImage: '/images/les-invites-header/samuelaetraphaelle131.png',
+    instagramReelUrl: 'https://www.instagram.com/reel/DeKYA-ix0En/',
+  },
+
   130: {
     title: "Est-ce qu'on danse pour soi ou pour correspondre ?",
     instagramReelUrl: "https://www.instagram.com/reel/Dd4dxSGRRQT/",
@@ -102,6 +123,7 @@ export const episodeExtras: Record<number, EpisodeExtra> = {
   // ── Épisodes RSS (≥ 122) ─────────────────────────────────────────────────────
 
   122: {
+    guest: "Mylène Amboka",
     title: "Peut-on réussir dans la danse sans sacrifier sa santé mentale ?",
     quote: "Savoir dire non et penser à sa vie perso, c'est une bonne chose",
     instagramReelUrl: "https://www.instagram.com/reel/DboK-ssMwmt/",
@@ -273,7 +295,7 @@ export const episodeExtras: Record<number, EpisodeExtra> = {
   // Retrouvées automatiquement via recherche par numéro d'épisode + nom d'invité.
   // Les épisodes 60–121 ont leur vidéo dans data/episodes.ts (champ youtube).
 
-   1: { youtubeId: 'G6mPGnJ2k6M' }, // 1. Mathilde Champion
+   1: { youtubeId: 'G6mPGnJ2k6M', quote: 'La plupart du temps, on va chercher sur Instagram ou TikTok pour trouver des profils.' }, // 1. Mathilde Champion
    2: { youtubeId: 'jyoFJPY4YLM' }, // 2. Omar Dramé
    3: { youtubeId: 'F5KPbBwk0ZQ' }, // 3. Aurélie Sériné
    4: { youtubeId: 'HIqljgrS2bs' }, // 4. Legendary Yanou

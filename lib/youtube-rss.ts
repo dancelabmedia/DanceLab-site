@@ -147,3 +147,31 @@ export function youtubeThumbnail(videoId: string, quality: 'max' | 'hq' = 'max')
     ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
     : `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
 }
+
+function normalizedTokens(value: string): string[] {
+  const ignored = new Set(['avec', 'dans', 'pour', 'mais', 'plus', 'moins', 'comment', 'pourquoi', 'episode'])
+  return value.toLocaleLowerCase('fr')
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .split(/\s+/)
+    .filter((token) => token.length >= 4 && !ignored.has(token))
+}
+
+/**
+ * Validation éditoriale stricte d'une association YouTube.
+ * Un numéro explicite est nécessaire mais jamais suffisant : le titre doit
+ * également contenir un nom d'invité.e ou au moins deux termes significatifs
+ * du titre Ausha.
+ */
+export function youtubeVideoMatchesEpisode(
+  video: YoutubeVideo,
+  episode: { number: number; title: string; guest: string },
+): boolean {
+  if (video.episodeNumber !== episode.number) return false
+  const videoTokens = new Set(normalizedTokens(video.title))
+  const guestMatch = normalizedTokens(episode.guest).some((token) => videoTokens.has(token))
+  const titleMatches = [...new Set(normalizedTokens(episode.title))]
+    .filter((token) => videoTokens.has(token)).length
+  return guestMatch || titleMatches >= 2
+}

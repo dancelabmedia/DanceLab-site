@@ -18,7 +18,6 @@
 
 import { useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { type Episode } from '../../data/episodes'
 import { type UnifiedEpisode } from '@/lib/episodes'
 import IvwCarousel from './IvwCarousel'
 import { useLocale } from '@/components/LocaleProvider'
@@ -61,13 +60,13 @@ interface Props {
    * Dernier épisode — peut être un épisode RSS (UnifiedEpisode) ou statique (Episode).
    * UnifiedEpisode est un sur-ensemble d'Episode, les deux sont compatibles.
    */
-  episode: UnifiedEpisode | Episode
+  episode: UnifiedEpisode
   /** Image optimisée pour la carte épisode (gauche) */
   fallbackImage: string
   /** Pool complet d'épisodes éligibles — IvwCarousel gère le mélange */
-  interviewPool: Episode[]
+  interviewPool: UnifiedEpisode[]
   /** Fonction de page.tsx pour l'image optimisée d'un invité */
-  getGuestImage: (ep: Episode) => string
+  getGuestImage: (ep: UnifiedEpisode) => string
 }
 
 /* ── Composant ────────────────────────────────────────────────────── */

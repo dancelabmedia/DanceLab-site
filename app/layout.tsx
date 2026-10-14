@@ -30,6 +30,7 @@ import { requestLocale, requestPath, languageAlternates } from '@/lib/i18n/serve
 import { hasPublishedEnglish } from '@/lib/i18n/routing'
 import LocaleProvider from '@/components/LocaleProvider'
 import { CookieConsentProvider } from '@/components/CookieConsent'
+import NonBreakingHyphens from '@/components/NonBreakingHyphens'
 
 
 const frenchMetadata: Metadata = {
@@ -125,6 +126,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <NewsletterModal locale={locale} />
         <DevLockButton />
         <ScrollReveal />
+        <NonBreakingHyphens />
         </LocaleProvider>
         </CookieConsentProvider>
       </body>

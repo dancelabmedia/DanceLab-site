@@ -56,6 +56,8 @@ function ArticleImage({ article }: { article: MagazineArticle }) {
   return <div className="magx-image"><img src={article.image} alt={article.title} style={{ objectPosition, '--magx-mobile-object-position': mobileObjectPosition } as CSSProperties} /><PhotoCredit credit={article.imageCredit} /></div>
 }
 
+const revealDelay = (index: number): CSSProperties => ({ transitionDelay: `${index * 120}ms` })
+
 export default function MagazineEditorial({
   articles,
   latestEpisode,
@@ -138,30 +140,30 @@ export default function MagazineEditorial({
   return <>
     <section className="magx-feature">
       <div className="container">
-        <header className="magx-section-head"><span>{t('À la une')}</span><Link href="/decouvrir/articles-culture">{t("Toute l'actualité →")}</Link></header>
+        <header className="magx-section-head" data-reveal><span>{t('À la une')}</span><Link href="/decouvrir/articles-culture">{t("Toute l'actualité →")}</Link></header>
         <div className="magx-feature-grid">
-          <Link href={`/decouvrir/articles/${lead.slug}`} className="magx-lead">
+          <Link href={`/decouvrir/articles/${lead.slug}`} className="magx-lead magx-reveal-card" data-reveal data-reveal-type="scale-in">
             <ArticleImage article={lead} />
-            <div className="magx-lead-copy"><span className="magx-category">{lead.category}</span><h2>{lead.title}</h2><p>{lead.chapo}</p><ArticleMeta article={lead} /><i aria-hidden="true">{t("Lire l'article →")}</i></div>
+            <div className="magx-lead-copy"><span className="magx-category">{lead.category}</span><h2>{lead.title}</h2><p>{lead.chapo}</p><ArticleMeta article={lead} /></div>
           </Link>
-          <div className="magx-side-stack">{side.map(article => <Link key={article.slug} href={`/decouvrir/articles/${article.slug}`} className="magx-side-card"><ArticleImage article={article} /><div><span className="magx-category">{article.category}</span><h3>{article.title}</h3><ArticleMeta article={article} /></div></Link>)}</div>
+          <div className="magx-side-stack">{side.map((article, index) => <Link key={article.slug} href={`/decouvrir/articles/${article.slug}`} className="magx-side-card magx-reveal-card" data-reveal style={revealDelay(index + 1)}><ArticleImage article={article} /><div className="magx-reveal-copy"><span className="magx-category">{article.category}</span><h3>{article.title}</h3><ArticleMeta article={article} /></div></Link>)}</div>
         </div>
       </div>
     </section>
 
     {latest.length > 0 && <section className="magx-latest"><div className="container">
-      <header className="magx-section-head"><span>{t('Derniers articles')}</span><Link href="/decouvrir/articles-culture">{t('Voir tous les articles →')}</Link></header>
-      <div className="magx-latest-grid">{latest.map(article => <Link key={article.slug} href={`/decouvrir/articles/${article.slug}`} className="magx-latest-card"><ArticleImage article={article} /><span className="magx-category">{article.category}</span><h3>{article.title}</h3><ArticleMeta article={article} /></Link>)}</div>
+      <header className="magx-section-head" data-reveal><span>{t('Derniers articles')}</span><Link href="/decouvrir/articles-culture">{t('Voir tous les articles →')}</Link></header>
+      <div className="magx-latest-grid">{latest.map((article, index) => <Link key={article.slug} href={`/decouvrir/articles/${article.slug}`} className={`magx-latest-card magx-latest-card--${index + 1} magx-reveal-card`} data-reveal data-reveal-type={index === 0 ? 'scale-in' : 'fade-up'} style={revealDelay(index)}><ArticleImage article={article} /><div className="magx-latest-copy magx-reveal-copy"><span className="magx-category">{article.category}</span><h3>{article.title}</h3>{index === 0 && article.chapo ? <p>{article.chapo}</p> : null}<ArticleMeta article={article} /><i aria-hidden="true">→</i></div></Link>)}</div>
     </div></section>}
 
     <section className="magx-popular"><div className="container magx-popular-grid">
-      <div><span className="magx-eyebrow">{t('Les plus lus')}</span><h2>{t('Ce qui résonne le plus avec vous.')}</h2><p>{t('Une sélection éditoriale des articles mis en avant ces dernières semaines.')}</p></div>
-      <ol>{mostRead.map((article, index) => <li key={article.slug}><Link href={`/decouvrir/articles/${article.slug}`}><b>{String(index + 1).padStart(2, '0')}</b><span>{article.title}</span><i aria-hidden="true">→</i></Link></li>)}</ol>
+      <div data-reveal><span className="magx-eyebrow">{t('Les plus lus')}</span><h2>{t('Ce qui résonne le plus avec vous.')}</h2><p>{t('Une sélection éditoriale des articles mis en avant ces dernières semaines.')}</p></div>
+      <ol>{mostRead.map((article, index) => <li key={article.slug} data-reveal style={revealDelay(index)}><Link href={`/decouvrir/articles/${article.slug}`}><b>{String(index + 1).padStart(2, '0')}</b><span>{article.title}</span><i aria-hidden="true">→</i></Link></li>)}</ol>
     </div></section>
 
     <section className="magx-podcast">
       {/* Carrousel aléatoire — crossfade 2 slots, toutes les 2 s */}
-      <div className="magx-podcast-photo" style={{ position: 'relative' }}>
+      <div className="magx-podcast-photo" data-reveal data-reveal-type="fade-in" style={{ position: 'relative' }}>
         {slotA ? (
           <>
             <img
@@ -196,7 +198,7 @@ export default function MagazineEditorial({
         )}
       </div>
 
-      <div className="magx-podcast-intro">
+      <div className="magx-podcast-intro" data-reveal>
         <span>{t('Prolonger la réflexion')}</span>
         {/* Retours à la ligne contrôlés sur desktop (fr) — la classe mag-podcast-br
             est masquée via CSS sur mobile pour laisser le texte se réorganiser naturellement. */}
@@ -214,7 +216,7 @@ export default function MagazineEditorial({
       </div>
 
       {/* Source unifiée : se met à jour avec chaque nouvel épisode publié. */}
-      <Link href={`/episodes/${latestEpisode.slug}`} className="magx-podcast-episode">
+      <Link href={`/episodes/${latestEpisode.slug}`} className="magx-podcast-episode" data-reveal="delay-2" data-reveal-type="scale-in">
         <span>{t('Dernier épisode')}</span>
         <div className="magx-podcast-episode-row">
           <div className="magx-podcast-episode-image">
@@ -222,15 +224,15 @@ export default function MagazineEditorial({
             <i aria-hidden="true">▶</i>
           </div>
           <div className="magx-podcast-episode-copy">
-            <small>
-              {latestEpisode.number ? `#${latestEpisode.number} · ` : ''}{latestEpisode.guest}
-            </small>
             <h3>{latestEpisode.title}</h3>
+            <small>
+              {latestEpisode.number ? `EP ${latestEpisode.number}. ` : ''}{latestEpisode.guest}
+            </small>
           </div>
         </div>
       </Link>
 
-      <div className="magx-readalso">
+      <div className="magx-readalso" data-reveal="delay-3">
         <span>{t('À lire aussi')}</span>
         {podcastReads.map(article => (
           <Link key={article.slug} href={`/decouvrir/articles/${article.slug}`}>
@@ -246,14 +248,14 @@ export default function MagazineEditorial({
     </section>
 
     <section className="magx-themes"><div className="container">
-      <header className="magx-section-head"><span>{t('Explorer par thématique')}</span><Link href="/decouvrir/articles-culture">{t('Toutes les thématiques →')}</Link></header>
-      <div className="magx-themes-grid">{THEMES.map(theme => <Link key={theme.n} href="/decouvrir/articles-culture"><b>{theme.n}</b><h3>{theme.title.split('\n').map((line, i) => <span key={i}>{line}<br /></span>)}</h3><p>{theme.text.split('\n').map((line, i) => <span key={i}>{line}<br /></span>)}</p><i aria-hidden="true">→</i></Link>)}</div>
+      <header className="magx-section-head" data-reveal><span>{t('Explorer par thématique')}</span><Link href="/decouvrir/articles-culture">{t('Toutes les thématiques →')}</Link></header>
+      <div className="magx-themes-grid">{THEMES.map((theme, index) => <Link key={theme.n} href="/decouvrir/articles-culture" data-reveal style={revealDelay(index)}><b>{theme.n}</b><h3>{theme.title.split('\n').map((line, i) => <span key={i}>{line}<br /></span>)}</h3><p>{theme.text.split('\n').map((line, i) => <span key={i}>{line}<br /></span>)}</p><i aria-hidden="true">→</i></Link>)}</div>
     </div></section>
 
     {sectionVisibility.danceStyles === 'public' && <section className="magx-styles"><div className="container">
-      <header className="magx-section-head"><span>{t('Comprendre les danses')}</span><Link href="/explorer/styles-de-danse">{t('Voir tous les styles →')}</Link></header>
-      <p className="magx-styles-intro">{t('Origines, histoire et figures majeures pour comprendre les cultures derrière les mouvements.')}</p>
-      <div className="magx-styles-grid">{STYLES.map(style => <Link key={style.slug} href={`/explorer/styles-de-danse/${style.slug}`}><img src={style.image} alt={style.name} /><span>{style.name}</span><i aria-hidden="true">→</i></Link>)}</div>
+      <header className="magx-section-head" data-reveal><span>{t('Comprendre les danses')}</span><Link href="/explorer/styles-de-danse">{t('Voir tous les styles →')}</Link></header>
+      <p className="magx-styles-intro" data-reveal="delay-1">{t('Origines, histoire et figures majeures pour comprendre les cultures derrière les mouvements.')}</p>
+      <div className="magx-styles-grid">{STYLES.map((style, index) => <Link key={style.slug} href={`/explorer/styles-de-danse/${style.slug}`} data-reveal style={revealDelay(index)}><img src={style.image} alt={style.name} /><span>{style.name}</span><i aria-hidden="true">→</i></Link>)}</div>
     </div></section>}
 
   </>

@@ -27,16 +27,19 @@ import path                                                    from 'node:path'
 import { episodesList, type EpisodeListItem }                  from '@/data/episodes-list'
 import { episodes as legacyEpisodeDetails }                    from '@/data/episodes'
 import { episodeExtras }                                       from '@/data/episode-extras'
+import { AUSHA_GUID_BY_EPISODE_NUMBER }                        from '@/data/episode-ausha-guids'
 import { episodeTranslationsEN, type EpisodeTranslationEN }   from '@/data/episode-translations-en'
 import { episodeNumberFromImageName }                          from '@/lib/episode-image-presentation'
-import { getEpisodesFromRSS, isRediffusion, type RssEpisode } from '@/lib/ausha-rss'
-import { getYoutubeEpisodeMap, youtubeUrl }                    from '@/lib/youtube-rss'
+import { getEpisodesFromRSS, isGenericGuestLabel, isRediffusion, type EpisodePlatformLinks, type RssEpisode } from '@/lib/ausha-rss'
+import { cleanEpisodeTitle }                                   from '@/lib/episode-title'
+import { getYoutubeEpisodeMap, youtubeUrl, youtubeVideoMatchesEpisode, type YoutubeVideo } from '@/lib/youtube-rss'
 import {
   getRecentInstagramReels,
   matchReelToEpisode,
   type InstagramReel,
 }                                                              from '@/lib/instagram-api'
 import { getResolvedTeaser }                                   from '@/lib/teaser-resolved'
+import { getEpisodeMediaOverride }                             from '@/lib/episode-media-overrides'
 import { buildEpisodeSearchTags }                              from '@/lib/episode-search-tags'
 
 // ─── Type unifié ──────────────────────────────────────────────────────────────
@@ -79,6 +82,12 @@ export type UnifiedEpisode = {
    * Vide pour les épisodes legacy (qui utilisent episode.spotifyEmbedUrl de data/episodes.ts).
    */
   spotifyEmbedUrl: string
+  /** Liens d'écoute officiels détectés sur la smartlink Ausha. */
+  platformLinks: EpisodePlatformLinks
+  /** URL du fichier audio original publiée par Ausha. */
+  audioUrl: string
+  /** Chapitres fournis par Ausha ou par les données historiques. */
+  chapters: { time: string; title: string; url?: string }[]
   /** true si l'épisode provient du flux RSS Ausha live (≥ 122) */
   fromRSS: boolean
   /**
@@ -112,6 +121,22 @@ export type UnifiedEpisode = {
    * La page épisode utilise ces champs quand locale = 'en', avec fallback FR.
    */
   en?: EpisodeTranslationEN
+}
+
+/**
+ * Conserve le premier vrai nom disponible et ignore les libellés génériques.
+ * L'ordre des arguments exprime la priorité des sources : correction locale,
+ * métadonnée Ausha, puis donnée historique vérifiée.
+ */
+export function resolveEpisodeGuest(...candidates: Array<string | null | undefined>): string {
+  for (const candidate of candidates) {
+    const value = candidate?.trim()
+    if (!value) continue
+
+    if (!isGenericGuestLabel(value)) return value
+  }
+
+  return 'Invité.e'
 }
 
 // ─── Résolution d'image centralisée ───────────────────────────────────────────
@@ -174,30 +199,139 @@ function toSlug(str: string): string {
     .replace(/^-|-$/g, '')
 }
 
+/**
+ * Valide une association Instagram manuelle avec le GUID Ausha stable.
+ * Une association historique sans GUID reste acceptée pour compatibilité.
+ */
+function resolveManualInstagramUrl(
+  episodeNumber: number,
+  instagramReelUrl: string | undefined,
+  configuredAushaGuid: string | undefined,
+  actualAushaGuid: string,
+): string | undefined {
+  if (!instagramReelUrl) return undefined
+  if (configuredAushaGuid && actualAushaGuid && configuredAushaGuid !== actualAushaGuid) {
+    console.warn(
+      `[episodes] Reel Instagram ignoré pour l'épisode ${episodeNumber}: GUID Ausha incohérent.`,
+    )
+    return undefined
+  }
+  return instagramReelUrl
+}
+
+// ─── Extraction de l'extrait éditorial ────────────────────────────────────────
+
+/**
+ * Détecte une ligne d'introduction biographique — typiquement en tête de
+ * certaines descriptions Ausha :
+ *   "✨ Prénom Nom – Artiste interprète, directeur artistique…"
+ *   "🎤 Invité – rôle, rôle"
+ *
+ * Ces lignes ne constituent pas une accroche éditoriale et doivent être
+ * ignorées lors de l'extraction de l'extrait affiché dans le chatbot.
+ */
+function isBioIntroLine(line: string): boolean {
+  // Commence par un ou plusieurs emoji décoratifs
+  if (/^[\p{Emoji_Presentation}\p{Extended_Pictographic}✨]{1,3}\s+\S/u.test(line)) return true
+  // "Prénom Nom – rôle, rôle…" (nom propre suivi d'un tiret/em-dash)
+  if (/^[A-ZÁÀÂÄÉÈÊËÎÏÔÙÛÜÇ][a-záàâäéèêëîïôùûüç]+(?:\s[A-ZÁÀÂÄÉÈÊËÎÏÔÙÛÜÇ][a-záàâäéèêëîïôùûüç]+)+\s*[–—-]/u.test(line)) return true
+  return false
+}
+
+/**
+ * Détecte les lignes structurelles qui ne forment pas une phrase éditoriale :
+ * en-têtes de résumé, items de liste avec puce/flèche, etc.
+ */
+function isStructuralLine(line: string): boolean {
+  return (
+    /^En résumé\s*[:：]/i.test(line) ||
+    /^[➜➔→•►▸▶*]\s/.test(line) ||
+    /^[-–—]\s+/.test(line) ||
+    /^\d+\.\s+/.test(line) ||
+    line.length < 24
+  )
+}
+
+/**
+ * Tronque proprement `text` à `maxLen` caractères.
+ * La coupure se fait à la dernière espace disponible pour ne pas couper un mot,
+ * puis ajoute le caractère ellipse «…».
+ */
+function truncateExcerpt(text: string, maxLen: number): string {
+  if (text.length <= maxLen) return text
+  const cut = text.slice(0, maxLen).lastIndexOf(' ')
+  const boundary = cut > maxLen * 0.75 ? cut : maxLen
+  return text.slice(0, boundary).trimEnd() + '\u2026'
+}
+
+/**
+ * Extrait le premier extrait éditorial pertinent d'une description Ausha.
+ *
+ * Ordre de priorité :
+ *   1. `subtitle` (itunes:subtitle) si présent et non bio-intro
+ *   2. Première ligne non-bio, non-structurelle de `description` (≥ 24 chars)
+ *   3. Troncature brute de `description` en dernier recours
+ *
+ * Le résultat est tronqué à `maxLen` caractères (défaut : 180) avec «…».
+ *
+ * @param description  Texte brut de la description complète (déjà nettoyé par cleanDescription)
+ * @param subtitle     Contenu de l'itunes:subtitle Ausha (optionnel)
+ * @param maxLen       Longueur maximale de l'extrait retourné
+ */
+function extractEditorialExcerpt(
+  description: string,
+  subtitle?: string,
+  maxLen = 180,
+): string {
+  // 1. Subtitle prioritaire s'il n'est pas une intro bio
+  if (subtitle) {
+    const sub = subtitle.split('\n')[0].trim()
+    if (sub && !isBioIntroLine(sub) && !isStructuralLine(sub)) {
+      return truncateExcerpt(sub, maxLen)
+    }
+  }
+
+  // 2. Première ligne éditoriale de la description
+  const lines = description.split('\n').map(l => l.trim()).filter(Boolean)
+  for (const line of lines) {
+    if (!isBioIntroLine(line) && !isStructuralLine(line)) {
+      return truncateExcerpt(line, maxLen)
+    }
+  }
+
+  // 3. Repli : tronquer la description brute
+  return truncateExcerpt(description.trim(), maxLen)
+}
+
 // ─── Conversion ───────────────────────────────────────────────────────────────
 
 function fromLegacy(
   ep: EpisodeListItem,
-  youtubeMap: Map<number, { videoId: string; isShort: boolean }>,
+  youtubeMap: Map<number, YoutubeVideo>,
   inviteImages: Map<number, string>,
   recentReels: InstagramReel[],
 ): UnifiedEpisode {
   const extras   = episodeExtras[ep.number]
   const details  = legacyEpisodeDetails.find(item => item.number === ep.number)
-  const resolved = getResolvedTeaser(ep.number)
+  const aushaGuid = AUSHA_GUID_BY_EPISODE_NUMBER[ep.number] ?? ''
+  const resolved = getResolvedTeaser(ep.number, aushaGuid)
+  const mediaOverride = getEpisodeMediaOverride(aushaGuid)
   const ytVideo  = youtubeMap.get(ep.number)
+  const verifiedYtVideo = ytVideo && youtubeVideoMatchesEpisode(ytVideo, ep) ? ytVideo : undefined
 
   // Priorité : extras manuel > cache résolu (cron) > détection temps réel
   const youtubeId =
+    mediaOverride?.youtubeId ??
     extras?.youtubeId ??
     resolved?.youtubeId ??
-    ytVideo?.videoId ??
+    verifiedYtVideo?.videoId ??
     null
 
   const isYoutubeShort: boolean | undefined =
+    mediaOverride?.isYoutubeShort ??
     extras?.isYoutubeShort ??
     resolved?.isYoutubeShort ??
-    ytVideo?.isShort ??
+    verifiedYtVideo?.isShort ??
     undefined
 
   // ep.image = chemin hérité (/episodes/… ou /images/les-invites/…) comme dernier fallback
@@ -205,7 +339,13 @@ function fromLegacy(
 
   // Reel Instagram : extras manuel > cache résolu (cron) > détection auto via Graph API
   const instagramReelUrl =
-    extras?.instagramReelUrl ??
+    mediaOverride?.instagramReelUrl ??
+    resolveManualInstagramUrl(
+      ep.number,
+      extras?.instagramReelUrl,
+      extras?.aushaGuid,
+      aushaGuid,
+    ) ??
     resolved?.instagramReelUrl ??
     matchReelToEpisode(recentReels, ep.number, ep.guest) ??
     undefined
@@ -213,7 +353,9 @@ function fromLegacy(
   return {
     number:       ep.number,
     slug:         ep.slug,
-    title:        ep.title,
+    // Filet de sécurité : si un titre legacy contient encore ", avec Invité",
+    // cleanEpisodeTitle le retire sans toucher aux titres où "avec" est dans le sujet.
+    title:        cleanEpisodeTitle(ep.title, ep.guest),
     guest:        ep.guest,
     duration:     ep.duration,
     image,
@@ -225,8 +367,15 @@ function fromLegacy(
     pubDate:      '',
     youtubeId,
     spotifyEmbedUrl: '',       // legacy : lecteur Spotify géré séparément
+    platformLinks: {
+      spotify: details?.spotify || undefined,
+      apple: details?.apple || undefined,
+      deezer: details?.deezer || undefined,
+    },
+    audioUrl: '',
+    chapters: details?.chapters ?? [],
     fromRSS:      false,
-    aushaGuid:    '',   // sera écrasé par l'override RSS dans getEpisodes() si disponible
+    aushaGuid, // sera remplacé par le GUID live du RSS quand il est disponible
     instagramReelUrl,
     isYoutubeShort,
     role:         details?.role || undefined,
@@ -244,36 +393,48 @@ function fromLegacy(
 
 function fromRss(
   ep: RssEpisode,
-  youtubeMap: Map<number, { videoId: string; isShort: boolean }>,
+  youtubeMap: Map<number, YoutubeVideo>,
   inviteImages: Map<number, string>,
   recentReels: InstagramReel[],
 ): UnifiedEpisode {
   const extras   = episodeExtras[ep.number]
-  const resolved = getResolvedTeaser(ep.number)
-  const guest    = ep.guest || 'Invité.e'
+  const resolved = getResolvedTeaser(ep.number, ep.guid)
+  const mediaOverride = getEpisodeMediaOverride(ep.guid)
+  const guest    = resolveEpisodeGuest(extras?.guest, ep.guest)
   const guestSlug = toSlug(guest)
   const slug     = `${ep.number}-${guestSlug}`
   const ytVideo  = youtubeMap.get(ep.number)
+  const verifiedYtVideo = ytVideo && youtubeVideoMatchesEpisode(ytVideo, ep) ? ytVideo : undefined
 
   // Priorité : extras manuel > cache résolu (cron) > détection temps réel
   const youtubeId =
+    mediaOverride?.youtubeId ??
     extras?.youtubeId ??
     resolved?.youtubeId ??
-    ytVideo?.videoId ??
+    verifiedYtVideo?.videoId ??
     null
 
   const isYoutubeShort: boolean | undefined =
+    mediaOverride?.isYoutubeShort ??
     extras?.isYoutubeShort ??
     resolved?.isYoutubeShort ??
-    ytVideo?.isShort ??
+    verifiedYtVideo?.isShort ??
     undefined
 
-  // Fallback = CDN Ausha si aucune image locale trouvée
-  const image = resolveCardImage(ep.number, extras, inviteImages, ep.aushaImage)
+  // Ausha est prioritaire pour les nouveaux épisodes. Une image locale ne
+  // remplace la pochette officielle que si elle a été explicitement validée
+  // dans episode-extras.ts.
+  const image = extras?.image || ep.aushaImage || inviteImages.get(ep.number) || ''
 
   // Reel Instagram : extras manuel > cache résolu (cron) > détection auto via Graph API
   const instagramReelUrl =
-    extras?.instagramReelUrl ??
+    mediaOverride?.instagramReelUrl ??
+    resolveManualInstagramUrl(
+      ep.number,
+      extras?.instagramReelUrl,
+      extras?.aushaGuid,
+      ep.guid,
+    ) ??
     resolved?.instagramReelUrl ??
     matchReelToEpisode(recentReels, ep.number, guest) ??
     undefined
@@ -281,16 +442,15 @@ function fromRss(
   return {
     number:       ep.number,
     slug,
-    // Override manuel du titre si renseigné (ex : ajout "?" manquant)
-    title:        extras?.title ?? ep.title,
+    // Ausha est l'unique source éditoriale du titre. Les données locales ne
+    // peuvent plus masquer une correction publiée dans le flux.
+    title:        cleanEpisodeTitle(ep.title, guest),
     guest,
     duration:     ep.duration,
     image,
     aushaImage:   ep.aushaImage,
-    // Résumé court : subtitle Ausha ou début de description (≤ 220 chars)
-    excerpt:      ep.subtitle
-                    ? ep.subtitle.split('\n')[0].trim().slice(0, 220)
-                    : ep.description.slice(0, 220),
+    // Résumé court : première phrase éditoriale (hors intro biographique)
+    excerpt:      extractEditorialExcerpt(ep.description, ep.subtitle || undefined),
     // Description complète (texte brut, pas de troncature)
     description:  ep.description,
     // Citation : override manuel > question d'accroche en gras > vide
@@ -304,12 +464,15 @@ function fromRss(
     spotifyEmbedUrl: extras?.spotifyId
       ? `https://open.spotify.com/embed/episode/${extras.spotifyId}?utm_source=generator`
       : ep.spotifyEmbedUrl,
+    platformLinks: ep.platformLinks,
+    audioUrl: ep.audioUrl,
+    chapters: ep.chapters,
     fromRSS:      true,
     aushaGuid:    ep.guid,
     instagramReelUrl,
     isYoutubeShort,
     searchTags: buildEpisodeSearchTags({
-      title: extras?.title ?? ep.title,
+      title: ep.title,
       guest,
       excerpt: ep.subtitle,
       description: ep.description,
@@ -355,10 +518,14 @@ export async function getEpisodes(): Promise<UnifiedEpisode[]> {
   // ── Index RSS par numéro d'épisode ──────────────────────────────────────────
   // Ausha est la source de vérité pour les métadonnées mutables.
   // On filtre les rediffusions une seule fois ici.
-  const rssMap = new Map<number, RssEpisode>(
-    rssAll
-      .filter((e) => !isRediffusion(e.title))
-      .map((e) => [e.number, e]),
+  const currentRss = rssAll.filter((e) => !isRediffusion(e.title))
+  const rssByGuid = new Map<string, RssEpisode>(
+    currentRss.filter((episode) => episode.guid).map((episode) => [episode.guid, episode]),
+  )
+  // Compatibilité uniquement pour un ancien épisode qui n'aurait pas encore
+  // été inscrit dans le registre GUID. Le titre n'est jamais utilisé comme clé.
+  const rssByNumber = new Map<number, RssEpisode>(
+    currentRss.map((episode) => [episode.number, episode]),
   )
 
   // ── Épisodes legacy (1-121) avec surcharge RSS ──────────────────────────────
@@ -366,29 +533,46 @@ export async function getEpisodes(): Promise<UnifiedEpisode[]> {
   // les champs mutables (titre, invité, durée, citation, extrait) avec les
   // données Ausha, tout en conservant le slug et l'image locale (URLs stables).
   const legacy = episodesList.map((ep) => {
-    const rss = rssMap.get(ep.number)
-    if (!rss) return fromLegacy(ep, youtubeMap, inviteImages, recentReels)
+    const stableGuid = AUSHA_GUID_BY_EPISODE_NUMBER[ep.number]
+    const rss = stableGuid ? rssByGuid.get(stableGuid) : rssByNumber.get(ep.number)
+    if (!rss) {
+      const unified = fromLegacy(ep, youtubeMap, inviteImages, recentReels)
+      return { ...unified, aushaGuid: stableGuid ?? '' }
+    }
 
     // Fusion : slug/number/image viennent du statique, contenu vient d'Ausha
     const merged: EpisodeListItem = {
       ...ep,
       title:    rss.title    || ep.title,
-      guest:    rss.guest    || ep.guest,
+      guest:    resolveEpisodeGuest(rss.guest, ep.guest),
       duration: rss.duration || ep.duration,
       quote:    rss.quote    || ep.quote,
-      excerpt:  rss.subtitle
-        ? rss.subtitle.split('\n')[0].trim().slice(0, 220)
-        : rss.description
-          ? rss.description.slice(0, 220)
-          : ep.excerpt,
+      // Extrait éditorial : priorité à l'extrait statique pour les épisodes
+      // legacy (rédigé manuellement, plus soigné). Si Ausha fournit un subtitle
+      // propre, on l'utilise à la place. En dernier recours, description Ausha.
+      excerpt:  ep.excerpt ||
+        (rss.subtitle || rss.description
+          ? extractEditorialExcerpt(rss.description || '', rss.subtitle || undefined)
+          : ''),
     }
     const unified = fromLegacy(merged, youtubeMap, inviteImages, recentReels)
     // Stocker le GUID Ausha pour identification stable future
-    return { ...unified, aushaGuid: rss.guid }
+    return {
+      ...unified,
+      aushaGuid: rss.guid,
+      aushaImage: rss.aushaImage || unified.aushaImage,
+      description: rss.description || unified.description,
+      pubDate: rss.pubDate || unified.pubDate,
+      link: rss.aushaSlug ? `https://smartlink.ausha.co/dance-lab/${rss.aushaSlug}` : unified.link,
+      spotifyEmbedUrl: rss.spotifyEmbedUrl || unified.spotifyEmbedUrl,
+      platformLinks: { ...unified.platformLinks, ...rss.platformLinks },
+      audioUrl: rss.audioUrl || unified.audioUrl,
+      chapters: rss.chapters.length > 0 ? rss.chapters : unified.chapters,
+    }
   })
 
   // ── Nouveaux épisodes RSS (> seuil legacy) ──────────────────────────────────
-  const rssNew = Array.from(rssMap.values()).filter((e) => e.number > maxLegacyNumber)
+  const rssNew = currentRss.filter((e) => e.number > maxLegacyNumber)
   const rss    = rssNew.map((ep) => fromRss(ep, youtubeMap, inviteImages, recentReels))
 
   return [...rss, ...legacy].sort((a, b) => b.number - a.number)

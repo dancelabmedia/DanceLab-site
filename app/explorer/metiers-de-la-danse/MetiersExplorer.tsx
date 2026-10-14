@@ -1,14 +1,135 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { metiers, UNIVERS, UNIVERS_ORDER, TOTAL_METIERS } from './metiers-data'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { metiers, UNIVERS, UNIVERS_ORDER, TOTAL_METIERS, getMetiersByUnivers, sortMetiersAlphabetically, type Metier } from './metiers-data'
 import SearchAutocomplete, { type AutocompleteItem } from '@/components/SearchAutocomplete'
+import { normalizeSearchText as normalize } from '@/data/search'
 
-const MAX_VISIBLE_TAGS = 3
+const MAX_VISIBLE_TAGS = 6
 
-const normalize = (v: string) =>
-  v.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[./–—-]/g, ' ')
+function RotatingMetierTags({
+  items,
+  universeSlug,
+  cardIndex,
+}: {
+  items: Metier[]
+  universeSlug: string
+  cardIndex: number
+}) {
+  // Maximum slots we'll ever attempt to show (real tags + potential "+X" pill = 1 slot).
+  const initialBudget = Math.min(MAX_VISIBLE_TAGS, items.length)
+  const tagsRef = useRef<HTMLSpanElement>(null)
+
+  // slotBudget = total pill count budget (real tags + the "+X" pill if needed).
+  // The layout effect shrinks it until everything fits within the fixed 67 px zone.
+  const [slotBudget, setSlotBudget] = useState(initialBudget)
+
+  // Derived values — recalculated on every render.
+  // hasMore is true when items can't all fit in slotBudget slots even without a "+X" pill,
+  // meaning we reserve 1 slot for "+X" and fill the rest with real métier tags.
+  const hasMore   = items.length > slotBudget
+  const realSlots = hasMore ? Math.max(1, slotBudget - 1) : Math.min(slotBudget, items.length)
+  const overflowCount = items.length - realSlots
+
+  // Indices into items[] currently occupying each real slot.
+  const [visibleIndices, setVisibleIndices] = useState(() =>
+    Array.from({ length: initialBudget }, (_, i) => i),
+  )
+  const [fadingSlot, setFadingSlot]   = useState<number | null>(null)
+  const rotationStepRef               = useRef(0)
+
+  /* ── Overflow guard ──────────────────────────────────────────────────────
+     After each render, check whether the pills overflow the fixed 67 px zone.
+     If so, reduce the budget by 1 and re-render. Converges in at most
+     MAX_VISIBLE_TAGS iterations. The "+X" pill is included in the budget,
+     so the measurement accounts for its width/height. */
+  useLayoutEffect(() => {
+    const el = tagsRef.current
+    if (!el || slotBudget <= 1) return
+    if (el.scrollHeight > el.clientHeight + 1) {
+      setSlotBudget((b) => Math.max(1, b - 1))
+    }
+  }, [slotBudget, visibleIndices])
+
+  /* ── Reset budget on container resize (e.g. viewport width change) ───── */
+  useEffect(() => {
+    const el = tagsRef.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    let prevWidth = el.clientWidth
+    const ro = new ResizeObserver(([entry]) => {
+      const w = entry.contentRect.width
+      if (Math.abs(w - prevWidth) < 1) return
+      prevWidth = w
+      setSlotBudget(initialBudget)
+    })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [initialBudget])
+
+  /* ── Tag rotation ────────────────────────────────────────────────────── */
+  useEffect(() => {
+    if (
+      items.length <= realSlots ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) return
+
+    let replaceTimer: ReturnType<typeof setTimeout> | undefined
+    let interval:     ReturnType<typeof setInterval> | undefined
+
+    const replaceOneTag = () => {
+      const step      = rotationStepRef.current
+      const slot      = step % realSlots
+      const nextIndex = (initialBudget + step) % items.length
+      setFadingSlot(slot)
+      replaceTimer = setTimeout(() => {
+        setVisibleIndices((curr) =>
+          curr.map((v, i) => (i === slot ? nextIndex : v)),
+        )
+        // After a swap the incoming label might be shorter → try full budget again.
+        setSlotBudget(initialBudget)
+        setFadingSlot(null)
+        rotationStepRef.current = step + 1
+      }, 550)
+    }
+
+    const initialTimer = setTimeout(() => {
+      replaceOneTag()
+      interval = setInterval(replaceOneTag, 3200 + cardIndex * 400)
+    }, 800 + cardIndex * 500)
+
+    return () => {
+      clearTimeout(initialTimer)
+      if (replaceTimer) clearTimeout(replaceTimer)
+      if (interval) clearInterval(interval)
+    }
+  }, [cardIndex, items.length, realSlots, initialBudget])
+
+  return (
+    <span ref={tagsRef} className="met-universe-card-examples" aria-label="Métiers de cet univers">
+      {visibleIndices.slice(0, realSlots).map((itemIndex, slot) => {
+        const metier = items[itemIndex] ?? items[0]
+        return (
+          <Link
+            key={slot}
+            href={`/explorer/metiers-de-la-danse/${universeSlug}/${metier.id}`}
+            className={`met-universe-card-tag${fadingSlot === slot ? ' is-changing' : ''}`}
+          >
+            {metier.nom}
+          </Link>
+        )
+      })}
+      {hasMore && (
+        <Link
+          href={`/explorer/metiers-de-la-danse/${universeSlug}`}
+          className="met-universe-card-tag met-universe-card-tag--more"
+        >
+          +{overflowCount} métier{overflowCount > 1 ? 's' : ''}
+        </Link>
+      )}
+    </span>
+  )
+}
 
 export default function MetiersExplorer() {
   const heroRef    = useRef<HTMLElement>(null)
@@ -26,15 +147,15 @@ export default function MetiersExplorer() {
   const filteredMetiers = useMemo(() => {
     const needle = normalize(query.trim())
     if (!needle) return []
-    return metiers.filter((m) => {
+    return sortMetiersAlphabetically(metiers.filter((m) => {
       const u = UNIVERS[m.univers]
       return normalize(`${m.nom} ${m.description} ${u.label} ${u.description}`).includes(needle)
-    })
+    }))
   }, [query])
 
   const showResults = !!query.trim()
 
-  const autocompleteItems = useMemo<AutocompleteItem[]>(() => metiers.map((metier) => {
+  const autocompleteItems = useMemo<AutocompleteItem[]>(() => sortMetiersAlphabetically(metiers).map((metier) => {
     const universe = UNIVERS[metier.univers]
     return {
       id:         metier.id,
@@ -113,6 +234,7 @@ export default function MetiersExplorer() {
             suggestionsLabel="Suggestions de métiers"
             minCharacters={1}
             maxResults={8}
+            sortAlphabetically
           />
 
           {/* Tags univers — navigation directe vers les pages catégories */}
@@ -160,39 +282,36 @@ export default function MetiersExplorer() {
           <div className="met-universe-grid">
             {UNIVERS_ORDER.map((universeId, idx) => {
               const universe = UNIVERS[universeId]
-              const items    = metiers.filter((m) => m.univers === universeId)
-              const visible  = items.slice(0, MAX_VISIBLE_TAGS)
-              const overflow = items.length - MAX_VISIBLE_TAGS
+              const items    = getMetiersByUnivers(universeId)
+              const representative = items.find((metier) => metier.featured) ?? items[0]
               // Stagger léger : 0 → 80ms → 160ms par colonne, redémarre à chaque rangée
               const cardDelay = (['', 'delay-1', 'delay-2'] as const)[idx % 3]
               return (
-                <Link
+                <article
                   key={universeId}
-                  href={`/explorer/metiers-de-la-danse/${universe.slug}`}
                   className="met-universe-card"
                   data-reveal={cardDelay}
-                  aria-label={`Explorer l'univers ${universe.label} — ${items.length} métiers`}
                 >
+                  <Link
+                    href={`/explorer/metiers-de-la-danse/${universe.slug}/${representative.id}`}
+                    className="met-universe-card-hit"
+                    aria-label={`Découvrir ${representative.nom}, métier représentatif de l'univers ${universe.label}`}
+                  />
                   <span className="met-universe-card-num">{universe.num}</span>
                   <span className="met-universe-card-main">
                     <strong>{universe.label}</strong>
                     <span className="met-universe-card-desc">{universe.description}</span>
                   </span>
-                  <span className="met-universe-card-examples" aria-hidden="true">
-                    {visible.map((m) => (
-                      <span key={m.id} className="met-universe-card-tag">{m.nom}</span>
-                    ))}
-                    {overflow > 0 && (
-                      <span className="met-universe-card-tag met-universe-card-tag--more">
-                        +{overflow} métier{overflow > 1 ? 's' : ''}
-                      </span>
-                    )}
-                  </span>
+                  <RotatingMetierTags
+                    items={items}
+                    universeSlug={universe.slug}
+                    cardIndex={idx}
+                  />
                   <span className="met-universe-card-foot">
                     <span>{items.length} métier{items.length > 1 ? 's' : ''}</span>
                     <span className="met-universe-card-arrow" aria-hidden="true">→</span>
                   </span>
-                </Link>
+                </article>
               )
             })}
           </div>

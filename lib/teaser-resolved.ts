@@ -24,6 +24,9 @@ import resolvedRaw from '@/data/teaser-resolved.json'
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type ResolvedTeaser = {
+  /** GUID Ausha utilisé comme identité durable. */
+  aushaGuid?: string
+  episodeNumber?: number
   /** ID YouTube (11 chars) — absent si seul l'Instagram a été trouvé */
   youtubeId?: string
   /** true si la vidéo YouTube est un Short (format 9:16) */
@@ -32,6 +35,8 @@ export type ResolvedTeaser = {
   instagramReelUrl?: string
   /** ISO 8601 — date à laquelle le teaser a été résolu */
   resolvedAt: string
+  /** Dernière vérification, y compris lorsque l'un des médias manque encore. */
+  checkedAt?: string
 }
 
 export type TeaserResolvedMap = Record<string, ResolvedTeaser>
@@ -45,14 +50,16 @@ export const teaserResolved: TeaserResolvedMap = resolvedRaw as TeaserResolvedMa
  * Retourne le teaser résolu pour un numéro d'épisode donné.
  * null = pas encore résolu (le cron n'a pas encore trouvé de teaser).
  */
-export function getResolvedTeaser(episodeNumber: number): ResolvedTeaser | null {
-  return teaserResolved[String(episodeNumber)] ?? null
+export function getResolvedTeaser(episodeNumber: number, aushaGuid?: string): ResolvedTeaser | null {
+  return (aushaGuid ? teaserResolved[`guid:${aushaGuid}`] : null)
+    ?? teaserResolved[String(episodeNumber)]
+    ?? null
 }
 
 /**
  * Retourne true si cet épisode a déjà un teaser résolu et enregistré.
  * Utilisé par le cron pour sauter les épisodes déjà traités.
  */
-export function isTeaserResolved(episodeNumber: number): boolean {
-  return String(episodeNumber) in teaserResolved
+export function isTeaserResolved(episodeNumber: number, aushaGuid?: string): boolean {
+  return Boolean(getResolvedTeaser(episodeNumber, aushaGuid))
 }

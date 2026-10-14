@@ -56,7 +56,7 @@ export const episodes: Episode[] = [
   {
     "number": 120,
     "slug": "120-duy-laurent-tran",
-    "title": "Photographie et IA : faut-il avoir peur de l'avenir de la danse ?",
+    "title": "Faut-il avoir peur de l'IA dans la danse ?",
     "guest": "Duy-Laurent Tran",
     "role": "Photographe",
     "publishedAt": "2026-07-21",
@@ -76,13 +76,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Photographie et IA : faut-il avoir peur de l'avenir de la danse ? | Dance Lab",
+    "seoTitle": "Faut-il avoir peur de l'IA dans la danse ? | Dance Lab",
     "seoDescription": "Duy-Laurent Tran est photographe de danse : il raconte l'invisible derrière chaque image, l'impact de l'IA et les leçons d'un entrepreneur."
   },
   {
     "number": 119,
     "slug": "119-charlotte-baret",
-    "title": "Pourquoi elle a quitté le monde de la danse : toxicité, jalousie et pression",
+    "title": "Pourquoi a-t'elle quitté le monde de la danse ?",
     "guest": "Charlotte Baret",
     "role": "Professeure de heels & street jazz",
     "publishedAt": "2026-07-14",
@@ -102,13 +102,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Pourquoi elle a quitté le monde de la danse : toxicité, jalousie et pression | Dance Lab",
+    "seoTitle": "Pourquoi a-t'elle quitté le monde de la danse ? | Dance Lab",
     "seoDescription": "Charlotte Baret parle sans détour de pourquoi elle a quitté la danse, de la toxicité du milieu, de la transmission et de ce qu'on gagne à aller voir ailleurs."
   },
   {
     "number": 118,
     "slug": "118-yasmine-habib",
-    "title": "Ce que le milieu de la danse ne montre pas : hypocrisie, critiques et toxicité",
+    "title": "Ce que le milieu de la danse ne montre pas",
     "guest": "Yasmine Habib",
     "role": "Danseuse & professeure de heels",
     "publishedAt": "2026-07-07",
@@ -128,7 +128,7 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Ce que le milieu de la danse ne montre pas : hypocrisie, critiques et toxicité | Dance Lab",
+    "seoTitle": "Ce que le milieu de la danse ne montre pas | Dance Lab",
     "seoDescription": "Une conversation sans filtre autour du heels, de la transmission, des valeurs, de l'hypocrisie dans le milieu de la danse, des contrats et des droits des artistes."
   },
   {
@@ -238,7 +238,7 @@ export const episodes: Episode[] = [
   {
     "number": 113,
     "slug": "113-grichka-rootz",
-    "title": "S’il n’y a plus le mot danse, qu’est-ce que je suis : Krump, JJB et transmission",
+    "title": "Qui sommes-nous quand la danse ne nous définit plus ?",
     "guest": "Grichka Rootz",
     "role": "Danseur & chorégraphe",
     "publishedAt": "2026-06-02",
@@ -258,13 +258,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "S’il n’y a plus le mot danse, qu’est-ce que je suis : Krump, JJB et transmission | Dance Lab",
+    "seoTitle": "Qui sommes-nous quand la danse ne nous définit plus ? | Dance Lab",
     "seoDescription": "Un épisode autour du krump, de l'identité, de la transmission et du dépassement de soi."
   },
   {
     "number": 112,
     "slug": "112-lydie-la-peste",
-    "title": "La légitimité artistique : faut-il vraiment attendre qu’on nous la donne",
+    "title": "Faut-il attendre de se sentir légitime pour oser ?",
     "guest": "Lÿdie La PëstE",
     "role": "",
     "publishedAt": "2026-05-22",
@@ -284,13 +284,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "La légitimité artistique : faut-il vraiment attendre qu’on nous la donne | Dance Lab",
+    "seoTitle": "Faut-il attendre de se sentir légitime pour oser ? | Dance Lab",
     "seoDescription": "Une conversation sur la création, la peur, la légitimité et le fait d'oser explorer de nouvelles voies."
   },
   {
     "number": 111,
     "slug": "111-johan-nus",
-    "title": "Penser l’artiste au-delà de la danse : légitimité, bienveillance et santé mentale",
+    "title": "Faut-il repenser la manière dont on traite les danseurs.ses ?",
     "guest": "Johan Nus",
     "role": "Directeur d'école & chorégraphe",
     "publishedAt": "2026-05-18",
@@ -310,13 +310,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Penser l’artiste au-delà de la danse : légitimité, bienveillance et santé mentale | Dance Lab",
+    "seoTitle": "Faut-il repenser la manière dont on traite les danseurs.ses ? | Dance Lab",
     "seoDescription": "Un épisode sur la responsabilité artistique, les environnements de travail et l'humain derrière l'artiste."
   },
   {
     "number": 110,
     "slug": "110-frederic-fontan",
-    "title": "Comment durer dans les métiers créatifs : Tour du monde, dépression, résilience",
+    "title": "Qu’est-ce qui permet vraiment de durer dans un métier artistique ?",
     "guest": "Frédéric Fontan",
     "role": "Scénographe",
     "publishedAt": "2026-05-12",
@@ -336,13 +336,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Comment durer dans les métiers créatifs : Tour du monde, dépression, résilience | Dance Lab",
+    "seoTitle": "Qu’est-ce qui permet vraiment de durer dans un métier artistique ? | Dance Lab",
     "seoDescription": "Un témoignage sur la création, la résilience, la santé mentale et la longévité dans les métiers artistiques."
   },
   {
     "number": 109,
     "slug": "109-indies-rhino",
-    "title": "Faut-il devenir quelqu’un d’autre pour réussir en danse ?",
+    "title": "Faut-il devenir quelqu’un d’autre pour réussir dans la danse ?",
     "guest": "Indies Rhino",
     "role": "",
     "publishedAt": "2026-05-05",
@@ -362,13 +362,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Faut-il devenir quelqu’un d’autre pour réussir en danse ? | Dance Lab",
+    "seoTitle": "Faut-il devenir quelqu’un d’autre pour réussir dans la danse ? | Dance Lab",
     "seoDescription": "Découvrez Indies Rhino dans Dance Lab : Dans les milieux artistiques, on est très vite confronté à soi-même. C’est toi VS toi Ce sont les mêmes questions…"
   },
   {
     "number": 108,
     "slug": "108-maeva-deschaud",
-    "title": "Pourquoi tu bloques avec l’argent et comment t’en libérer ?",
+    "title": "Pourquoi les danseurs.ses bloquent avec l’argent (et comment s’en libérer) ?",
     "guest": "Maëva Deschaud",
     "role": "",
     "publishedAt": "0006-04-26",
@@ -388,13 +388,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Pourquoi tu bloques avec l’argent et comment t’en libérer ? | Dance Lab",
+    "seoTitle": "Pourquoi les danseurs.ses bloquent avec l’argent (et comment s’en libérer) ? | Dance Lab",
     "seoDescription": "Découvrez Maëva Deschaud dans Dance Lab : “Je suis nul.le avec l’argent” Vraiment ? C’est ce qu’on questionne avec Maëva dans cet épisode. Et on se rend…"
   },
   {
     "number": 107,
     "slug": "107-tijo-aime",
-    "title": "Pourquoi les danseurs ressentent la musique différemment ?",
+    "title": "Pourquoi les danseurs.ses ressentent la musique différemment ?",
     "guest": "Tijo Aimé",
     "role": "Danseur & DJ",
     "publishedAt": "2026-04-21",
@@ -414,13 +414,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Pourquoi les danseurs ressentent la musique différemment ? | Dance Lab",
+    "seoTitle": "Pourquoi les danseurs.ses ressentent la musique différemment ? | Dance Lab",
     "seoDescription": "Découvrez Tijo Aimé dans Dance Lab : Il ne fait pas de différence entre danseurs.ses et clubbeurs.ses ! Pour lui, le groove, c’est ce moment où la musique…"
   },
   {
     "number": 106,
     "slug": "106-mounir-amhiln",
-    "title": "Comment enrichir ta danse grâce aux autres arts ?",
+    "title": "Et si ce qui nourrissait notre danse se trouvait ailleurs ?",
     "guest": "Mounir Amhiln",
     "role": "Danseur & chorégraphe",
     "publishedAt": "2026-04-14",
@@ -440,13 +440,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Comment enrichir ta danse grâce aux autres arts ? | Dance Lab",
+    "seoTitle": "Et si ce qui nourrissait notre danse se trouvait ailleurs ? | Dance Lab",
     "seoDescription": "Découvrez Mounir Amhiln dans Dance Lab : À la base, rien ne le prédestinait à devenir danseur pro et créer sa compagnie. Plot Twist : Il fait l’AID parce…"
   },
   {
     "number": 105,
     "slug": "105-amalia-salle",
-    "title": "Diriger des danseurs.ses : les vraies responsabilités d’un.e chorégraphe",
+    "title": "Quel pouvoir un.e chorégraphe a-t-il.elle sur ses danseurs.ses ?",
     "guest": "Amalia Salle",
     "role": "Chorégraphe",
     "publishedAt": "2026-04-07",
@@ -466,13 +466,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Diriger des danseurs.ses : les vraies responsabilités d’un.e chorégraphe | Dance Lab",
+    "seoTitle": "Quel pouvoir un.e chorégraphe a-t-il.elle sur ses danseurs.ses ? | Dance Lab",
     "seoDescription": "Découvrez Amalia Salle dans Dance Lab : Son accident lui a permis et surtout obligé de se demander ”Pourquoi je danse ?” Et la réponse est restée la même…"
   },
   {
     "number": 104,
     "slug": "104-theophile-bensusan",
-    "title": "Créer, transmettre et expérimenter au-delà du mouvement",
+    "title": "Comment sortir des codes du hip-hop ?",
     "guest": "Théophile Bensusan",
     "role": "Danseur & chorégraphe",
     "publishedAt": "2026-03-31",
@@ -492,13 +492,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Créer, transmettre et expérimenter au-delà du mouvement | Dance Lab",
+    "seoTitle": "Comment sortir des codes du hip-hop ? | Dance Lab",
     "seoDescription": "Découvrez Théophile Bensusan dans Dance Lab : “On le voit pas forcément, mais y a beaucoup de refus” C’est de ça dont on a parlé dans l’épisode 104 avec…"
   },
   {
     "number": 103,
     "slug": "103-nelson-ewande",
-    "title": "Stratégies et conseils pour gagner un battle",
+    "title": "Comment gagner un battle de danse : les stratégies qui font la différence",
     "guest": "Nelson Ewandé",
     "role": "Danseur",
     "publishedAt": "2026-03-24",
@@ -518,7 +518,7 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Stratégies et conseils pour gagner un battle | Dance Lab",
+    "seoTitle": "Comment gagner un battle de danse : les stratégies qui font la différence | Dance Lab",
     "seoDescription": "Découvrez Nelson Ewandé dans Dance Lab : Quand on parle de battles, on pense souvent à la performance, à l’énergie, au spectacle. Mais on parle beaucoup…"
   },
   {
@@ -550,7 +550,7 @@ export const episodes: Episode[] = [
   {
     "number": 101,
     "slug": "101-joseph-go-n-guessan",
-    "title": "Pourquoi les artistes doivent créer leurs propres projets ?",
+    "title": "Pourquoi les danseurs doivent créer leurs propres projets",
     "guest": "Joseph Go N’Guessan",
     "role": "Danseur & entrepreneur",
     "publishedAt": "2026-03-10",
@@ -570,13 +570,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Pourquoi les artistes doivent créer leurs propres projets ? | Dance Lab",
+    "seoTitle": "Pourquoi les danseurs doivent créer leurs propres projets | Dance Lab",
     "seoDescription": "Découvrez Joseph Go N’Guessan dans Dance Lab : Dans la danse, comme dans beaucoup de domaines créatifs ou pros, s’inspirer rime parfois avec copier.…"
   },
   {
     "number": 100,
     "slug": "100-kanti",
-    "title": "Peindre avec ses jambes : transformer le mouvement en trace",
+    "title": "Peindre avec ses jambes : comment il transforme sa danse en œuvre d’art ?",
     "guest": "Kanti",
     "role": "",
     "publishedAt": "2026-03-03",
@@ -596,13 +596,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Peindre avec ses jambes : transformer le mouvement en trace | Dance Lab",
+    "seoTitle": "Peindre avec ses jambes : comment il transforme sa danse en œuvre d’art ? | Dance Lab",
     "seoDescription": "Découvrez Kanti dans Dance Lab : Il y a le break et il y a ce que personne ne voit. Kanti a passé des journées à défier la gravité : spins, freezes, sauts…"
   },
   {
     "number": 99,
     "slug": "99-marion-crampe",
-    "title": "Comment construire une carrière dans la pole dance ?",
+    "title": "Comment construire une carrière dans la pole dance",
     "guest": "Marion Crampe",
     "role": "Performeuse & professeure de pole dance",
     "publishedAt": "2026-02-24",
@@ -622,13 +622,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Comment construire une carrière dans la pole dance ? | Dance Lab",
+    "seoTitle": "Comment construire une carrière dans la pole dance | Dance Lab",
     "seoDescription": "Découvrez Marion Crampe dans Dance Lab : On lui a dit qu’elle n’était pas faite pour danser, qu’elle n’était pas bonne. Alors elle a écrit : “Je serai…"
   },
   {
     "number": 98,
     "slug": "98-sofia",
-    "title": "Ce que l’on emporte après avoir dansé",
+    "title": "Peut-on mixer avec son corps autant qu’avec ses oreilles ?",
     "guest": "Sofia",
     "role": "Danseuse & DJ",
     "publishedAt": "2026-02-17",
@@ -648,13 +648,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Ce que l’on emporte après avoir dansé | Dance Lab",
+    "seoTitle": "Peut-on mixer avec son corps autant qu’avec ses oreilles ? | Dance Lab",
     "seoDescription": "Découvrez Sofia dans Dance Lab : “Quand j’ai appris que je devais me faire opérer du genou, j’ai décidé de m’acheter un contrôleur.” Elle devait se faire…"
   },
   {
     "number": 97,
     "slug": "97-mab-ish",
-    "title": "Faire danser la société",
+    "title": "Comment la danse peut faire évoluer la société",
     "guest": "Mab’ish",
     "role": "",
     "publishedAt": "2026-02-10",
@@ -674,13 +674,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Faire danser la société | Dance Lab",
+    "seoTitle": "Comment la danse peut faire évoluer la société | Dance Lab",
     "seoDescription": "Découvrez Mab’ish dans Dance Lab : Être DJ, ce n’est pas juste passer des sons. C’est s’adapter ! C’est créer des espaces où tout le monde se sent légitime…"
   },
   {
     "number": 96,
     "slug": "96-romain-mutant",
-    "title": "Gérer l’énergie, le risque et la longévité sur la tournée de Soprano",
+    "title": "Que se passe-t-il quand on se blesse en pleine tournée ?",
     "guest": "Romain Mutant",
     "role": "Danseur & acrobate",
     "publishedAt": "2026-02-03",
@@ -700,13 +700,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Gérer l’énergie, le risque et la longévité sur la tournée de Soprano | Dance Lab",
+    "seoTitle": "Que se passe-t-il quand on se blesse en pleine tournée ? | Dance Lab",
     "seoDescription": "Découvrez Romain Mutant dans Dance Lab : Le haut niveau, ce n’est pas juste performer. C’est être capable de durer, de s’écouter et d’être rigoureux. Mais…"
   },
   {
     "number": 95,
     "slug": "95-kapela",
-    "title": "Ce que les DJs oublient mais que les danseurs savent",
+    "title": "Les danseurs entendent-ils la musique autrement ?",
     "guest": "Kapela",
     "role": "Danseur & DJ",
     "publishedAt": "2026-01-27",
@@ -726,13 +726,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Ce que les DJs oublient mais que les danseurs savent | Dance Lab",
+    "seoTitle": "Les danseurs entendent-ils la musique autrement ? | Dance Lab",
     "seoDescription": "Découvrez Kapela dans Dance Lab : “Les danseurs, ils ont des moments, mais ce ne sont pas que leurs moments.” Faut-il être danseur pour danser sur de la…"
   },
   {
     "number": 94,
     "slug": "94-krees-de-almeida",
-    "title": "Ce qu’on ne t’apprend pas quand tu veux devenir chorégraphe : Soprano, enjeux, humanité",
+    "title": "Ce qu’on ne t’apprend pas quand tu veux devenir chorégraphe pour Soprano",
     "guest": "Krees De Almeida",
     "role": "Chorégraphe & comédien",
     "publishedAt": "2026-01-20",
@@ -752,13 +752,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Ce qu’on ne t’apprend pas quand tu veux devenir chorégraphe : Soprano, enjeux, humanité | Dance Lab",
+    "seoTitle": "Ce qu’on ne t’apprend pas quand tu veux devenir chorégraphe pour Soprano | Dance Lab",
     "seoDescription": "Découvrez Krees De Almeida dans Dance Lab : “N’ayez pas peur de dire non.” Ce qu’on ne t’apprend pas quand tu veux devenir chorégraphe : Chorégraphier, ce…"
   },
   {
     "number": 93,
     "slug": "93-nadeeya",
-    "title": "Guérir le deuil par le mouvement",
+    "title": "Comment la danse aide à traverser un deuil",
     "guest": "Nadéeya",
     "role": "",
     "publishedAt": "2026-01-13",
@@ -778,13 +778,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Guérir le deuil par le mouvement | Dance Lab",
+    "seoTitle": "Comment la danse aide à traverser un deuil | Dance Lab",
     "seoDescription": "Découvrez Nadéeya dans Dance Lab : “Sawata c’est un cri du coeur, un cri du corps” Né du deuil, du manque, de la perte. Un cri du corps parce que le…"
   },
   {
     "number": 92,
     "slug": "92-les-an-ge-twins",
-    "title": "La force d’être jumelles, sur scène comme dans la vie",
+    "title": "Danser avec sa sœur jumelle : les défis et les forces d’un duo",
     "guest": "Les An&Ge Twins",
     "role": "Danseuses",
     "publishedAt": "2026-01-06",
@@ -804,13 +804,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "La force d’être jumelles, sur scène comme dans la vie | Dance Lab",
+    "seoTitle": "Danser avec sa sœur jumelle : les défis et les forces d’un duo | Dance Lab",
     "seoDescription": "Découvrez Les An&Ge Twins dans Dance Lab : « Tout est possible à celui qui y croit. » Jumelles, danseuses, athlètes et artistes. Les An&Ge Twins nous…"
   },
   {
     "number": 91,
     "slug": "91-dexter",
-    "title": "Danser pour dire : Le krump pour rester debout",
+    "title": "Comment le krump peut-il raconter nos racines ?",
     "guest": "Dexter",
     "role": "",
     "publishedAt": "2025-12-30",
@@ -830,13 +830,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Danser pour dire : Le krump pour rester debout | Dance Lab",
+    "seoTitle": "Comment le krump peut-il raconter nos racines ? | Dance Lab",
     "seoDescription": "Découvrez Dexter dans Dance Lab : Créer, ce n’est pas chercher un “beau” geste. C’est se demander : Quel geste dit la vérité ? Parce qu’en grandissant, les…"
   },
   {
     "number": 90,
     "slug": "90-lydie-la-peste",
-    "title": "Occuper la scène autrement en étant maîtresse de cérémonie",
+    "title": "À quoi sert une MC dans un battle de danse ?",
     "guest": "Lÿdie La PëstE",
     "role": "Maîtresse de cérémonie, danseuse & comédienne",
     "publishedAt": "2026-12-26",
@@ -856,13 +856,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Occuper la scène autrement en étant maîtresse de cérémonie | Dance Lab",
+    "seoTitle": "À quoi sert une MC dans un battle de danse ? | Dance Lab",
     "seoDescription": "Découvrez Lÿdie La PëstE dans Dance Lab : Dans ce court échange, je rencontre Lÿdie La PëstE, artiste plurielle et figure incontournable de la scène…"
   },
   {
     "number": 89,
     "slug": "89-soprano",
-    "title": "C'est l'humain qui prime",
+    "title": "Comment Soprano choisit-il les artistes qui l’entourent ?",
     "guest": "Soprano",
     "role": "Chanteur",
     "publishedAt": "2025-12-22",
@@ -882,13 +882,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "C'est l'humain qui prime | Dance Lab",
+    "seoTitle": "Comment Soprano choisit-il les artistes qui l’entourent ? | Dance Lab",
     "seoDescription": "Découvrez Soprano dans Dance Lab : En 15 minutes, Soprano partage son regard sur ce qui fait la force d’un show au-delà de la musique ! Et sans surprise : «…"
   },
   {
     "number": 88,
     "slug": "88-sam-yudat",
-    "title": "The Mobb is Calling : un échange avec le grand gagnant du battle",
+    "title": "Que ressent-on juste après avoir gagné un grand battle",
     "guest": "Sam Yudat",
     "role": "Danseur",
     "publishedAt": "2025-12-19",
@@ -908,13 +908,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "The Mobb is Calling : un échange avec le grand gagnant du battle | Dance Lab",
+    "seoTitle": "Que ressent-on juste après avoir gagné un grand battle | Dance Lab",
     "seoDescription": "Découvrez Sam Yudat dans Dance Lab : J’ai posé quelques questions au gagnant du battle “THE MOBB IS CALLING : vol 1” lors de la carte Blanche by Units dans…"
   },
   {
     "number": 87,
     "slug": "87-harmony-dibongue-levy",
-    "title": "Ce qu’on ne dit pas assez dans la danse",
+    "title": "Ce qu'on ne dit pas assez sur le métier de danseur",
     "guest": "Harmony Dibongue-Levy",
     "role": "Danseuse & chanteuse",
     "publishedAt": "2025-12-16",
@@ -934,13 +934,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Ce qu’on ne dit pas assez dans la danse | Dance Lab",
+    "seoTitle": "Ce qu'on ne dit pas assez sur le métier de danseur | Dance Lab",
     "seoDescription": "Découvrez Harmony Dibongue-Levy dans Dance Lab : “J’ai eu vraiment des moments qui ont été très très durs et j’ai vraiment songé à arrêter.” On veut des…"
   },
   {
     "number": 86,
     "slug": "86-jessica-pantieri",
-    "title": "Le clubbing : un miroir de la société",
+    "title": "Le clubbing a-t-il changé parce que notre société a changé ?",
     "guest": "Jessica Pantieri",
     "role": "Danseuse & entrepreneuse",
     "publishedAt": "2025-12-09",
@@ -960,13 +960,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Le clubbing : un miroir de la société | Dance Lab",
+    "seoTitle": "Le clubbing a-t-il changé parce que notre société a changé ? | Dance Lab",
     "seoDescription": "Découvrez Jessica Pantieri dans Dance Lab : “J’ai arrêté car j’aimais trop mon sport” Dans cet épisode, on parle de son parcours entre le sport de haut…"
   },
   {
     "number": 85,
     "slug": "85-laura-masci",
-    "title": "Être artiste : Dysmorphophobie, échec et snobisme",
+    "title": "Comment rester artiste quand personne ne nous choisit ?",
     "guest": "Laura Masci",
     "role": "",
     "publishedAt": "2025-12-02",
@@ -986,13 +986,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Être artiste : Dysmorphophobie, échec et snobisme | Dance Lab",
+    "seoTitle": "Comment rester artiste quand personne ne nous choisit ? | Dance Lab",
     "seoDescription": "Découvrez Laura Masci dans Dance Lab : “Je pense que si t’es pas curieux de l’autre, il te manque quelque chose en tant qu’artiste.” On parle de snobisme…"
   },
   {
     "number": 84,
     "slug": "84-ashley-beckett",
-    "title": "L’art guérit : maladie, résilience, vulnérabilité",
+    "title": "Comment la danse aide à traverser la maladie : vulnérabilité et résilience",
     "guest": "Ashley Beckett",
     "role": "",
     "publishedAt": "2025-11-25",
@@ -1012,13 +1012,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "L’art guérit : maladie, résilience, vulnérabilité | Dance Lab",
+    "seoTitle": "Comment la danse aide à traverser la maladie : vulnérabilité et résilience | Dance Lab",
     "seoDescription": "Découvrez Ashley Beckett dans Dance Lab : Quand Ashley danse, c’est sa partie divine qui s’exprime librement. Le contemporain lui a appris à étirer son…"
   },
   {
     "number": 83,
     "slug": "83-laurine-gros",
-    "title": "Danser, enseigner, entreprendre : cultiver la présence et créer du sens",
+    "title": "Comment concilier danse, enseignement et entrepreneuriat ?",
     "guest": "Laurine Gros",
     "role": "Professeure de danse & chorégraphe",
     "publishedAt": "2025-11-18",
@@ -1038,13 +1038,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Danser, enseigner, entreprendre : cultiver la présence et créer du sens | Dance Lab",
+    "seoTitle": "Comment concilier danse, enseignement et entrepreneuriat ? | Dance Lab",
     "seoDescription": "Découvrez Laurine Gros dans Dance Lab : “On n’est pas obligé d’être les trois pour être reconnu.” Être interprète, chorégraphe ou enseignant, ce sont trois…"
   },
   {
     "number": 82,
     "slug": "82-taylor-chateau",
-    "title": "Construire sa vision de la polyvalence : Danse électro, mode, musique",
+    "title": "Faut-il savoir tout faire pour vivre de la danse ?",
     "guest": "Taylor Chateau",
     "role": "Danseur",
     "publishedAt": "2025-11-10",
@@ -1064,7 +1064,7 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Construire sa vision de la polyvalence : Danse électro, mode, musique | Dance Lab",
+    "seoTitle": "Faut-il savoir tout faire pour vivre de la danse ? | Dance Lab",
     "seoDescription": "Découvrez Taylor Chateau dans Dance Lab : Spoiler alert : la danse Tecktonik n’a jamais existé. Fin du débat. Dans cet épisode on parle de Tecktonik (ou…"
   },
   {
@@ -1096,7 +1096,7 @@ export const episodes: Episode[] = [
   {
     "number": 80,
     "slug": "80-charlotte-sumian-hubener",
-    "title": "Pourquoi la pluridisciplinarité fait la différence",
+    "title": "Pourquoi les danseurs polyvalents trouvent-ils plus d’opportunités ?",
     "guest": "Charlotte Sumian-Hubener",
     "role": "Danseuse & acrobate",
     "publishedAt": "2025-10-28",
@@ -1116,13 +1116,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Pourquoi la pluridisciplinarité fait la différence | Dance Lab",
+    "seoTitle": "Pourquoi les danseurs polyvalents trouvent-ils plus d’opportunités ? | Dance Lab",
     "seoDescription": "Découvrez Charlotte Sumian-Hubener dans Dance Lab : Dans cet épisode, on plonge dans le parcours inspirant de Charlotte Sumian-Hubener, qui a fait de la…"
   },
   {
     "number": 79,
     "slug": "79-samuela-berdah-raphaelle-petitperrin",
-    "title": "Comprendre les conventions collectives dans la danse",
+    "title": "Les conventions collectives dans la danse : ce qu'il faut savoir",
     "guest": "Samuela Berdah & Raphaëlle Petitperrin",
     "role": "Juristes",
     "publishedAt": "2025-10-21",
@@ -1142,13 +1142,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Comprendre les conventions collectives dans la danse | Dance Lab",
+    "seoTitle": "Les conventions collectives dans la danse : ce qu'il faut savoir | Dance Lab",
     "seoDescription": "Découvrez Samuela Berdah & Raphaëlle Petitperrin dans Dance Lab : Parce que la convention collective, c’est la loi, au même titre que le Code du travail. Un…"
   },
   {
     "number": 78,
     "slug": "78-nicolas-huchard",
-    "title": "Se démarquer en casting et se libérer du regard des autres",
+    "title": "Comment faire la différence en casting quand tout le monde sait danser ?",
     "guest": "Nicolas Huchard",
     "role": "Chorégraphe & movement director",
     "publishedAt": "2025-10-14",
@@ -1168,7 +1168,7 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Se démarquer en casting et se libérer du regard des autres | Dance Lab",
+    "seoTitle": "Comment faire la différence en casting quand tout le monde sait danser ? | Dance Lab",
     "seoDescription": "Découvrez Nicolas Huchard dans Dance Lab : Le casting, ah le casting. On sait qu’on ne sera pas tous pris, et pourtant on vient, on entre dans la salle avec…"
   },
   {
@@ -1252,7 +1252,7 @@ export const episodes: Episode[] = [
   {
     "number": 74,
     "slug": "74-orianne-vilmer",
-    "title": "Danse, innovation et entrepreneuriat : un parcours visionnaire",
+    "title": "Faut-il devenir entrepreneur.se pour vivre de ses projets dans la danse ?",
     "guest": "Orianne Vilmer",
     "role": "",
     "publishedAt": "2025-09-16",
@@ -1272,13 +1272,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Danse, innovation et entrepreneuriat : un parcours visionnaire | Dance Lab",
+    "seoTitle": "Faut-il devenir entrepreneur.se pour vivre de ses projets dans la danse ? | Dance Lab",
     "seoDescription": "Découvrez Orianne Vilmer dans Dance Lab : Cela veut dire qu’on n’a pas besoin d’atteindre ce qu’un.e autre a accompli pour réussir, mais de trouver ce qui…"
   },
   {
     "number": 73,
     "slug": "73-chloe-lopes-gomes",
-    "title": "Dénoncer et casser les codes de la danse classique",
+    "title": "Pourquoi la danse classique doit-elle encore changer ? Discriminations, représentation, abus de pouvoir",
     "guest": "Chloé Lopes Gomes",
     "role": "Danseuse",
     "publishedAt": "2025-09-09",
@@ -1298,13 +1298,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Dénoncer et casser les codes de la danse classique | Dance Lab",
+    "seoTitle": "Pourquoi la danse classique doit-elle encore changer ? Discriminations, représentation, abus de pouvoir | Dance Lab",
     "seoDescription": "Découvrez Chloé Lopes Gomes dans Dance Lab : Chloé met des mots sur les réalités d’un milieu qui peut engendrer abus de pouvoir, pressions psychologiques…"
   },
   {
     "number": 72,
     "slug": "72-ines-vandamme",
-    "title": "De DALS à l’EuroMillions : comment Inès a choisi, osé et réussi ?",
+    "title": "Refuser DALS, devenir animatrice télé : comment oser faire ses propres choix ?",
     "guest": "Inès Vandamme",
     "role": "Danseuse, animatrice & entrepreneuse",
     "publishedAt": "2025-09-02",
@@ -1324,13 +1324,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "De DALS à l’EuroMillions : comment Inès a choisi, osé et réussi ? | Dance Lab",
+    "seoTitle": "Refuser DALS, devenir animatrice télé : comment oser faire ses propres choix ? | Dance Lab",
     "seoDescription": "Découvrez Inès Vandamme dans Dance Lab : Pour commencer, il faut leur enlever de la tête, tu n’y arriveras pas. Et leur mettre à la place : je vais y…"
   },
   {
     "number": 71,
     "slug": "71-yaman-okur",
-    "title": "Comment un séisme de magnitude 7,5 a changé sa danse ?",
+    "title": "Comment un séisme de magnitude 7,5 a changé sa danse",
     "guest": "Yaman Okur",
     "role": "Danseur & chorégraphe",
     "publishedAt": "2025-08-26",
@@ -1350,13 +1350,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Comment un séisme de magnitude 7,5 a changé sa danse ? | Dance Lab",
+    "seoTitle": "Comment un séisme de magnitude 7,5 a changé sa danse | Dance Lab",
     "seoDescription": "Découvrez Yaman Okur dans Dance Lab : Copier, c’est se contenter de miettes. Et ça ne construit pas une identité artistique forte. En revanche, s’inspirer…"
   },
   {
     "number": 70,
     "slug": "70-jeremie-parent",
-    "title": "Créateur dans l’âme : “Call Out - The Game”, “Qui veut être mon associé ?” et création de contenu",
+    "title": "Comment créer ses propres opportunités dans la danse ?",
     "guest": "Jérémie Parent",
     "role": "Danseur & entrepreneur",
     "publishedAt": "2025-08-19",
@@ -1376,13 +1376,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Créateur dans l’âme : “Call Out - The Game”, “Qui veut être mon associé ?” et création de contenu | Dance Lab",
+    "seoTitle": "Comment créer ses propres opportunités dans la danse ? | Dance Lab",
     "seoDescription": "Découvrez Jérémie Parent dans Dance Lab : Ça veut dire savoir se présenter, se rendre visible et être stratégique, parce qu’être un.e bonn.ne danseur.se ne…"
   },
   {
     "number": 69,
     "slug": "69-tianee-achille",
-    "title": "Devenir danseuse pro sans formation : Entre rave party, battle et voguing",
+    "title": "Comment devenir danseuse professionnelle sans formation ?",
     "guest": "Tianée Achille",
     "role": "Danseuse & DJ",
     "publishedAt": "2025-08-12",
@@ -1402,13 +1402,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Devenir danseuse pro sans formation : Entre rave party, battle et voguing | Dance Lab",
+    "seoTitle": "Comment devenir danseuse professionnelle sans formation ? | Dance Lab",
     "seoDescription": "Découvrez Tianée Achille dans Dance Lab : On pense souvent qu’il suffit de suivre une chorégraphie ou de danser beaucoup pour progresser. Mais en réalité…"
   },
   {
     "number": 68,
     "slug": "68-emilie-capel",
-    "title": "Vie multiple : Madonna, chorégraphe, broderie et surtout l’envie",
+    "title": "Comment est-elle devenue danseuse pour Madonna ?",
     "guest": "Émilie Capel",
     "role": "Chorégraphe",
     "publishedAt": "2025-08-05",
@@ -1428,13 +1428,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Vie multiple : Madonna, chorégraphe, broderie et surtout l’envie | Dance Lab",
+    "seoTitle": "Comment est-elle devenue danseuse pour Madonna ? | Dance Lab",
     "seoDescription": "Découvrez Émilie Capel dans Dance Lab : Elle débarque à New-York sans invitation au casting. Elle ne parle pas un mot d’anglais. Elle croit s’être fait…"
   },
   {
     "number": 67,
     "slug": "67-samuela-berdah-raphaelle-petitperrin",
-    "title": "Ne signez plus jamais un contrat sans avoir écouté cet épisode",
+    "title": "Droit à l’image : ce que tout.e danseur.se devrait savoir avant de signer",
     "guest": "Samuela Berdah & Raphaëlle Petitperrin",
     "role": "Juristes",
     "publishedAt": "2025-07-29",
@@ -1454,13 +1454,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Ne signez plus jamais un contrat sans avoir écouté cet épisode | Dance Lab",
+    "seoTitle": "Droit à l’image : ce que tout.e danseur.se devrait savoir avant de signer | Dance Lab",
     "seoDescription": "Découvrez Samuela Berdah & Raphaëlle Petitperrin dans Dance Lab : Ce qu’on entend par là c’est que les interprètes (danseurs, musiciens, acteurs, etc)…"
   },
   {
     "number": 66,
     "slug": "66-pierre-antoine-brunet",
-    "title": "Danser vrai : La scène comme terrain de liberté",
+    "title": "Comment être authentique sur scène grâce à la danse",
     "guest": "Pierre-Antoine Brunet",
     "role": "",
     "publishedAt": "2025-07-22",
@@ -1480,13 +1480,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Danser vrai : La scène comme terrain de liberté | Dance Lab",
+    "seoTitle": "Comment être authentique sur scène grâce à la danse | Dance Lab",
     "seoDescription": "Découvrez Pierre-Antoine Brunet dans Dance Lab : Notre corps est notre outils de travail et comme tout outils, il a besoin d’être entretenu. Voilà ce qu’il…"
   },
   {
     "number": 65,
     "slug": "65-samuela-berdah-raphaelle-petitperrin",
-    "title": "Inspiration vs plagiat : Comment protéger ses oeuvres ?",
+    "title": "Plagiat en danse : comment protéger ses créations",
     "guest": "Samuela Berdah & Raphaëlle Petitperrin",
     "role": "Juristes",
     "publishedAt": "2025-07-15",
@@ -1506,13 +1506,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Inspiration vs plagiat : Comment protéger ses oeuvres ? | Dance Lab",
+    "seoTitle": "Plagiat en danse : comment protéger ses créations | Dance Lab",
     "seoDescription": "Découvrez Samuela Berdah & Raphaëlle Petitperrin dans Dance Lab : Non, une vidéo, une chorégraphie, une musique ou un texte trouvé en ligne n’est pas libre…"
   },
   {
     "number": 64,
     "slug": "64-ruben-molina",
-    "title": " Le flamenco pour créer, transmettre et résister",
+    "title": "Pourquoi le flamenco est bien plus qu'une danse ?",
     "guest": "Rubén Molina",
     "role": "Danseur, chorégraphe & professeur de flamenco",
     "publishedAt": "2025-07-08",
@@ -1532,7 +1532,7 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": " Le flamenco pour créer, transmettre et résister | Dance Lab",
+    "seoTitle": "Pourquoi le flamenco est bien plus qu'une danse ? | Dance Lab",
     "seoDescription": "Découvrez Rubén Molina dans Dance Lab : C’est la question qu’on a posée à Rubén dans le métro. Et ça nous a frappé. Parce que si des adultes doutent encore…"
   },
   {
@@ -1564,7 +1564,7 @@ export const episodes: Episode[] = [
   {
     "number": 62,
     "slug": "62-joel-luzolo",
-    "title": "Débuter à 17 ans, santé mentale et DALS",
+    "title": "Commencer la danse à 17 ans, est-ce trop tard ? De ses débuts à DALS",
     "guest": "Joël Luzolo",
     "role": "Danseur",
     "publishedAt": "2025-06-24",
@@ -1584,13 +1584,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Débuter à 17 ans, santé mentale et DALS | Dance Lab",
+    "seoTitle": "Commencer la danse à 17 ans, est-ce trop tard ? De ses débuts à DALS | Dance Lab",
     "seoDescription": "Découvrez Joël Luzolo dans Dance Lab : De manière générale, dans la société, je trouve que dire ou montrer qu’on est en dépression, c’est être perçu comme…"
   },
   {
     "number": 61,
     "slug": "61-laura-nala",
-    "title": "Danser avec le coeur : Des battles aux Jeux Olympiques",
+    "title": "Des battles aux JO : comment construire une carrière sans perdre son identité ?",
     "guest": "Laura Nala",
     "role": "Danseuse & chorégraphe",
     "publishedAt": "2025-05-17",
@@ -1610,13 +1610,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Danser avec le coeur : Des battles aux Jeux Olympiques | Dance Lab",
+    "seoTitle": "Des battles aux JO : comment construire une carrière sans perdre son identité ? | Dance Lab",
     "seoDescription": "Découvrez Laura Nala dans Dance Lab : Mais d’ailleurs, pourquoi on danse ? Parce que c’est naturel, instinctif. Parce que nos corps en ont besoin, parce que…"
   },
   {
     "number": 60,
     "slug": "60-fleur-copin",
-    "title": "Se réinventer pour toujours briller : Danse, maternité, musique",
+    "title": "Du Crazy Horse à la musique : comment se réinventer après une carrière de danseuse ?",
     "guest": "Fleur Copin",
     "role": "Artiste",
     "publishedAt": "2025-05-10",
@@ -1636,13 +1636,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Se réinventer pour toujours briller : Danse, maternité, musique | Dance Lab",
+    "seoTitle": "Du Crazy Horse à la musique : comment se réinventer après une carrière de danseuse ? | Dance Lab",
     "seoDescription": "Découvrez Fleur Copin dans Dance Lab : Pourquoi ? Parce que dans ce milieu, comme dans beaucoup d’autres, les connexions et les réseaux jouent un rôle…"
   },
   {
     "number": 59,
     "slug": "59-hajiba-fahmy",
-    "title": "Monter dans tous les trains : Beyoncé, maternité, ambition et polyvalence",
+    "title": "Danseuse pour Beyoncé : comment Hajiba a construit une carrière sans rentrer dans les cases ?",
     "guest": "Hajiba Fahmy",
     "role": "Danseuse",
     "publishedAt": "2025-05-03",
@@ -1662,13 +1662,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Monter dans tous les trains : Beyoncé, maternité, ambition et polyvalence | Dance Lab",
+    "seoTitle": "Danseuse pour Beyoncé : comment Hajiba a construit une carrière sans rentrer dans les cases ? | Dance Lab",
     "seoDescription": "Découvrez Hajiba Fahmy dans Dance Lab : C’est comme une métaphore artistique qui signifie de : Maîtriser plusieurs styles de danse, Savoir adapter son corps…"
   },
   {
     "number": 58,
     "slug": "58-emanuelle-soum",
-    "title": "Libérer le corps pour s’émanciper : voguing, féminité, Beyond et MaisonM",
+    "title": "Comment la danse peut-elle nous aider à nous réapproprier notre corps ?",
     "guest": "Emanuelle Soum",
     "role": "Danseuse & chorégraphe",
     "publishedAt": "2025-05-27",
@@ -1688,13 +1688,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Libérer le corps pour s’émanciper : voguing, féminité, Beyond et MaisonM | Dance Lab",
+    "seoTitle": "Comment la danse peut-elle nous aider à nous réapproprier notre corps ? | Dance Lab",
     "seoDescription": "Découvrez Emanuelle Soum dans Dance Lab : Cela signifie : Être lucide sur les mots qu’on emploie, les consignes qu’on donne, les messages qu’on véhicule…"
   },
   {
     "number": 57,
     "slug": "57-selasi-dogbatse",
-    "title": "Comment vivre de la danse à Los Angeles et danser pour les plus grandes stars ?",
+    "title": "Comment vivre de la danse à Los Angeles ?",
     "guest": "Selasi Dogbatse",
     "role": "Danseuse",
     "publishedAt": "2025-05-20",
@@ -1714,13 +1714,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Comment vivre de la danse à Los Angeles et danser pour les plus grandes stars ? | Dance Lab",
+    "seoTitle": "Comment vivre de la danse à Los Angeles ? | Dance Lab",
     "seoDescription": "Découvrez Selasi Dogbatse dans Dance Lab : Au départ, t’y crois, tu donnes tout. Et puis les jours passent, les semaines aussi. Tu accumules les auditions…"
   },
   {
     "number": 56,
     "slug": "56-melodie-molinaro",
-    "title": "Comment agir et prévenir les violences, le harcèlement s*xistes et s*xuelles dans la danse ?",
+    "title": "Pourquoi est-il si difficile de dénoncer les VHMSS dans la danse ?",
     "guest": "Mélodie Molinaro",
     "role": "",
     "publishedAt": "2025-05-13",
@@ -1740,13 +1740,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Comment agir et prévenir les violences, le harcèlement s*xistes et s*xuelles dans la danse ? | Dance Lab",
+    "seoTitle": "Pourquoi est-il si difficile de dénoncer les VHMSS dans la danse ? | Dance Lab",
     "seoDescription": "Découvrez Mélodie Molinaro dans Dance Lab : Dans cet échange, Mélodie nous donne des clés concrètes pour comprendre, réagir et construire un espace…"
   },
   {
     "number": 55,
     "slug": "55-lisa-dulin",
-    "title": "Ce que les chorégraphes ne savent pas mais que l’IADU leur apprend",
+    "title": "Comment passer de chorégraphe à porteur.se de projet ?",
     "guest": "Lisa Dulin",
     "role": "Cheffe de projet culturel",
     "publishedAt": "2025-05-06",
@@ -1766,13 +1766,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Ce que les chorégraphes ne savent pas mais que l’IADU leur apprend | Dance Lab",
+    "seoTitle": "Comment passer de chorégraphe à porteur.se de projet ? | Dance Lab",
     "seoDescription": "Découvrez Lisa Dulin dans Dance Lab : Cette phrase soulève un dilemme classique entre envies personnelles et opportunités professionnelles ! Et…"
   },
   {
     "number": 54,
     "slug": "54-link-le-neil",
-    "title": "Perfectionnisme et légitimité : Oser être médiocre pour libérer sa créativité",
+    "title": "Le perfectionnisme nous empêche-t-il de créer librement ?",
     "guest": "Link Le Neil",
     "role": "",
     "publishedAt": "2025-04-29",
@@ -1792,13 +1792,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Perfectionnisme et légitimité : Oser être médiocre pour libérer sa créativité | Dance Lab",
+    "seoTitle": "Le perfectionnisme nous empêche-t-il de créer librement ? | Dance Lab",
     "seoDescription": "Découvrez Link Le Neil dans Dance Lab : En danse, dès que tu veux “être à la hauteur”, t’as déjà intégré l’idée que t’es en dessous. C’est pas juste une…"
   },
   {
     "number": 53,
     "slug": "53-sabrina-lonis",
-    "title": "Croire en soi pour construire ses rêves et danser sans limites",
+    "title": "Réussir dans la danse : le mental est-il plus important que le talent ?",
     "guest": "Sabrina Lonis",
     "role": "Chorégraphe & professeure de danse",
     "publishedAt": "2025-04-22",
@@ -1818,13 +1818,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Croire en soi pour construire ses rêves et danser sans limites | Dance Lab",
+    "seoTitle": "Réussir dans la danse : le mental est-il plus important que le talent ? | Dance Lab",
     "seoDescription": "Découvrez Sabrina Lonis dans Dance Lab : Et comme Sabrina le dit très justement, ensuite, il y a un prix à payer : Celui de l’investissement. Dans cet…"
   },
   {
     "number": 52,
     "slug": "52-mark-weld",
-    "title": "Cultiver la différence, sublimer l’art",
+    "title": "Comment ne plus vivre le refus comme un échec ?",
     "guest": "Mark Weld",
     "role": "Auteur & compositeur",
     "publishedAt": "2025-04-15",
@@ -1844,13 +1844,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Cultiver la différence, sublimer l’art | Dance Lab",
+    "seoTitle": "Comment ne plus vivre le refus comme un échec ? | Dance Lab",
     "seoDescription": "Découvrez Mark Weld dans Dance Lab : Y a des hauts et y a des bas. C’est normal. Y’a des moments où t’as l’impression de régresser, de douter et même…"
   },
   {
     "number": 51,
     "slug": "51-arnaud-deprez",
-    "title": "Éducation, création, transmission : la danse comme relais social",
+    "title": "Pourquoi faut-il davantage de danse à l’école ?",
     "guest": "Arnaud Deprez",
     "role": "Danseur & professeur de break",
     "publishedAt": "2025-04-08",
@@ -1870,13 +1870,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Éducation, création, transmission : la danse comme relais social | Dance Lab",
+    "seoTitle": "Pourquoi faut-il davantage de danse à l’école ? | Dance Lab",
     "seoDescription": "Découvrez Arnaud Deprez dans Dance Lab : La danse peut être un vrai levier pour raccrocher des jeunes à l’école, pour leur redonner confiance, envie et…"
   },
   {
     "number": 50,
     "slug": "50-zoe-laib",
-    "title": "Bousculer les codes avec gentillesse, s’affranchir des cases avec polyvalence",
+    "title": "Faut-il choisir un seul métier quand on est artiste ?",
     "guest": "Zoé Laïb",
     "role": "Comédienne",
     "publishedAt": "2025-04-01",
@@ -1896,13 +1896,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Bousculer les codes avec gentillesse, s’affranchir des cases avec polyvalence | Dance Lab",
+    "seoTitle": "Faut-il choisir un seul métier quand on est artiste ? | Dance Lab",
     "seoDescription": "Découvrez Zoé Laïb dans Dance Lab : On a besoin de transformer nos manières de fonctionner en société. Nos modèles actuels, qu’ils soient sociaux, culturels…"
   },
   {
     "number": 49,
     "slug": "49-krees-de-almeida",
-    "title": "Construire une carrière sans limites : la puissance de la polyvalence",
+    "title": "Faut-il savoir faire autre chose que danser pour durer ?",
     "guest": "Krees De Almeida",
     "role": "Comédien & chorégraphe",
     "publishedAt": "2025-03-25",
@@ -1922,13 +1922,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Construire une carrière sans limites : la puissance de la polyvalence | Dance Lab",
+    "seoTitle": "Faut-il savoir faire autre chose que danser pour durer ? | Dance Lab",
     "seoDescription": "Découvrez Krees De Almeida dans Dance Lab : Je n’ai pas su quoi choisir comme phrase d’accroche car il y en avait tellement, mais j’ai trouvé celle-ci…"
   },
   {
     "number": 48,
     "slug": "48-tamara-fernando",
-    "title": "Créer et danser pour la diversité",
+    "title": "Pourquoi la danse manque-t-elle encore de diversité ?",
     "guest": "Tamara Fernando",
     "role": "Danseuse & chorégraphe",
     "publishedAt": "2025-03-18",
@@ -1948,13 +1948,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Créer et danser pour la diversité | Dance Lab",
+    "seoTitle": "Pourquoi la danse manque-t-elle encore de diversité ? | Dance Lab",
     "seoDescription": "Découvrez Tamara Fernando dans Dance Lab : Il n’y a pas qu’une seule manière de réussir dans la danse. Il n’existe pas non plus de chemin prédéfini ou de…"
   },
   {
     "number": 47,
     "slug": "47-benjamin-jouffret",
-    "title": "Danser pour incarner : l’art de créer des personnages chez Just Dance",
+    "title": "Comment devenir danseur.se dans Just Dance ?",
     "guest": "Benjamin Jouffret",
     "role": "Costume designer",
     "publishedAt": "2025-03-11",
@@ -1974,13 +1974,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Danser pour incarner : l’art de créer des personnages chez Just Dance | Dance Lab",
+    "seoTitle": "Comment devenir danseur.se dans Just Dance ? | Dance Lab",
     "seoDescription": "Découvrez Benjamin Jouffret dans Dance Lab : Benjamin a dit une autre phrase très juste dans l’épisode, c’est que “quelqu’un qui danse pas très bien, ou…"
   },
   {
     "number": 46,
     "slug": "46-nathalie-lucas",
-    "title": "Révéler les talents et accompagner les artistes dans leur carrière artistique",
+    "title": "Comment arrêter de chercher la validation des autres quand on est danseur.se ?",
     "guest": "Nathalie Lucas",
     "role": "Coach & formatrice",
     "publishedAt": "2025-03-04",
@@ -2000,13 +2000,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Révéler les talents et accompagner les artistes dans leur carrière artistique | Dance Lab",
+    "seoTitle": "Comment arrêter de chercher la validation des autres quand on est danseur.se ? | Dance Lab",
     "seoDescription": "Découvrez Nathalie Lucas dans Dance Lab : J’ai rien à rajouter. Dans cet épisode, Nathalie nous a partagé : Les valeurs qui guident son travail, Les défis…"
   },
   {
     "number": 45,
     "slug": "45-julien-verderi",
-    "title": "Trouver sa voie et forger son destin pour oser et briller",
+    "title": "Faut-il rentrer dans les cases pour réussir dans la danse ?",
     "guest": "Julien Verderi",
     "role": "Danseur & professeur de heels",
     "publishedAt": "2025-02-25",
@@ -2026,13 +2026,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Trouver sa voie et forger son destin pour oser et briller | Dance Lab",
+    "seoTitle": "Faut-il rentrer dans les cases pour réussir dans la danse ? | Dance Lab",
     "seoDescription": "Découvrez Julien Verderi dans Dance Lab : L’échec est en nous et fera toujours partie de nos vies. Une phrase ultra positive pour annoncer ce nouvel…"
   },
   {
     "number": 44,
     "slug": "44-danc-r",
-    "title": "L'intelligence artificielle et le progrès au service de la danse",
+    "title": "L’intelligence artificielle peut-elle analyser notre danse ?",
     "guest": "Danc.r",
     "role": "Entrepreneurs",
     "publishedAt": "2025-02-18",
@@ -2052,13 +2052,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "L'intelligence artificielle et le progrès au service de la danse | Dance Lab",
+    "seoTitle": "L’intelligence artificielle peut-elle analyser notre danse ? | Dance Lab",
     "seoDescription": "Découvrez Danc.r dans Dance Lab : Il y a encore beaucoup d’injonctions sur la danse. Et pourtant c’est un énorme marché qui ne cessera d’exister et…"
   },
   {
     "number": 43,
     "slug": "43-loriane-cateloy-rose",
-    "title": "Entreprendre et apprendre, enseigner et inspirer",
+    "title": "Être talentueux.se dans la danse ne suffit pas si personne ne le sait",
     "guest": "Loriane Cateloy-Rose",
     "role": "Danseuse & professeure de heels",
     "publishedAt": "2025-02-11",
@@ -2078,13 +2078,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Entreprendre et apprendre, enseigner et inspirer | Dance Lab",
+    "seoTitle": "Être talentueux.se dans la danse ne suffit pas si personne ne le sait | Dance Lab",
     "seoDescription": "Découvrez Loriane Cateloy-Rose dans Dance Lab : C’est terrible, mais c’est aussi ce que je ressens. Et tout comme Loriane, je pense que non. Le nombre de…"
   },
   {
     "number": 42,
     "slug": "42-gael-grzeskowiak",
-    "title": "Créer du lien en dansant, transmettre en partageant",
+    "title": "Comment durer dans un métier où « il y a beaucoup d’appelés, mais peu d’élus » ?",
     "guest": "Gaël Grzeskowiak",
     "role": "Danseur, chorégraphe & professeur de danse",
     "publishedAt": "2025-02-04",
@@ -2104,13 +2104,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Créer du lien en dansant, transmettre en partageant | Dance Lab",
+    "seoTitle": "Comment durer dans un métier où « il y a beaucoup d’appelés, mais peu d’élus » ? | Dance Lab",
     "seoDescription": "Découvrez Gaël Grzeskowiak dans Dance Lab : Cette phrase est tellement juste et reflète la réalité de notre métier. Quand tu passes un casting, parfois tu…"
   },
   {
     "number": 41,
     "slug": "41-matteo-gheza",
-    "title": "Danse, mode et authenticité : Créer pour raconter",
+    "title": "Comment trouver son identité artistique dans la danse sans se perdre ?",
     "guest": "Matteo Gheza ",
     "role": "Danseur & chorégraphe",
     "publishedAt": "2025-01-28",
@@ -2130,13 +2130,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Danse, mode et authenticité : Créer pour raconter | Dance Lab",
+    "seoTitle": "Comment trouver son identité artistique dans la danse sans se perdre ? | Dance Lab",
     "seoDescription": "Découvrez Matteo Gheza  dans Dance Lab : Pour la partie “connaitre son corps”, on l’a abordé dans quasiment tous les épisodes : Épisode 2. Comment la boxe…"
   },
   {
     "number": 40,
     "slug": "40-laetitia-moreau",
-    "title": "Entre passion, persévérance et réalité du métier",
+    "title": "Est-il trop tard pour devenir danseur.se professionnel.le ?",
     "guest": "Laëtitia Moreau",
     "role": "Danseuse & professeure de hip-hop",
     "publishedAt": "2025-01-21",
@@ -2156,13 +2156,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Entre passion, persévérance et réalité du métier | Dance Lab",
+    "seoTitle": "Est-il trop tard pour devenir danseur.se professionnel.le ? | Dance Lab",
     "seoDescription": "Découvrez Laëtitia Moreau dans Dance Lab : Pendant longtemps Laëtitia pensait qu’elle allait galérer parce que c’était trop tard … C’est un des nombreux…"
   },
   {
     "number": 39,
     "slug": "39-rachel-vanier",
-    "title": "Révolutionner la danse à Paris : des start-up au Dancefloor",
+    "title": "Comment créer un studio de danse à Paris ? Business plan, financement, recrutement",
     "guest": "Rachel Vanier",
     "role": "Entrepreneuse",
     "publishedAt": "2025-01-14",
@@ -2182,13 +2182,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Révolutionner la danse à Paris : des start-up au Dancefloor | Dance Lab",
+    "seoTitle": "Comment créer un studio de danse à Paris ? Business plan, financement, recrutement | Dance Lab",
     "seoDescription": "Découvrez Rachel Vanier dans Dance Lab : Fin 2019, Fanny écrit à Rachel sur WhatsApp : \"Viens on ouvre une école de danse” Leur mission ? Offrir aux…"
   },
   {
     "number": 38,
     "slug": "38-yanis-benzineb",
-    "title": "Pressions, perceptions et TCA : Réconcilier le corps et l’âme",
+    "title": "Comment aimer son corps quand la danse nous pousse à le juger",
     "guest": "Yanis Benzineb",
     "role": "",
     "publishedAt": "2025-01-07",
@@ -2208,7 +2208,7 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Pressions, perceptions et TCA : Réconcilier le corps et l’âme | Dance Lab",
+    "seoTitle": "Comment aimer son corps quand la danse nous pousse à le juger | Dance Lab",
     "seoDescription": "Découvrez Yanis Benzineb dans Dance Lab : Choisir d’être authentique dans un monde et un milieu où l'apparence est jugée et souvent critiquée [sans retenue…"
   },
   {
@@ -2734,7 +2734,7 @@ export const episodes: Episode[] = [
   {
     "number": 17,
     "slug": "17-yohann-ancele",
-    "title": "Comment se démarquer de la concurrence ?",
+    "title": "Comment se démarquer de la concurrence",
     "guest": "Yohann Ancele",
     "role": "Entrepreneur",
     "publishedAt": "2024-08-13",
@@ -2754,13 +2754,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Comment se démarquer de la concurrence ? | Dance Lab",
+    "seoTitle": "Comment se démarquer de la concurrence | Dance Lab",
     "seoDescription": "Découvrez Yohann Ancele dans Dance Lab : Moi aussi j’en suis convaincue. La danse est partout : Des clips musicaux aux concerts en passant par des pubs pour…"
   },
   {
     "number": 16,
     "slug": "16-justine-gerard",
-    "title": "Comment le Pilates peut vous aider à surmonter vos blessures ?",
+    "title": "Comment le Pilates peut vous aider à surmonter vos blessures",
     "guest": "Justine Gérard",
     "role": "Danseuse & coach pilates",
     "publishedAt": "2024-08-06",
@@ -2780,13 +2780,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Comment le Pilates peut vous aider à surmonter vos blessures ? | Dance Lab",
+    "seoTitle": "Comment le Pilates peut vous aider à surmonter vos blessures | Dance Lab",
     "seoDescription": "Découvrez Justine Gérard dans Dance Lab : La compréhension du mouvement est essentielle. Pour Justine, le pilates devrait être un peu plus mis en avant dans…"
   },
   {
     "number": 15,
     "slug": "15-marie-jamots",
-    "title": "Comment monter son entreprise danse et bien-être ?",
+    "title": "Comment monter son entreprise danse et bien-être",
     "guest": "Marie Jamots ",
     "role": "",
     "publishedAt": "2024-07-30",
@@ -2806,13 +2806,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Comment monter son entreprise danse et bien-être ? | Dance Lab",
+    "seoTitle": "Comment monter son entreprise danse et bien-être | Dance Lab",
     "seoDescription": "Découvrez Marie Jamots  dans Dance Lab : “Le corps aussi t’envoie des informations” Notre corps nous parle, et c’est un fait. Le corps sait ce dont il a…"
   },
   {
     "number": 14,
     "slug": "14-kriss-logan",
-    "title": "Comment se démarquer avec des photos professionnelles ?",
+    "title": "Comment se démarquer avec des photos professionnelles",
     "guest": "Kriss Logan",
     "role": "Photographe",
     "publishedAt": "2024-07-23",
@@ -2832,7 +2832,7 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Comment se démarquer avec des photos professionnelles ? | Dance Lab",
+    "seoTitle": "Comment se démarquer avec des photos professionnelles | Dance Lab",
     "seoDescription": "Découvrez Kriss Logan dans Dance Lab : Les photos que vous envoyez donnent un aperçu de votre potentiel, mais c’est bien votre talent artistique qui fera la…"
   },
   {
@@ -2864,7 +2864,7 @@ export const episodes: Episode[] = [
   {
     "number": 12,
     "slug": "12-rabah-alioune",
-    "title": "Comment réussir son casting ?",
+    "title": "Comment réussir son casting",
     "guest": "Rabah Aliouane",
     "role": "Directeur de casting",
     "publishedAt": "2024-07-09",
@@ -2884,7 +2884,7 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Comment réussir son casting ? | Dance Lab",
+    "seoTitle": "Comment réussir son casting | Dance Lab",
     "seoDescription": "Découvrez Rabah Aliouane dans Dance Lab : En résumé : Visualisez votre réussite : Avant de passer une audition, prenez un moment pour vous. Imaginez-vous…"
   },
   {
@@ -2916,7 +2916,7 @@ export const episodes: Episode[] = [
   {
     "number": 10,
     "slug": "10-regis-truchy",
-    "title": "Comment créer un seul en scène ?",
+    "title": "Comment créer un seul en scène",
     "guest": "Régis Truchy",
     "role": "",
     "publishedAt": "2024-06-25",
@@ -2936,13 +2936,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Comment créer un seul en scène ? | Dance Lab",
+    "seoTitle": "Comment créer un seul en scène | Dance Lab",
     "seoDescription": "Découvrez Régis Truchy dans Dance Lab : Trois phrases clés à retenir, trois facettes de personnalité : Introverti dans la vie, extraverti sur scène : La…"
   },
   {
     "number": 9,
     "slug": "9-emilie-heinrich",
-    "title": "À quoi sert un.e régisseur.se ?",
+    "title": "À quoi sert un.e régisseur.se",
     "guest": "Émilie Heinrich",
     "role": "Régisseuse",
     "publishedAt": "2024-06-18",
@@ -2962,7 +2962,7 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "À quoi sert un.e régisseur.se ? | Dance Lab",
+    "seoTitle": "À quoi sert un.e régisseur.se | Dance Lab",
     "seoDescription": "Découvrez Émilie Heinrich dans Dance Lab : Le régisseur est considéré comme un chef d'orchestre, Il fait le lien entre : L’artistique Et la technique. Plus…"
   },
   {
@@ -3020,7 +3020,7 @@ export const episodes: Episode[] = [
   {
     "number": 6,
     "slug": "6-nelson-ewande",
-    "title": "Comment exceller en battle ?",
+    "title": "Comment gagner un battle de danse ?",
     "guest": "Nelson Ewandé",
     "role": "",
     "publishedAt": "2024-04-28",
@@ -3040,7 +3040,7 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Comment exceller en battle ? | Dance Lab",
+    "seoTitle": "Comment gagner un battle de danse ? | Dance Lab",
     "seoDescription": "Découvrez Nelson Ewandé dans Dance Lab : Pour Nelson, pas de magie : TRA-VAIL-LER Mais sur quoi ? Ta technique, Ta musicalité, Ton improvisation, Ta…"
   },
   {
@@ -3072,7 +3072,7 @@ export const episodes: Episode[] = [
   {
     "number": 4,
     "slug": "4-legendary-yanou",
-    "title": "À la découverte du Old Way, style fondateur du voguing",
+    "title": "Voguing : d’où vient le Old Way et comment comprendre ses codes ?",
     "guest": "Legendary Yanou",
     "role": "Professeur de voguing",
     "publishedAt": "2024-05-14",
@@ -3092,13 +3092,13 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "À la découverte du Old Way, style fondateur du voguing | Dance Lab",
+    "seoTitle": "Voguing : d’où vient le Old Way et comment comprendre ses codes ? | Dance Lab",
     "seoDescription": "Découvrez Legendary Yanou dans Dance Lab : Pour Yanou il faut être précis et élégant dans le old way. C’est cette précision qui donne une dimension…"
   },
   {
     "number": 3,
     "slug": "3-aurelie-serine",
-    "title": "La naturopathie au service de la danse",
+    "title": "La naturopathie peut-elle aider les danseurs.ses à mieux récupérer ?",
     "guest": "Aurélie Sériné",
     "role": "Naturopathe",
     "publishedAt": "2024-05-06",
@@ -3118,7 +3118,7 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "La naturopathie au service de la danse | Dance Lab",
+    "seoTitle": "La naturopathie peut-elle aider les danseurs.ses à mieux récupérer ? | Dance Lab",
     "seoDescription": "Découvrez Aurélie Sériné dans Dance Lab : Pour Aurélie, la naturopathie est un véritable atout pour les danseureuses : Optimiser ses performances Prévenir…"
   },
   {
@@ -3150,7 +3150,7 @@ export const episodes: Episode[] = [
   {
     "number": 1,
     "slug": "1-mathilde-champion",
-    "title": "Ancienne danseuse : Ses conseils de community manager",
+    "title": "Comment utiliser les réseaux sociaux pour trouver des opportunités dans la danse ?",
     "guest": "Mathilde Champion",
     "role": "Cheffe de projet",
     "publishedAt": "2024-04-25",
@@ -3170,7 +3170,7 @@ export const episodes: Episode[] = [
     "tags": [],
     "chapters": [],
     "guestLinks": "",
-    "seoTitle": "Ancienne danseuse : Ses conseils de community manager | Dance Lab",
+    "seoTitle": "Comment utiliser les réseaux sociaux pour trouver des opportunités dans la danse ? | Dance Lab",
     "seoDescription": "Découvrez Mathilde Champion dans Dance Lab : Pour Mathilde, pour se démarquer sur les réseaux, il faut : 1. Définir son identité : Dites clairement qui vous…"
   }
 ]

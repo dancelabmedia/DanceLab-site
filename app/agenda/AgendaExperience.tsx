@@ -15,6 +15,7 @@ const ALL_TYPES   = "Tous les types"
 const ALL_CITIES  = "Toutes les villes"
 const ALL_DATES   = "Toutes les dates"
 const ALL_PRICES  = "Tous les tarifs"
+const ALL_DISCIPLINES = "Toutes les disciplines"
 const SORT_RECENT = "Les plus récents"
 const SORT_OLD    = "Les plus anciens"
 
@@ -50,6 +51,11 @@ const CATEGORY_COLORS: Record<string, string> = {
   "Arts de rue":"#8A7B6B",
   Performance:  "#7B8A6B",
   Rencontre:    "#8A6B7B",
+  "Cours / atelier": "#6B8A7B",
+  "Stage / workshop": "#587B75",
+  "Bal / soirée": "#8A637B",
+  "Conférence / rencontre": "#6F718F",
+  Exposition: "#7D6F8F",
 }
 
 function isFree(event: AgendaEvent) {
@@ -275,6 +281,9 @@ function EventCard({
         <p className="srt-card-desc">{event.description}</p>
 
         <div className="srt-card-meta">
+          {event.disciplines?.length ? (
+            <span className="srt-card-disciplines">{event.disciplines.slice(0, 2).join(" · ")}</span>
+          ) : null}
           <span>
             <svg width="11" height="11" viewBox="0 0 14 14" fill="none" aria-hidden="true">
               <path d="M7 1C4.79 1 3 2.79 3 5c0 3 4 8 4 8s4-5 4-8c0-2.21-1.79-4-4-4z"
@@ -422,15 +431,17 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
   const [cityFilter,  setCityFilter]  = useState(ALL_CITIES)
   const [dateFilter,  setDateFilter]  = useState(ALL_DATES)
   const [priceFilter, setPriceFilter] = useState(ALL_PRICES)
+  const [disciplineFilter, setDisciplineFilter] = useState(ALL_DISCIPLINES)
   const [sortValue,   setSortValue]   = useState(SORT_RECENT)
 
   // ── Mobile : panneau filtres ──
   const [filtersOpen, setFiltersOpen] = useState(false)
   useBackNavigationState('agenda', {
-    search, typeFilter, cityFilter, dateFilter, priceFilter, sortValue, filtersOpen, activeSlug,
+    search, typeFilter, cityFilter, dateFilter, priceFilter, disciplineFilter, sortValue, filtersOpen, activeSlug,
   }, saved => {
     setSearch(saved.search); setTypeFilter(saved.typeFilter); setCityFilter(saved.cityFilter)
     setDateFilter(saved.dateFilter); setPriceFilter(saved.priceFilter); setSortValue(saved.sortValue)
+    setDisciplineFilter(saved.disciplineFilter ?? ALL_DISCIPLINES)
     setFiltersOpen(saved.filtersOpen); setActiveSlug(saved.activeSlug)
   })
 
@@ -448,6 +459,13 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
     ],
     [agendaEvents]
   )
+  const disciplineOptions = useMemo(
+    () => [
+      ALL_DISCIPLINES,
+      ...Array.from(new Set(agendaEvents.flatMap(event => event.disciplines ?? []))).sort((a, b) => a.localeCompare(b, "fr")),
+    ],
+    [agendaEvents]
+  )
 
   // ── Filtrage + tri ──
   const filtered = useMemo(() => {
@@ -461,7 +479,8 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
           e.city.toLowerCase().includes(q) ||
           e.venue.toLowerCase().includes(q) ||
           e.category.toLowerCase().includes(q) ||
-          e.description.toLowerCase().includes(q)
+          e.description.toLowerCase().includes(q) ||
+          e.disciplines?.some(discipline => discipline.toLowerCase().includes(q))
       )
     }
 
@@ -469,6 +488,7 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
     if (cityFilter  !== ALL_CITIES) r = r.filter((e) => e.city === cityFilter)
     if (dateFilter  !== ALL_DATES)  r = r.filter((e) => eventMatchesDate(e, dateFilter))
     if (priceFilter !== ALL_PRICES) r = r.filter((e) => eventMatchesPrice(e, priceFilter))
+    if (disciplineFilter !== ALL_DISCIPLINES) r = r.filter((e) => e.disciplines?.includes(disciplineFilter))
 
     r.sort((a, b) =>
       sortValue === SORT_OLD
@@ -477,7 +497,7 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
     )
 
     return r
-  }, [agendaEvents, search, typeFilter, cityFilter, dateFilter, priceFilter, sortValue])
+  }, [agendaEvents, search, typeFilter, cityFilter, dateFilter, priceFilter, disciplineFilter, sortValue])
 
   const ongoingEvents  = useMemo(() => filtered.filter((e) => e.status === "En cours"), [filtered])
   const upcomingEvents = useMemo(() => filtered.filter((e) => e.status !== "En cours"),  [filtered])
@@ -488,7 +508,8 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
     typeFilter  !== ALL_TYPES  ||
     cityFilter  !== ALL_CITIES ||
     dateFilter  !== ALL_DATES  ||
-    priceFilter !== ALL_PRICES
+    priceFilter !== ALL_PRICES ||
+    disciplineFilter !== ALL_DISCIPLINES
 
   const activeFilterCount = [
     search.trim() !== "",
@@ -496,6 +517,7 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
     cityFilter  !== ALL_CITIES,
     dateFilter  !== ALL_DATES,
     priceFilter !== ALL_PRICES,
+    disciplineFilter !== ALL_DISCIPLINES,
   ].filter(Boolean).length
 
   function clearFilters() {
@@ -504,6 +526,7 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
     setCityFilter(ALL_CITIES)
     setDateFilter(ALL_DATES)
     setPriceFilter(ALL_PRICES)
+    setDisciplineFilter(ALL_DISCIPLINES)
     setSortValue(SORT_RECENT)
   }
 
@@ -603,6 +626,7 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
           <div className={`srt-filter-row${filtersOpen ? " srt-filter-row--open" : ""}`}>
             <div className="srt-filters">
               <Dropdown label={t("Type")}  value={typeFilter}  options={typeOptions}  onChange={setTypeFilter} translate={t} />
+              <Dropdown label={t("Discipline")} value={disciplineFilter} options={disciplineOptions} onChange={setDisciplineFilter} />
               <Dropdown label={t("Ville")} value={cityFilter}  options={cityOptions}  onChange={setCityFilter} />
               <Dropdown label={t("Date")}  value={dateFilter}  options={DATE_OPTIONS} onChange={setDateFilter} translate={t} />
               <Dropdown label={t("Prix")}  value={priceFilter} options={PRICE_OPTIONS} onChange={setPriceFilter} translate={t} />
@@ -653,6 +677,12 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
               {priceFilter !== ALL_PRICES && (
                 <button className="srt-chip" type="button" onClick={() => setPriceFilter(ALL_PRICES)}>
                   {t(priceFilter)}
+                  <span className="srt-chip-x" aria-hidden="true">×</span>
+                </button>
+              )}
+              {disciplineFilter !== ALL_DISCIPLINES && (
+                <button className="srt-chip" type="button" onClick={() => setDisciplineFilter(ALL_DISCIPLINES)}>
+                  {disciplineFilter}
                   <span className="srt-chip-x" aria-hidden="true">×</span>
                 </button>
               )}

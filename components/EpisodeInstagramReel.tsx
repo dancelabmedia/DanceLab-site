@@ -28,6 +28,7 @@ export default function EpisodeInstagramReel({ instagramReelUrl }: Props) {
 
   useEffect(() => {
     if (!thirdPartyAllowed) return
+    setEmbedFailed(false)
     const win = window as Window & {
       instgrm?: { Embeds: { process: () => void } }
     }
@@ -98,6 +99,15 @@ export default function EpisodeInstagramReel({ instagramReelUrl }: Props) {
       <div className="ep-reel ep-reel--fallback">
         <p className="ep-reel-kicker">Un extrait de la conversation</p>
         <button type="button" className="ep-reel-cta" onClick={openSettings}>Choisir mes préférences</button>
+        <a
+          href={instagramReelUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ep-reel-cta"
+        >
+          Voir la publication sur Instagram
+          <Arrow />
+        </a>
       </div>
     )
   }

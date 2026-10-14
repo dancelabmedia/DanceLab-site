@@ -42,7 +42,17 @@ const IconEnvelope = () => (
 
 const MAX_PREVIEW_RESULTS = 12
 
-export default function Header({ searchItems, locale: _initialLocale = 'fr' }: { searchItems: SearchItem[]; locale?: Locale }) {
+export default function Header({
+  searchItems,
+  locale: _initialLocale = 'fr',
+  latestEpisodeImage = null,
+}: {
+  searchItems: SearchItem[]
+  locale?: Locale
+  /** Image du dernier épisode Ausha — injectée en fond de la carte ÉCOUTER mobile.
+   *  null = fallback CSS statique utilisé. */
+  latestEpisodeImage?: string | null
+}) {
   // Read from context so locale updates instantly without page reload
   const locale = useLocale()
   const t = (text: string) => uiText(locale, text)
@@ -144,12 +154,12 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
   ]
 
   const explorerLinks = [
-    { label: 'Styles de danse', href: '/explorer/styles-de-danse' },
-    { label: 'Artistes', href: '/explorer/artistes' },
-    { label: 'Compagnies', href: '/explorer/compagnies' },
-    { label: 'Métiers de la danse', href: '/explorer/metiers-de-la-danse' },
-    { label: 'Écoles de danse', href: '/explorer/ecoles-de-danse' },
-    { label: 'Auditions', href: '/explorer/auditions' },
+    { label: 'Auditions', href: '/explorer/auditions', comingSoon: false },
+    { label: 'Compagnies', href: '/explorer/compagnies', comingSoon: true },
+    { label: 'Écoles de danse', href: '/explorer/ecoles-de-danse', comingSoon: true },
+    { label: 'Métiers de la danse', href: '/explorer/metiers-de-la-danse', comingSoon: false },
+    { label: 'Portraits', href: '/explorer/artistes', comingSoon: true },
+    { label: 'Styles de danse', href: '/explorer/styles-de-danse', comingSoon: true },
   ]
 
   useEffect(() => {
@@ -411,18 +421,18 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
         <ul className="nav-links">
           {navGroups.map((group) => group.label === 'Explorer' ? (
             <li key={group.label} className="nav-dropdown nav-dropdown--explorer">
-              <Link
-                href={href(publicNavigationHref(group.directHref))}
-                className={privateAccessScope(group.directHref) ? availability.available : undefined}
+              <button
+                type="button"
+                className="nav-dropdown-trigger"
                 aria-haspopup="true"
               >
-                {t(group.label)}{privateAccessScope(group.directHref) && <small className={availability.badge}>{t('Bientôt')}</small>}
-              </Link>
+                {t(group.label)}
+              </button>
               <div className="dropdown-menu explorer-dropdown" aria-label={t('Rubriques Explorer')}>
                 {explorerLinks.map((item) => (
                   <Link key={item.href} href={href(publicNavigationHref(item.href))}>
                     <span>{t(item.label)}</span>
-                    {privateAccessScope(item.href) && <small className={availability.badge}>{t('Bientôt')}</small>}
+                    {item.comingSoon ? <small className={availability.badge}>{t('Bientôt')}</small> : null}
                   </Link>
                 ))}
               </div>
@@ -493,7 +503,18 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
                 <span className="mobile-card-copy">{t('Lire, comprendre, découvrir')}</span>
                 <span className="mobile-card-arrow"><IconArrow /></span>
               </Link>
-              <Link href={href('/ecouter')} className="mobile-editorial-card mobile-editorial-card--listen" onClick={closeMobileMenu}>
+              {/* Image dynamique (latestEpisodeImage) : écrase le background-image CSS.
+                  backgroundPosition 'center 20%' centre le portrait de l'invité·e
+                  sur n'importe quelle image RSS. Fallback CSS = image statique si null. */}
+              <Link
+                href={href('/ecouter')}
+                className="mobile-editorial-card mobile-editorial-card--listen"
+                onClick={closeMobileMenu}
+                style={latestEpisodeImage ? {
+                  backgroundImage: `url("${latestEpisodeImage}")`,
+                  backgroundPosition: 'center 20%',
+                } : undefined}
+              >
                 <strong>{t('Écouter')}</strong>
                 <span className="mobile-card-copy">{t('Les conversations avec celles et ceux qui font, pensent et transforment la danse.')}</span>
                 <span className="mobile-card-arrow"><IconArrow /></span>
@@ -520,7 +541,7 @@ export default function Header({ searchItems, locale: _initialLocale = 'fr' }: {
                     {explorerLinks.map((item) => (
                       <Link key={item.href} href={href(publicNavigationHref(item.href))} onClick={closeMobileMenu}>
                         <span>{t(item.label)}</span>
-                        {privateAccessScope(item.href) && <small>{t('Bientôt')}</small>}
+                        {item.comingSoon ? <small>{t('Bientôt')}</small> : null}
                       </Link>
                     ))}
                   </div>

@@ -30,12 +30,13 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getEpisodesFromRSS }        from '@/lib/ausha-rss'
-import { getYoutubeEpisodeMap }      from '@/lib/youtube-rss'
+import { getYoutubeEpisodeMap, youtubeVideoMatchesEpisode } from '@/lib/youtube-rss'
 import {
   getRecentInstagramReels,
   matchReelToEpisode,
 }                                    from '@/lib/instagram-api'
 import { episodeExtras }             from '@/data/episode-extras'
+import { episodeMediaOverrides }     from '@/lib/episode-media-overrides'
 import { commitFileToGitHub }        from '@/lib/github-commit'
 import type { ResolvedTeaser, TeaserResolvedMap } from '@/lib/teaser-resolved'
 
@@ -135,14 +136,17 @@ export async function GET(request: NextRequest) {
   }
 
   // ── 4. Identifier les épisodes à vérifier ───────────────────────────────────
-  // Exclure : déjà résolu (cache) OU déjà renseigné manuellement dans episode-extras
+  // Un média peut être publié plusieurs jours après l'audio. On continue donc
+  // de vérifier un épisode tant que YouTube OU Instagram manque. Une entrée
+  // partielle dans le cache ne bloque plus les recherches suivantes.
   const toCheck = recentEpisodes.filter((ep) => {
-    // Déjà dans le cache résolu
-    if (String(ep.number) in resolved) return false
-
-    // Déjà renseigné manuellement (youtubeId ET instagramReelUrl)
+    const key = ep.guid ? `guid:${ep.guid}` : String(ep.number)
+    const cached = resolved[key] ?? resolved[String(ep.number)]
     const extras = episodeExtras[ep.number]
-    if (extras?.youtubeId && extras?.instagramReelUrl) return false
+    const manual = ep.guid ? episodeMediaOverrides[ep.guid] : undefined
+    const hasYoutube = Boolean(manual?.youtubeId || extras?.youtubeId || cached?.youtubeId)
+    const hasInstagram = Boolean(manual?.instagramReelUrl || extras?.instagramReelUrl || cached?.instagramReelUrl)
+    if (hasYoutube && hasInstagram) return false
 
     return true
   })
@@ -168,25 +172,39 @@ export async function GET(request: NextRequest) {
 
   for (const ep of toCheck) {
     const extras = episodeExtras[ep.number]
+    const key = ep.guid ? `guid:${ep.guid}` : String(ep.number)
+    const cached = resolved[key] ?? resolved[String(ep.number)]
+    const manual = ep.guid ? episodeMediaOverrides[ep.guid] : undefined
 
     // YouTube : extras manuel > détection auto
-    const ytVideo = youtubeMap.get(ep.number)
+    const ytCandidate = youtubeMap.get(ep.number)
+    const ytVideo = ytCandidate && youtubeVideoMatchesEpisode(ytCandidate, ep)
+      ? ytCandidate
+      : undefined
     const youtubeId: string | undefined =
-      extras?.youtubeId ?? ytVideo?.videoId ?? undefined
+      manual?.youtubeId ?? extras?.youtubeId ?? cached?.youtubeId ?? ytVideo?.videoId ?? undefined
 
     const isYoutubeShort: boolean | undefined =
-      extras?.isYoutubeShort ?? ytVideo?.isShort ?? undefined
+      manual?.isYoutubeShort ?? extras?.isYoutubeShort ?? cached?.isYoutubeShort ?? ytVideo?.isShort ?? undefined
 
     // Instagram : extras manuel > détection auto
     const guest = ep.guest || 'Invité.e'
     const instagramReelUrl: string | undefined =
+      manual?.instagramReelUrl ??
       extras?.instagramReelUrl ??
+      cached?.instagramReelUrl ??
       matchReelToEpisode(recentReels, ep.number, guest) ??
       undefined
 
-    if (youtubeId || instagramReelUrl) {
+    const gainedYoutube = Boolean(youtubeId && !cached?.youtubeId)
+    const gainedInstagram = Boolean(instagramReelUrl && !cached?.instagramReelUrl)
+
+    if ((youtubeId || instagramReelUrl) && (gainedYoutube || gainedInstagram || !cached)) {
       const teaser: ResolvedTeaser = {
-        resolvedAt: new Date().toISOString(),
+        aushaGuid: ep.guid,
+        episodeNumber: ep.number,
+        resolvedAt: cached?.resolvedAt ?? new Date().toISOString(),
+        checkedAt: new Date().toISOString(),
       }
       if (youtubeId)        teaser.youtubeId       = youtubeId
       if (isYoutubeShort !== undefined) teaser.isYoutubeShort = isYoutubeShort
@@ -205,7 +223,9 @@ export async function GET(request: NextRequest) {
     // Fusionner les nouvelles entrées dans le cache existant
     const updatedResolved: TeaserResolvedMap = { ...resolved }
     for (const { episodeNumber, teaser } of newlyResolved) {
-      updatedResolved[String(episodeNumber)] = teaser
+      const rssEpisode = recentEpisodes.find((episode) => episode.number === episodeNumber)
+      const key = rssEpisode?.guid ? `guid:${rssEpisode.guid}` : String(episodeNumber)
+      updatedResolved[key] = teaser
     }
 
     const content = JSON.stringify(updatedResolved, null, 2) + '\n'

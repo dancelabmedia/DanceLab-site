@@ -1,12 +1,14 @@
 import { unstable_cache } from 'next/cache'
 import { getEpisodes } from '../lib/episodes'
 import { magazineArticles } from '../app/decouvrir/articles-data'
+import { danceStyles } from '../app/explorer/styles-de-danse/styles-data'
+import { metiers, UNIVERS } from '../app/explorer/metiers-de-la-danse/metiers-data'
 import { privateAccessScope } from './private-navigation'
 import { normalizeSearchText } from './search'
 
 export type AssistantItem = {
   id: string
-  type: 'episode' | 'article'
+  type: 'episode' | 'article' | 'style' | 'metier'
   title: string
   guest?: string
   episodeNumber?: number
@@ -14,6 +16,15 @@ export type AssistantItem = {
   image?: string
   category?: string
   excerpt: string
+  /** Full editorial evidence used server-side to validate a recommendation. */
+  recommendationEvidence?: string
+  /** Server-only editorial details used to answer before recommending content. */
+  answerDetails?: {
+    definition?: string
+    formation?: string
+    environment?: string
+    status?: string
+  }
   /** Full normalized text for fallback text matching */
   searchText: string
   /**
@@ -38,6 +49,12 @@ async function buildAssistantIndex(): Promise<AssistantItem[]> {
     href: `/episodes/${episode.slug}`,
     image: episode.image,
     excerpt: episode.excerpt,
+    recommendationEvidence: normalizeSearchText([
+      episode.title,
+      episode.guest,
+      episode.excerpt,
+      episode.description,
+    ].filter(Boolean).join(' ')),
     searchText: normalizeSearchText([
       episode.title,
       episode.guest,
@@ -69,7 +86,58 @@ async function buildAssistantIndex(): Promise<AssistantItem[]> {
       tags: [...article.tags, ...(article.themes ?? [])],
     }))
 
-  const items = [...episodeItems, ...articleItems]
+  const styleItems: AssistantItem[] = danceStyles.map(style => ({
+    id: `style-${style.slug}`,
+    type: 'style',
+    title: style.name,
+    href: `/explorer/styles-de-danse/${style.slug}`,
+    image: style.image,
+    category: style.family,
+    excerpt: style.summary,
+    searchText: normalizeSearchText([
+      style.name,
+      ...(style.aliases ?? []),
+      style.family,
+      style.summary,
+      style.introduction,
+      style.origins,
+      style.characteristics.movements,
+      style.characteristics.musicRelationship,
+      style.characteristics.improvisation,
+      ...style.keywords,
+      ...(style.commonConfusions?.flatMap(item => [item.styles, item.explanation]) ?? []),
+    ].join(' ')),
+    tags: [style.name, ...(style.aliases ?? []), style.family, ...style.keywords],
+  }))
+
+  const metierItems: AssistantItem[] = metiers.map(metier => ({
+    id: `metier-${metier.id}`,
+    type: 'metier',
+    title: metier.nom,
+    href: `/explorer/metiers-de-la-danse/${UNIVERS[metier.univers].slug}/${metier.id}`,
+    category: UNIVERS[metier.univers].label,
+    excerpt: metier.description,
+    answerDetails: {
+      definition: metier.definition,
+      formation: metier.formation,
+      environment: metier.environnement,
+      status: metier.statut,
+    },
+    searchText: normalizeSearchText([
+      metier.nom,
+      metier.description,
+      metier.definition,
+      metier.environnement,
+      metier.formation,
+      metier.statut,
+      ...(metier.tags ?? []),
+      ...(metier.missions ?? []),
+      ...(metier.competences ?? []),
+    ].filter(Boolean).join(' ')),
+    tags: [UNIVERS[metier.univers].label, ...(metier.tags ?? [])],
+  }))
+
+  const items = [...episodeItems, ...articleItems, ...styleItems, ...metierItems]
   // L'assistant local peut indexer les contenus en cours de travail. Cette
   // exception n'existe jamais dans un build public ou sur Vercel.
   if (process.env.NODE_ENV === 'development' && !process.env.VERCEL) return items
@@ -81,6 +149,6 @@ async function buildAssistantIndex(): Promise<AssistantItem[]> {
  */
 export const getAssistantIndex = unstable_cache(
   buildAssistantIndex,
-  ['dance-lab-assistant-index-v2'],
-  { revalidate: 3600 },
+  ['dance-lab-assistant-index-v5'],
+  { revalidate: 3600, tags: ['ausha-derived-content'] },
 )

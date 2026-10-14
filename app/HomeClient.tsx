@@ -1,9 +1,8 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { featuredAgendaEvents, formatAgendaDateRange } from "./agenda/agenda-data"
 import type { AgendaEvent } from "./agenda/agenda-data"
-import { episodes } from "../data/episodes"
 import type { MagazineArticle } from "./decouvrir/articles-data"
 import Link from "next/link"
 import MediaReveal from "./components/MediaReveal"
@@ -156,20 +155,15 @@ const GUEST_CARD_COUNT = 5
 const GUEST_CARD_DELAYS = ['', 'd1', 'd2', 'd3', 'd3'] as const
 const GUEST_SELECTION_STORAGE_KEY = 'dance-lab-home-guest-selection'
 
-const GUEST_POOL = episodes.filter((episode, index, allEpisodes) => {
-  if (!episode.slug || !episode.guest || !episode.image || !episode.quote) {
-    return false
-  }
-
-  const normalizedGuest = episode.guest.trim().toLocaleLowerCase('fr')
-
-  return allEpisodes.findIndex(
-    (candidate) =>
-      candidate.guest.trim().toLocaleLowerCase('fr') === normalizedGuest
-  ) === index
-})
-
-const INITIAL_GUEST_SELECTION = GUEST_POOL.slice(0, GUEST_CARD_COUNT)
+function buildGuestPool(episodes: UnifiedEpisode[]): UnifiedEpisode[] {
+  return episodes.filter((episode, index, allEpisodes) => {
+    if (!episode.slug || !episode.guest || !episode.image || !episode.quote) return false
+    const normalizedGuest = episode.guest.trim().toLocaleLowerCase('fr')
+    return allEpisodes.findIndex(
+      candidate => candidate.guest.trim().toLocaleLowerCase('fr') === normalizedGuest
+    ) === index
+  })
+}
 
 function shuffleGuests<T>(items: T[]): T[] {
   const shuffled = [...items]
@@ -185,14 +179,14 @@ function shuffleGuests<T>(items: T[]): T[] {
   return shuffled
 }
 
-function createGuestSelection(previousSlugs: string[]) {
+function createGuestSelection(pool: UnifiedEpisode[], previousSlugs: string[]) {
   const previousSelection = new Set(previousSlugs)
   const freshCandidates = shuffleGuests(
-    GUEST_POOL.filter((episode) => !previousSelection.has(episode.slug))
+    pool.filter((episode) => !previousSelection.has(episode.slug))
   )
   const freshSlugs = new Set(freshCandidates.map((episode) => episode.slug))
   const remainingCandidates = shuffleGuests(
-    GUEST_POOL.filter((episode) => !freshSlugs.has(episode.slug))
+    pool.filter((episode) => !freshSlugs.has(episode.slug))
   )
 
   return [...freshCandidates, ...remainingCandidates].slice(
@@ -226,19 +220,14 @@ function getLatestEpisodeHeaderImage(episode: UnifiedEpisode): string {
     : getLatestEpisodeImage(episode)
 }
 
-function getHomeGuestImage(episode: (typeof episodes)[number]) {
+function getHomeGuestImage(episode: UnifiedEpisode) {
   const episodeImageName = episode.image
     .split('/')
     .pop()
     ?.replace(/\.png\.png$/i, '.png')
-  const sourceImageName = episode.sourceImage
-    .split('/')
-    .pop()
-    ?.replace(/\.png\.png$/i, '.png')
-  const optimizedImageName =
-    episodeImageName && episodeImageName !== 'logo.png'
-      ? episodeImageName
-      : sourceImageName
+  const optimizedImageName = episodeImageName && episodeImageName !== 'logo.png'
+    ? episodeImageName
+    : undefined
 
   return optimizedImageName
     ? `/images/les-invites/${optimizedImageName}`
@@ -305,13 +294,16 @@ function getAgendaHomeDateParts(event: AgendaEvent) {
    COMPOSANT PRINCIPAL
 ===================================================== */
 interface HomeClientProps {
+  /** Catalogue unifié Ausha utilisé par toutes les cartes de l'accueil. */
+  episodes: UnifiedEpisode[]
   /** Dernier épisode — provient de getEpisodes() côté serveur (RSS + statique). */
   latestEpisode: UnifiedEpisode
   /** Dernier article publié — filtré côté serveur (ne contient jamais de draft/scheduled futur). */
   latestArticle: MagazineArticle | null
 }
 
-export default function HomeClient({ latestEpisode, latestArticle }: HomeClientProps) {
+export default function HomeClient({ episodes, latestEpisode, latestArticle }: HomeClientProps) {
+  const guestPool = useMemo(() => buildGuestPool(episodes), [episodes])
   const locale = useLocale()
   const t = (text: string) => uiText(locale, text)
   const EXPLORE_ITEMS = getExploreItems(t)
@@ -325,7 +317,7 @@ export default function HomeClient({ latestEpisode, latestArticle }: HomeClientP
   >('idle')
   const [homeAgendaEvents, setHomeAgendaEvents] = useState<AgendaEvent[]>(featuredAgendaEvents)
   const [guestSelection, setGuestSelection] = useState(
-    INITIAL_GUEST_SELECTION
+    guestPool.slice(0, GUEST_CARD_COUNT)
   )
   const guestTrackRef = useRef<HTMLDivElement | null>(null)
   const newsletterInputRef = useRef<HTMLInputElement | null>(null)
@@ -450,7 +442,7 @@ export default function HomeClient({ latestEpisode, latestArticle }: HomeClientP
       previousSlugs = []
     }
 
-    const nextSelection = createGuestSelection(previousSlugs)
+    const nextSelection = createGuestSelection(guestPool, previousSlugs)
     setGuestSelection(nextSelection)
 
     try {
@@ -459,7 +451,7 @@ export default function HomeClient({ latestEpisode, latestArticle }: HomeClientP
         JSON.stringify(nextSelection.map((episode) => episode.slug))
       )
     } catch {}
-  }, [])
+  }, [guestPool])
 
   /* Scroll → header opacity */
   useEffect(() => {
@@ -716,13 +708,27 @@ export default function HomeClient({ latestEpisode, latestArticle }: HomeClientP
       </section>
 
       {/* ========================================
-          TICKER
+          TICKER — Ils nous ont fait confiance
       ======================================== */}
-      <div className="ticker" aria-hidden="true">
+      <div className="ticker ticker--confiance" aria-label={locale === 'en' ? 'They trusted us' : 'Ils nous ont fait confiance'}>
+        <span className="ticker-confiance-label" aria-hidden="true">
+          {locale === 'en' ? 'THEY TRUSTED US' : 'ILS NOUS ONT FAIT CONFIANCE'}
+        </span>
         <div className="ticker-track">
-          {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
-            <span key={i} className="ticker-item">{item}</span>
-          ))}
+          {[...COLLAB_ITEMS, ...COLLAB_ITEMS].map((item, i) =>
+            item.href ? (
+              <Link
+                key={i}
+                href={item.href}
+                className="ticker-item ticker-item--name"
+                tabIndex={i < COLLAB_ITEMS.length ? 0 : -1}
+              >
+                {item.name}
+              </Link>
+            ) : (
+              <span key={i} className="ticker-item ticker-item--name">{item.name}</span>
+            )
+          )}
         </div>
       </div>
 
@@ -740,7 +746,7 @@ export default function HomeClient({ latestEpisode, latestArticle }: HomeClientP
         <LatestEpisodeSticky
           episode={latestEpisode}
           fallbackImage={getLatestEpisodeImage(latestEpisode)}
-          interviewPool={GUEST_POOL}
+          interviewPool={guestPool}
           getGuestImage={getHomeGuestImage}
         />
 
@@ -832,32 +838,15 @@ export default function HomeClient({ latestEpisode, latestArticle }: HomeClientP
       </div>
 
       {/* ========================================
-          RUBAN ILS NOUS ONT FAIT CONFIANCE
-          Placé après le contenu principal — crédibilité et preuve sociale.
-          Distinct du ticker bleu : structure verticale, défilement lent.
+          RUBAN MOTS-CLÉS SEO
+          Placé après le contenu principal — thématiques du site.
       ======================================== */}
-      <div className="collabs-band" aria-label="Ils nous ont fait confiance">
-        <span className="collabs-band-label" aria-hidden="true">
-          {locale === 'en' ? 'THEY TRUSTED US' : 'ILS NOUS ONT FAIT CONFIANCE'}
-        </span>
+      <div className="collabs-band" aria-hidden="true">
         <div className="collabs-band-track-wrapper">
-          <div className="collabs-band-track" aria-hidden="true">
-            {[...COLLAB_ITEMS, ...COLLAB_ITEMS].map((item, i) =>
-              item.href ? (
-                <Link
-                  key={i}
-                  href={item.href}
-                  className="collabs-band-item"
-                  tabIndex={i < COLLAB_ITEMS.length ? 0 : -1}
-                >
-                  {item.name}
-                </Link>
-              ) : (
-                <span key={i} className="collabs-band-item">
-                  {item.name}
-                </span>
-              )
-            )}
+          <div className="collabs-band-track">
+            {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
+              <span key={i} className="collabs-band-item">{item}</span>
+            ))}
           </div>
         </div>
       </div>

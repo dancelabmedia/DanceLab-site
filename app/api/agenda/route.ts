@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { agendaEvents, type AgendaCategory, type AgendaEvent, type AgendaStatus } from "../../agenda/agenda-data"
+import { collectedAgendaEvents } from "../../agenda/collected-events"
 
 export const dynamic = "force-dynamic"
 
@@ -485,6 +486,11 @@ function normalizeCategory(value: string): AgendaCategory {
   const normalized = normalizeName(value)
   if (normalized.includes("festival")) return "Festival"
   if (normalized.includes("battle")) return "Battle"
+  if (normalized.includes("cours")) return "Cours / atelier"
+  if (normalized.includes("stage") || normalized.includes("workshop") || normalized.includes("masterclass")) return "Stage / workshop"
+  if (normalized.includes("bal") || normalized.includes("soiree")) return "Bal / soirée"
+  if (normalized.includes("conference")) return "Conférence / rencontre"
+  if (normalized.includes("exposition")) return "Exposition"
   if (normalized.includes("atelier") || normalized.includes("stage")) return "Atelier"
   if (normalized.includes("rue")) return "Arts de rue"
   if (normalized.includes("ballet")) return "Ballet"
@@ -713,7 +719,7 @@ function getAgendaEventKey(event: AgendaEvent) {
 function mergeAgendaSources(notionEvents: AgendaEvent[]) {
   const merged = new Map<string, AgendaEvent>()
 
-  agendaEvents
+  ;[...agendaEvents, ...collectedAgendaEvents]
     .filter((event) => !isPastEvent(event))
     .forEach((event) => {
       merged.set(getAgendaEventKey(event), applyVenueFallback(event))

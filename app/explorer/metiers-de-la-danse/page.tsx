@@ -4,6 +4,9 @@ import MetiersExplorer from './MetiersExplorer'
 import MetiersPodcastShowcase, { type MetierPodcastEpisode } from './MetiersPodcastShowcase'
 import { getEpisodes, type UnifiedEpisode } from '@/lib/episodes'
 
+// La sélection du carrousel doit être recalculée à chaque nouvelle visite.
+export const dynamic = 'force-dynamic'
+
 // ── Métadonnées ────────────────────────────────────────────────────────────────
 
 export const metadata: Metadata = {
@@ -105,17 +108,39 @@ function getRoleUniverses(role: string): MetierUniversId[] {
 //     ep.role est la source de vérité — pas de déduction par mots-clés depuis
 //     le titre ou la description.
 //  2. On groupe les épisodes par univers PRIMAIRE (premier retourné).
-//  3. Seed journalier : stable toute la journée, change chaque jour.
-//  4. Pour chaque des 6 univers, on sélectionne 2 épisodes → 12 cartes au total.
-//     → représentation garantie de chaque univers chaque jour.
-//  5. Dans chaque univers, la sélection tourne quotidiennement pour varier les profils.
+//  3. Une graine propre à la requête varie la sélection à chaque nouvelle visite.
+//  4. Un premier passage garantit un épisode par univers disponible.
+//  5. Les places restantes sont distribuées entre les univers, sans afficher deux
+//     fois le même intitulé de métier tant que le catalogue permet de l'éviter.
 
 const MAX_PER_UNIVERSE  = 2   // épisodes affichés par univers
 const MAX_CAROUSEL_CARDS = 12  // total
-const ROTATION_EPOCH = new Date('2024-01-01').getTime()
+function computeRequestSeed(): number {
+  return (Date.now() ^ Math.floor(Math.random() * 0x7fffffff)) >>> 0
+}
 
-function computeDailySeed(): number {
-  return Math.floor((Date.now() - ROTATION_EPOCH) / 86_400_000)
+function seededShuffle<T>(items: T[], seed: number): T[] {
+  const result = [...items]
+  let state = seed || 1
+  const random = () => {
+    state = (state * 1664525 + 1013904223) >>> 0
+    return state / 0x100000000
+  }
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1))
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+  return result
+}
+
+function professionKey(role: string): string {
+  return role
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[.·]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase()
 }
 
 function selectCarouselEpisodes(
@@ -137,37 +162,58 @@ function selectCarouselEpisodes(
     byUnivers.set(primary, group)
   }
 
-  // Étape 2 — trier chaque groupe par numéro d'épisode (déterminisme)
-  for (const group of byUnivers.values()) {
-    group.sort((a, b) => a.episode.number - b.episode.number)
+  // Étape 2 — mélanger chaque univers avec une graine dérivée : les futurs
+  // épisodes éligibles intègrent automatiquement le même pool.
+  for (const [uid, group] of byUnivers) {
+    const universeOffset = UNIVERS_ORDER.indexOf(uid) + 1
+    byUnivers.set(uid, seededShuffle(group, seed + universeOffset * 7919))
   }
 
-  // Étape 3 — sélection : 2 épisodes par univers, dans l'ordre UNIVERS_ORDER
+  // Étape 3 — sélection collective et équilibrée.
   const shown  = new Set<number>()
+  const shownProfessions = new Set<string>()
   const result: MetierPodcastEpisode[] = []
 
-  for (const uid of UNIVERS_ORDER) {
-    if (result.length >= MAX_CAROUSEL_CARDS) break
-    const group = byUnivers.get(uid)
-    if (!group || group.length === 0) continue
+  const shuffledUniverses = seededShuffle([...UNIVERS_ORDER], seed + 104729)
+  const pickedPerUniverse = new Map<MetierUniversId, number>()
 
-    const n = group.length
-    let picked = 0
-    for (let i = 0; i < n && picked < MAX_PER_UNIVERSE; i++) {
-      const idx     = (seed + i) % n
-      const { episode } = group[idx]
-      if (shown.has(episode.number)) continue
-      shown.add(episode.number)
-      result.push({
-        number:     episode.number,
-        slug:       episode.slug,
-        title:      episode.title,
-        guest:      episode.guest,
-        image:      episode.image,
-        profession: episode.role!.replaceAll('·', '.'), // écriture inclusive Dance Lab
-      })
-      picked++
-    }
+  const pickFromUniverse = (uid: MetierUniversId, allowRepeatedProfession = false) => {
+    const group = byUnivers.get(uid) ?? []
+    const candidate = group.find(({ episode }) => {
+      const roleKey = professionKey(episode.role ?? '')
+      return !shown.has(episode.number) && (allowRepeatedProfession || !shownProfessions.has(roleKey))
+    })
+    if (!candidate) return false
+
+    const { episode } = candidate
+    shown.add(episode.number)
+    shownProfessions.add(professionKey(episode.role ?? ''))
+    pickedPerUniverse.set(uid, (pickedPerUniverse.get(uid) ?? 0) + 1)
+    result.push({
+      number: episode.number,
+      slug: episode.slug,
+      title: episode.title,
+      guest: episode.guest,
+      image: episode.image,
+      profession: episode.role!.replaceAll('·', '.'),
+    })
+    return true
+  }
+
+  // Un profil de chaque grande famille, lorsque des épisodes éligibles existent.
+  for (const uid of shuffledUniverses) pickFromUniverse(uid)
+
+  // Puis un second profil distinct par univers pour compléter le carrousel.
+  for (const uid of shuffledUniverses) {
+    if (result.length >= MAX_CAROUSEL_CARDS) break
+    if ((pickedPerUniverse.get(uid) ?? 0) < MAX_PER_UNIVERSE) pickFromUniverse(uid)
+  }
+
+  // Rare fallback : si les intitulés disponibles sont trop homogènes, compléter
+  // sans dupliquer un épisode, tout en conservant la limite par univers.
+  for (const uid of shuffledUniverses) {
+    if (result.length >= MAX_CAROUSEL_CARDS) break
+    if ((pickedPerUniverse.get(uid) ?? 0) < MAX_PER_UNIVERSE) pickFromUniverse(uid, true)
   }
 
   return result
@@ -179,7 +225,7 @@ export default async function MetiersDeLaDansePage() {
   await requireExplorerAccess('jobs')
   const allEpisodes = await getEpisodes()
 
-  const seed           = computeDailySeed()
+  const seed           = computeRequestSeed()
   const careerEpisodes = selectCarouselEpisodes(allEpisodes, seed)
 
   return (

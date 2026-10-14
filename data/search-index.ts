@@ -229,4 +229,5 @@ const buildSearchIndex = async (): Promise<SearchItem[]> => {
 /** Index unifié, renouvelé chaque heure avec les nouveaux épisodes Ausha. */
 export const getSearchIndex = unstable_cache(buildSearchIndex, ['dance-lab-search-index-v2'], {
   revalidate: 3600,
+  tags: ['ausha-derived-content'],
 })

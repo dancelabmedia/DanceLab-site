@@ -23,6 +23,7 @@ type Props = {
   suggestionsLabel?: string
   minCharacters?: number
   maxResults?: number
+  sortAlphabetically?: boolean
   className?: string
   inputClassName?: string
   style?: React.CSSProperties
@@ -66,6 +67,7 @@ export default function SearchAutocomplete({
   suggestionsLabel = 'Suggestions',
   minCharacters = 1,
   maxResults = 8,
+  sortAlphabetically = false,
   className = '',
   inputClassName = '',
   style,
@@ -90,10 +92,12 @@ export default function SearchAutocomplete({
     return items
       .map((item) => ({ item, score: score(item, normalizedQuery) }))
       .filter((entry) => entry.score > 0)
-      .sort((a, b) => b.score - a.score || a.item.label.localeCompare(b.item.label, 'fr', { sensitivity: 'base' }))
+      .sort((a, b) => sortAlphabetically
+        ? a.item.label.localeCompare(b.item.label, 'fr', { sensitivity: 'base' })
+        : b.score - a.score || a.item.label.localeCompare(b.item.label, 'fr', { sensitivity: 'base' }))
       .slice(0, maxResults)
       .map((entry) => entry.item)
-  }, [items, maxResults, minCharacters, normalizedQuery])
+  }, [items, maxResults, minCharacters, normalizedQuery, sortAlphabetically])
 
   useEffect(() => {
     const close = (event: PointerEvent) => {

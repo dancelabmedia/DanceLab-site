@@ -1,5 +1,6 @@
 import { formationsProfessionnelles } from './formations-data'
 import { parisDirectoryAdditions } from './paris-directory-data'
+import { normalizeSearchText } from '@/data/search'
 
 export type EcoleType = "Studio" | "École" | "Conservatoire" | "Centre de formation" | "Association" | "Établissement supérieur" | "Compagnie" | "Université"
 
@@ -544,8 +545,9 @@ export function getEcoleCategories(ecole: EcoleDanse): EcoleCategory[] {
   return ECOLE_CATEGORIES.filter(category => categories.has(category))
 }
 
+/** Délègue à la fonction centrale du site — NFD + suppression diacritiques + minuscules. */
 export function normalizeEcoleSearch(value: string): string {
-  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('fr')
+  return normalizeSearchText(value)
 }
 
 export function getEcoleSearchText(ecole: EcoleDanse): string {

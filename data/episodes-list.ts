@@ -29,7 +29,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 120,
     "slug": "120-duy-laurent-tran",
-    "title": "Photographie et IA : faut-il avoir peur de l'avenir de la danse ?",
+    "title": "Faut-il avoir peur de l'IA dans la danse ?",
     "guest": "Duy-Laurent Tran",
     "duration": "1 h 14",
     "image": "/episodes/duylaurenttran120.png",
@@ -40,7 +40,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 119,
     "slug": "119-charlotte-baret",
-    "title": "Pourquoi elle a quitté le monde de la danse : toxicité, jalousie et pression",
+    "title": "Pourquoi a-t'elle quitté le monde de la danse ?",
     "guest": "Charlotte Baret",
     "duration": "59 min",
     "image": "/episodes/charlottebaret119.png",
@@ -51,7 +51,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 118,
     "slug": "118-yasmine-habib",
-    "title": "Ce que le milieu de la danse ne montre pas : hypocrisie, critiques et toxicité",
+    "title": "Ce que le milieu de la danse ne montre pas",
     "guest": "Yasmine Habib",
     "duration": "1 h",
     "image": "/episodes/yasminehabib118.png",
@@ -106,7 +106,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 113,
     "slug": "113-grichka-rootz",
-    "title": "S’il n’y a plus le mot danse, qu’est-ce que je suis : Krump, JJB et transmission",
+    "title": "Qui sommes-nous quand la danse ne nous définit plus ?",
     "guest": "Grichka Rootz",
     "duration": "1 h 14",
     "image": "/episodes/grichkarootz113.png",
@@ -117,7 +117,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 112,
     "slug": "112-lydie-la-peste",
-    "title": "La légitimité artistique : faut-il vraiment attendre qu’on nous la donne",
+    "title": "Faut-il attendre de se sentir légitime pour oser ?",
     "guest": "Lÿdie La PëstE",
     "duration": "1 h 12",
     "image": "/episodes/lydielapeste112.png",
@@ -128,7 +128,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 111,
     "slug": "111-johan-nus",
-    "title": "Penser l’artiste au-delà de la danse : légitimité, bienveillance et santé mentale",
+    "title": "Faut-il repenser la manière dont on traite les danseurs.ses ?",
     "guest": "Johan Nus",
     "duration": "1 h 13",
     "image": "/episodes/johannus111.png",
@@ -139,7 +139,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 110,
     "slug": "110-frederic-fontan",
-    "title": "Comment durer dans les métiers créatifs : Tour du monde, dépression, résilience",
+    "title": "Qu’est-ce qui permet vraiment de durer dans un métier artistique ?",
     "guest": "Frédéric Fontan",
     "duration": "1 h 09",
     "image": "/episodes/fredericfontan110.png",
@@ -150,7 +150,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 109,
     "slug": "109-indies-rhino",
-    "title": "Faut-il devenir quelqu’un d’autre pour réussir en danse ?",
+    "title": "Faut-il devenir quelqu’un d’autre pour réussir dans la danse ?",
     "guest": "Indies Rhino",
     "duration": "1 h 05",
     "image": "/episodes/indiesrhino109.png",
@@ -161,7 +161,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 108,
     "slug": "108-maeva-deschaud",
-    "title": "Pourquoi tu bloques avec l’argent et comment t’en libérer ?",
+    "title": "Pourquoi les danseurs.ses bloquent avec l’argent (et comment s’en libérer) ?",
     "guest": "Maëva Deschaud",
     "duration": "1 h 14",
     "image": "/episodes/maevadeschaud108.png",
@@ -172,7 +172,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 107,
     "slug": "107-tijo-aime",
-    "title": "Pourquoi les danseurs ressentent la musique différemment ?",
+    "title": "Pourquoi les danseurs.ses ressentent la musique différemment ?",
     "guest": "Tijo Aimé",
     "duration": "17 min",
     "image": "/episodes/tijoaime107.png",
@@ -183,7 +183,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 106,
     "slug": "106-mounir-amhiln",
-    "title": "Comment enrichir ta danse grâce aux autres arts ?",
+    "title": "Et si ce qui nourrissait notre danse se trouvait ailleurs ?",
     "guest": "Mounir Amhiln",
     "duration": "13 min",
     "image": "/episodes/mouniramhiln106.png",
@@ -194,7 +194,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 105,
     "slug": "105-amalia-salle",
-    "title": "Diriger des danseurs.ses : les vraies responsabilités d’un.e chorégraphe",
+    "title": "Quel pouvoir un.e chorégraphe a-t-il.elle sur ses danseurs.ses ?",
     "guest": "Amalia Salle",
     "duration": "1 h 08",
     "image": "/episodes/amaliasalle105.png",
@@ -205,7 +205,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 104,
     "slug": "104-theophile-bensusan",
-    "title": "Créer, transmettre et expérimenter au-delà du mouvement",
+    "title": "Comment sortir des codes du hip-hop ?",
     "guest": "Théophile Bensusan",
     "duration": "27 min",
     "image": "/episodes/theophilebensusan104.png",
@@ -216,7 +216,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 103,
     "slug": "103-nelson-ewande",
-    "title": "Stratégies et conseils pour gagner un battle",
+    "title": "Comment gagner un battle de danse : les stratégies qui font la différence",
     "guest": "Nelson Ewandé",
     "duration": "16 min",
     "image": "/episodes/nelsonewande103.png",
@@ -238,7 +238,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 101,
     "slug": "101-joseph-go-n-guessan",
-    "title": "Pourquoi les artistes doivent créer leurs propres projets ?",
+    "title": "Pourquoi les danseurs doivent créer leurs propres projets",
     "guest": "Joseph Go N’Guessan",
     "duration": "13 min",
     "image": "/episodes/josephgonguessan101.png",
@@ -249,7 +249,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 100,
     "slug": "100-kanti",
-    "title": "Peindre avec ses jambes : transformer le mouvement en trace",
+    "title": "Peindre avec ses jambes : comment il transforme sa danse en œuvre d’art ?",
     "guest": "Kanti",
     "duration": "16 min",
     "image": "/episodes/kanti100.png",
@@ -260,7 +260,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 99,
     "slug": "99-marion-crampe",
-    "title": "Comment construire une carrière dans la pole dance ?",
+    "title": "Comment construire une carrière dans la pole dance",
     "guest": "Marion Crampe",
     "duration": "1 h 15",
     "image": "/episodes/marioncrampe99.png",
@@ -271,7 +271,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 98,
     "slug": "98-sofia",
-    "title": "Ce que l’on emporte après avoir dansé",
+    "title": "Peut-on mixer avec son corps autant qu’avec ses oreilles ?",
     "guest": "Sofia",
     "duration": "15 min",
     "image": "/episodes/sofia98.png",
@@ -282,7 +282,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 97,
     "slug": "97-mab-ish",
-    "title": "Faire danser la société",
+    "title": "Comment la danse peut faire évoluer la société",
     "guest": "Mab’ish",
     "duration": "13 min",
     "image": "/episodes/mabish97.png",
@@ -293,7 +293,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 96,
     "slug": "96-romain-mutant",
-    "title": "Gérer l’énergie, le risque et la longévité sur la tournée de Soprano",
+    "title": "Que se passe-t-il quand on se blesse en pleine tournée ?",
     "guest": "Romain Mutant",
     "duration": "17 min",
     "image": "/episodes/romainmutant96.png",
@@ -304,7 +304,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 95,
     "slug": "95-kapela",
-    "title": "Ce que les DJs oublient mais que les danseurs savent",
+    "title": "Les danseurs entendent-ils la musique autrement ?",
     "guest": "Kapela",
     "duration": "19 min",
     "image": "/episodes/kapela95.png",
@@ -315,7 +315,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 94,
     "slug": "94-krees-de-almeida",
-    "title": "Ce qu’on ne t’apprend pas quand tu veux devenir chorégraphe : Soprano, enjeux, humanité",
+    "title": "Ce qu’on ne t’apprend pas quand tu veux devenir chorégraphe pour Soprano",
     "guest": "Krees De Almeida",
     "duration": "20 min",
     "image": "/episodes/kreesdealmeida94.png",
@@ -326,7 +326,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 93,
     "slug": "93-nadeeya",
-    "title": "Guérir le deuil par le mouvement",
+    "title": "Comment la danse aide à traverser un deuil",
     "guest": "Nadéeya",
     "duration": "16 min",
     "image": "/episodes/nadeeya93.png",
@@ -337,7 +337,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 92,
     "slug": "92-les-an-ge-twins",
-    "title": "La force d’être jumelles, sur scène comme dans la vie",
+    "title": "Danser avec sa sœur jumelle : les défis et les forces d’un duo",
     "guest": "Les An&Ge Twins",
     "duration": "16m",
     "image": "/episodes/anandgetwins92.png",
@@ -348,7 +348,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 91,
     "slug": "91-dexter",
-    "title": "Danser pour dire : Le krump pour rester debout",
+    "title": "Comment le krump peut-il raconter nos racines ?",
     "guest": "Dexter",
     "duration": "17 min",
     "image": "/episodes/dexter91.png",
@@ -359,7 +359,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 90,
     "slug": "90-lydie-la-peste",
-    "title": "Occuper la scène autrement en étant maîtresse de cérémonie",
+    "title": "À quoi sert une MC dans un battle de danse ?",
     "guest": "Lÿdie La PëstE",
     "duration": "5 min",
     "image": "/episodes/lydielapeste90.png",
@@ -370,7 +370,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 89,
     "slug": "89-soprano",
-    "title": "C'est l'humain qui prime",
+    "title": "Comment Soprano choisit-il les artistes qui l’entourent ?",
     "guest": "Soprano",
     "duration": "18 min",
     "image": "/episodes/soprano89.png",
@@ -381,7 +381,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 88,
     "slug": "88-sam-yudat",
-    "title": "The Mobb is Calling : un échange avec le grand gagnant du battle",
+    "title": "Que ressent-on juste après avoir gagné un grand battle",
     "guest": "Sam Yudat",
     "duration": "5 min",
     "image": "/episodes/samyudat88.png.png",
@@ -392,7 +392,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 87,
     "slug": "87-harmony-dibongue-levy",
-    "title": "Ce qu’on ne dit pas assez dans la danse",
+    "title": "Ce qu'on ne dit pas assez sur le métier de danseur",
     "guest": "Harmony Dibongue-Levy",
     "duration": "1 h 02",
     "image": "/episodes/harmonydibonguelevy87.png",
@@ -403,7 +403,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 86,
     "slug": "86-jessica-pantieri",
-    "title": "Le clubbing : un miroir de la société",
+    "title": "Le clubbing a-t-il changé parce que notre société a changé ?",
     "guest": "Jessica Pantieri",
     "duration": "1 h 05",
     "image": "/episodes/jessicapantieri86.png",
@@ -414,7 +414,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 85,
     "slug": "85-laura-masci",
-    "title": "Être artiste : Dysmorphophobie, échec et snobisme",
+    "title": "Comment rester artiste quand personne ne nous choisit ?",
     "guest": "Laura Masci",
     "duration": "1 h 04",
     "image": "/episodes/lauramasci85.png",
@@ -425,7 +425,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 84,
     "slug": "84-ashley-beckett",
-    "title": "L’art guérit : maladie, résilience, vulnérabilité",
+    "title": "Comment la danse aide à traverser la maladie : vulnérabilité et résilience",
     "guest": "Ashley Beckett",
     "duration": "59 min",
     "image": "/episodes/ashleybeckette84.png",
@@ -436,7 +436,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 83,
     "slug": "83-laurine-gros",
-    "title": "Danser, enseigner, entreprendre : cultiver la présence et créer du sens",
+    "title": "Comment concilier danse, enseignement et entrepreneuriat ?",
     "guest": "Laurine Gros",
     "duration": "1 h 09",
     "image": "/episodes/laurinegros83.png",
@@ -447,7 +447,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 82,
     "slug": "82-taylor-chateau",
-    "title": "Construire sa vision de la polyvalence : Danse électro, mode, musique",
+    "title": "Faut-il savoir tout faire pour vivre de la danse ?",
     "guest": "Taylor Chateau",
     "duration": "1 h 03",
     "image": "/episodes/taylorchateau82.png",
@@ -469,7 +469,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 80,
     "slug": "80-charlotte-sumian-hubener",
-    "title": "Pourquoi la pluridisciplinarité fait la différence",
+    "title": "Pourquoi les danseurs polyvalents trouvent-ils plus d’opportunités ?",
     "guest": "Charlotte Sumian-Hubener",
     "duration": "1 h 03",
     "image": "/episodes/charlottesumianhubener80.png",
@@ -480,7 +480,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 79,
     "slug": "79-samuela-berdah-raphaelle-petitperrin",
-    "title": "Comprendre les conventions collectives dans la danse",
+    "title": "Les conventions collectives dans la danse : ce qu'il faut savoir",
     "guest": "Samuela Berdah & Raphaëlle Petitperrin",
     "duration": "31 min",
     "image": "/episodes/samuelaetraphaelle79.png",
@@ -491,7 +491,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 78,
     "slug": "78-nicolas-huchard",
-    "title": "Se démarquer en casting et se libérer du regard des autres",
+    "title": "Comment faire la différence en casting quand tout le monde sait danser ?",
     "guest": "Nicolas Huchard",
     "duration": "1 h 05",
     "image": "/episodes/nicolashuchard78.png",
@@ -535,7 +535,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 74,
     "slug": "74-orianne-vilmer",
-    "title": "Danse, innovation et entrepreneuriat : un parcours visionnaire",
+    "title": "Faut-il devenir entrepreneur.se pour vivre de ses projets dans la danse ?",
     "guest": "Orianne Vilmer",
     "duration": "1 h 13",
     "image": "/episodes/oriannevilmer74.png",
@@ -546,7 +546,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 73,
     "slug": "73-chloe-lopes-gomes",
-    "title": "Dénoncer et casser les codes de la danse classique",
+    "title": "Pourquoi la danse classique doit-elle encore changer ? Discriminations, représentation, abus de pouvoir",
     "guest": "Chloé Lopes Gomes",
     "duration": "1 h 03",
     "image": "/episodes/chloelopesgomes73.png",
@@ -557,7 +557,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 72,
     "slug": "72-ines-vandamme",
-    "title": "De DALS à l’EuroMillions : comment Inès a choisi, osé et réussi ?",
+    "title": "Refuser DALS, devenir animatrice télé : comment oser faire ses propres choix ?",
     "guest": "Inès Vandamme",
     "duration": "1 h 17",
     "image": "/episodes/inesvandamme72.png",
@@ -568,7 +568,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 71,
     "slug": "71-yaman-okur",
-    "title": "Comment un séisme de magnitude 7,5 a changé sa danse ?",
+    "title": "Comment un séisme de magnitude 7,5 a changé sa danse",
     "guest": "Yaman Okur",
     "duration": "1 h 20",
     "image": "/episodes/yamanokur71.png",
@@ -579,7 +579,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 70,
     "slug": "70-jeremie-parent",
-    "title": "Créateur dans l’âme : “Call Out - The Game”, “Qui veut être mon associé ?” et création de contenu",
+    "title": "Comment créer ses propres opportunités dans la danse ?",
     "guest": "Jérémie Parent",
     "duration": "1 h 15",
     "image": "/episodes/jeremieparent70.png",
@@ -590,7 +590,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 69,
     "slug": "69-tianee-achille",
-    "title": "Devenir danseuse pro sans formation : Entre rave party, battle et voguing",
+    "title": "Comment devenir danseuse professionnelle sans formation ?",
     "guest": "Tianée Achille",
     "duration": "53 min",
     "image": "/episodes/tianeeachille69.png",
@@ -601,7 +601,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 68,
     "slug": "68-emilie-capel",
-    "title": "Vie multiple : Madonna, chorégraphe, broderie et surtout l’envie",
+    "title": "Comment est-elle devenue danseuse pour Madonna ?",
     "guest": "Émilie Capel",
     "duration": "1 h 14",
     "image": "/episodes/emiliecapel68.png",
@@ -612,7 +612,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 67,
     "slug": "67-samuela-berdah-raphaelle-petitperrin",
-    "title": "Ne signez plus jamais un contrat sans avoir écouté cet épisode",
+    "title": "Droit à l’image : ce que tout.e danseur.se devrait savoir avant de signer",
     "guest": "Samuela Berdah & Raphaëlle Petitperrin",
     "duration": "25 min",
     "image": "/episodes/samuelaetraphaelle67.png",
@@ -623,7 +623,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 66,
     "slug": "66-pierre-antoine-brunet",
-    "title": "Danser vrai : La scène comme terrain de liberté",
+    "title": "Comment être authentique sur scène grâce à la danse",
     "guest": "Pierre-Antoine Brunet",
     "duration": "1 h 04",
     "image": "/episodes/pierreantoinebrunet66.png",
@@ -634,7 +634,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 65,
     "slug": "65-samuela-berdah-raphaelle-petitperrin",
-    "title": "Inspiration vs plagiat : Comment protéger ses oeuvres ?",
+    "title": "Plagiat en danse : comment protéger ses créations",
     "guest": "Samuela Berdah & Raphaëlle Petitperrin",
     "duration": "29 min",
     "image": "/episodes/samuelaetraphaelle65.png",
@@ -645,7 +645,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 64,
     "slug": "64-ruben-molina",
-    "title": " Le flamenco pour créer, transmettre et résister",
+    "title": "Pourquoi le flamenco est bien plus qu'une danse ?",
     "guest": "Rubén Molina",
     "duration": "52 min",
     "image": "/episodes/rubenmolina64.png",
@@ -667,7 +667,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 62,
     "slug": "62-joel-luzolo",
-    "title": "Débuter à 17 ans, santé mentale et DALS",
+    "title": "Commencer la danse à 17 ans, est-ce trop tard ? De ses débuts à DALS",
     "guest": "Joël Luzolo",
     "duration": "1 h 24",
     "image": "/episodes/joelluzolo62.png",
@@ -678,7 +678,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 61,
     "slug": "61-laura-nala",
-    "title": "Danser avec le coeur : Des battles aux Jeux Olympiques",
+    "title": "Des battles aux JO : comment construire une carrière sans perdre son identité ?",
     "guest": "Laura Nala",
     "duration": "1 h 19",
     "image": "/episodes/lauranala61.png",
@@ -689,7 +689,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 60,
     "slug": "60-fleur-copin",
-    "title": "Se réinventer pour toujours briller : Danse, maternité, musique",
+    "title": "Du Crazy Horse à la musique : comment se réinventer après une carrière de danseuse ?",
     "guest": "Fleur Copin",
     "duration": "1 h 14",
     "image": "/episodes/fleurcopin60.png",
@@ -700,7 +700,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 59,
     "slug": "59-hajiba-fahmy",
-    "title": "Monter dans tous les trains : Beyoncé, maternité, ambition et polyvalence",
+    "title": "Danseuse pour Beyoncé : comment Hajiba a construit une carrière sans rentrer dans les cases ?",
     "guest": "Hajiba Fahmy",
     "duration": "1 h 12",
     "image": "/episodes/hajibafahmy59.png",
@@ -711,7 +711,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 58,
     "slug": "58-emanuelle-soum",
-    "title": "Libérer le corps pour s’émanciper : voguing, féminité, Beyond et MaisonM",
+    "title": "Comment la danse peut-elle nous aider à nous réapproprier notre corps ?",
     "guest": "Emanuelle Soum",
     "duration": "1 h 15",
     "image": "/episodes/emanuellesoum58.png",
@@ -722,7 +722,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 57,
     "slug": "57-selasi-dogbatse",
-    "title": "Comment vivre de la danse à Los Angeles et danser pour les plus grandes stars ?",
+    "title": "Comment vivre de la danse à Los Angeles ?",
     "guest": "Selasi Dogbatse",
     "duration": "58 min",
     "image": "/episodes/selasidogbatse57.png",
@@ -733,7 +733,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 56,
     "slug": "56-melodie-molinaro",
-    "title": "Comment agir et prévenir les violences, le harcèlement s*xistes et s*xuelles dans la danse ?",
+    "title": "Pourquoi est-il si difficile de dénoncer les VHMSS dans la danse ?",
     "guest": "Mélodie Molinaro",
     "duration": "1 h 11",
     "image": "/episodes/melodiemolinaro56.png",
@@ -744,7 +744,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 55,
     "slug": "55-lisa-dulin",
-    "title": "Ce que les chorégraphes ne savent pas mais que l’IADU leur apprend",
+    "title": "Comment passer de chorégraphe à porteur.se de projet ?",
     "guest": "Lisa Dulin",
     "duration": "1 h 10",
     "image": "/episodes/lisaduliiadu55.png",
@@ -755,7 +755,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 54,
     "slug": "54-link-le-neil",
-    "title": "Perfectionnisme et légitimité : Oser être médiocre pour libérer sa créativité",
+    "title": "Le perfectionnisme nous empêche-t-il de créer librement ?",
     "guest": "Link Le Neil",
     "duration": "1 h 06",
     "image": "/episodes/linkleneil54.png",
@@ -766,7 +766,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 53,
     "slug": "53-sabrina-lonis",
-    "title": "Croire en soi pour construire ses rêves et danser sans limites",
+    "title": "Réussir dans la danse : le mental est-il plus important que le talent ?",
     "guest": "Sabrina Lonis",
     "duration": "1 h 19",
     "image": "/episodes/sabrinalonis53.png",
@@ -777,7 +777,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 52,
     "slug": "52-mark-weld",
-    "title": "Cultiver la différence, sublimer l’art",
+    "title": "Comment ne plus vivre le refus comme un échec ?",
     "guest": "Mark Weld",
     "duration": "1 h 21",
     "image": "/episodes/markweld52.png",
@@ -788,7 +788,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 51,
     "slug": "51-arnaud-deprez",
-    "title": "Éducation, création, transmission : la danse comme relais social",
+    "title": "Pourquoi faut-il davantage de danse à l’école ?",
     "guest": "Arnaud Deprez",
     "duration": "1 h 53",
     "image": "/episodes/arnauddeprez51.png",
@@ -799,7 +799,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 50,
     "slug": "50-zoe-laib",
-    "title": "Bousculer les codes avec gentillesse, s’affranchir des cases avec polyvalence",
+    "title": "Faut-il choisir un seul métier quand on est artiste ?",
     "guest": "Zoé Laïb",
     "duration": "1 h 21",
     "image": "/episodes/zoelaib50.png",
@@ -810,7 +810,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 49,
     "slug": "49-krees-de-almeida",
-    "title": "Construire une carrière sans limites : la puissance de la polyvalence",
+    "title": "Faut-il savoir faire autre chose que danser pour durer ?",
     "guest": "Krees De Almeida",
     "duration": "1 h 43",
     "image": "/episodes/kreesdealmeida49.png",
@@ -821,7 +821,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 48,
     "slug": "48-tamara-fernando",
-    "title": "Créer et danser pour la diversité",
+    "title": "Pourquoi la danse manque-t-elle encore de diversité ?",
     "guest": "Tamara Fernando",
     "duration": "1 h 10",
     "image": "/episodes/tamarafernando48.png",
@@ -832,7 +832,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 47,
     "slug": "47-benjamin-jouffret",
-    "title": "Danser pour incarner : l’art de créer des personnages chez Just Dance",
+    "title": "Comment devenir danseur.se dans Just Dance ?",
     "guest": "Benjamin Jouffret",
     "duration": "1 h 12",
     "image": "/episodes/benjaminjouffret47.png",
@@ -843,7 +843,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 46,
     "slug": "46-nathalie-lucas",
-    "title": "Révéler les talents et accompagner les artistes dans leur carrière artistique",
+    "title": "Comment arrêter de chercher la validation des autres quand on est danseur.se ?",
     "guest": "Nathalie Lucas",
     "duration": "1 h 29",
     "image": "/episodes/nathalielucas46.png",
@@ -854,7 +854,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 45,
     "slug": "45-julien-verderi",
-    "title": "Trouver sa voie et forger son destin pour oser et briller",
+    "title": "Faut-il rentrer dans les cases pour réussir dans la danse ?",
     "guest": "Julien Verderi",
     "duration": "1 h 09",
     "image": "/episodes/julienverderi45.png",
@@ -865,7 +865,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 44,
     "slug": "44-danc-r",
-    "title": "L'intelligence artificielle et le progrès au service de la danse",
+    "title": "L’intelligence artificielle peut-elle analyser notre danse ?",
     "guest": "Danc.r",
     "duration": "1 h 25",
     "image": "/episodes/dancr44.png",
@@ -876,7 +876,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 43,
     "slug": "43-loriane-cateloy-rose",
-    "title": "Entreprendre et apprendre, enseigner et inspirer",
+    "title": "Être talentueux.se dans la danse ne suffit pas si personne ne le sait",
     "guest": "Loriane Cateloy-Rose",
     "duration": "1 h 14",
     "image": "/episodes/lorianecateloyrose43.png",
@@ -887,7 +887,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 42,
     "slug": "42-gael-grzeskowiak",
-    "title": "Créer du lien en dansant, transmettre en partageant",
+    "title": "Comment durer dans un métier où « il y a beaucoup d’appelés, mais peu d’élus » ?",
     "guest": "Gaël Grzeskowiak",
     "duration": "1 h 15",
     "image": "/episodes/gaelgrzeskowiak42.png",
@@ -898,7 +898,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 41,
     "slug": "41-matteo-gheza",
-    "title": "Danse, mode et authenticité : Créer pour raconter",
+    "title": "Comment trouver son identité artistique dans la danse sans se perdre ?",
     "guest": "Matteo Gheza ",
     "duration": "54 min",
     "image": "/episodes/matteogheza41.png",
@@ -909,7 +909,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 40,
     "slug": "40-laetitia-moreau",
-    "title": "Entre passion, persévérance et réalité du métier",
+    "title": "Est-il trop tard pour devenir danseur.se professionnel.le ?",
     "guest": "Laëtitia Moreau",
     "duration": "1 h 10",
     "image": "/episodes/laetitiamoreau40.png",
@@ -920,7 +920,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 39,
     "slug": "39-rachel-vanier",
-    "title": "Révolutionner la danse à Paris : des start-up au Dancefloor",
+    "title": "Comment créer un studio de danse à Paris ? Business plan, financement, recrutement",
     "guest": "Rachel Vanier",
     "duration": "1 h 02",
     "image": "/episodes/rachelvanier39.png",
@@ -931,7 +931,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 38,
     "slug": "38-yanis-benzineb",
-    "title": "Pressions, perceptions et TCA : Réconcilier le corps et l’âme",
+    "title": "Comment aimer son corps quand la danse nous pousse à le juger",
     "guest": "Yanis Benzineb",
     "duration": "1 h 02",
     "image": "/episodes/yanisbenzineb38.png",
@@ -1162,7 +1162,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 17,
     "slug": "17-yohann-ancele",
-    "title": "Comment se démarquer de la concurrence ?",
+    "title": "Comment se démarquer de la concurrence",
     "guest": "Yohann Ancele",
     "duration": "49 min",
     "image": "/episodes/yohannancele17.png",
@@ -1173,7 +1173,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 16,
     "slug": "16-justine-gerard",
-    "title": "Comment le Pilates peut vous aider à surmonter vos blessures ?",
+    "title": "Comment le Pilates peut vous aider à surmonter vos blessures",
     "guest": "Justine Gérard",
     "duration": "27 min",
     "image": "/episodes/justinegerard16.png",
@@ -1184,7 +1184,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 15,
     "slug": "15-marie-jamots",
-    "title": "Comment monter son entreprise danse et bien-être ?",
+    "title": "Comment monter son entreprise danse et bien-être",
     "guest": "Marie Jamots ",
     "duration": "44 min",
     "image": "/episodes/mariejamots15.png",
@@ -1195,7 +1195,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 14,
     "slug": "14-kriss-logan",
-    "title": "Comment se démarquer avec des photos professionnelles ?",
+    "title": "Comment se démarquer avec des photos professionnelles",
     "guest": "Kriss Logan",
     "duration": "1 h 26",
     "image": "/episodes/krisslogan14.png",
@@ -1217,7 +1217,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 12,
     "slug": "12-rabah-alioune",
-    "title": "Comment réussir son casting ?",
+    "title": "Comment réussir son casting",
     "guest": "Rabah Aliouane",
     "duration": "50 min",
     "image": "/episodes/rabahaliouane12.png",
@@ -1239,7 +1239,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 10,
     "slug": "10-regis-truchy",
-    "title": "Comment créer un seul en scène ?",
+    "title": "Comment créer un seul en scène",
     "guest": "Régis Truchy",
     "duration": "27 min",
     "image": "/episodes/registruchy10.png",
@@ -1250,7 +1250,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 9,
     "slug": "9-emilie-heinrich",
-    "title": "À quoi sert un.e régisseur.se ?",
+    "title": "À quoi sert un.e régisseur.se",
     "guest": "Émilie Heinrich",
     "duration": "25 min",
     "image": "/episodes/emilieheinrich9.png",
@@ -1283,7 +1283,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 6,
     "slug": "6-nelson-ewande",
-    "title": "Comment exceller en battle ?",
+    "title": "Comment gagner un battle de danse ?",
     "guest": "Nelson Ewandé",
     "duration": "24 min",
     "image": "/episodes/nelsonewande6.png",
@@ -1305,7 +1305,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 4,
     "slug": "4-legendary-yanou",
-    "title": "À la découverte du Old Way, style fondateur du voguing",
+    "title": "Voguing : d’où vient le Old Way et comment comprendre ses codes ?",
     "guest": "Legendary Yanou",
     "duration": "54 min",
     "image": "/episodes/legendaryyanou4.png",
@@ -1316,7 +1316,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 3,
     "slug": "3-aurelie-serine",
-    "title": "La naturopathie au service de la danse",
+    "title": "La naturopathie peut-elle aider les danseurs.ses à mieux récupérer ?",
     "guest": "Aurélie Sériné",
     "duration": "40 min",
     "image": "/episodes/aurelieserine3.png",
@@ -1338,7 +1338,7 @@ export const episodesList: EpisodeListItem[] = [
   {
     "number": 1,
     "slug": "1-mathilde-champion",
-    "title": "Ancienne danseuse : Ses conseils de community manager",
+    "title": "Comment utiliser les réseaux sociaux pour trouver des opportunités dans la danse ?",
     "guest": "Mathilde Champion",
     "duration": "16 min",
     "image": "/episodes/mathildechampion1.png",

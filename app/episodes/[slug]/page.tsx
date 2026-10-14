@@ -68,6 +68,20 @@ function getEpisodeBySlug(slug: string) {
 }
 
 /**
+ * Le grand guillemet du composant est l'unique signe d'ouverture visible.
+ * On retire seulement les signes typographiques placés aux extrémités ; les
+ * guillemets et apostrophes présents à l'intérieur de la citation sont préservés.
+ */
+function normalizeDisplayQuote(quote?: string | null): string {
+  if (!quote) return "";
+  return quote
+    .trim()
+    .replace(/^[\s"“”„‟«»]+/u, "")
+    .replace(/[\s"“”„‟«»]+(?=[.!?…]*$)/u, "")
+    .trim();
+}
+
+/**
  * Convertit n'importe quelle chaîne de date en format français JJ.MM.AAAA.
  *
  * Accepte :
@@ -394,6 +408,7 @@ export default async function EpisodePage({ params }: PageProps) {
     en:      episodeTranslationsEN[episode.number],
   }, locale);
   const { title: displayTitle, quote: displayQuote, description: displayDesc, chapters: displayChapters } = loc;
+  const displayQuoteText = normalizeDisplayQuote(displayQuote);
 
   const similarEpisodes = await getRecommendedEpisodes(episode.number);
   const episodeUrl = new URL(`/episodes/${episode.slug}`, SITE_URL).toString();
@@ -536,10 +551,10 @@ export default async function EpisodePage({ params }: PageProps) {
 
             {/* ── [col1 row1] Citation ── */}
             <div className="ep-col-quote" data-ep-reveal>
-              {displayQuote ? (
+              {displayQuoteText ? (
                 <blockquote className="ep-big-quote">
-                  <span className="ep-big-quote-mark" aria-hidden="true">"</span>
-                  {displayQuote}
+                  <span className="ep-big-quote-mark" aria-hidden="true">&ldquo;</span>
+                  <span className="ep-big-quote-text">{displayQuoteText}</span>
                 </blockquote>
               ) : null}
             </div>
@@ -716,7 +731,8 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
 
   // Localisation centralisée (EN avec fallback FR)
   const loc = getLocalizedEpisode(unified, locale);
-  const { title: displayTitle, quote: displayQuote, description: displayDesc } = loc;
+  const { title: displayTitle, quote: displayQuote, description: displayDesc, chapters: displayChapters } = loc;
+  const displayQuoteText = normalizeDisplayQuote(displayQuote);
 
   const youtubeId    = unified.youtubeId ?? null;
   const isShort      = unified.isYoutubeShort ?? false;
@@ -867,10 +883,10 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
 
             {/* Citation */}
             <div className="ep-col-quote" data-ep-reveal>
-              {displayQuote ? (
+              {displayQuoteText ? (
                 <blockquote className="ep-big-quote">
                   <span className="ep-big-quote-mark" aria-hidden="true">&ldquo;</span>
-                  {displayQuote}
+                  <span className="ep-big-quote-text">{displayQuoteText}</span>
                 </blockquote>
               ) : null}
             </div>
@@ -915,6 +931,20 @@ async function RssEpisodePage({ unified }: { unified: UnifiedEpisode }) {
                     );
                   })}
                 </div>
+
+                {displayChapters.length > 0 ? (
+                  <div className="ep-chapters">
+                    <h2>{t('Dans cet épisode')}</h2>
+                    <ol className="ep-chapters-list">
+                      {displayChapters.map((chapter) => (
+                        <li key={`${chapter.time}-${chapter.title}`}>
+                          <span>{chapter.time}</span>
+                          <strong>{chapter.title}</strong>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                ) : null}
 
                 {rssTagKeys.length > 0 ? (
                   <div className="ep-topics-block">

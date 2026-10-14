@@ -44,14 +44,16 @@ export default async function StylesDeDansePage() {
   // Source de vérité : même données que la page Écouter (legacy + RSS Ausha)
   const episodes = await getEpisodes()
 
-  // Carte glassmorphism — dernier épisode (sans association forcée à un style)
+  // Carte glassmorphism — dernier épisode (sans association forcée à un style).
+  // Utiliser directement l'image de carte résolue par getEpisodes(), comme sur
+  // l'accueil, et non la variante panoramique réservée aux headers.
   const latestEpisodeCard: PodcastEpisodeCard | null = episodes[0]
     ? {
         number: episodes[0].number,
         guest:  episodes[0].guest,
         title:  episodes[0].title,
         slug:   episodes[0].slug,
-        image:  episodeExtras[episodes[0].number]?.headerImage ?? episodes[0].image ?? '',
+        image:  episodes[0].image ?? '',
       }
     : null
 
