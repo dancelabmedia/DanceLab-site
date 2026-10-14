@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     notion: Boolean(notionToken()),
     journal: Boolean(logDatabaseId()),
     cronSecret: true,
-    rechercheWeb: Boolean(process.env.ANTHROPIC_API_KEY),
+    rechercheWeb: Boolean(process.env.AI_GATEWAY_API_KEY || process.env.ANTHROPIC_API_KEY),
     prochaineCollecte: nextWeeklyRun(),
   })
 }

@@ -483,3 +483,20 @@ test("variantes d'une partie du titre", async () => {
   assert.ok(titlesMatch("Summerland — Benjamin Millepied / November Ultra", "SUMMERLAND | Folies Bergère", "Summerland - Avec November Ultra"))
   assert.ok(!titlesMatch("Summerland — Benjamin Millepied / November Ultra", "SUMMERLAND | Folies Bergère", "Autre artiste"))
 })
+
+test("clé Vercel AI Gateway ou Anthropic", async () => {
+  const { anthropicEndpoint } = await import("../lib/anthropic-endpoint")
+  const saved = { a: process.env.ANTHROPIC_API_KEY, g: process.env.AI_GATEWAY_API_KEY }
+  delete process.env.AI_GATEWAY_API_KEY
+  process.env.ANTHROPIC_API_KEY = "vck_test"
+  const g = anthropicEndpoint("claude-haiku-4-5-20251001")!
+  assert.equal(g.url, "https://ai-gateway.vercel.sh/v1/messages")
+  assert.equal(g.model, "anthropic/claude-haiku-4.5")
+  assert.equal(g.headers.Authorization, "Bearer vck_test")
+  process.env.ANTHROPIC_API_KEY = "sk-ant-test"
+  const d = anthropicEndpoint("claude-haiku-4-5-20251001")!
+  assert.equal(d.url, "https://api.anthropic.com/v1/messages")
+  assert.equal(d.model, "claude-haiku-4-5-20251001")
+  if (saved.a === undefined) delete process.env.ANTHROPIC_API_KEY; else process.env.ANTHROPIC_API_KEY = saved.a
+  if (saved.g !== undefined) process.env.AI_GATEWAY_API_KEY = saved.g
+})

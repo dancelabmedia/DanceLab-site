@@ -8,6 +8,7 @@
  * Variable d'environnement requise : ANTHROPIC_API_KEY
  */
 
+import { anthropicEndpoint } from './anthropic-endpoint'
 import type { RssEpisode } from '@/lib/ausha-rss'
 import type { MagazineArticle } from '@/app/decouvrir/articles-data'
 import { regenerateArticleAssociations } from '@/lib/article-episode-associations'
@@ -100,8 +101,8 @@ Réponds UNIQUEMENT avec le JSON. Aucun texte avant ou après.`
 export async function generateArticleFromEpisode(
   episode: RssEpisode
 ): Promise<MagazineArticle> {
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) {
+  const endpoint = anthropicEndpoint('claude-haiku-4-5-20251001')
+  if (!endpoint) {
     throw new Error(
       'ANTHROPIC_API_KEY non définie. Ajoute-la dans .env.local pour activer la génération d\'articles.'
     )
@@ -111,15 +112,11 @@ export async function generateArticleFromEpisode(
   const episodeContext = buildEpisodeContext(episode)
 
   // Appel API Anthropic
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const response = await fetch(endpoint.url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
+    headers: endpoint.headers,
     body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
+      model: endpoint.model,
       max_tokens: 4096,
       system: SYSTEM_PROMPT,
       messages: [
