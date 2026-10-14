@@ -15,6 +15,10 @@
     {
       "path": "/api/cron/collecte-danse-hiver",
       "schedule": "0 4 * * 1"
+    },
+    {
+      "path": "/api/cron/images-danse",
+      "schedule": "30 5 * * *"
     }
   ]
 }

@@ -18,7 +18,7 @@ import { fetchWithRetry, sleep } from "./http"
 import type { CollectedEvent, PublicationDecision, RunReport, RunStatus } from "./types"
 import { PUBLICATION } from "./types"
 import { dayOf, seasonOf } from "./rules"
-import { IMAGE_RIGHTS, IMAGE_STATUS, type FoundImage } from "./images"
+import { IMAGE_RIGHTS, IMAGE_STATUS, type FoundImage, type ScoredImage } from "./images"
 import { VENUE_SITES } from "./venues"
 
 const NOTION_VERSION = "2025-09-03"
@@ -66,6 +66,14 @@ export const F = {
   imageStatus: "Statut image",
   imageRights: "Droits image",
   imageChecked: "Image vérifiée le",
+  imageScore: "Score image",
+  imageFit: "Format image",
+  imageAttempts: "Tentatives image",
+  imageNext: "Prochaine recherche image",
+  imageHistory: "Historique image",
+  originalTitle: "Titre d'origine",
+  company: "Compagnie / Chorégraphe",
+  lieu: "Lieu",
 } as const
 
 export const ORIGIN_AUTO = "🆕 Nouvel ajout (veille auto)"
@@ -216,11 +224,19 @@ export async function ensureAgendaSchema(client: NotionClient, dataSourceId: str
           { name: IMAGE_STATUS.openData, color: "green" },
           { name: IMAGE_STATUS.official, color: "blue" },
           { name: IMAGE_STATUS.manual, color: "purple" },
+          { name: IMAGE_STATUS.review, color: "yellow" },
+          { name: IMAGE_STATUS.broken, color: "orange" },
           { name: IMAGE_STATUS.refused, color: "red" },
           { name: IMAGE_STATUS.none, color: "gray" },
         ],
       },
     },
+    [F.imageScore]: { number: {} },
+    [F.imageFit]: { select: { options: [{ name: "Photo", color: "default" }, { name: "Logo", color: "gray" }] } },
+    [F.imageAttempts]: { number: {} },
+    [F.imageNext]: { date: {} },
+    [F.imageHistory]: { rich_text: {} },
+    [F.originalTitle]: { rich_text: {} },
     [F.imageRights]: { rich_text: {} },
     [F.imageChecked]: { date: {} },
   }
@@ -250,6 +266,14 @@ export type AgendaPage = {
   imageCredit: string
   /** Colonne « Lieu » (sélection). */
   venue: string
+  city: string
+  company: string
+  ticketUrl: string
+  officialUrl: string
+  imageAttempts: number
+  imageNext: string | null
+  imageHistory: string
+  imageScore: number | null
   /** Raison notée quand aucun visuel n'a été trouvé. */
   imageRightsNote: string
   imageStatus: string
@@ -282,6 +306,14 @@ export async function listAgendaPages(client: NotionClient, dataSourceId: string
         imageSource: readText(props[F.imageSource]),
         imageCredit: readText(props[F.imageCredit]),
         venue: readText(props["Lieu"]),
+        city: readText(props[F.city]),
+        company: readText(props[F.company]),
+        ticketUrl: readText(props[F.ticket]),
+        officialUrl: readText(props[F.officialUrl]),
+        imageAttempts: typeof props[F.imageAttempts]?.number === "number" ? props[F.imageAttempts].number : 0,
+        imageNext: props[F.imageNext]?.date?.start ?? null,
+        imageHistory: readText(props[F.imageHistory]),
+        imageScore: typeof props[F.imageScore]?.number === "number" ? props[F.imageScore].number : null,
         imageRightsNote: readText(props[F.imageRights]),
         imageStatus: readText(props[F.imageStatus]),
         imageChecked: props[F.imageChecked]?.date?.start ?? null,
@@ -345,8 +377,16 @@ export function sourceImageProperties(event: CollectedEvent, today: string): Rec
   }
 }
 
-export function officialImageProperties(image: FoundImage, today: string): Record<string, unknown> {
+export function officialImageProperties(image: FoundImage | ScoredImage, today: string): Record<string, unknown> {
+  const scored = "score" in image ? image : null
   return {
+    ...(scored
+      ? {
+          [F.imageScore]: num(scored.score.total),
+          [F.imageFit]: select(scored.fit === "logo" ? "Logo" : "Photo"),
+          [F.imageNext]: { date: null },
+        }
+      : {}),
     [F.imageUrl]: url(image.url),
     [F.imageSource]: url(image.sourceUrl),
     [F.imageCredit]: text(image.credit),
@@ -368,6 +408,27 @@ export function sameEventImageProperties(twin: AgendaPage, today: string): Recor
     [F.imageRights]: text(`Repris de la fiche « ${twin.title} » (même spectacle)`),
     [F.imageChecked]: { date: { start: today } },
   }
+}
+
+/** Visuel trouvé mais pas assez sûr : enregistré pour mémoire, non affiché. */
+export function reviewImageProperties(image: ScoredImage, reason: string, today: string): Record<string, unknown> {
+  return {
+    [F.imageUrl]: url(image.url),
+    [F.imageSource]: url(image.sourceUrl),
+    [F.imageCredit]: text(image.credit),
+    [F.imageAlt]: text(image.alt),
+    [F.imageStatus]: select(IMAGE_STATUS.review),
+    [F.imageScore]: num(image.score.total),
+    [F.imageFit]: select(image.fit === "logo" ? "Logo" : "Photo"),
+    [F.imageRights]: text(`${reason} — ${Object.entries(image.score.details).map(([k, v]) => `${k} ${v}`).join(", ")}`),
+    [F.imageChecked]: { date: { start: today } },
+  }
+}
+
+/** Historique des tentatives (les plus récentes en premier, 1 800 caractères max). */
+export function appendHistory(previous: string, line: string): Record<string, unknown> {
+  const next = [line, ...previous.split("\n").filter(Boolean)].join("\n").slice(0, 1800)
+  return { [F.imageHistory]: text(next) }
 }
 
 export function noImageProperties(reason: string, today: string): Record<string, unknown> {
@@ -432,6 +493,12 @@ export const L = {
   pendingTotal: "En attente (total)",
   imagesAdded: "Images ajoutées",
   imagesMissing: "Sans image",
+  imagesToReview: "Images à vérifier",
+  brokenImages: "Images cassées retirées",
+  linksCorrected: "Liens corrigés",
+  titlesCorrected: "Titres corrigés",
+  unconfirmed: "Non confirmées",
+  webSearches: "Recherches web",
   errors: "Erreurs",
 } as const
 
@@ -475,7 +542,7 @@ function runProperties(report: RunReport) {
     timeStyle: "short",
   }).format(new Date(report.startedAt))
   return {
-    [L.title]: { title: [{ type: "text", text: { content: `Collecte du ${label}${report.dryRun ? " (à blanc)" : ""}` } }] },
+    [L.title]: { title: [{ type: "text", text: { content: `${report.counters.sourcesConsulted === 0 && report.counters.received === 0 ? "Images" : "Collecte"} du ${label}${report.dryRun ? " (à blanc)" : ""}` } }] },
     [L.started]: { date: { start: report.startedAt } },
     [L.finished]: { date: report.finishedAt ? { start: report.finishedAt } : null },
     [L.trigger]: select(report.trigger),
@@ -493,6 +560,12 @@ function runProperties(report: RunReport) {
     [L.pendingTotal]: num(c.pendingTotal),
     [L.imagesAdded]: num(c.imagesAdded),
     [L.imagesMissing]: num(c.imagesMissing),
+    [L.imagesToReview]: num(c.imagesToReview),
+    [L.brokenImages]: num(c.brokenImages),
+    [L.linksCorrected]: num(c.linksCorrected),
+    [L.titlesCorrected]: num(c.titlesCorrected),
+    [L.unconfirmed]: num(c.unconfirmed),
+    [L.webSearches]: num(c.webSearches),
     [L.errors]: text(report.errors.join(" · ")),
   }
 }
@@ -540,6 +613,12 @@ export async function listRuns(client: NotionClient, logDsId: string, limit = 20
         pendingTotal: n(L.pendingTotal),
         imagesAdded: n(L.imagesAdded),
         imagesMissing: n(L.imagesMissing),
+        imagesToReview: n(L.imagesToReview),
+        brokenImages: n(L.brokenImages),
+        linksCorrected: n(L.linksCorrected),
+        titlesCorrected: n(L.titlesCorrected),
+        unconfirmed: n(L.unconfirmed),
+        webSearches: n(L.webSearches),
       },
       errors: readText(pr[L.errors]),
     }

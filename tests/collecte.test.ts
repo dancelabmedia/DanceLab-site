@@ -67,6 +67,14 @@ function page(overrides: Partial<AgendaPage> = {}): AgendaPage {
     imageSource: '',
     imageCredit: '',
     venue: '',
+    city: '',
+    company: '',
+    ticketUrl: '',
+    officialUrl: '',
+    imageAttempts: 0,
+    imageNext: null,
+    imageHistory: '',
+    imageScore: null,
     imageRightsNote: '',
     imageStatus: 'Officielle (open data Ville de Paris)',
     imageChecked: null,
@@ -380,4 +388,52 @@ test('correspondance open data : même lieu, ou titre quasi identique', () => {
   assert.equal(matchesOpenDataEvent({ title: "Le Fantôme de l'Opéra (création française originale)", startDate: '2026-11-03', venue: 'À confirmer' }, rec('Le fantôme de Canterville, spectacle enfants', 'Théâtre X'), known), false)
   assert.equal(matchesOpenDataEvent({ title: 'Casse-Noisette — Ballet Opéra de Paris', startDate: '2026-12-22', venue: 'Opéra Bastille' }, rec('Casse-noisette', 'Théâtre Le 13e Art', '2026-12-03'), known), false)
   assert.equal(matchesOpenDataEvent({ title: 'Lac des Cygnes (ballet en tournée)', startDate: '2027-01-22', venue: 'À confirmer' }, rec('Tchaïkovsky : Le Lac des cygnes par l’Orchestre Colonne', 'Salle Gaveau', '2027-01-20'), known), false)
+})
+
+// ─── Score de confiance, file d'attente, fiches vagues ───────────────────────
+import { isOlderEditionImage, lookupContext, provenanceOf, scorePage, SCORE_PUBLISH, yearsIn } from '../lib/collecte/images'
+import { dueForImage, isVagueTitle, nextAttemptDate } from '../lib/collecte/image-pipeline'
+
+test('provenance : site officiel, billetterie, média', () => {
+  assert.equal(provenanceOf('https://www.operadeparis.fr/saison-26-27/ballet/giselle', ['operadeparis.fr']), 'officielle')
+  assert.equal(provenanceOf('https://www.fnacspectacles.com/event/x', []), 'billetterie')
+  assert.equal(provenanceOf('https://sceneweb.fr/autotherapie/', []), 'média ou agrégateur')
+  assert.equal(provenanceOf('https://www.paris.fr/evenements/x-1', []), 'open data')
+})
+
+test('score : page officielle concordante publiée, média non publié', () => {
+  const ctx = lookupContext({ title: 'Giselle — Johan Inger / Ballet de l’Opéra de Paris', startDate: '2027-06-25', venue: 'Opéra Bastille', eventLinks: ['https://www.operadeparis.fr'] })
+  const ok = scorePage(ctx, 'https://www.operadeparis.fr/saison-26-27/ballet/giselle', 'Giselle - Ballet - Saison 26/27 - Opéra national de Paris', 'Johan Inger, Opéra Bastille, juin 2027', 'https://x/giselle.jpg', false)
+  assert.ok(ok.total >= SCORE_PUBLISH && ok.rightsOk, JSON.stringify(ok))
+  const media = scorePage(ctx, 'https://sceneweb.fr/giselle-johan-inger/', 'Giselle de Johan Inger', 'Opéra Bastille 2027', 'https://x/g.jpg', false)
+  assert.equal(media.rightsOk, false)
+})
+
+test('une affiche d’une édition passée est refusée', () => {
+  assert.equal(isOlderEditionImage('https://festivaldedanse-cannes.com/thumbs/Affiche-2025-1920x960.webp', 2026, 2026), true)
+  assert.equal(isOlderEditionImage('https://site.fr/wp-content/uploads/2023/11/R-OSA.jpg', 2027, 2026), false)
+  assert.deepEqual(yearsIn('saison 2026-2027'), [2026, 2027])
+})
+
+test('fiches vagues et délais progressifs de la file d’attente', () => {
+  assert.equal(isVagueTitle("Casse-Noisette de Noël (Ballet Opéra National d'Ukraine ou similaire)"), true)
+  assert.equal(isVagueTitle('Création Préljocaj — tournée Chaillot'), true)
+  assert.equal(isVagueTitle('Giselle — Johan Inger'), false)
+  assert.equal(nextAttemptDate('2026-10-14', 1, 'Page officielle inaccessible'), '2026-10-16')
+  assert.equal(nextAttemptDate('2026-10-14', 1, 'Aucun visuel'), '2026-10-21')
+  assert.equal(nextAttemptDate('2026-10-14', 9, 'Aucun visuel'), '2026-11-11')
+})
+
+test('file d’attente : seules les fiches à venir, sans image et dont l’essai est échu', () => {
+  const base = { id: 'x', url: '', title: 'Spectacle', startDate: '2026-12-01', endDate: null, sourceId: '', publication: '', locked: false, fingerprint: '', missingSince: null, imageUrl: '', imageSource: '', imageCredit: '', venue: '', city: '', company: '', ticketUrl: '', officialUrl: '', imageAttempts: 0, imageNext: null, imageHistory: '', imageScore: null, imageRightsNote: '', imageStatus: '', imageChecked: null, eventLinks: [], hasManualImage: false }
+  assert.equal(dueForImage(base, '2026-10-14'), true)
+  assert.equal(dueForImage({ ...base, imageNext: '2026-10-20' }, '2026-10-14'), false)
+  assert.equal(dueForImage({ ...base, publication: 'Non confirmé' }, '2026-10-14'), false)
+  assert.equal(dueForImage({ ...base, startDate: '2026-09-01' }, '2026-10-14'), false)
+})
+
+test('une apostrophe dans une balise ne coupe pas sa valeur', () => {
+  const meta = readMeta(`<meta property="og:site_name" content="Festival d'Avignon"><meta content='Le "Lac"' name='description'>`)
+  assert.equal(meta['og:site_name'], "Festival d'Avignon")
+  assert.equal(meta['description'], 'Le "Lac"')
 })

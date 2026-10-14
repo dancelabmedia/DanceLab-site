@@ -71,6 +71,36 @@ et « Image vérifiée le ».
 - Sur le site : photo en plein cadre, affiche verticale affichée en entier sur
   fond flouté, retour au fond coloré si l'image ne se charge pas.
 
+## Étape « visuels » autonome
+
+Exécutée à chaque collecte du lundi et chaque jour (`/api/cron/images-danse`,
+vers 7 h 30 – 8 h 30 à Paris), par lots compatibles avec la limite de 5 minutes
+des fonctions Vercel (plan Hobby).
+
+1. Images publiées revérifiées (liens cassés retirés et recherche relancée,
+   images antérieures au score de confiance renotées).
+2. File d'attente des fiches à venir sans image (colonne « Prochaine recherche
+   image ») : fiche jumelle, open data Ville de Paris, liens de la fiche et site
+   du lieu, puis recherche web de la page officielle (API Claude,
+   `ANTHROPIC_API_KEY`, 15 recherches par jour par défaut via
+   `COLLECTE_RESOLVER_DAILY`). L'adresse proposée doit figurer dans les
+   résultats réels de la recherche, puis la page est vérifiée.
+3. Score de confiance sur 100 (œuvre 35, artiste 15, lieu 15, date ou édition
+   15, provenance 20) : publication à partir de 75 avec des droits établis
+   (open data, site officiel, billetterie) ; « À vérifier » (non affichée) entre
+   55 et 74 ou pour un média/agrégateur. Détail dans « Droits image ».
+4. Délais progressifs : 3, 7, 14 puis 28 jours (2 jours si le site est
+   inaccessible) ; disjoncteur par site après 3 échecs ; historique dans
+   « Historique image ».
+5. Saisons et festivals : visuel ou logo officiel de l'édition (format
+   « Logo » affiché en entier) ; une affiche d'une édition passée est refusée.
+6. Fiches vagues (« ou similaire », « tournée »…) : titre corrigé seulement si
+   la page officielle le confirme (ancien titre dans « Titre d'origine ») ;
+   si aucune programmation ne correspond, Publication « Non confirmé » (masquée).
+
+Contrôle de la configuration : `GET /api/cron/collecte-sante` avec
+`Authorization: Bearer <CRON_SECRET>`.
+
 ## Variables Vercel
 
 | Variable | Statut |
@@ -79,6 +109,8 @@ et « Image vérifiée le ».
 | `CRON_SECRET` | obligatoire pour le cron (déjà utilisée par check-episodes) |
 | `ADMIN_PASSWORD` ou `PREVIEW_PASSWORD` | accès à /admin/collecte |
 | `NOTION_COLLECTE_LOG_DATABASE_ID` | optionnelle (journal par défaut déjà renseigné) |
+| `ANTHROPIC_API_KEY` | recherche web des pages officielles (déjà utilisée par les articles) |
+| `COLLECTE_RESOLVER_DAILY` | optionnelle : recherches web par jour (15) |
 
 L'intégration Notion du site doit avoir accès à la base « Journal des
 collectes » (Notion → ⋯ → Connexions). Les nouvelles colonnes de l'agenda

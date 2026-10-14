@@ -594,7 +594,7 @@ function applyVenueFallback(event: AgendaEvent) {
  * les fiches en attente de validation ou archivées ne sont pas affichées.
  * Les fiches sans valeur (saisies à la main) restent publiées comme avant.
  */
-const HIDDEN_PUBLICATION = new Set(["en attente de validation", "archivee"])
+const HIDDEN_PUBLICATION = new Set(["en attente de validation", "archivee", "non confirme"])
 
 function isPublishable(page: NotionPage) {
   const publication = getText(findProperty(page.properties, ["Publication"]))
@@ -623,7 +623,10 @@ function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
   // visuel officiel trouvé par la collecte (sauf s'il a été refusé).
   const manualImage = getCoverUrl(page, findProperty(properties, ["Image", "Photo", "Affiche", "Visuel", "Cover"]))
   const imageStatus = normalizeName(getText(findProperty(properties, ["Statut image"])))
-  const collectedImage = imageStatus.startsWith("refus") ? "" : getText(findProperty(properties, ["Image URL"]))
+  // Images refusées, à vérifier (score insuffisant) ou cassées : non affichées.
+  const hiddenImage = /^(refus|a verifier|lien casse)/.test(imageStatus)
+  const collectedImage = hiddenImage ? "" : getText(findProperty(properties, ["Image URL"]))
+  const imageFit = normalizeName(getText(findProperty(properties, ["Format image"]))) === "logo" ? "logo" : undefined
   const image = manualImage || collectedImage
   const imageCredit = manualImage ? "" : getText(findProperty(properties, ["Crédit image"]))
   const imageSourceUrl = manualImage ? "" : getText(findProperty(properties, ["Source image"]))
@@ -655,6 +658,7 @@ function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
     imageCredit: imageCredit || undefined,
     imageSourceUrl: imageSourceUrl || undefined,
     imageAlt: imageAlt || undefined,
+    imageFit: manualImage ? undefined : imageFit,
     lastVerifiedAt: getText(findProperty(properties, ["Dernière vérification", "Derniere verification", "Vérifié le", "Verifie le"])) || todayIso(),
     status: normalizeStatus(getText(findProperty(properties, ["Statut", "Status", "État", "Etat"])), startDate, endDate),
   }

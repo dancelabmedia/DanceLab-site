@@ -44,6 +44,7 @@ export async function GET() {
       notion: Boolean(token),
       journal: Boolean(logDatabaseId()),
       cronSecret: Boolean(process.env.CRON_SECRET),
+      rechercheWeb: Boolean(process.env.ANTHROPIC_API_KEY),
     },
   }
   if (!token) return NextResponse.json({ ...base, runs: [], pending: [], totals: null })
@@ -69,6 +70,12 @@ export async function GET() {
       .filter((p) => p.publication === PUBLICATION.pending)
       .sort((a, b) => (a.startDate ?? "").localeCompare(b.startDate ?? ""))
       .map((p) => ({ title: p.title, url: p.url, startDate: p.startDate }))
+    const today = new Date().toISOString().slice(0, 10)
+    const visible = pages.filter(
+      (p) =>
+        ![PUBLICATION.pending, PUBLICATION.archived, PUBLICATION.unconfirmed].includes(p.publication as never) &&
+        !((p.endDate ?? p.startDate ?? "9999").slice(0, 10) < today)
+    )
     totals = {
       fiches: pages.length,
       collectees: pages.filter((p) => p.sourceId).length,
@@ -76,6 +83,11 @@ export async function GET() {
       validees: pages.filter((p) => p.publication === PUBLICATION.validated).length,
       enAttente: pending.length,
       archivees: pages.filter((p) => p.publication === PUBLICATION.archived).length,
+      nonConfirmees: pages.filter((p) => p.publication === PUBLICATION.unconfirmed).length,
+      avecImage: visible.filter((p) => p.imageUrl && !["À vérifier", "Lien cassé", "Refusée"].includes(p.imageStatus)).length,
+      imagesAVerifier: visible.filter((p) => p.imageStatus === "À vérifier").length,
+      fileImages: visible.filter((p) => !p.imageUrl || ["À vérifier", "Lien cassé"].includes(p.imageStatus)).length,
+      visibles: visible.length,
     }
   } catch (error) {
     problems.push(`Agenda inaccessible : ${error instanceof Error ? error.message : String(error)}`)

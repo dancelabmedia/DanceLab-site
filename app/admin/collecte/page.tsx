@@ -26,7 +26,7 @@ type RunSummary = {
 type Dashboard = {
   nextRun: string
   sources: string[]
-  configuration: { notion: boolean; journal: boolean; cronSecret: boolean }
+  configuration: { notion: boolean; journal: boolean; cronSecret: boolean; rechercheWeb: boolean }
   runs: RunSummary[]
   pending: Array<{ title: string; url: string; startDate: string | null }>
   totals: Record<string, number> | null
@@ -220,13 +220,14 @@ export default function AdminCollectePage() {
           </div>
         ) : null}
 
-        {cfg && (!cfg.notion || !cfg.journal || !cfg.cronSecret) ? (
+        {cfg && (!cfg.notion || !cfg.journal || !cfg.cronSecret || !cfg.rechercheWeb) ? (
           <div style={{ ...card, borderColor: "#fde68a", background: "#fffbeb" }}>
             <strong>Configuration incomplète sur Vercel</strong>
             <ul style={{ margin: "8px 0 0", paddingLeft: 18, color: muted, fontSize: 14 }}>
               {!cfg.notion && <li>NOTION_TOKEN manquant : la collecte ne peut pas écrire dans l'agenda.</li>}
               {!cfg.journal && <li>NOTION_COLLECTE_LOG_DATABASE_ID manquant : l'historique n'est pas enregistré.</li>}
               {!cfg.cronSecret && <li>CRON_SECRET manquant : la collecte du lundi ne se déclenchera pas.</li>}
+              {!cfg.rechercheWeb && <li>ANTHROPIC_API_KEY manquante : la recherche web des pages officielles est désactivée.</li>}
             </ul>
           </div>
         ) : null}
@@ -328,6 +329,10 @@ export default function AdminCollectePage() {
             <Stat label="Publiées automatiquement" value={data.totals.publieesAuto} />
             <Stat label="Validées à la main" value={data.totals.validees} />
             <Stat label="Archivées" value={data.totals.archivees} />
+            <Stat label="Non confirmées (masquées)" value={data.totals.nonConfirmees ?? 0} />
+            <Stat label="À l'affiche avec image" value={`${data.totals.avecImage ?? 0} / ${data.totals.visibles ?? 0}`} tone="#16a34a" />
+            <Stat label="Images à vérifier (masquées)" value={data.totals.imagesAVerifier ?? 0} />
+            <Stat label="Recherche d'image en cours" value={data.totals.fileImages ?? 0} tone="#d97706" />
           </section>
         ) : null}
 
