@@ -44,7 +44,7 @@ export async function GET() {
       notion: Boolean(token),
       journal: Boolean(logDatabaseId()),
       cronSecret: Boolean(process.env.CRON_SECRET),
-      rechercheWeb: Boolean(process.env.ANTHROPIC_API_KEY),
+      rechercheWeb: Boolean(process.env.AI_GATEWAY_API_KEY || process.env.ANTHROPIC_API_KEY),
     },
   }
   if (!token) return NextResponse.json({ ...base, runs: [], pending: [], totals: null })
