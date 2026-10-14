@@ -21,6 +21,10 @@ export const IMAGE_STATUS = {
   openData: "Officielle (open data Ville de Paris)",
   official: "Officielle (page de l'événement)",
   manual: "Ajoutée à la main",
+  /** Trouvée mais pas assez sûre (score ou droits) : non affichée. */
+  review: "À vérifier",
+  /** L'image ne se charge plus : nouvelle recherche programmée. */
+  broken: "Lien cassé",
   refused: "Refusée",
   none: "Aucune trouvée",
 } as const
@@ -92,8 +96,9 @@ function decodeEntities(value: string): string {
 export function readMeta(html: string): Record<string, string> {
   const meta: Record<string, string> = {}
   for (const tag of html.match(/<meta\b[^>]*>/gi) ?? []) {
-    const key = /\b(?:property|name|itemprop)\s*=\s*["']([^"']+)["']/i.exec(tag)?.[1]?.toLowerCase()
-    const content = /\bcontent\s*=\s*["']([^"']*)["']/i.exec(tag)?.[1]
+    // Le guillemet ouvrant détermine le fermant (« content="Festival d'Avignon" »).
+    const key = /\b(?:property|name|itemprop)\s*=\s*(["'])(.*?)\1/i.exec(tag)?.[2]?.toLowerCase()
+    const content = /\bcontent\s*=\s*(["'])([\s\S]*?)\1/i.exec(tag)?.[2]
     if (key && content && !meta[key]) meta[key] = decodeEntities(content)
   }
   const ld = structuredImage(html)
@@ -241,7 +246,31 @@ function isChallengePage(html: string): boolean {
     /cf-browser-verification|challenge-platform|_Incapsula_Resource|datadome/i.test(html.slice(0, 20_000))
 }
 
+/**
+ * Disjoncteur par site : après 3 échecs d'affilée (site bloqué ou hors ligne),
+ * le site n'est plus sollicité pendant cette exécution. Il sera retenté à la
+ * collecte suivante (file d'attente avec délais progressifs).
+ */
+const hostFailures = new Map<string, number>()
+const HOST_FAILURE_LIMIT = 3
+
+export function hostIsTripped(url: string): boolean {
+  try {
+    return (hostFailures.get(new URL(url).hostname) ?? 0) >= HOST_FAILURE_LIMIT
+  } catch {
+    return false
+  }
+}
+
+function recordHost(url: string, ok: boolean) {
+  try {
+    const host = new URL(url).hostname
+    hostFailures.set(host, ok ? 0 : (hostFailures.get(host) ?? 0) + 1)
+  } catch {}
+}
+
 async function getRaw(url: string, accept: string): Promise<{ text: string; type: string } | null> {
+  if (hostIsTripped(url)) return null
   return throttled(url, async () => {
     try {
       const response = await fetchWithRetry(
@@ -249,9 +278,19 @@ async function getRaw(url: string, accept: string): Promise<{ text: string; type
         { headers: { "User-Agent": USER_AGENT, Accept: accept }, redirect: "follow" },
         { attempts: 2, timeoutMs: 15_000, baseDelayMs: 800 }
       )
-      if (!response.ok) return null
+      // 404 : la page n'existe pas (pas une panne du site).
+      if (response.status === 404 || response.status === 410) {
+        recordHost(url, true)
+        return null
+      }
+      if (!response.ok) {
+        recordHost(url, false)
+        return null
+      }
+      recordHost(url, true)
       return { text: await response.text(), type: response.headers.get("content-type") ?? "" }
     } catch {
+      recordHost(url, false)
       return null
     }
   })
@@ -440,36 +479,164 @@ export async function sitemapCandidates(origin: string, eventTitle: string, even
   return scored.sort((a, b) => b.score - a.score).slice(0, 3).map((s) => s.url)
 }
 
+// ─── Score de confiance ──────────────────────────────────────────────────────
+
+/** Seuils du score de confiance (sur 100). */
+export const SCORE_PUBLISH = 75
+export const SCORE_REVIEW = 55
+
+/** Médias et agrégateurs : utiles pour trouver un événement, pas pour réutiliser ses images. */
+const AGGREGATORS =
+  /(^|\.)(offi\.fr|sceneweb\.fr|agendaculturel\.fr|unidivers\.fr|theatreinparis\.com|bachtrack\.com|festivalenfrance\.com|sortiraparis\.com|timeout\.(fr|com)|parisinfo\.com|telerama\.fr|lefigaro\.fr|lemonde\.fr|wikipedia\.org|facebook\.com|instagram\.com|youtube\.com|x\.com|twitter\.com|linkedin\.com|pinterest\.)/i
+/** Billetteries : visuels fournis par le producteur. */
+const TICKETING = /(^|\.)(fnacspectacles\.com|billetreduc\.com|ticketmaster\.fr|seetickets\.com|feverup\.com|mapado\.com|weezevent\.com|helloasso\.com|digitick\.com|shotgun\.live|dice\.fm|billetweb\.fr)/i
+
+export type Provenance = "open data" | "officielle" | "billetterie" | "média ou agrégateur" | "autre site"
+
+export function provenanceOf(pageUrl: string, trustedHosts: string[]): Provenance {
+  let host = ""
+  try {
+    host = new URL(pageUrl).hostname.replace(/^www\./, "")
+  } catch {
+    return "autre site"
+  }
+  if (/(^|\.)paris\.fr$/.test(host)) return "open data"
+  if (AGGREGATORS.test(host)) return "média ou agrégateur"
+  if (TICKETING.test(host)) return "billetterie"
+  if (trustedHosts.some((h) => h && (host === h || host.endsWith("." + h)))) return "officielle"
+  return "autre site"
+}
+
+export type ImageScore = {
+  total: number
+  details: Record<string, number>
+  /** Droits de réutilisation suffisamment établis pour une publication. */
+  rightsOk: boolean
+}
+
+/** Années (2020-2039) citées dans une adresse ou un texte. */
+export function yearsIn(value: string): number[] {
+  return Array.from(new Set(Array.from(value.matchAll(/(?<!\d)(20[23]\d)(?!\d)/g), (m) => Number(m[1]))))
+}
+
+export type LookupContext = {
+  title: string
+  /** Année de début de saison (septembre → saison suivante). */
+  eventYear?: number
+  /** Année civile de l'événement. */
+  calendarYear?: number
+  venue?: string
+  /** Domaines considérés comme officiels (lieu, organisateur, lien d'origine…). */
+  trustedHosts: string[]
+  directories: string[]
+}
+
+const UNKNOWN_VENUES = /^(à confirmer|a confirmer|hors paris|festival itinérant|espace public.*|)$/i
+
+/** Calcule le score de confiance d'une page et de son visuel. */
+export function scorePage(
+  ctx: LookupContext,
+  pageUrl: string,
+  head: string,
+  body: string,
+  imageUrl: string,
+  collective: boolean
+): ImageScore {
+  const details: Record<string, number> = {}
+  const headSet = new Set(titleTokens(head))
+  const allSet = new Set([...headSet, ...titleTokens(body)])
+  const parts = requiredParts(ctx.title)
+  const [work = [], artist = []] = parts
+
+  details["œuvre"] = work.length && work.every((t) => headSet.has(t)) ? 35 : work.length && work.every((t) => allSet.has(t)) ? 25 : collective ? 25 : 0
+  details["artiste"] = !artist.length ? 10 : artist.every((t) => headSet.has(t)) ? 15 : artist.every((t) => allSet.has(t)) ? 12 : 0
+
+  const venue = (ctx.venue ?? "").trim()
+  if (!venue || UNKNOWN_VENUES.test(venue)) details["lieu"] = 7
+  else {
+    const venueTokens = titleTokens(venue).filter((t) => !["palais", "grande", "halle", "salle", "espace"].includes(t))
+    let host = ""
+    try {
+      host = new URL(pageUrl).hostname
+    } catch {}
+    const hostWords = host.replace(/[.-]/g, " ")
+    details["lieu"] = venueTokens.some((t) => allSet.has(t) || hostWords.includes(t)) ? 15 : 0
+  }
+
+  const years = [ctx.calendarYear, ctx.eventYear, ctx.eventYear ? ctx.eventYear + 1 : undefined].filter(Boolean) as number[]
+  const seasonShort = ctx.eventYear ? `${String(ctx.eventYear).slice(2)}-${String(ctx.eventYear + 1).slice(2)}` : "__"
+  const mentioned = yearsIn(`${head} ${body.slice(0, 4000)} ${pageUrl}`)
+  details["date / édition"] = mentioned.some((y) => years.includes(y)) || `${head} ${pageUrl}`.includes(seasonShort) ? 15 : mentioned.length ? 0 : 5
+
+  const provenance = provenanceOf(pageUrl, ctx.trustedHosts)
+  details["provenance"] = { "open data": 20, officielle: 20, billetterie: 12, "autre site": 10, "média ou agrégateur": 0 }[provenance]
+
+  const total = Object.values(details).reduce((a, b) => a + b, 0)
+  return { total, details, rightsOk: provenance !== "média ou agrégateur" && Boolean(imageUrl) }
+}
+
+/** Le visuel appartient-il à une édition plus ancienne que l'événement ? */
+export function isOlderEditionImage(imageUrl: string, calendarYear?: number, eventYear?: number): boolean {
+  if (!calendarYear && !eventYear) return false
+  const oldest = Math.min(...([calendarYear, eventYear].filter(Boolean) as number[]))
+  // Les dossiers d'upload (« /uploads/2023/11/ ») datent le fichier, pas l'édition :
+  // seule une année dans le nom du fichier compte.
+  const file = decodeURIComponent(imageUrl.split("?")[0].split("/").pop() ?? "")
+  return yearsIn(file).some((y) => y < oldest)
+}
+
 // ─── Vérification d'une page ──────────────────────────────────────────────────
 
-async function checkPage(eventTitle: string, pageUrl: string, collective: boolean, eventYear?: number): Promise<ImageLookup> {
+export type ImageFit = "photo" | "logo"
+export type ScoredImage = FoundImage & { score: ImageScore; provenance: Provenance; fit: ImageFit }
+export type ScoredLookup = { image: ScoredImage | null; reason: string; best?: ScoredImage | null }
+
+async function checkPage(ctx: LookupContext, pageUrl: string, collective: boolean): Promise<ScoredLookup> {
   if (!collective && isNonEventPath(pageUrl)) return { image: null, reason: "Le lien mène à un article, pas à la page de l'événement" }
   const season = seasonYearInPath(pageUrl)
-  if (eventYear && season !== null && season < eventYear) return { image: null, reason: "La page concerne une saison passée" }
+  if (ctx.eventYear && season !== null && season < ctx.eventYear) return { image: null, reason: "La page concerne une saison passée" }
   const html = await getHtml(pageUrl)
   if (!html) return { image: null, reason: "Page officielle inaccessible" }
   if (isNonDanceSection(pageUrl)) return { image: null, reason: "La page concerne un opéra ou un concert, pas de la danse" }
 
   const meta = readMeta(html)
-  const pageText = [
+  const head = [
     meta["og:title"], meta["html:title"], meta["twitter:title"], meta["og:description"], meta["description"], meta["twitter:description"], meta["og:site_name"],
   ].filter(Boolean).join(" ")
+  const body = visibleText(html)
   const matches = collective
     ? (() => {
         // Saison ou festival : le nom du festival ou du lieu doit figurer sur la page.
-        const page = new Set(titleTokens(pageText + " " + new URL(pageUrl).hostname.replace(/[.-]/g, " ")))
-        return requiredParts(eventTitle).some((part) => part.some((t) => page.has(t)))
+        const page = new Set(titleTokens(head + " " + new URL(pageUrl).hostname.replace(/[.-]/g, " ")))
+        return requiredParts(ctx.title).some((part) => part.some((t) => page.has(t)))
       })()
-    : titlesMatch(eventTitle, pageText, visibleText(html))
+    : titlesMatch(ctx.title, head, body)
   if (!matches) return { image: null, reason: "La page ne correspond pas au titre de l'événement" }
+
+  // Saison ou festival : la page ne doit pas annoncer une autre édition.
+  if (collective && ctx.calendarYear) {
+    const titleYears = yearsIn(`${meta["og:title"] ?? ""} ${meta["html:title"] ?? ""}`)
+    if (titleYears.length && !titleYears.some((y) => y >= (ctx.eventYear ?? ctx.calendarYear!))) {
+      return { image: null, reason: "La page présente une édition passée" }
+    }
+  }
 
   let url = pickImage(meta, pageUrl)
   if (!url) {
-    const titled = titledContentImage(html, eventTitle)
+    const titled = titledContentImage(html, ctx.title)
     if (titled) url = pickImage({ image: titled }, pageUrl)
   }
   if (!url) return { image: null, reason: "Aucun visuel déclaré sur la page" }
-  if (isLogoLike(url)) return { image: null, reason: "Le visuel trouvé est un logo ou une image par défaut" }
+
+  let fit: ImageFit = "photo"
+  if (isLogoLike(url)) {
+    // Saison ou festival : le logo officiel est acceptable, affiché en entier.
+    if (!collective || /favicon|apple-touch|gravatar|avatar|placeholder/i.test(url)) {
+      return { image: null, reason: "Le visuel trouvé est un logo ou une image par défaut" }
+    }
+    fit = "logo"
+  }
+  if (isOlderEditionImage(url, ctx.calendarYear, ctx.eventYear)) return { image: null, reason: "Le visuel est celui d'une édition passée" }
 
   if (!collective) {
     const fallback = await defaultImageOf(pageUrl)
@@ -477,22 +644,27 @@ async function checkPage(eventTitle: string, pageUrl: string, collective: boolea
   }
   if (!(await imageResponds(url))) return { image: null, reason: "L'image ne se charge pas" }
 
+  const score = scorePage(ctx, pageUrl, head, body, url, collective)
+  const provenance = provenanceOf(pageUrl, ctx.trustedHosts)
   const site = meta["og:site_name"] || new URL(pageUrl).hostname.replace(/^www\./, "")
-  return { image: { url, sourceUrl: pageUrl, credit: site, alt: meta["og:image:alt"] || eventTitle }, reason: "" }
+  const image: ScoredImage = { url, sourceUrl: pageUrl, credit: site, alt: meta["og:image:alt"] || ctx.title, score, provenance, fit }
+  if (score.total >= SCORE_PUBLISH && score.rightsOk) return { image, reason: "" }
+  return {
+    image: null,
+    best: score.total >= SCORE_REVIEW ? image : null,
+    reason: !score.rightsOk
+      ? `Visuel trouvé sur un média ou agrégateur (droits non établis), score ${score.total}`
+      : `Correspondance insuffisante (score ${score.total}/100)`,
+  }
 }
 
 /**
- * Cherche le visuel officiel à partir d'un lien (page de l'événement, page
- * générale ou site du lieu) :
- *   1. la page elle-même si elle est propre à l'événement ;
- *   2. sinon le lien de l'événement trouvé sur la page ;
- *   3. sinon la page du plan du site dont l'adresse reprend le titre.
- * Les fiches « saison » ou « festival » acceptent le visuel du site lui-même.
+ * Adresses probables, saisons, plans de site… (voir findOfficialImage).
  */
 export function slugify(value: string): string {
   return value
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
     .replace(/['’`´]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
@@ -521,25 +693,52 @@ export function guessedUrls(eventTitle: string, directories: string[]): string[]
   return urls.slice(0, 8)
 }
 
-export async function findOfficialImage(
-  eventTitle: string,
-  pageUrl: string,
-  eventDate?: string | null,
-  /** Dossiers d'événements connus sur ce site (« https://site/saison-26-27/ballet/ »). */
-  knownDirectories: string[] = []
-): Promise<ImageLookup> {
-  // Année de saison de l'événement (septembre → saison suivante).
-  const eventYear = eventDate ? Number(eventDate.slice(0, 4)) - (Number(eventDate.slice(5, 7)) < 8 ? 1 : 0) : undefined
+/** Contexte de recherche d'une fiche (années, lieu, domaines de confiance). */
+export function lookupContext(
+  fiche: { title: string; startDate: string | null; venue?: string; eventLinks?: string[] },
+  directories: string[] = [],
+  extraTrusted: string[] = [],
+  venueSites: Record<string, string> = {}
+): LookupContext {
+  const date = fiche.startDate ?? ""
+  const calendarYear = date ? Number(date.slice(0, 4)) : undefined
+  const eventYear = date ? Number(date.slice(0, 4)) - (Number(date.slice(5, 7)) < 8 ? 1 : 0) : undefined
+  const host = (u: string) => {
+    try {
+      return new URL(u).hostname.replace(/^www\./, "")
+    } catch {
+      return ""
+    }
+  }
+  const trusted = [...(fiche.eventLinks ?? []), ...extraTrusted, venueSites[fiche.venue ?? ""] ?? ""]
+    .map(host)
+    .filter((h) => h && !AGGREGATORS.test(h) && !TICKETING.test(h))
+  return { title: fiche.title, eventYear, calendarYear, venue: fiche.venue, trustedHosts: Array.from(new Set(trusted)), directories }
+}
+
+/**
+ * Cherche le visuel officiel à partir d'un lien (page de l'événement, page
+ * générale ou site du lieu) :
+ *   1. la page elle-même si elle est propre à l'événement ;
+ *   2. sinon le lien de l'événement trouvé sur la page ;
+ *   3. sinon les pages du plan du site, puis les adresses probables ;
+ *   4. fiches « saison » ou « festival » : le visuel (ou le logo) du site.
+ * Chaque page reçoit un score de confiance ; seule une image au-dessus du
+ * seuil, aux droits établis, est renvoyée (les autres sont « à vérifier »).
+ */
+export async function findOfficialImage(ctx: LookupContext, pageUrl: string): Promise<ScoredLookup> {
   if (!/^https?:\/\//i.test(pageUrl)) return { image: null, reason: "Pas de lien officiel" }
-  const collective = isCollectiveTitle(eventTitle)
+  const collective = isCollectiveTitle(ctx.title)
   const tried = new Set<string>()
-  let last: ImageLookup = { image: null, reason: "Le lien mène à une page générale où l'événement est introuvable" }
+  let last: ScoredLookup = { image: null, reason: "Le lien mène à une page générale où l'événement est introuvable" }
+  let best: ScoredImage | null = null
 
   const attempt = async (url: string, asCollective = false) => {
     if (!url || tried.has(url)) return null
     tried.add(url)
-    const result = await checkPage(eventTitle, url, asCollective, eventYear)
+    const result = await checkPage(ctx, url, asCollective)
     if (result.image) return result
+    if (result.best && (!best || result.best.score.total > best.score.total)) best = result.best
     last = result
     return null
   }
@@ -549,20 +748,20 @@ export async function findOfficialImage(
     if (direct) return direct
   } else {
     const listing = await getHtml(pageUrl)
-    const eventUrl = listing ? findEventLink(listing, pageUrl, eventTitle) : ""
+    const eventUrl = listing ? findEventLink(listing, pageUrl, ctx.title) : ""
     const viaLink = await attempt(eventUrl)
     if (viaLink) return viaLink
   }
 
   const origin = new URL(pageUrl).origin
   if (!collective) {
-    for (const candidate of await sitemapCandidates(origin, eventTitle, eventYear)) {
+    for (const candidate of await sitemapCandidates(origin, ctx.title, ctx.eventYear)) {
       const found = await attempt(candidate)
       if (found) return found
     }
-    const directories = knownDirectories.filter((d) => d.startsWith(origin))
+    const directories = ctx.directories.filter((d) => d.startsWith(origin))
     if (isGenericPage(pageUrl) && new URL(pageUrl).pathname.length > 1) directories.push(pageUrl)
-    for (const candidate of guessedUrls(eventTitle, directories)) {
+    for (const candidate of guessedUrls(ctx.title, directories)) {
       const found = await attempt(candidate)
       if (found) return found
     }
@@ -572,7 +771,12 @@ export async function findOfficialImage(
     const site = await attempt(isGenericPage(pageUrl) ? pageUrl : origin + "/", true)
     if (site) return site
   }
-  return last
+  return { ...last, best }
+}
+
+/** Revérifie une image déjà enregistrée (lien toujours valide). */
+export async function imageStillResponds(url: string): Promise<boolean> {
+  return imageResponds(url)
 }
 
 /**

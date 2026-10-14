@@ -24,9 +24,11 @@ type Props = {
   fallback: ReactNode
   variant: "card" | "hero"
   priority?: boolean
+  /** « logo » : logo officiel affiché en entier sur fond neutre, sans recadrage. */
+  fit?: "logo"
 }
 
-export default function AgendaVisual({ src, alt, credit, fallback, variant, priority = false }: Props) {
+export default function AgendaVisual({ src, alt, credit, fallback, variant, priority = false, fit }: Props) {
   const [failed, setFailed] = useState(false)
   const [poster, setPoster] = useState(false)
   const imgRef = useRef<HTMLImageElement>(null)
@@ -54,8 +56,8 @@ export default function AgendaVisual({ src, alt, credit, fallback, variant, prio
 
   const base = variant === "card" ? "srt-visual" : "agenda-visual"
   return (
-    <div className={`${base}${poster ? ` ${base}--poster` : ""}`}>
-      {poster ? <img key="backdrop" src={src} alt="" aria-hidden="true" className={`${base}-backdrop`} referrerPolicy="no-referrer" /> : null}
+    <div className={`${base}${fit === "logo" ? ` ${base}--logo` : poster ? ` ${base}--poster` : ""}`}>
+      {poster && fit !== "logo" ? <img key="backdrop" src={src} alt="" aria-hidden="true" className={`${base}-backdrop`} referrerPolicy="no-referrer" /> : null}
       <img
         key="main"
         ref={imgRef}

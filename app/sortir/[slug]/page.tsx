@@ -45,7 +45,7 @@ export default async function SortirEventPage({
   return (
     <main className="agenda-detail-page">
       <section className="agenda-detail-hero">
-        <AgendaVisual variant="hero" priority src={event.image} alt={event.imageAlt || event.title} fallback={null} />
+        <AgendaVisual variant="hero" priority src={event.image} alt={event.imageAlt || event.title} fit={event.imageFit} fallback={null} />
         <div className="agenda-detail-hero-shade" />
         <div className="container agenda-detail-hero-content">
           <HistoryBackLink fallbackHref="/sortir" className="agenda-detail-back">

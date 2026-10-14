@@ -38,6 +38,7 @@ import {
   DEFAULT_AGENDA_DATABASE_ID,
 } from "./notion"
 import { pendingAfter, planActions, type PlannedAction } from "./plan"
+import { runImageStep } from "./image-pipeline"
 import { eventDirectories, findOfficialImage, matchesOpenDataEvent, requiredParts, sameProduction, findSharedImages, IMAGE_STATUS, type FoundImage } from "./images"
 import { dedupeWithinSource, parisToday, sameEvent } from "./rules"
 import { PUBLICATION, emptyCounters, type CollectedEvent, type RunReport, type RunTrigger } from "./types"
@@ -54,6 +55,11 @@ export type RunOptions = {
   dryRun: boolean
   /** Temps maximal consacré aux écritures (ms). */
   budgetMs?: number
+  /** Ne traiter que les visuels (passage quotidien), sans collecter les sources. */
+  imagesOnly?: boolean
+  /** Recherches web autorisées pendant cette exécution. */
+  resolverBudget?: number
+  brokenChecks?: number
   now?: Date
 }
 
@@ -115,7 +121,7 @@ export async function runCollecte(options: RunOptions): Promise<RunReport> {
     // ── 1. Collecte ───────────────────────────────────────────────────────────
     const collected: CollectedEvent[] = []
     const okPrefixes: string[] = []
-    for (const source of SOURCES) {
+    for (const source of options.imagesOnly ? [] : SOURCES) {
       report.counters.sourcesConsulted++
       try {
         const events = await source.collect()
@@ -136,7 +142,7 @@ export async function runCollecte(options: RunOptions): Promise<RunReport> {
       if (added.length) report.actions.push(`Colonnes ajoutées à l'agenda Notion : ${added.join(", ")}`)
     }
     const pages = await listAgendaPages(client, agendaDsId)
-    const plan = planActions(kept, pages, today, okPrefixes)
+    const plan = options.imagesOnly ? [] : planActions(kept, pages, today, okPrefixes)
     report.counters.pendingTotal = pendingAfter(pages, plan)
 
     // ── 3. Application ────────────────────────────────────────────────────────
@@ -153,9 +159,18 @@ export async function runCollecte(options: RunOptions): Promise<RunReport> {
       }
     }
 
-    // ── 4. Visuels des fiches qui n'en ont pas ───────────────────────────────
+    // ── 4. Visuels : file d'attente, recherche web, liens cassés ────────────
     if (!interrupted) {
-      interrupted = await enrichImages(pages, { client, agendaDsId, today, dryRun: options.dryRun, report }, deadline)
+      const fresh = options.dryRun ? pages : await listAgendaPages(client, agendaDsId)
+      interrupted = await runImageStep(fresh, {
+        client,
+        today,
+        dryRun: options.dryRun,
+        report,
+        deadline,
+        resolverBudget: options.resolverBudget ?? 5,
+        brokenChecks: options.brokenChecks ?? 20,
+      })
     }
 
     if (interrupted) {
@@ -164,7 +179,7 @@ export async function runCollecte(options: RunOptions): Promise<RunReport> {
     } else {
       report.status = report.errors.some((e) => !e.startsWith("NOTION_COLLECTE_LOG")) ? "Partielle" : "Réussie"
     }
-    if (okPrefixes.length === 0) report.status = "Échec"
+    if (okPrefixes.length === 0 && !options.imagesOnly) report.status = "Échec"
   } catch (error) {
     report.status = "Échec"
     report.errors.push(message(error))
@@ -290,127 +305,6 @@ async function apply(action: PlannedAction, ctx: ApplyContext) {
       report.actions.push(`Mise en attente (disparue depuis ${action.days} j) : ${action.page.title}`)
       return
   }
-}
-
-/** Événement open data de la Ville de Paris correspondant à la fiche (ou null). */
-export async function findOpenDataTwin(page: AgendaPage): Promise<CollectedEvent | null> {
-  const [work] = requiredParts(page.title)
-  if (!work?.length) return null
-  const records = await searchQfapByTitle(work.join(" "))
-  return records.find((r) => matchesOpenDataEvent(page, r, Object.keys(VENUE_SITES))) ?? null
-}
-
-/** Nombre de jours avant de chercher à nouveau un visuel introuvable. */
-const IMAGE_RETRY_DAYS = 28
-const IMAGE_CONCURRENCY = 6
-
-/**
- * Cherche le visuel officiel des fiches qui n'en ont pas, sur la page de
- * l'événement (billetterie ou lien officiel). N'écrit que les colonnes image.
- * Renvoie true si le temps imparti a été atteint avant la fin.
- */
-async function enrichImages(pages: AgendaPage[], ctx: ApplyContext, deadline: number): Promise<boolean> {
-  const { client, today, dryRun, report } = ctx
-  const c = report.counters
-  // Page inaccessible (site lent ou bloqué) : nouvel essai la semaine suivante.
-  const retryInaccessibleBefore = new Date(Date.parse(`${today}T00:00:00Z`) - 6 * 86_400_000).toISOString().slice(0, 10)
-  const retryBefore = new Date(Date.parse(`${today}T00:00:00Z`) - IMAGE_RETRY_DAYS * 86_400_000).toISOString().slice(0, 10)
-
-  const candidates = pages.filter(
-    (p) =>
-      !p.locked &&
-      // Inutile de chercher le visuel d'un événement terminé ou non publié.
-      !((p.endDate ?? p.startDate ?? "9999").slice(0, 10) < today) &&
-      p.publication !== PUBLICATION.archived &&
-      !p.sourceId && // les fiches collectées reçoivent le visuel de leur source
-      !p.imageUrl &&
-      !p.hasManualImage &&
-      p.imageStatus !== IMAGE_STATUS.refused &&
-      p.imageStatus !== IMAGE_STATUS.manual &&
-      !(p.imageStatus === IMAGE_STATUS.none && (p.imageChecked ?? "") > (p.imageRightsNote.includes("inaccessible") ? retryInaccessibleBefore : retryBefore))
-  )
-
-  // Même spectacle déjà illustré dans une autre fiche : on reprend son visuel.
-  const illustrated = pages.filter((p) => p.imageUrl && p.imageStatus !== IMAGE_STATUS.refused)
-  for (const page of [...candidates]) {
-    const twin = illustrated.find((other) => other.id !== page.id && (sameEvent(other, page) || sameProduction(other, page)))
-    if (!twin) continue
-    candidates.splice(candidates.indexOf(page), 1)
-    try {
-      if (!dryRun) await updatePageProperties(client, page.id, sameEventImageProperties(twin, today))
-      page.imageUrl = twin.imageUrl
-      c.imagesAdded++
-      report.actions.push(`Visuel ajouté : ${page.title} (repris de « ${twin.title} »)`)
-    } catch (error) {
-      report.errors.push(`Visuel « ${page.title} » : ${message(error)}`)
-    }
-  }
-
-  const directories = eventDirectories(pages.filter((p) => p.imageStatus === IMAGE_STATUS.official).map((p) => p.imageSource))
-  const found: Array<{ page: AgendaPage; image: FoundImage | null; reason: string }> = []
-  let index = 0
-  let interrupted = false
-  const worker = async () => {
-    while (index < candidates.length) {
-      if (Date.now() > deadline - 20_000) {
-        interrupted = true
-        return
-      }
-      const page = candidates[index++]
-      // 1. Le même événement dans l'agenda open data de la Ville de Paris.
-      const openData = await findOpenDataTwin(page)
-      if (openData) {
-        try {
-          if (!dryRun) await updatePageProperties(client, page.id, sourceImageProperties(openData, today))
-          c.imagesAdded++
-          report.actions.push(`Visuel ajouté : ${page.title} (Ville de Paris – Que faire à Paris)`)
-        } catch (error) {
-          report.errors.push(`Visuel « ${page.title} » : ${message(error)}`)
-        }
-        continue
-      }
-      // 2. Le visuel officiel sur la page de l'événement.
-      let result = { image: null as FoundImage | null, reason: "Pas de lien vers la page de l'événement" }
-      for (const link of page.eventLinks) {
-        result = await findOfficialImage(page.title, link, page.startDate, directories)
-        if (result.image) break
-      }
-      found.push({ page, ...result })
-    }
-  }
-  await Promise.all(Array.from({ length: IMAGE_CONCURRENCY }, worker))
-
-  // Un même visuel pour plusieurs événements différents = bannière générique.
-  const shared = findSharedImages([
-    ...found.map((f) => ({ title: f.page.title, imageUrl: f.image?.url ?? "" })),
-    ...pages.filter((p) => p.imageStatus === IMAGE_STATUS.official).map((p) => ({ title: p.title, imageUrl: p.imageUrl })),
-  ])
-
-  for (const entry of found) {
-    if (Date.now() > deadline) {
-      interrupted = true
-      break
-    }
-    let { image, reason } = entry
-    if (image && shared.has(image.url)) {
-      image = null
-      reason = "Visuel générique utilisé pour plusieurs événements"
-    }
-    try {
-      if (image) {
-        if (!dryRun) await updatePageProperties(client, entry.page.id, officialImageProperties(image, today))
-        c.imagesAdded++
-        report.actions.push(`Visuel ajouté : ${entry.page.title} (${image.credit})`)
-      } else {
-        if (!dryRun) await updatePageProperties(client, entry.page.id, noImageProperties(reason, today))
-        c.imagesMissing++
-        report.actions.push(`Sans visuel : ${entry.page.title} (${reason})`)
-      }
-    } catch (error) {
-      report.errors.push(`Visuel « ${entry.page.title} » : ${message(error)}`)
-    }
-  }
-  return interrupted
 }
 
 function describe(action: PlannedAction): string {

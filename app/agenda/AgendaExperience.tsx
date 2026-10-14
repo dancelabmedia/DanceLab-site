@@ -260,6 +260,7 @@ function EventCard({
           src={event.image}
           alt={event.imageAlt || event.title}
           credit={event.imageCredit}
+          fit={event.imageFit}
           fallback={
             <div
               className="srt-card-placeholder"

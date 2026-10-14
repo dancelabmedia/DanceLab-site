@@ -18,7 +18,7 @@ async function main() {
     .filter(Boolean)
     .map((line, i) => {
       const [title, start, end] = line.split('|')
-      return { id: `n${i}`, url: '', title, startDate: start || null, endDate: end || null, sourceId: '', publication: '', locked: false, fingerprint: '', missingSince: null, imageUrl: '', imageSource: '', imageCredit: '', venue: '', imageRightsNote: '', imageStatus: '', imageChecked: null, eventLinks: [], hasManualImage: false }
+      return { id: `n${i}`, url: '', title, startDate: start || null, endDate: end || null, sourceId: '', publication: '', locked: false, fingerprint: '', missingSince: null, imageUrl: '', imageSource: '', imageCredit: '', venue: '', city: '', company: '', ticketUrl: '', officialUrl: '', imageAttempts: 0, imageNext: null, imageHistory: '', imageScore: null, imageRightsNote: '', imageStatus: '', imageChecked: null, eventLinks: [], hasManualImage: false }
     })
   const today = parisToday()
   const collected = await collectQueFaireAParis()

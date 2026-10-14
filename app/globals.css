@@ -20830,3 +20830,34 @@ a.ep-topic-pill:hover {
     padding: 72px 16px 38vh;
   }
 }
+
+/* Logo officiel (saison, festival) : affiché en entier, sans déformation */
+.srt-visual--logo {
+  background: #f4f2ee;
+}
+
+.srt-visual--logo .srt-visual-img {
+  object-fit: contain;
+  padding: 14% 18%;
+}
+
+.srt-card:hover .srt-visual--logo .srt-visual-img {
+  transform: none;
+}
+
+.agenda-detail-hero .agenda-visual--logo {
+  background: #f4f2ee;
+}
+
+.agenda-detail-hero .agenda-visual--logo .agenda-visual-img {
+  object-fit: contain;
+  object-position: right center;
+  padding: clamp(90px, 12vh, 140px) clamp(24px, 8vw, 120px) clamp(40px, 8vh, 80px) 50%;
+}
+
+@media (max-width: 820px) {
+  .agenda-detail-hero .agenda-visual--logo .agenda-visual-img {
+    object-position: center top;
+    padding: 80px 24% 45vh;
+  }
+}

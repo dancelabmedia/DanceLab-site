@@ -8,6 +8,8 @@ export const PUBLICATION = {
   auto: "Publiée (auto)",
   validated: "Validée",
   pending: "En attente de validation",
+  /** Événement introuvable dans une programmation officielle : masqué. */
+  unconfirmed: "Non confirmé",
   archived: "Archivée",
 } as const
 
@@ -70,6 +72,12 @@ export type RunCounters = {
   skippedLocked: number
   imagesAdded: number
   imagesMissing: number
+  imagesToReview: number
+  brokenImages: number
+  linksCorrected: number
+  titlesCorrected: number
+  unconfirmed: number
+  webSearches: number
 }
 
 export type RunStatus = "En cours" | "Réussie" | "Partielle" | "Échec" | "Ignorée"
@@ -102,5 +110,11 @@ export function emptyCounters(): RunCounters {
     skippedLocked: 0,
     imagesAdded: 0,
     imagesMissing: 0,
+    imagesToReview: 0,
+    brokenImages: 0,
+    linksCorrected: 0,
+    titlesCorrected: 0,
+    unconfirmed: 0,
+    webSearches: 0,
   }
 }

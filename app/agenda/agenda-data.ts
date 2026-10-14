@@ -38,6 +38,8 @@ export type AgendaEvent = {
   imageCredit?: string
   imageSourceUrl?: string
   imageAlt?: string
+  /** « logo » : logo officiel (saison, festival), affiché en entier. */
+  imageFit?: "logo"
   lastVerifiedAt: string
   status: AgendaStatus
 }
