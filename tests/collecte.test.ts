@@ -483,3 +483,21 @@ test("variantes d'une partie du titre", async () => {
   assert.ok(titlesMatch("Summerland — Benjamin Millepied / November Ultra", "SUMMERLAND | Folies Bergère", "Summerland - Avec November Ultra"))
   assert.ok(!titlesMatch("Summerland — Benjamin Millepied / November Ultra", "SUMMERLAND | Folies Bergère", "Autre artiste"))
 })
+
+test("clé Claude : Anthropic directe ou Vercel AI Gateway", async () => {
+  const { claudeEndpoint } = await import("../lib/claude-api")
+  const saved = { a: process.env.ANTHROPIC_API_KEY, g: process.env.AI_GATEWAY_API_KEY }
+  delete process.env.AI_GATEWAY_API_KEY
+  process.env.ANTHROPIC_API_KEY = "vck_abc"
+  assert.equal(claudeEndpoint()?.via, "gateway")
+  assert.equal(claudeEndpoint()?.model("claude-haiku-4-5-20251001"), "anthropic/claude-haiku-4.5")
+  process.env.ANTHROPIC_API_KEY = "sk-ant-abc"
+  assert.equal(claudeEndpoint()?.via, "anthropic")
+  delete process.env.ANTHROPIC_API_KEY
+  process.env.AI_GATEWAY_API_KEY = "vck_abc"
+  assert.equal(claudeEndpoint()?.url, "https://ai-gateway.vercel.sh/v1/messages")
+  delete process.env.AI_GATEWAY_API_KEY
+  assert.equal(claudeEndpoint(), null)
+  if (saved.a) process.env.ANTHROPIC_API_KEY = saved.a
+  if (saved.g) process.env.AI_GATEWAY_API_KEY = saved.g
+})

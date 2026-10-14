@@ -5,6 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
+import { claudeAvailable } from "@/lib/claude-api"
 import { logDatabaseId, notionToken } from "@/lib/collecte/notion"
 import { nextWeeklyRun } from "@/lib/collecte/rules"
 
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
     notion: Boolean(notionToken()),
     journal: Boolean(logDatabaseId()),
     cronSecret: true,
-    rechercheWeb: Boolean(process.env.ANTHROPIC_API_KEY),
+    rechercheWeb: claudeAvailable(),
     prochaineCollecte: nextWeeklyRun(),
   })
 }

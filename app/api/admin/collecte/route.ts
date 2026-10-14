@@ -9,6 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
+import { claudeAvailable } from "@/lib/claude-api"
 import { cookies } from "next/headers"
 import { hashPreviewPassword, PREVIEW_COOKIE } from "@/lib/preview-session"
 import { runCollecte, SOURCES } from "@/lib/collecte/run"
@@ -44,7 +45,7 @@ export async function GET() {
       notion: Boolean(token),
       journal: Boolean(logDatabaseId()),
       cronSecret: Boolean(process.env.CRON_SECRET),
-      rechercheWeb: Boolean(process.env.ANTHROPIC_API_KEY),
+      rechercheWeb: claudeAvailable(),
     },
   }
   if (!token) return NextResponse.json({ ...base, runs: [], pending: [], totals: null })

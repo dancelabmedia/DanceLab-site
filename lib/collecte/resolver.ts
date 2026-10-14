@@ -16,6 +16,7 @@
  */
 
 import { fetchWithRetry } from "./http"
+import { claudeAvailable, claudeEndpoint } from "../claude-api"
 
 export type ResolverInput = {
   title: string
@@ -45,7 +46,7 @@ export type Resolution = {
 }
 
 export function resolverAvailable(): boolean {
-  return Boolean(process.env.ANTHROPIC_API_KEY || process.env.COLLECTE_RESOLUTIONS_FILE)
+  return Boolean(claudeAvailable() || process.env.COLLECTE_RESOLUTIONS_FILE)
 }
 
 /**
@@ -113,16 +114,16 @@ function sameUrl(a: string, b: string): boolean {
 
 export async function resolveOfficialPage(input: ResolverInput): Promise<Resolution | null> {
   if (process.env.COLLECTE_RESOLUTIONS_FILE) return presetResolution(input.title)
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) return null
+  const endpoint = claudeEndpoint()
+  if (!endpoint) return null
 
   const response = await fetchWithRetry(
-    "https://api.anthropic.com/v1/messages",
+    endpoint.url,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01" },
+      headers: endpoint.headers,
       body: JSON.stringify({
-        model: process.env.COLLECTE_RESOLVER_MODEL || "claude-haiku-4-5-20251001",
+        model: endpoint.model(process.env.COLLECTE_RESOLVER_MODEL || "claude-haiku-4-5-20251001"),
         max_tokens: 1024,
         system: SYSTEM,
         tools: [
