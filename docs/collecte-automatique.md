@@ -97,6 +97,16 @@ des fonctions Vercel (plan Hobby).
 6. Fiches vagues (« ou similaire », « tournée »…) : titre corrigé seulement si
    la page officielle le confirme (ancien titre dans « Titre d'origine ») ;
    si aucune programmation ne correspond, Publication « Non confirmé » (masquée).
+7. Dates de la page comparées à celles de la fiche : si elles ne se recoupent
+   pas, l'image n'est pas publiée (−25 points). Quand la page officielle donne
+   d'autres dates ou un autre lieu, la fiche est rectifiée (dates, et « Lieu »
+   seulement vers un lieu déjà connu de l'agenda), une fois la page vérifiée ;
+   l'ancienne valeur est notée dans « Historique image ».
+8. Fiche absente de la programmation officielle consultée (adresse notée) :
+   masquée tout de suite ; sinon au bout de deux recherches sans résultat.
+9. Sites dont le certificat est incomplet (ex. Chaillot) : le certificat
+   intermédiaire public manquant est ajouté (`lib/collecte/tls.ts`), la
+   vérification TLS reste entière.
 
 Contrôle de la configuration : `GET /api/cron/collecte-sante` avec
 `Authorization: Bearer <CRON_SECRET>`.

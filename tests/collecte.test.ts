@@ -391,7 +391,7 @@ test('correspondance open data : même lieu, ou titre quasi identique', () => {
 })
 
 // ─── Score de confiance, file d'attente, fiches vagues ───────────────────────
-import { isOlderEditionImage, lookupContext, provenanceOf, scorePage, SCORE_PUBLISH, yearsIn } from '../lib/collecte/images'
+import { datesIn, datesOverlapPage, isOlderEditionImage, lookupContext, provenanceOf, scorePage, SCORE_PUBLISH, yearsIn } from '../lib/collecte/images'
 import { dueForImage, isVagueTitle, nextAttemptDate } from '../lib/collecte/image-pipeline'
 
 test('provenance : site officiel, billetterie, média', () => {
@@ -436,4 +436,50 @@ test('une apostrophe dans une balise ne coupe pas sa valeur', () => {
   const meta = readMeta(`<meta property="og:site_name" content="Festival d'Avignon"><meta content='Le "Lac"' name='description'>`)
   assert.equal(meta['og:site_name'], "Festival d'Avignon")
   assert.equal(meta['description'], 'Le "Lac"')
+})
+
+test('dates écrites sur la page : une autre série de représentations est écartée', () => {
+  const d = datesIn('Le Lac des Cygnes, du 1 au 16 octobre 2026 au Palais des Congrès. Réservez dès le 12/05/2026.', 2026)
+  assert.ok(d.includes('2026-10-01') && d.includes('2026-05-12'), JSON.stringify(d))
+  assert.equal(datesOverlapPage(d, '2027-01-22', '2027-02-08'), false)
+  assert.equal(datesOverlapPage(d, '2026-10-01', '2026-10-16'), true)
+  assert.equal(datesOverlapPage([], '2026-10-01', null), null)
+})
+
+test("rectification des dates et du lieu d'après la page officielle", async () => {
+  const { factCorrections } = await import("../lib/collecte/image-pipeline")
+  const fix = factCorrections(
+    { startDate: "2027-03-15", endDate: "2027-03-22", venue: "Chaillot" },
+    { startDate: "2027-04-08", endDate: "2027-04-11", venue: "Théâtre de la Ville – Sarah Bernhardt" },
+    ["Chaillot", "Théâtre de la Ville"]
+  )
+  assert.equal(fix?.startDate, "2027-04-08")
+  assert.equal(fix?.endDate, "2027-04-11")
+  assert.equal(fix?.venue, "Théâtre de la Ville")
+  // Lieu inconnu de l'agenda : aucune option inventée.
+  const fix2 = factCorrections({ startDate: "2027-01-01", endDate: null, venue: "Chaillot" }, { startDate: "2027-01-01", venue: "Salle inconnue" }, ["Chaillot"])
+  assert.equal(fix2, undefined)
+  // Même fiche : rien à corriger.
+  assert.equal(factCorrections({ startDate: "2026-11-18", endDate: "2026-11-21", venue: "Chaillot" }, { startDate: "2026-11-18", endDate: "2026-11-21", venue: "Théâtre national de Chaillot" }, ["Chaillot"]), undefined)
+})
+
+test("correspondance des titres : variantes, nombres, précisions de lieu", async () => {
+  const { titlesMatch, isLogoLike, titledContentImage, requiredParts } = await import("../lib/collecte/images")
+  assert.ok(titlesMatch("Le Salon revisité — Peeping Tom", "Le Salon revisited – Théâtre du Rond-Point", "Peeping Tom"))
+  assert.ok(titlesMatch("Boris Charmatz / Terrain — 10 000 gestes", "10000 gestes Boris Charmatz | Théâtre de chaillot"))
+  assert.deepEqual(requiredParts("The Joffrey Ballet — TCE"), [["joffrey"]])
+  assert.ok(!titlesMatch("Le Lac des Cygnes — Ballet Preljocaj", "Giselle — Ballet de l'Opéra"))
+  // Dossier Drupal « /sites/default/files » : pas une image par défaut.
+  assert.equal(isLogoLike("https://theatre-chaillot.fr/sites/default/files/uploads/images/bodysuit.jpg"), false)
+  assert.equal(isLogoLike("https://www.laseinemusicale.com/app/uploads/2022/06/LSM-mainvisu.jpg"), true)
+  assert.equal(isLogoLike("https://example.fr/img/logos/site.png"), true)
+  const html = '<img src="/a/autre-spectacle.jpg" alt="Le Lac des cygnes"><img src="/files/1920x600-danse-summerland.jpg" alt="x">'
+  assert.equal(titledContentImage(html, "Summerland — Benjamin Millepied / November Ultra"), "/files/1920x600-danse-summerland.jpg")
+  assert.equal(titledContentImage('<img src="/f/visuel.jpg" alt="Barbara, du bout des lèvres">', "Benjamin Millepied — Barbara, Du bout des Lèvres"), "/f/visuel.jpg")
+})
+
+test("variantes d'une partie du titre", async () => {
+  const { titlesMatch } = await import("../lib/collecte/images")
+  assert.ok(titlesMatch("Summerland — Benjamin Millepied / November Ultra", "SUMMERLAND | Folies Bergère", "Summerland - Avec November Ultra"))
+  assert.ok(!titlesMatch("Summerland — Benjamin Millepied / November Ultra", "SUMMERLAND | Folies Bergère", "Autre artiste"))
 })

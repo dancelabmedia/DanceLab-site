@@ -16,6 +16,10 @@
 
 import { fetchWithRetry } from "./http"
 import { normalizeKey } from "./rules"
+import { installExtraIntermediates } from "./tls"
+
+// Sites dont la chaîne de certificats est incomplète (ex. Chaillot).
+installExtraIntermediates()
 
 export const IMAGE_STATUS = {
   openData: "Officielle (open data Ville de Paris)",
@@ -49,13 +53,13 @@ const STOP = new Set([
   "les", "des", "une", "aux", "pour", "avec", "par", "sur", "dans", "the", "and", "from",
   "danse", "spectacle", "festival", "paris", "theatre", "saison", "creation", "compagnie", "cie",
   "ballet", "opera", "edition", "tournee", "version", "musical", "musicale", "comedie",
-  "dance", "company", "dancers", "show", "live",
+  "dance", "company", "dancers", "show", "live", "representation", "representations",
   "2024", "2025", "2026", "2027", "2028",
 ])
 
 export function titleTokens(value: string): string[] {
   // « l'Opéra » → « l opera » (et non « lopera »).
-  return normalizeKey(value.replace(/['’`´]/g, " "))
+  return normalizeKey(value.replace(/['’`´]/g, " ").replace(/(\d)[\s\u00a0\u202f.](?=\d{3}\b)/g, "$1"))
     .split(" ")
     .filter((t) => t.length >= 3 && !STOP.has(t))
 }
@@ -77,8 +81,17 @@ export function isGenericPage(pageUrl: string): boolean {
   )
 }
 
-function isLogoLike(imageUrl: string): boolean {
-  return /logo|favicon|placeholder|default|mainvisu|share[-_]?image|\/share\.(jpe?g|png)|\/partage\.(jpe?g|png)|og[-_]?default|apple-touch|gravatar|avatar/i.test(imageUrl)
+export function isLogoLike(imageUrl: string): boolean {
+  let path = imageUrl
+  try {
+    path = new URL(imageUrl).pathname
+  } catch {}
+  // Le nom du fichier seul (« /sites/default/files/… » est un dossier Drupal, pas une image par défaut).
+  const file = decodeURIComponent(path.split("/").pop() ?? "")
+  return (
+    /logo|favicon|placeholder|default|mainvisu|share[-_]?image|^share\.(jpe?g|png)|^partage\.(jpe?g|png)|og[-_]?default|apple-touch|gravatar|avatar/i.test(file) ||
+    /\/(logos?|favicons?|avatars?)\//i.test(path)
+  )
 }
 
 function decodeEntities(value: string): string {
@@ -147,16 +160,37 @@ export function mainContentImage(html: string): string {
  * (ex. « 4-saisons-pdc-web.jpg » pour « Les Quatre Saisons »).
  */
 export function titledContentImage(html: string, eventTitle: string): string {
-  const work = requiredParts(eventTitle)[0] ?? []
-  if (!work.length) return ""
+  const parts = requiredParts(eventTitle).filter((p) => p.length)
+  if (!parts.length) return ""
+  const [work] = parts
   for (const m of html.matchAll(/<img\b[^>]*>/gi)) {
     const url = /\b(?:data-src|src)\s*=\s*["']([^"']+)["']/i.exec(m[0])?.[1] ?? ""
     if (!url || /\.svg(\?|$)|^data:|logo|icon|picto|avatar/i.test(url)) continue
-    const file = decodeURIComponent(url.split("?")[0].split("/").pop() ?? "")
+    let file = url.split("?")[0].split("/").pop() ?? ""
+    try {
+      file = decodeURIComponent(file)
+    } catch {}
     const words = new Set(titleTokens(file.replace(/[-_.]+/g, " ")))
     if (work.some((t) => t.length >= 3 && words.has(t))) return url
+    // Texte alternatif reprenant entièrement une partie du titre (œuvre ou artiste).
+    const alt = decodeEntities(/\balt\s*=\s*(["'])([\s\S]*?)\1/i.exec(m[0])?.[2] ?? "")
+    const altWords = new Set(titleTokens(alt))
+    if (alt && parts.some((p) => p.every((t) => hasToken(altWords, t)))) return url
   }
   return ""
+}
+
+/** Le jeton figure-t-il dans l'ensemble (ou une variante proche : « revisité » / « revisited ») ? */
+export function hasToken(set: Set<string>, token: string): boolean {
+  if (set.has(token)) return true
+  if (token.length < 5) return false
+  for (const s of set) {
+    if (s.length < 5 || Math.abs(s.length - token.length) > 2) continue
+    if (s.startsWith(token) || token.startsWith(s)) return true
+    const n = Math.min(s.length, token.length) - 1
+    if (n >= 5 && s.slice(0, n) === token.slice(0, n)) return true
+  }
+  return false
 }
 
 export function pickImage(meta: Record<string, string>, baseUrl: string): string {
@@ -175,13 +209,34 @@ export function pickImage(meta: Record<string, string>, baseUrl: string): string
  * (« The Last Hamlet — Ben Duke / Lost Dog (Théâtre de la Ville) » →
  * « The Last Hamlet » + « Ben Duke »). Le lieu et les parenthèses sont ignorés.
  */
+/** Mots qui précisent le lieu ou la période, pas l'œuvre ni l'artiste (« — TCE », « — hiver 2026 »). */
+const QUALIFIERS = new Set([
+  "tce", "chaillot", "garnier", "bastille", "centquatre", "hiver", "printemps", "automne", "ete",
+  "reprise", "nouvelle", "palais", "congres", "champs", "elysees",
+])
+
+/** Comme requiredParts, avec les variantes de chaque partie (« Benjamin Millepied / November Ultra »). */
+export function requiredAlternatives(eventTitle: string): string[][][] {
+  const cleaned = eventTitle.replace(/\([^)]*\)/g, " ")
+  return cleaned
+    .split(/\s[—–]\s|\s-\s/)
+    .map((part) =>
+      part
+        .split(/\s\/\s/)
+        .map((alt) => titleTokens(alt.split(/:|,|\|/)[0] ?? ""))
+        .filter((tokens) => tokens.length > 0 && !tokens.every((t) => QUALIFIERS.has(t)))
+    )
+    .filter((alts) => alts.length > 0)
+    .slice(0, 2)
+}
+
 export function requiredParts(eventTitle: string): string[][] {
   const cleaned = eventTitle.replace(/\([^)]*\)/g, " ")
   return cleaned
     .split(/\s[—–]\s|\s-\s/)
-    .slice(0, 2)
     .map((part) => titleTokens(part.split(/\s\/\s|:|,|\|/)[0] ?? ""))
-    .filter((tokens) => tokens.length > 0)
+    .filter((tokens) => tokens.length > 0 && !tokens.every((t) => QUALIFIERS.has(t)))
+    .slice(0, 2)
 }
 
 /**
@@ -190,17 +245,14 @@ export function requiredParts(eventTitle: string): string[][] {
  * texte de la page (ex. TCE : titre « The Joffrey Ballet », œuvre dans le texte).
  */
 export function titlesMatch(eventTitle: string, pageText: string, bodyText = ""): boolean {
-  const parts = requiredParts(eventTitle)
+  const parts = requiredAlternatives(eventTitle)
   if (!parts.length) return false
   const head = new Set(titleTokens(pageText))
   const all = new Set([...head, ...titleTokens(bodyText)])
-  const [first, ...others] = parts
-  const firstInHead = first.every((t) => head.has(t))
-  const othersInHead = others.every((tokens) => tokens.every((t) => head.has(t)))
-  if (firstInHead && othersInHead) return true
+  const inSet = (set: Set<string>, alts: string[][]) => alts.some((tokens) => tokens.every((t) => hasToken(set, t)))
+  if (parts.every((alts) => inSet(head, alts))) return true
   // Une des parties dans le titre, les autres au moins dans le texte de la page.
-  const anyPartInHead = parts.some((tokens) => tokens.every((t) => head.has(t)))
-  return anyPartInHead && parts.every((tokens) => tokens.every((t) => all.has(t)))
+  return parts.some((alts) => inSet(head, alts)) && parts.every((alts) => inSet(all, alts))
 }
 
 /** Texte visible du contenu principal (sans menus, scripts ni pied de page). */
@@ -519,6 +571,45 @@ export function yearsIn(value: string): number[] {
   return Array.from(new Set(Array.from(value.matchAll(/(?<!\d)(20[23]\d)(?!\d)/g), (m) => Number(m[1]))))
 }
 
+const MONTHS: Record<string, number> = {
+  janvier: 1, fevrier: 2, mars: 3, avril: 4, mai: 5, juin: 6, juillet: 7, aout: 8, septembre: 9, octobre: 10, novembre: 11, decembre: 12,
+  january: 1, february: 2, march: 3, april: 4, may: 5, june: 6, july: 7, august: 8, september: 9, october: 10, november: 11, december: 12,
+  janv: 1, fevr: 2, avr: 4, juil: 7, sept: 9, oct: 10, nov: 11, dec: 12,
+}
+
+/**
+ * Dates écrites sur une page (« 1 au 16 octobre 2026 », « 22.01.27 »,
+ * « 2027-01-22 »…). Une date sans année prend l'année la plus proche citée.
+ */
+export function datesIn(text: string, defaultYear?: number): string[] {
+  const plain = text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+  const found = new Set<string>()
+  const add = (y: number, m: number, d: number) => {
+    if (y < 2020 || y > 2039 || m < 1 || m > 12 || d < 1 || d > 31) return
+    found.add(`${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`)
+  }
+  for (const m of plain.matchAll(/(20\d\d)-(\d\d)-(\d\d)/g)) add(+m[1], +m[2], +m[3])
+  for (const m of plain.matchAll(/(?<!\d)(\d{1,2})[./](\d{1,2})[./](20\d\d|\d\d)(?!\d)/g)) add(m[3].length === 2 ? 2000 + +m[3] : +m[3], +m[2], +m[1])
+  const monthNames = Object.keys(MONTHS).join("|")
+  const re = new RegExp(`(?<!\\d)(\\d{1,2})(?:er)?(?:\\s*(?:au|-|et|&)\\s*\\d{1,2}(?:er)?)?\\s+(${monthNames})\\.?(?:\\s+(20\\d\\d))?`, "g")
+  for (const m of plain.matchAll(re)) {
+    const year = m[3] ? +m[3] : defaultYear
+    if (year) add(year, MONTHS[m[2]], +m[1])
+  }
+  return Array.from(found)
+}
+
+/** Les dates d'une page recoupent-elles celles de la fiche (± marge) ? */
+export function datesOverlapPage(pageDates: string[], start: string | null, end: string | null, marginDays = 21): boolean | null {
+  if (!pageDates.length || !start) return null
+  const s = Date.parse(start.slice(0, 10)) - marginDays * 86_400_000
+  const e = Date.parse((end ?? start).slice(0, 10)) + marginDays * 86_400_000
+  return pageDates.some((d) => {
+    const t = Date.parse(d)
+    return t >= s && t <= e
+  })
+}
+
 export type LookupContext = {
   title: string
   /** Année de début de saison (septembre → saison suivante). */
@@ -526,6 +617,8 @@ export type LookupContext = {
   /** Année civile de l'événement. */
   calendarYear?: number
   venue?: string
+  startDate?: string | null
+  endDate?: string | null
   /** Domaines considérés comme officiels (lieu, organisateur, lien d'origine…). */
   trustedHosts: string[]
   directories: string[]
@@ -540,7 +633,9 @@ export function scorePage(
   head: string,
   body: string,
   imageUrl: string,
-  collective: boolean
+  collective: boolean,
+  /** Texte de toute la page (les dates sont parfois dans un panneau hors du contenu principal). */
+  dateText = ""
 ): ImageScore {
   const details: Record<string, number> = {}
   const headSet = new Set(titleTokens(head))
@@ -548,8 +643,8 @@ export function scorePage(
   const parts = requiredParts(ctx.title)
   const [work = [], artist = []] = parts
 
-  details["œuvre"] = work.length && work.every((t) => headSet.has(t)) ? 35 : work.length && work.every((t) => allSet.has(t)) ? 25 : collective ? 25 : 0
-  details["artiste"] = !artist.length ? 10 : artist.every((t) => headSet.has(t)) ? 15 : artist.every((t) => allSet.has(t)) ? 12 : 0
+  details["œuvre"] = work.length && work.every((t) => hasToken(headSet, t)) ? 35 : work.length && work.every((t) => hasToken(allSet, t)) ? 25 : collective ? 25 : 0
+  details["artiste"] = !artist.length ? 10 : artist.every((t) => hasToken(headSet, t)) ? 15 : artist.every((t) => hasToken(allSet, t)) ? 12 : 0
 
   const venue = (ctx.venue ?? "").trim()
   if (!venue || UNKNOWN_VENUES.test(venue)) details["lieu"] = 7
@@ -566,7 +661,11 @@ export function scorePage(
   const years = [ctx.calendarYear, ctx.eventYear, ctx.eventYear ? ctx.eventYear + 1 : undefined].filter(Boolean) as number[]
   const seasonShort = ctx.eventYear ? `${String(ctx.eventYear).slice(2)}-${String(ctx.eventYear + 1).slice(2)}` : "__"
   const mentioned = yearsIn(`${head} ${body.slice(0, 4000)} ${pageUrl}`)
-  details["date / édition"] = mentioned.some((y) => years.includes(y)) || `${head} ${pageUrl}`.includes(seasonShort) ? 15 : mentioned.length ? 0 : 5
+  const overlap = collective ? null : datesOverlapPage(datesIn(`${head} ${body.slice(0, 6000)} ${dateText}`, ctx.calendarYear), ctx.startDate ?? null, ctx.endDate ?? null)
+  if (overlap === true) details["date / édition"] = 15
+  // Dates précises sur la page, mais aucune ne correspond : autre série de représentations.
+  else if (overlap === false) details["date / édition"] = -25
+  else details["date / édition"] = mentioned.some((y) => years.includes(y)) || `${head} ${pageUrl}`.includes(seasonShort) ? 12 : mentioned.length ? 0 : 5
 
   const provenance = provenanceOf(pageUrl, ctx.trustedHosts)
   details["provenance"] = { "open data": 20, officielle: 20, billetterie: 12, "autre site": 10, "média ou agrégateur": 0 }[provenance]
@@ -591,7 +690,7 @@ export type ImageFit = "photo" | "logo"
 export type ScoredImage = FoundImage & { score: ImageScore; provenance: Provenance; fit: ImageFit }
 export type ScoredLookup = { image: ScoredImage | null; reason: string; best?: ScoredImage | null }
 
-async function checkPage(ctx: LookupContext, pageUrl: string, collective: boolean): Promise<ScoredLookup> {
+export async function checkPage(ctx: LookupContext, pageUrl: string, collective: boolean): Promise<ScoredLookup> {
   if (!collective && isNonEventPath(pageUrl)) return { image: null, reason: "Le lien mène à un article, pas à la page de l'événement" }
   const season = seasonYearInPath(pageUrl)
   if (ctx.eventYear && season !== null && season < ctx.eventYear) return { image: null, reason: "La page concerne une saison passée" }
@@ -629,6 +728,12 @@ async function checkPage(ctx: LookupContext, pageUrl: string, collective: boolea
   if (!url) return { image: null, reason: "Aucun visuel déclaré sur la page" }
 
   let fit: ImageFit = "photo"
+  if (isLogoLike(url) && !collective) {
+    // Visuel générique du site : on cherche l'image du contenu nommée d'après l'œuvre.
+    const titled = titledContentImage(html, ctx.title)
+    const titledUrl = titled ? pickImage({ image: titled }, pageUrl) : ""
+    if (titledUrl && !isLogoLike(titledUrl)) url = titledUrl
+  }
   if (isLogoLike(url)) {
     // Saison ou festival : le logo officiel est acceptable, affiché en entier.
     if (!collective || /favicon|apple-touch|gravatar|avatar|placeholder/i.test(url)) {
@@ -636,7 +741,8 @@ async function checkPage(ctx: LookupContext, pageUrl: string, collective: boolea
     }
     fit = "logo"
   }
-  if (isOlderEditionImage(url, ctx.calendarYear, ctx.eventYear)) return { image: null, reason: "Le visuel est celui d'une édition passée" }
+  // Saison ou festival : pas l'affiche d'une édition passée (une photo de spectacle datée reste valable).
+  if (collective && isOlderEditionImage(url, ctx.calendarYear, ctx.eventYear)) return { image: null, reason: "Le visuel est celui d'une édition passée" }
 
   if (!collective) {
     const fallback = await defaultImageOf(pageUrl)
@@ -644,7 +750,10 @@ async function checkPage(ctx: LookupContext, pageUrl: string, collective: boolea
   }
   if (!(await imageResponds(url))) return { image: null, reason: "L'image ne se charge pas" }
 
-  const score = scorePage(ctx, pageUrl, head, body, url, collective)
+  const fullText = decodeEntities(
+    html.replace(/<(script|style|noscript)\b[\s\S]*?<\/\1>/gi, " ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ")
+  ).slice(0, 40_000)
+  const score = scorePage(ctx, pageUrl, head, body, url, collective, fullText)
   const provenance = provenanceOf(pageUrl, ctx.trustedHosts)
   const site = meta["og:site_name"] || new URL(pageUrl).hostname.replace(/^www\./, "")
   const image: ScoredImage = { url, sourceUrl: pageUrl, credit: site, alt: meta["og:image:alt"] || ctx.title, score, provenance, fit }
@@ -695,7 +804,7 @@ export function guessedUrls(eventTitle: string, directories: string[]): string[]
 
 /** Contexte de recherche d'une fiche (années, lieu, domaines de confiance). */
 export function lookupContext(
-  fiche: { title: string; startDate: string | null; venue?: string; eventLinks?: string[] },
+  fiche: { title: string; startDate: string | null; endDate?: string | null; venue?: string; eventLinks?: string[] },
   directories: string[] = [],
   extraTrusted: string[] = [],
   venueSites: Record<string, string> = {}
@@ -713,7 +822,16 @@ export function lookupContext(
   const trusted = [...(fiche.eventLinks ?? []), ...extraTrusted, venueSites[fiche.venue ?? ""] ?? ""]
     .map(host)
     .filter((h) => h && !AGGREGATORS.test(h) && !TICKETING.test(h))
-  return { title: fiche.title, eventYear, calendarYear, venue: fiche.venue, trustedHosts: Array.from(new Set(trusted)), directories }
+  return {
+    title: fiche.title,
+    eventYear,
+    calendarYear,
+    venue: fiche.venue,
+    startDate: fiche.startDate,
+    endDate: fiche.endDate ?? null,
+    trustedHosts: Array.from(new Set(trusted)),
+    directories,
+  }
 }
 
 /**
@@ -743,9 +861,11 @@ export async function findOfficialImage(ctx: LookupContext, pageUrl: string): Pr
     return null
   }
 
+  let directReason = ""
   if (!isGenericPage(pageUrl)) {
     const direct = await attempt(pageUrl)
     if (direct) return direct
+    directReason = (last as ScoredLookup).reason
   } else {
     const listing = await getHtml(pageUrl)
     const eventUrl = listing ? findEventLink(listing, pageUrl, ctx.title) : ""
@@ -771,7 +891,7 @@ export async function findOfficialImage(ctx: LookupContext, pageUrl: string): Pr
     const site = await attempt(isGenericPage(pageUrl) ? pageUrl : origin + "/", true)
     if (site) return site
   }
-  return { ...last, best }
+  return { ...last, reason: directReason || last.reason, best }
 }
 
 /** Revérifie une image déjà enregistrée (lien toujours valide). */

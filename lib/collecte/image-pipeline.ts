@@ -45,7 +45,7 @@ import {
 import { resolveOfficialPage, resolverAvailable } from "./resolver"
 import { searchQfapByTitle } from "./sources/que-faire-a-paris"
 import { VENUE_SITES } from "./venues"
-import { sameEvent } from "./rules"
+import { normalizeKey, sameEvent } from "./rules"
 import { PUBLICATION, type CollectedEvent, type RunReport } from "./types"
 
 export type ImageStepOptions = {
@@ -95,12 +95,64 @@ export async function findOpenDataTwin(page: AgendaPage): Promise<CollectedEvent
   return records.find((r) => matchesOpenDataEvent(page, r, Object.keys(VENUE_SITES))) ?? null
 }
 
+/** Dates ou lieu rectifiés d'après la page officielle (appliqués seulement si la page est vérifiée). */
+type FactFix = { startDate?: string; endDate?: string; venue?: string; note: string }
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
+
+/** Écarts entre la fiche et la programmation officielle trouvée par la recherche web. */
+export function factCorrections(
+  page: { startDate: string | null; endDate: string | null; venue: string },
+  resolution: { startDate?: string; endDate?: string; venue?: string },
+  knownVenues: string[]
+): FactFix | undefined {
+  const fix: FactFix = { note: "" }
+  const notes: string[] = []
+  const start = ISO_DATE.test(resolution.startDate ?? "") ? resolution.startDate! : ""
+  const end = ISO_DATE.test(resolution.endDate ?? "") ? resolution.endDate! : ""
+  if (start && (start !== (page.startDate ?? "").slice(0, 10) || (end && end !== (page.endDate ?? "").slice(0, 10)))) {
+    fix.startDate = start
+    fix.endDate = end && end !== start ? end : undefined
+    notes.push(`dates ${page.startDate ?? "?"}${page.endDate ? ` → ${page.endDate}` : ""} remplacées par ${start}${fix.endDate ? ` → ${fix.endDate}` : ""}`)
+  }
+  const official = (resolution.venue ?? "").trim()
+  if (official) {
+    const key = normalizeKey(official)
+    const current = normalizeKey(page.venue)
+    const same = current && (key.includes(current) || current.includes(key))
+    if (!same) {
+      // On ne crée pas de nouvelle option « Lieu » : seulement un lieu déjà connu de l'agenda.
+      const known = knownVenues.find((v) => {
+        const k = normalizeKey(v)
+        return k.length > 3 && (key.includes(k) || k.includes(key))
+      })
+      if (known) {
+        fix.venue = known
+        notes.push(`lieu « ${page.venue || "vide"} » remplacé par « ${known} »`)
+      }
+    }
+  }
+  if (!notes.length) return undefined
+  fix.note = notes.join(", ")
+  return fix
+}
+
 type Outcome =
-  | { kind: "image"; image: ScoredImage; via: string; linkFix?: Record<string, unknown>; titleFix?: string }
-  | { kind: "openData"; event: CollectedEvent }
+  | { kind: "image"; image: ScoredImage; via: string; linkFix?: Record<string, unknown>; titleFix?: string; factFix?: FactFix }
+  | { kind: "openData"; event: CollectedEvent; linkFix?: Record<string, unknown>; factFix?: FactFix }
   | { kind: "review"; image: ScoredImage; reason: string; linkFix?: Record<string, unknown> }
-  | { kind: "unconfirmed"; reason: string }
+  | { kind: "unconfirmed"; reason: string; programmeUrl?: string }
   | { kind: "none"; reason: string; linkFix?: Record<string, unknown> }
+
+function factProperties(page: AgendaPage, fix: FactFix | undefined, c: ImageStepOptions["report"]["counters"], report: ImageStepOptions["report"]) {
+  if (!fix) return {}
+  c.titlesCorrected++
+  report.actions.push(`Fiche rectifiée : ${page.title} — ${fix.note}`)
+  const out: Record<string, unknown> = {}
+  if (fix.startDate) out[F.date] = { date: { start: fix.startDate, end: fix.endDate ?? null } }
+  if (fix.venue) out[F.lieu] = { select: { name: fix.venue } }
+  return out
+}
 
 export async function runImageStep(pages: AgendaPage[], opts: ImageStepOptions): Promise<boolean> {
   const { client, today, dryRun, report } = opts
@@ -174,6 +226,7 @@ export async function runImageStep(pages: AgendaPage[], opts: ImageStepOptions):
   const illustrated = pages.filter((p) => p.imageUrl && [IMAGE_STATUS.official, IMAGE_STATUS.openData].includes(p.imageStatus as never))
   const directories = eventDirectories(pages.filter((p) => p.imageStatus === IMAGE_STATUS.official).map((p) => p.imageSource))
   let budget = resolverAvailable() ? opts.resolverBudget : 0
+  const knownVenues = Array.from(new Set([...Object.keys(VENUE_SITES), ...pages.map((p) => p.venue)].filter(Boolean)))
 
   // 2a. Même spectacle déjà illustré.
   for (const page of [...queue]) {
@@ -226,7 +279,11 @@ export async function runImageStep(pages: AgendaPage[], opts: ImageStepOptions):
       if (resolution) {
         c.webSearches += resolution.searches
         if (resolution.status === "unconfirmed") {
-          return { kind: "unconfirmed", reason: resolution.explanation || "Aucune programmation officielle ne correspond" }
+          return {
+            kind: "unconfirmed",
+            reason: `${resolution.explanation || "Aucune programmation officielle ne correspond"}${resolution.programmeUrl ? ` (programmation consultée : ${resolution.programmeUrl})` : ""}`,
+            programmeUrl: resolution.programmeUrl,
+          }
         }
         if (resolution.status === "confirmed" && resolution.officialUrl) {
           const linkFix: Record<string, unknown> = { [F.officialUrl]: props.url(resolution.officialUrl) }
@@ -234,11 +291,23 @@ export async function runImageStep(pages: AgendaPage[], opts: ImageStepOptions):
           // Fiche vague : on cherche avec le titre officiel, corrigé seulement si la page le confirme.
           const vague = isVagueTitle(page.title)
           const title = vague && resolution.exactTitle ? resolution.exactTitle : page.title
-          const ctx2 = lookupContext({ ...page, title }, directories, [resolution.officialUrl], VENUE_SITES)
+          const factFix = factCorrections(page, resolution, knownVenues)
+          const corrected = {
+            ...page,
+            title,
+            startDate: factFix?.startDate ?? page.startDate,
+            endDate: factFix?.startDate ? factFix.endDate ?? null : page.endDate,
+            venue: factFix?.venue ?? page.venue,
+          }
+          if (factFix) {
+            const twin = await findOpenDataTwin(corrected)
+            if (twin) return { kind: "openData", event: twin, linkFix, factFix }
+          }
+          const ctx2 = lookupContext(corrected, directories, [resolution.officialUrl], VENUE_SITES)
           const result = await findOfficialImage(ctx2, resolution.officialUrl)
           // La page a été vérifiée avec le titre officiel : la correction est confirmée.
           const titleFix = vague && resolution.exactTitle && result.image ? resolution.exactTitle : undefined
-          if (result.image) return { kind: "image", image: result.image, via: "recherche web", linkFix, titleFix }
+          if (result.image) return { kind: "image", image: result.image, via: "recherche web", linkFix, titleFix, factFix }
           if (result.best) return { kind: "review", image: result.best, reason: result.reason, linkFix }
           return { kind: "none", reason: `Page officielle trouvée (${resolution.officialUrl}) mais ${result.reason.toLowerCase()}`, linkFix }
         }
@@ -288,13 +357,16 @@ export async function runImageStep(pages: AgendaPage[], opts: ImageStepOptions):
       switch (outcome.kind) {
         case "openData":
           c.imagesAdded++
+          if (outcome.linkFix) c.linksCorrected++
           report.actions.push(`Visuel ajouté : ${page.title} (Ville de Paris – Que faire à Paris)`)
           await write(page, {
             ...base,
+            ...(outcome.linkFix ?? {}),
+            ...factProperties(page, outcome.factFix, c, report),
             ...sourceImageProperties(outcome.event, today),
             [F.imageScore]: props.num(100),
             [F.imageNext]: { date: null },
-            ...appendHistory(page.imageHistory, `${today} : visuel open data (${outcome.event.sourceUrl})`),
+            ...appendHistory(page.imageHistory, `${today} : visuel open data (${outcome.event.sourceUrl})${outcome.factFix ? ` ; fiche rectifiée : ${outcome.factFix.note}` : ""}`),
           })
           return
         case "image": {
@@ -311,8 +383,9 @@ export async function runImageStep(pages: AgendaPage[], opts: ImageStepOptions):
           await write(page, {
             ...base,
             ...extra,
+            ...factProperties(page, outcome.factFix, c, report),
             ...officialImageProperties(outcome.image, today),
-            ...appendHistory(page.imageHistory, `${today} : visuel ${outcome.image.url} (score ${outcome.image.score.total}, ${outcome.via})`),
+            ...appendHistory(page.imageHistory, `${today} : visuel ${outcome.image.url} (score ${outcome.image.score.total}, ${outcome.via})${outcome.factFix ? ` ; fiche rectifiée : ${outcome.factFix.note}` : ""}`),
           })
           return
         }
@@ -329,9 +402,10 @@ export async function runImageStep(pages: AgendaPage[], opts: ImageStepOptions):
           })
           return
         case "unconfirmed": {
-          // Fiche vague, ou deuxième recherche sans résultat : masquée jusqu'à confirmation.
+          // Fiche vague, absente de la programmation officielle consultée, ou deuxième
+          // recherche sans résultat : masquée jusqu'à confirmation.
           const already = /non confirmé/i.test(page.imageHistory)
-          if (isVagueTitle(page.title) || already) {
+          if (isVagueTitle(page.title) || outcome.programmeUrl || already) {
             c.unconfirmed++
             report.actions.push(`Fiche masquée (non confirmée) : ${page.title} — ${outcome.reason}`)
             await write(page, {

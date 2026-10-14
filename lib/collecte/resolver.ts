@@ -37,6 +37,8 @@ export type Resolution = {
   startDate: string
   endDate: string
   explanation: string
+  /** Programmation officielle consultée où l'événement ne figure pas (preuve d'absence). */
+  programmeUrl: string
   /** Adresses réellement renvoyées par la recherche web. */
   searchedUrls: string[]
   searches: number
@@ -69,6 +71,7 @@ async function presetResolution(title: string): Promise<Resolution | null> {
     startDate: r.startDate ?? "",
     endDate: r.endDate ?? "",
     explanation: r.explanation ?? "",
+    programmeUrl: r.programmeUrl ?? "",
     searchedUrls: [r.officialUrl ?? "", r.ticketUrl ?? ""].filter(Boolean),
     searches: 0,
   }
@@ -81,8 +84,9 @@ Règles :
 - Pour une saison ou un festival, cherche la page de l'édition correspondant aux dates de la fiche.
 - N'invente jamais une adresse : ne donne que des adresses vues dans tes résultats de recherche.
 - Si la fiche est vague (« ou similaire », « tournée », « création ») et qu'aucun événement réel ne correspond, réponds "unconfirmed".
+- Si tu as consulté la programmation officielle du lieu ou de la compagnie pour ces dates et que l'événement n'y figure pas, réponds "unconfirmed" et donne l'adresse de cette programmation dans programmeUrl.
 Réponds UNIQUEMENT par un objet JSON, sans texte autour :
-{"status":"confirmed|not_found|unconfirmed","officialUrl":"","ticketUrl":"","exactTitle":"","venue":"","startDate":"AAAA-MM-JJ","endDate":"AAAA-MM-JJ","explanation":"une phrase"}`
+{"status":"confirmed|not_found|unconfirmed","officialUrl":"","ticketUrl":"","exactTitle":"","venue":"","startDate":"AAAA-MM-JJ","endDate":"AAAA-MM-JJ","explanation":"une phrase","programmeUrl":""}`
 
 function describe(input: ResolverInput): string {
   const lines = [
@@ -171,6 +175,7 @@ export async function resolveOfficialPage(input: ResolverInput): Promise<Resolut
     startDate: (parsed.startDate ?? "").trim(),
     endDate: (parsed.endDate ?? "").trim(),
     explanation: (parsed.explanation ?? "").trim().slice(0, 300),
+    programmeUrl: status === "unconfirmed" ? verified(parsed.programmeUrl) : "",
     searchedUrls,
     searches: data.usage?.server_tool_use?.web_search_requests ?? 0,
   }
