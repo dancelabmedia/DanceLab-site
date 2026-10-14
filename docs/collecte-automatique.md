@@ -119,7 +119,7 @@ Contrôle de la configuration : `GET /api/cron/collecte-sante` avec
 | `CRON_SECRET` | obligatoire pour le cron (déjà utilisée par check-episodes) |
 | `ADMIN_PASSWORD` ou `PREVIEW_PASSWORD` | accès à /admin/collecte |
 | `NOTION_COLLECTE_LOG_DATABASE_ID` | optionnelle (journal par défaut déjà renseigné) |
-| `ANTHROPIC_API_KEY` | recherche web des pages officielles (déjà utilisée par les articles) |
+| `ANTHROPIC_API_KEY` ou `AI_GATEWAY_API_KEY` | recherche web des pages officielles : clé Anthropic (sk-ant-…) ou clé Vercel AI Gateway (vck_…) |
 | `COLLECTE_RESOLVER_DAILY` | optionnelle : recherches web par jour (15) |
 
 L'intégration Notion du site doit avoir accès à la base « Journal des

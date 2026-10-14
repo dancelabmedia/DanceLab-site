@@ -227,7 +227,7 @@ export default function AdminCollectePage() {
               {!cfg.notion && <li>NOTION_TOKEN manquant : la collecte ne peut pas écrire dans l'agenda.</li>}
               {!cfg.journal && <li>NOTION_COLLECTE_LOG_DATABASE_ID manquant : l'historique n'est pas enregistré.</li>}
               {!cfg.cronSecret && <li>CRON_SECRET manquant : la collecte du lundi ne se déclenchera pas.</li>}
-              {!cfg.rechercheWeb && <li>ANTHROPIC_API_KEY manquante : la recherche web des pages officielles est désactivée.</li>}
+              {!cfg.rechercheWeb && <li>Clé Claude manquante (ANTHROPIC_API_KEY ou AI_GATEWAY_API_KEY) : la recherche web des pages officielles est désactivée.</li>}
             </ul>
           </div>
         ) : null}
