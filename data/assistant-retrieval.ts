@@ -1,5 +1,6 @@
 import type { AssistantItem } from './assistant-index'
 import { normalizeSearchText } from './search'
+import { professionalAnswer, professionalResourceMatches, professionalTopic, ANNEXES_ARTICLE_SLUG } from './assistant-professional-knowledge'
 
 // ─── Style knowledge ───────────────────────────────────────────────────────────
 
@@ -72,6 +73,11 @@ const TOPIC_TRIGGERS: [RegExp, string[], string][] = [
   [/\bshowreel\b|\bdemo\s*reel\b|\bportfolio\b|\bcv\s+(?:de\s+)?dans(eur|euse)\b/,
     ['showreel', 'portfolio', 'cv', 'visibilité', 'casting'],
     'portfolio'],
+  // Recherche active de contrat / emploi — doit précéder le trigger 'contrats'
+  // pour éviter qu'un « trouver un contrat » ne tombe dans les conseils CDDU.
+  [/\btrouver\b.*\bcontrat|\bcherchr?\b.*\bcontrat|\bcontrat\b.*\btrouver|\bcandidature|\bcandidater\b|\bpostuler\b|\btrouver\b.*\btravail\b.*\bdanse|\bjob\b.*\bdanse/,
+    ['casting', 'audition', 'carrière', 'réseau professionnel'],
+    'casting'],
   [/\bcontrats?\b|\br[eé]mun[eé]ration\b|\bsalaire\b|\bdroits?\s+des\s+artistes\b/,
     ['contrats', 'rémunération', 'droits des artistes', 'intermittence'],
     'contrats'],
@@ -145,6 +151,12 @@ type Intent =
 
 function detectIntent(query: string): Intent {
   const normalized = normalizeSearchText(query)
+
+  // A precise regulatory question takes precedence over incidental style/health words.
+  const professional = professionalTopic(normalized)
+  if (professional === "contracts") return { type: "topic", topicTags: ["contrats", "droit du travail", "cdd d’usage", "cddu"], intentKey: "contrats" }
+  if (professional === "no-contract") return { type: "topic", topicTags: ["intermittence", "audition", "casting", "carrière", "formation"], intentKey: "sans-contrat" }
+  if (professional) return { type: "topic", topicTags: ["intermittence", "annexes 8 et 10", "507 heures", "cachets"], intentKey: "intermittence" }
 
   // 1. Dance style detection (most specific)
   for (const [pattern, styleKey] of STYLE_TRIGGERS) {
@@ -484,17 +496,22 @@ export function findRelevantContent(
   const ranked = scored
     .filter(e => e.score >= minScore)
     .filter(e => matchesQuestionScope(e.item, intent, normalizedQuery))
-    .filter(e => !options.recentResultIds?.includes(e.item.id))
+    .filter(e => professionalResourceMatches(query, `${e.item.title} ${e.item.excerpt} ${e.item.recommendationEvidence ?? ''}`))
+    // The exact reference article remains available when explicitly asked again.
+    .filter(e => e.item.id === `article-${ANNEXES_ARTICLE_SLUG}` || !options.recentResultIds?.includes(e.item.id))
     .sort((a, b) => b.score - a.score || a.item.title.localeCompare(b.item.title, 'fr'))
 
   // À pertinence validée, privilégier d'abord des formats différents afin de
   // faire découvrir le média dans sa largeur (article, épisode, métier,
   // style), puis compléter avec les meilleurs résultats restants.
-  const selected: typeof ranked = []
+  const reference = professionalTopic(query) === 'annexes' ? ranked.find(e => e.item.id === `article-${ANNEXES_ARTICLE_SLUG}`) : undefined
+  const selected: typeof ranked = reference && limit > 0 ? [reference] : []
   const selectedIds = new Set<string>()
   const selectedTypes = new Set<AssistantItem['type']>()
+  if (reference) { selectedIds.add(reference.item.id); selectedTypes.add(reference.item.type) }
   for (const entry of ranked) {
     if (selected.length >= limit) break
+    if (selectedIds.has(entry.item.id)) continue
     if (selectedTypes.has(entry.item.type)) continue
     selected.push(entry)
     selectedIds.add(entry.item.id)
@@ -656,6 +673,7 @@ const TOPIC_LABELS: Record<string, string> = {
   'visibilite':     'la visibilité et les réseaux sociaux',
   'portfolio':      'le CV, le portfolio et le showreel',
   'contrats':       'les contrats et les droits professionnels',
+  'sans-contrat':   'les périodes sans contrat et les démarches à suivre',
   'formation':      'la formation et la professionnalisation',
   'reconversion':   'la reconversion dans les métiers de la danse',
   'carriere':       'la construction d’une carrière durable',
@@ -744,6 +762,7 @@ function intentKey(intent: Intent): string {
 type FollowUpOptions = {
   excludedQuestions?: string[]
   limit?: number
+  locale?: 'fr' | 'en'
 }
 
 const QUESTION_INTENT_PATTERNS: Array<[RegExp, string]> = [
@@ -789,6 +808,12 @@ const QUESTION_INTENT_PATTERNS: Array<[RegExp, string]> = [
  */
 export function questionIntentFingerprint(question: string): string {
   const normalized = normalizeSearchText(question)
+  const professional = professionalTopic(question)
+  if (professional === 'annexes') return 'intermittence:annexes-8-10'
+  if (professional === 'hours') return 'intermittence:507-heures'
+  if (professional === 'cachets') return 'intermittence:cachets'
+  if (professional === 'renewal') return 'intermittence:renouvellement-droits'
+  if (professional === 'no-contract') return 'sans-contrat:periode-sans-contrat'
   const key = intentKey(detectIntent(normalized))
   const preciseIntent = QUESTION_INTENT_PATTERNS.find(([pattern]) => pattern.test(normalized))?.[1]
   if (preciseIntent) return `${key}:${preciseIntent}`
@@ -807,7 +832,8 @@ export function questionIntentFingerprint(question: string): string {
 export function generateFollowUps(query: string, options: FollowUpOptions = {}): string[] {
   const key = intentKey(detectIntent(normalizeSearchText(query)))
   const byIntent: Record<string, string[]> = {
-    intermittence: ['Comment obtenir les 507 heures ?', 'Quelle différence entre les annexes 8 et 10 ?', 'Comment fonctionne le renouvellement des droits ?', 'Comment déclarer ses cachets et ses heures ?', 'Quels contrats comptent pour l’intermittence ?', 'Que faire en cas de période sans contrat ?'],
+    intermittence: ["Comment obtenir les 507 heures ?", "Quelle différence entre les annexes 8 et 10 ?", "Comment fonctionne le renouvellement des droits ?", "Comment déclarer ses cachets et ses heures ?", "Quels contrats comptent pour l’intermittence ?", "Que faire en cas de période sans contrat ?"],
+    "sans-contrat": ["Comment effectuer son actualisation mensuelle France Travail ?", "Comment renouveler ses droits à l’intermittence ?", "Comment trouver des auditions régulièrement ?", "Quelles formations sont accessibles entre deux contrats ?", "Comment entretenir son niveau technique pendant une période creuse ?", "Comment prendre soin de sa santé mentale entre deux projets ?"],
     financement: ['Comment préparer un dossier de subvention ?', 'Quels éléments mettre dans un budget prévisionnel ?', 'Qui contacter avant de déposer une demande ?', 'Comment diversifier les financements d’un projet ?', 'Quelle place donner à la coproduction ?', 'Comment présenter un projet à un partenaire ?'],
     diffusion: ['Comment préparer un dossier de diffusion ?', 'Comment contacter un.e programmateur.rice ?', 'Quand relancer après un premier message ?', 'Comment choisir les lieux adaptés à son spectacle ?', 'Comment préparer une première tournée ?', 'Quels métiers accompagnent la diffusion ?'],
     legitimite: ['Comment définir son identité artistique ?', 'Comment sortir de la comparaison ?', 'Comment demander des retours utiles sur son travail ?', 'Comment présenter son univers sans se survaloriser ?', 'Comment choisir des collaborations cohérentes ?', 'Comment faire évoluer sa démarche artistique ?'],
@@ -820,6 +846,11 @@ export function generateFollowUps(query: string, options: FollowUpOptions = {}):
     casting: ['Comment savoir si une audition correspond à mon profil ?', 'Que faut-il préparer avant un casting ?', 'Comment relancer après une audition ?', 'Comment construire un book professionnel ?', 'Comment développer son réseau dans la danse ?', 'Quels sont les droits d’un.e danseur.se professionnel.le ?'],
     portfolio: ['Quelle durée pour un showreel ?', 'Comment adapter son CV à une audition ?', 'Quelles vidéos choisir pour son portfolio ?', 'Comment organiser un book professionnel ?', 'Faut-il créer plusieurs versions de son showreel ?', 'Comment présenter ses expériences récentes ?'],
     sante: ['Comment organiser sa récupération ?', 'Quand consulter après une douleur ?', 'Comment prévenir le burn-out dans la danse ?', 'Comment adapter sa charge d’entraînement ?', 'Quels métiers accompagnent la santé des danseur.ses ?', 'Comment préparer une reprise après une blessure ?'],
+  }
+  if (options.locale === 'en') {
+    if (key !== 'intermittence' && key !== 'sans-contrat') return []
+    byIntent.intermittence = ['How can I reach the 507 hours?', 'What is the difference between Annexes 8 and 10?', 'How do I renew intermittent benefits?', 'How should I declare my cachets and hours?', 'Which contracts count towards intermittence?', 'What happens between contracts?']
+    byIntent['sans-contrat'] = ['How do I update my France Travail situation each month?', 'How do I renew intermittent benefits?', 'How can I find auditions regularly?', 'What training options are available between contracts?', 'How do I keep my technical level up during a quiet period?']
   }
   const excluded = new Set((options.excludedQuestions ?? []).map(questionIntentFingerprint))
   const currentIntent = questionIntentFingerprint(query)
@@ -836,7 +867,10 @@ export function generateFollowUps(query: string, options: FollowUpOptions = {}):
 export function generateEditorialPresentation(
   query: string,
   results: AssistantItem[],
+  locale: 'fr' | 'en' = 'fr',
 ): AssistantEditorialPresentation {
+  const professional = professionalAnswer(query, locale)
+  if (professional) return { heading: professional.heading }
   const normalizedQuery = normalizeSearchText(query)
   const intent = detectIntent(normalizedQuery)
 
@@ -844,6 +878,9 @@ export function generateEditorialPresentation(
   // de recommandation, dont le rôle vient seulement après la réponse.
   if (intent.type === 'topic' && intent.intentKey === 'intermittence') {
     return { heading: "Comprendre l'intermittence du spectacle" }
+  }
+  if (intent.type === 'topic' && intent.intentKey === 'sans-contrat') {
+    return { heading: 'Que faire pendant une période sans contrat ?' }
   }
   if (intent.type === 'topic' && intent.intentKey === 'financement') {
     return { heading: 'Comment financer un projet chorégraphique ?' }
@@ -935,7 +972,10 @@ export function generateEditorialResponse(
   query: string,
   results: AssistantItem[],
   history: AssistantHistoryMessage[] = [],
+  locale: 'fr' | 'en' = 'fr',
 ): string {
+  const professional = professionalAnswer(query, locale)
+  if (professional) return professional.message
   const normalizedQuery = normalizeSearchText(query)
   const intent = detectIntent(normalizedQuery)
 
@@ -954,8 +994,7 @@ export function generateEditorialResponse(
   }
 
   const key = intentKey(intent)
-  const previousAssistantText = normalizeSearchText(history.filter(item => item.role === 'assistant').map(item => item.content).join(' '))
-  const guided = GUIDED_ANSWERS[key]?.filter(sentence => !previousAssistantText.includes(normalizeSearchText(sentence))) ?? []
+  const guided = GUIDED_ANSWERS[key] ?? []
   const guidance = guided.slice(0, history.length ? 2 : 3).join('\n\n')
   const resourceNote = results.length
     ? 'Les ressources ci-dessous permettent de prolonger avec des contenus Dance Lab directement liés.'
