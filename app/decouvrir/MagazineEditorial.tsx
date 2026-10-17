@@ -9,6 +9,7 @@ import { getArticleCardMobileObjectPosition, getArticleCardObjectPosition, getRe
 import { useLocale } from '@/components/LocaleProvider'
 import { uiText } from '@/data/i18n/messages'
 import type { UnifiedEpisode } from '@/lib/episodes'
+import latestEpisodeStyles from './LatestEpisode.module.css'
 
 function getThemes(locale: string) {
   if (locale === 'en') return [
@@ -216,14 +217,14 @@ export default function MagazineEditorial({
       </div>
 
       {/* Source unifiée : se met à jour avec chaque nouvel épisode publié. */}
-      <Link href={`/episodes/${latestEpisode.slug}`} className="magx-podcast-episode" data-reveal="delay-2" data-reveal-type="scale-in">
+      <Link href={`/episodes/${latestEpisode.slug}`} className={`magx-podcast-episode ${latestEpisodeStyles.card}`} data-reveal="delay-2" data-reveal-type="scale-in">
         <span>{t('Dernier épisode')}</span>
         <div className="magx-podcast-episode-row">
           <div className="magx-podcast-episode-image">
             <img src={latestEpisode.image} alt={latestEpisode.guest} />
             <i aria-hidden="true">▶</i>
           </div>
-          <div className="magx-podcast-episode-copy">
+          <div className={`magx-podcast-episode-copy ${latestEpisodeStyles.copy}`}>
             <h3>{latestEpisode.title}</h3>
             <small>
               {latestEpisode.number ? `EP ${latestEpisode.number}. ` : ''}{latestEpisode.guest}

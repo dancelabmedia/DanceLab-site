@@ -475,13 +475,25 @@ function normalizeName(value: string) {
     .toLowerCase()
 }
 
+function hasValue(property: NotionProperty) {
+  if (property.type === "date") return Boolean(property.date?.start)
+  if (property.type === "files") return Boolean(property.files?.length)
+  if (property.type === "number") return typeof property.number === "number"
+  return getText(property) !== ""
+}
+
 function findProperty(properties: Record<string, NotionProperty>, aliases: string[]) {
   const normalizedAliases = aliases.map(normalizeName)
-  const candidates = normalizedAliases.map(alias => Object.entries(properties).find(([name]) => normalizeName(name) === alias)?.[1]).filter(Boolean) as NotionProperty[]
-  const filled = candidates.find(property => getText(property) || getDate(property) || getFileUrl(property))
-  if (filled) return filled
-  if (candidates.length) return candidates[0]
+  const matches = Object.entries(properties)
+    .filter(([name]) => normalizedAliases.includes(normalizeName(name)))
+    .sort(([a], [b]) => normalizedAliases.indexOf(normalizeName(a)) - normalizedAliases.indexOf(normalizeName(b)))
+    .map(([, property]) => property)
 
+  // Plusieurs colonnes peuvent correspondre (ex. « Lieu » saisi à la main et
+  // « Salle » rempli par la collecte) : on prend la première qui est remplie.
+  const filled = matches.find(hasValue)
+  if (filled) return filled
+  if (matches.length) return matches[0]
   return Object.values(properties).find((property) => {
     if (normalizedAliases.includes("title") && property.type === "title") return true
     if (normalizedAliases.includes("date") && property.type === "date") return true
@@ -500,6 +512,7 @@ function getText(property?: NotionProperty) {
   if (property.type === "url") return property.url || ""
   if (property.type === "number") return typeof property.number === "number" ? String(property.number) : ""
   if (property.type === "checkbox") return property.checkbox ? "Oui" : "Non"
+  if (property.type === "date") return property.date?.start?.slice(0, 10) || ""
   if (property.type === "formula") {
     if (typeof property.formula?.string === "string") return property.formula.string
     if (typeof property.formula?.number === "number") return String(property.formula.number)
@@ -677,6 +690,16 @@ function applyVenueFallback(event: AgendaEvent) {
   }
 }
 
+/**
+ * Colonne « Publication » (alimentée par la collecte automatique) :
+ * les fiches en attente de validation ou archivées ne sont pas affichées.
+ * Les fiches sans valeur (saisies à la main) restent publiées comme avant.
+ */
+const HIDDEN_PUBLICATION = new Set(["en attente de validation", "archivee", "non confirme"])
+
+function isPublishable(page: NotionPage) {
+  const publication = getText(findProperty(page.properties, ["Publication"]))
+  return !HIDDEN_PUBLICATION.has(normalizeName(publication))
 function splitDisciplines(value: string): string[] {
   if (!value || value.trim() === "") return []
   return value
@@ -692,10 +715,10 @@ function formatNotionDateRange(startDate: string, endDate?: string): string {
     return `${d}.${m}.${y.slice(2)}`
   }
   if (endDate && endDate !== startDate) return `${fmt(startDate)} → ${fmt(endDate)}`
-  return fmt(startDate)
-}
+  return fmt(startDate)}
 
 function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
+  if (!isPublishable(page)) return null
   const properties = page.properties
   const title = getText(findProperty(properties, ["title", "Titre", "Nom", "Name", "Événement", "Evenement", "Event", "Nom de l'événement", "Nom de l'événement"]))
 
@@ -712,7 +735,18 @@ function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
   const source = getText(findProperty(properties, ["Source", "Organisateur", "Organizer"])) || "Notion"
   const ticketUrl = getText(findProperty(properties, ["Lien billetterie", "Billetterie", "Réservation", "Reservation", "Ticket", "Tickets"]))
   const officialUrl = getText(findProperty(properties, ["Lien", "URL", "Lien officiel", "Site", "OfficialUrl", "Page officielle"])) || ""
-  const image = getCoverUrl(page, findProperty(properties, ["Image", "Photo", "Affiche", "Visuel", "Cover"]))
+  // Visuel : fichier ou couverture déposés dans Notion en priorité, puis le
+  // visuel officiel trouvé par la collecte (sauf s'il a été refusé).
+  const manualImage = getCoverUrl(page, findProperty(properties, ["Image", "Photo", "Affiche", "Visuel", "Cover"]))
+  const imageStatus = normalizeName(getText(findProperty(properties, ["Statut image"])))
+  // Images refusées, à vérifier (score insuffisant) ou cassées : non affichées.
+  const hiddenImage = /^(refus|a verifier|lien casse)/.test(imageStatus)
+  const collectedImage = hiddenImage ? "" : getText(findProperty(properties, ["Image URL"]))
+  const imageFit = normalizeName(getText(findProperty(properties, ["Format image"]))) === "logo" ? "logo" : undefined
+  const image = manualImage || collectedImage
+  const imageCredit = manualImage ? "" : getText(findProperty(properties, ["Crédit image"]))
+  const imageSourceUrl = manualImage ? "" : getText(findProperty(properties, ["Source image"]))
+  const imageAlt = getText(findProperty(properties, ["Texte alternatif image"]))
 
   // Disciplines / styles de danse — cherche dans plusieurs propriétés candidates
   const rawDisciplines = getText(findProperty(properties, [
@@ -793,6 +827,11 @@ function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
     additionalInfo: mergedAdditionalInfo,
     source,
     sourceLabel: source,
+    sourceUrl: getText(findProperty(properties, ["URL source"])) || undefined,
+    imageCredit: imageCredit || undefined,
+    imageSourceUrl: imageSourceUrl || undefined,
+    imageAlt: imageAlt || undefined,
+    imageFit: manualImage ? undefined : imageFit,
     lastVerifiedAt: getText(findProperty(properties, ["Dernière vérification", "Derniere verification", "Vérifié le", "Verifie le"])) || todayIso(),
     status: normalizeStatus(getText(findProperty(properties, ["Statut", "Status", "État", "Etat"])), startDate, endDate),
   }

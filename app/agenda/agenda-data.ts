@@ -85,6 +85,14 @@ export type AgendaEvent = {
   additionalInfo?: Array<{ label: string; value: string }>
   source: string
   sourceLabel: string
+  /** Fiche d'origine, pour les événements issus de la collecte automatique. */
+  sourceUrl?: string
+  /** Crédit et provenance du visuel (images trouvées par la collecte). */
+  imageCredit?: string
+  imageSourceUrl?: string
+  imageAlt?: string
+  /** « logo » : logo officiel (saison, festival), affiché en entier. */
+  imageFit?: "logo"
   lastVerifiedAt: string
   status: AgendaStatus
   isRecurring?: boolean

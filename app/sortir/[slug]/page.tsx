@@ -2,9 +2,9 @@ import { headers } from "next/headers"
 import Link from "next/link"
 import { notFound, permanentRedirect } from "next/navigation"
 import type { ReactNode } from "react"
+import AgendaVisual from "../../agenda/AgendaVisual"
 import type { AgendaEvent, TourStop } from "../../agenda/agenda-data"
-import { formatAgendaDateRange, getUrgencyBadge, todayIso, resolveAgendaEventLocation } from "../../agenda/agenda-data"
-import { requestLocale } from "@/lib/i18n/server"
+import { formatAgendaDateRange, getUrgencyBadge, todayIso, resolveAgendaEventLocation } from "../../agenda/agenda-data"import { requestLocale } from "@/lib/i18n/server"
 import { uiText } from "@/data/i18n/messages"
 import { SITE_URL } from "@/data/site"
 import { getInitialAgendaEvents } from "../../agenda/initial-events"
@@ -180,8 +180,7 @@ export default async function SortirEventPage({ params }: { params: Promise<{ sl
       <div className="container sc-fiche-hero-content"><div className="sc-fiche-hero-body">
         <div className="sc-fiche-badges">
           <span className="sc-fiche-category">{event.category}</span>
-          {eventBadgeLabel && <span className={`sc-fiche-status${eventBadgeLevel ? ` sc-fiche-status--${eventBadgeLevel}` : ""}`} data-status={eventBadgeLevel ?? ""}>{eventBadgeLabel}</span>}
-        </div>
+          {eventBadgeLabel && <span className={`sc-fiche-status${eventBadgeLevel ? ` sc-fiche-status--${eventBadgeLevel}` : ""}`} data-status={eventBadgeLevel ?? ""}>{eventBadgeLabel}</span>}        </div>
         <h1 className="sc-fiche-title">{event.title}</h1>
         {company ? <p className="sc-fiche-company">{company}</p> : null}
         {event.description ? <p className="sc-fiche-hero-description">{event.description}</p> : null}
@@ -248,8 +247,17 @@ export default async function SortirEventPage({ params }: { params: Promise<{ sl
             <div className="sc-fiche-booking-note"><DetailIcon name="info"/><span>{event.time ? `${t("Horaires")} : ${event.time}` : t("Consultez la billetterie pour les informations actualisées.")}</span></div>
           </section>
           {(event.venue || location.label) ? <section className="sc-fiche-map-card"><iframe title={`${t("Localisation")} - ${event.title}`} src={`https://www.google.com/maps?q=${mapQuery}&output=embed`} loading="lazy" referrerPolicy="no-referrer-when-downgrade"/><a href={`https://www.google.com/maps/search/?api=1&query=${mapQuery}`} target="_blank" rel="noopener noreferrer">{t("Voir sur Google Maps")}</a></section> : null}
-          <p className="sc-fiche-source">{t("Source")} : <a href={event.officialUrl} target="_blank" rel="noopener noreferrer">{event.sourceLabel}</a></p>
-        </aside>
+          {event.image && event.imageCredit && !/^inconnu$/i.test(event.imageCredit.trim()) ? (
+            <p className="sc-fiche-source">
+              {t("Visuel")} :{" "}
+              {event.imageSourceUrl ? (
+                <a href={event.imageSourceUrl} target="_blank" rel="noopener noreferrer">
+                  {event.imageCredit}
+                </a>
+              ) : event.imageCredit}
+            </p>
+          ) : null}
+          <p className="sc-fiche-source">{t("Source")} : <a href={event.officialUrl} target="_blank" rel="noopener noreferrer">{event.sourceLabel}</a></p>        </aside>
       </div>
 
       {gallery.length || event.videoUrl ? <section className="container sc-fiche-wide-section"><h2>{t("En images")}</h2><div className="sc-fiche-gallery">

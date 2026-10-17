@@ -3,7 +3,7 @@
 import Link from "next/link"
 import dynamic from "next/dynamic"
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
-import type { AgendaEvent } from "./agenda-data"
+const AgendaVisual = dynamic(() => import("./AgendaVisual"), { ssr: false })import type { AgendaEvent } from "./agenda-data"
 import { formatAgendaDateRange, isLastChance, getUrgencyBadge, todayIso, CITY_COORDINATES, haversineDistance, normalizeCity, resolveEventCoordinates } from "./agenda-data"
 import { useLocale } from "@/components/LocaleProvider"
 import { uiText } from "@/data/i18n/messages"
@@ -300,27 +300,22 @@ function EventCard({
 
   return (
     <article className="srt-card" style={{ animationDelay: `${animDelay}ms` }}>
-      <div className="srt-card-media">
-        {event.image ? (
-          <img
-            src={event.image}
-            alt={event.title}
-            className="srt-card-img"
-            width={640}
-            height={400}
-            loading={isInitiallyVisible ? "eager" : "lazy"}
-            fetchPriority={isInitiallyVisible ? "high" : "auto"}
-            decoding="async"
-          />
-        ) : (
-          <div
-            className="srt-card-placeholder"
-            style={{ background: `linear-gradient(135deg, ${color}20 0%, ${color}50 100%)` }}
-          >
-            <span className="srt-placeholder-cat" style={{ color }}>{event.category}</span>
-          </div>
-        )}
-        <span className="srt-badge srt-badge--cat">{event.category}</span>
+      <div className={`srt-card-media${event.image ? " srt-card-media--img" : ""}`}>
+        <AgendaVisual
+          variant="card"
+          src={event.image}
+          alt={event.imageAlt || event.title}
+          credit={event.imageCredit}
+          fit={event.imageFit}
+          fallback={
+            <div
+              className="srt-card-placeholder"
+              style={{ background: `linear-gradient(135deg, ${color}20 0%, ${color}50 100%)` }}
+            >
+              <span className="srt-placeholder-cat" style={{ color }}>{event.category}</span>
+            </div>
+          }
+        />        <span className="srt-badge srt-badge--cat">{event.category}</span>
         {urgency ? (
           <span className={`srt-badge srt-badge--status srt-badge--${urgency.level}`}>{t(urgency.label)}</span>
         ) : upcoming ? (

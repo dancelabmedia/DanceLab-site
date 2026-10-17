@@ -1,0 +1,13 @@
+/* Le badge et le lecteur restent fixes ; seul le bloc éditorial descend. */
+.card .copy {
+  bottom: 28px;
+}
+
+/* Réserver la place du bouton de lecture à droite du nom de l'invité. */
+.card .copy small {
+  padding-right: 58px;
+}
+
+@media (max-width: 520px) {
+  .card .copy { bottom: 24px; }
+}
