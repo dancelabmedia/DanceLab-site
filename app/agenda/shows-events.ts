@@ -586,7 +586,7 @@ export const showsEvents: AgendaEvent[] = [
   {
     slug: "millepied-barbara-folies-bergere-nov-2026",
     title: "Barbara, du bout des lèvres",
-    category: "Danse contemporaine",
+    category: "Spectacle",
     dates: "9 – 22 novembre 2026",
     startDate: "2026-11-09",
     endDate: "2026-11-22",
@@ -615,7 +615,7 @@ export const showsEvents: AgendaEvent[] = [
   {
     slug: "millepied-move-me-once-more-folies-bergere-nov-2026",
     title: "Move Me Once More — Le Dernier Cabaret",
-    category: "Danse contemporaine",
+    category: "Spectacle",
     dates: "14 – 29 novembre 2026",
     startDate: "2026-11-14",
     endDate: "2026-11-29",
@@ -645,7 +645,7 @@ export const showsEvents: AgendaEvent[] = [
   {
     slug: "millepied-summerland-folies-bergere-nov-2026",
     title: "Summerland",
-    category: "Danse contemporaine",
+    category: "Spectacle",
     dates: "24 – 29 novembre 2026",
     startDate: "2026-11-24",
     endDate: "2026-11-29",
@@ -678,7 +678,7 @@ export const showsEvents: AgendaEvent[] = [
   {
     slug: "a4-comme-la-feuille-bobino-2026",
     title: "A4 (Comme la Feuille)",
-    category: "Danse",
+    category: "Spectacle",
     dates: "26 novembre 2026 – 24 janvier 2027",
     startDate: "2026-11-26",
     endDate: "2027-01-24",
@@ -711,7 +711,7 @@ export const showsEvents: AgendaEvent[] = [
   {
     slug: "breaking-hiphop-world-championships-paris-dec-2026",
     title: "Breaking & Hip-Hop Freestyle World Championships",
-    category: "Battle / Compétition",
+    category: "Spectacle",
     dates: "4 – 6 décembre 2026",
     startDate: "2026-12-04",
     endDate: "2026-12-06",
