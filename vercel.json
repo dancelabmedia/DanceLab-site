@@ -27,6 +27,10 @@
     {
       "path": "/api/cron/images-danse",
       "schedule": "30 5 * * *"
+    },
+    {
+      "path": "/api/cron/collecte-auditions",
+      "schedule": "0 6 * * *"
     }
   ]
 }
