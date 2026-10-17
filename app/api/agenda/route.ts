@@ -700,6 +700,8 @@ const HIDDEN_PUBLICATION = new Set(["en attente de validation", "archivee", "non
 function isPublishable(page: NotionPage) {
   const publication = getText(findProperty(page.properties, ["Publication"]))
   return !HIDDEN_PUBLICATION.has(normalizeName(publication))
+}
+
 function splitDisciplines(value: string): string[] {
   if (!value || value.trim() === "") return []
   return value

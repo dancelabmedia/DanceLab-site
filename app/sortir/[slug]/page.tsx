@@ -1,10 +1,12 @@
 import { headers } from "next/headers"
+import { unstable_cache } from 'next/cache'
 import Link from "next/link"
 import { notFound, permanentRedirect } from "next/navigation"
 import type { ReactNode } from "react"
 import AgendaVisual from "../../agenda/AgendaVisual"
 import type { AgendaEvent, TourStop } from "../../agenda/agenda-data"
-import { formatAgendaDateRange, getUrgencyBadge, todayIso, resolveAgendaEventLocation } from "../../agenda/agenda-data"import { requestLocale } from "@/lib/i18n/server"
+import { formatAgendaDateRange, getUrgencyBadge, todayIso, resolveAgendaEventLocation } from "../../agenda/agenda-data"
+import { requestLocale } from "@/lib/i18n/server"
 import { uiText } from "@/data/i18n/messages"
 import { SITE_URL } from "@/data/site"
 import { getInitialAgendaEvents } from "../../agenda/initial-events"
@@ -14,6 +16,19 @@ import DistributionSection from "./DistributionSection"
 
 export const dynamic = "force-dynamic"
 
+// Un instantané partagé évite de rappeler toute la base pour chaque fiche.
+// L'échec n'est pas mémorisé : le catalogue local reste disponible et l'appel
+// suivant peut réessayer. Les requêtes visiteurs ne lancent aucune collecte.
+const getRemoteAgendaEvents = unstable_cache(async (baseUrl: string) => {
+  const response = await fetch(`${baseUrl}/api/agenda?view=detail`, {
+    cache: 'no-store', signal: AbortSignal.timeout(2500),
+  })
+  if (!response.ok) throw new Error('Agenda temporarily unavailable')
+  const data = await response.json()
+  if (!Array.isArray(data.events)) throw new Error('Invalid agenda response')
+  return data.events as AgendaEvent[]
+}, ['agenda-detail-snapshot-v1'], { revalidate: 300, tags: ['agenda-events'] })
+
 async function getAgendaEvents() {
   const headersList = await headers()
   const host = headersList.get("host")
@@ -22,10 +37,7 @@ async function getAgendaEvents() {
   const protocol = forwardedProtocol === "http" || isLoopback ? "http" : "https"
   const baseUrl = host ? `${protocol}://${host}` : SITE_URL
   const localEvents = getInitialAgendaEvents()
-  const response = await fetch(`${baseUrl}/api/agenda?view=detail`, { cache: "no-store" })
-  if (!response.ok) return localEvents
-  const data = await response.json()
-  const updatedEvents = Array.isArray(data.events) ? (data.events as AgendaEvent[]) : []
+  const updatedEvents = await getRemoteAgendaEvents(baseUrl).catch(() => [])
   const merged = new Map(localEvents.map(event => [event.slug, event]))
   updatedEvents.forEach(event => merged.set(event.slug, event))
   return [...merged.values()]

@@ -3,7 +3,8 @@
 import Link from "next/link"
 import dynamic from "next/dynamic"
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
-const AgendaVisual = dynamic(() => import("./AgendaVisual"), { ssr: false })import type { AgendaEvent } from "./agenda-data"
+const AgendaVisual = dynamic(() => import("./AgendaVisual"), { ssr: false })
+import type { AgendaEvent } from "./agenda-data"
 import { formatAgendaDateRange, isLastChance, getUrgencyBadge, todayIso, CITY_COORDINATES, haversineDistance, normalizeCity, resolveEventCoordinates } from "./agenda-data"
 import { useLocale } from "@/components/LocaleProvider"
 import { uiText } from "@/data/i18n/messages"
