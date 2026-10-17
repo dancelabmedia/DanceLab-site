@@ -1,3 +1,7 @@
+import { cvEditorialFr } from '@/data/cv-article-editorial'
+import type { ArticleClassification } from '@/lib/article-themes'
+import { annexesArticleDraft } from '@/data/annexes-article-draft'
+
 export type EpisodeLink = {
   name: string
   slug: string
@@ -13,7 +17,7 @@ export type DocLink = {
   free?: boolean      // true si gratuit sur la plateforme
 }
 
-export type MagazineArticle = {
+export type MagazineArticle = ArticleClassification & {
   slug: string
   // ── Statut éditorial ───────────────────────────────────────────────────
   // draft     → jamais visible sur le site public
@@ -73,6 +77,7 @@ export type MagazineArticle = {
     heading: string
     paragraphs: string[]
     items?: string[]         // liste à puces optionnelle après les paragraphes
+    itemLeadBold?: boolean   // opt-in editorial emphasis, first sentence only
     itemPrefix?: string      // préfixe visuel (ex: "➔", "•") — défaut : "•" si items présents
     itemConclusion?: string  // phrase de synthèse affichée après la liste
     sectionImage?: string    // image inline dans le corps de la section (avant la DocCard)
@@ -172,8 +177,11 @@ export function getArticleCardMobileObjectPosition(article: MagazineArticle): st
 }
 
 export const magazineArticles: MagazineArticle[] = [
+  annexesArticleDraft,
   {
     slug: "cv-artistes-auront-disparu",
+    primaryTheme: 'marche-industrie',
+    secondaryThemes: ["metiers-carriere"],
     discussionQuestion: "Pour décrocher un projet, qu'est-ce qui a fait la différence pour toi : ton CV, tes vidéos ou les rencontres ?",
     discussionQuestionEn: "When it comes to landing a project, what has made the difference for you: your CV, your videos or the people you’ve met?",
     status: "published",
@@ -196,99 +204,7 @@ export const magazineArticles: MagazineArticle[] = [
     readTime: "5 min",
     tags: ["Carrière", "Marque personnelle", "Réseaux sociaux", "Avenir"],
     themes: ["LE CV ARTISTIQUE EST MORT", "MONTRER PLUTÔT QUE DÉCLARER", "LA MARQUE PERSONNELLE AVANT TOUT", "LES RÉSEAUX COMME VITRINE", "IDENTITÉ NUMÉRIQUE D'ARTISTE", "SE RENDRE VISIBLE EN 2026", "LA PREUVE PLUTÔT QUE LA DÉCLARATION"],
-    sections: [
-      {
-        // Section d'ouverture — liste flash des observations (sans heading)
-        heading: "",
-        paragraphs: [],
-        items: [
-          "L'identité personnelle et artistique remplace déjà le CV par ce que tu dégages et ce que tu crées.",
-          "Les castings en ligne, accentués par les réseaux sociaux, sont déjà en train de remplacer certains castings physiques.",
-          "De nouvelles formes de collaborations naissent de plus en plus grâce aux réseaux sociaux.",
-          "On ne voudra plus de feuilles A4, avec tes 150 jobs entassés. On veut du visuel et que tu procures de l'émotion.",
-          "La prise de parole en ligne, comme le copywriting ou le storytelling, sans ChatGPT, Gemini ou autres, t'aura déjà fait sortir du lot d'ici là.",
-          "La création de nouveaux espaces numériques dédiés aux artistes, avec notamment le développement de nouvelles applications grâce à l'IA (j'ai ma petite idée mais plutôt dans 5-7 ans), verra le jour.",
-        ],
-        itemPrefix: "➔",
-      },
-      {
-        // Transition — la mise en contexte avant les sections développées
-        heading: "",
-        paragraphs: [
-          "Tout va déjà vite et dans les années à venir, ça ira encore plus vite.",
-          "Et je pense à tous ceux qui, aujourd'hui, ne montent pas dans le train parce qu'ils attendent la \"prochaine\" opportunité, en se reposant sur leurs lauriers.",
-          "Sauf qu'il n'y aura pas de prochaine opportunité aussi vite que tu ne le penses, vu que le marché est déjà bouché.",
-        ],
-      },
-      {
-        heading: "Les directeurs de casting, programmateurs et producteurs regardent aussi :",
-        paragraphs: [],
-        items: [
-          "Une certaine présence en ligne (portfolio, site, page pro, réseaux sociaux),",
-          "Des vidéos qui montrent ce que l'artiste sait faire,",
-          "Une esthétique identifiable (style, univers, singularité).",
-        ],
-        itemPrefix: "•",
-        itemConclusion: "⮕ La marque personnelle devient plus parlant qu'une liste de lignes de CV.",
-      },
-      {
-        heading: "Les plateformes remplaceront le papier",
-        paragraphs: [
-          "Des outils comme Instagram, TikTok, YouTube, LinkedIn ou des plateformes spécialisées dans les arts vivants servent déjà de vitrine :",
-        ],
-        items: [
-          "Mises à jour instantanées,",
-          "Preuves concrètes de compétences (performances filmées, coulisses de projets),",
-          "Réseautage direct avec des décideurs.",
-        ],
-        itemPrefix: "•",
-        itemConclusion: "⮕ Le CV deviendra obsolète face à des profils vivants et interactifs.",
-      },
-      {
-        heading: "La valeur est dans la preuve, pas dans la déclaration",
-        paragraphs: [
-          "Dans un monde saturé d'informations, les employeurs et collaborateurs veulent voir :",
-        ],
-        items: [
-          "Ce que tu fais, pas ce que tu dis que tu fais.",
-          "Des expériences vécues, des collaborations visibles, des extraits de travail.",
-        ],
-        itemPrefix: "•",
-        itemConclusion: "⮕ La crédibilité ne se construit plus sur une feuille A4, mais sur une trace numérique et une réputation.",
-      },
-      {
-        heading: "Les artistes deviennent leurs propres médias",
-        paragraphs: [
-          "Dans 3 à 5 ans, il est probable que :",
-        ],
-        items: [
-          "Chaque artiste aura son espace numérique centralisé (un \"hub\" ou portfolio interactif),",
-          "Les recruteurs utiliseront l'IA pour faire des recherches croisées de profils selon des critères artistiques précis,",
-        ],
-        itemPrefix: "•",
-        itemConclusion: "⮕ Les collaborations naîtront de plus en plus des rencontres plutôt que des candidatures classiques.",
-      },
-      {
-        heading: "Ce que cette vision implique",
-        paragraphs: [],
-        items: [
-          "Les artistes devront soigner leur présence en ligne et utiliser les réseaux sociaux comme un outil stratégique.",
-          "Les écoles et formations devront enseigner la communication et le marketing autant que la technique.",
-          "Les recruteurs devront adapter leurs méthodes de sélection.",
-        ],
-        itemPrefix: "•",
-      },
-    ],
-    aside: {
-      title: "À retenir",
-      items: [
-        "La marque personnelle remplace progressivement le CV papier.",
-        "Les castings et les collaborations évoluent vers des formats numériques.",
-        "Être visible et être bon.ne ne sont pas la même chose — mais les deux comptent.",
-        "Montrer ce qu'on fait vaut plus que déclarer ce qu'on a fait.",
-      ],
-    },
-    takeaway: "La marque personnelle remplace progressivement le CV papier.",
+    ...cvEditorialFr,
     episodeLinks: [
       {
         // Épisode 1 — Mathilde Champion : ancienne danseuse devenue community manager
@@ -319,10 +235,12 @@ export const magazineArticles: MagazineArticle[] = [
       },
     ],
     conclusion:
-      "Donc pour te démarquer et ne pas être aux fraises en 2030, montre dès maintenant ce que tu fais, pas seulement ce que tu dis que tu fais.",
+      cvEditorialFr.conclusion,
   },
   {
     slug: "pourquoi-le-breakdance-est-devenu-olympique",
+    primaryTheme: 'culture-histoire',
+    secondaryThemes: ["societe-representation"],
     discussionQuestion: "Voir le break aux JO a-t-il changé ton regard sur cette danse ?",
     discussionQuestionEn: "Did seeing breaking at the Olympics change the way you see this dance?",
     status: "published",
@@ -416,6 +334,8 @@ export const magazineArticles: MagazineArticle[] = [
   },
   {
     slug: "comprendre-le-waacking-histoire-culture-influences",
+    primaryTheme: 'culture-histoire',
+    secondaryThemes: ["societe-representation"],
     discussionQuestion: "Qu'est-ce qui te touche le plus dans le waacking : la musique, l'attitude ou la liberté d'expression ?",
     discussionQuestionEn: "What moves you most about waacking: the music, the attitude or the freedom of expression?",
     status: "published",
@@ -496,6 +416,8 @@ export const magazineArticles: MagazineArticle[] = [
   },
   {
     slug: "festivals-danse-incontournables-ete",
+    primaryTheme: 'ressources-conseils',
+    secondaryThemes: ["culture-histoire"],
     discussionQuestion: "Quel festival t'a donné envie de découvrir une danse ou un artiste que tu ne connaissais pas ?",
     discussionQuestionEn: "Which festival made you want to discover a dance style or an artist you didn’t know?",
     status: "published",
@@ -575,6 +497,7 @@ export const magazineArticles: MagazineArticle[] = [
   },
   {
     slug: "prevenir-les-blessures-danseurs",
+    primaryTheme: 'sante-bien-etre',
     discussionQuestion: "Quelle habitude t'aide le plus à prendre soin de ton corps quand tu danses ?",
     discussionQuestionEn: "What habit helps you look after your body most when you dance?",
     status: "published",
@@ -583,7 +506,7 @@ export const magazineArticles: MagazineArticle[] = [
     title: "Prévenir les blessures : pourquoi les danseurs doivent être considérés comme des athlètes",
     chapo:
       "À partir de l'épisode avec Laura Malié-Leclerc, kinésithérapeute du sport spécialisée dans la danse, Dance Lab ouvre un sujet essentiel : apprendre à écouter le corps avant qu'il ne force l'arrêt.",
-    meta: "06.07.26 · 7 min de lecture",
+    meta: "06.07.26 · 3 min de lecture",
     publishedDate: "06.07.26",
     episodeSlug: "115-laura-malie-leclerc",
     episodeNumber: "115",
@@ -592,7 +515,7 @@ export const magazineArticles: MagazineArticle[] = [
     cardImageObjectPositionMobile: "94% center",
     magazineHeroMobilePosition: "86% 22%",
     heroImageType: 'portrait',
-    readTime: "7 min",
+    readTime: "3 min",
     tags: ["Santé", "Prévention", "Corps"],
     themes: ["LE CORPS N'EST PAS UN OUTIL À ÉPUISER", "LA DOULEUR EST UN SIGNAL", "S'ÉCHAUFFER VRAIMENT", "RÉCUPÉRER INTELLIGEMMENT", "TRAITER LE DANSEUR COMME UN ATHLÈTE", "UNE CULTURE DU SOIN", "ANTICIPER PLUTÔT QU'ENCAISSER"],
     quote:
@@ -642,6 +565,8 @@ export const magazineArticles: MagazineArticle[] = [
   },
   {
     slug: "sante-mentale-artistes-danse",
+    primaryTheme: 'sante-bien-etre',
+    secondaryThemes: ["metiers-carriere"],
     discussionQuestion: "Qu'est-ce qui t'aide à préserver ton équilibre quand la pression monte dans un projet artistique ?",
     discussionQuestionEn: "What helps you stay grounded when the pressure builds on an artistic project?",
     status: "published",
@@ -714,6 +639,7 @@ export const magazineArticles: MagazineArticle[] = [
   },
   {
     slug: "construire-carriere-danseur-durable",
+    primaryTheme: 'metiers-carriere',
     discussionQuestion: "As-tu déjà refusé un projet pour rester fidèle à tes valeurs ou à tes limites ?",
     discussionQuestionEn: "Have you ever turned down a project to stay true to your values or respect your limits?",
     status: "published",
@@ -810,6 +736,8 @@ export const magazineArticles: MagazineArticle[] = [
   },
   {
     slug: "5-documentaires-danse-a-regarder",
+    primaryTheme: 'ressources-conseils',
+    secondaryThemes: ["culture-histoire","societe-representation"],
     discussionQuestion: "Et maintenant, j'ai besoin de vous : quel documentaire sur la danse tout le monde devrait avoir vu au moins une fois ?",
     discussionQuestionEn: "Now I need your help: which dance documentary should everyone have seen at least once?",
     status: "published",
@@ -945,6 +873,8 @@ export const magazineArticles: MagazineArticle[] = [
   },
   {
     slug: "reseaux-sociaux-obligatoires-danseur",
+    primaryTheme: 'metiers-carriere',
+    secondaryThemes: ["sante-bien-etre"],
     discussionQuestion: "Et toi, est-ce que tu as déjà eu l'impression que ta présence ou ton absence sur les réseaux avait eu un impact sur ta carrière ?",
     discussionQuestionEn: "And you, have you ever felt that your presence or absence on social media had an impact on your career?",
     status: "published",
@@ -1066,6 +996,7 @@ export const magazineArticles: MagazineArticle[] = [
   },
   {
     slug: "5-lieux-freestyler-paris",
+    primaryTheme: 'ressources-conseils',
     discussionQuestion: "Et toi, c'est où ton spot préféré pour freestyler à Paris ?",
     discussionQuestionEn: "And you, where’s your favourite spot to freestyle in Paris?",
     status: "published",
