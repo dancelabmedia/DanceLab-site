@@ -7,6 +7,7 @@ import {
   isArticlePublished,
   getReadTime,
   getArticleCardObjectPosition,
+  getYouTubeId,
   type DocLink,
 } from "../../articles-data"
 import { getArticleBySlug, getAllPublishedSlugs } from "@/lib/all-articles"
@@ -22,6 +23,7 @@ import OfficialWebsiteCard from "../../../../components/OfficialWebsiteCard"
 import ReadingProgress from "../../../../components/ReadingProgress"
 import { requestLocale } from "@/lib/i18n/server"
 import { uiText } from "@/data/i18n/messages"
+import { discussionConclusion } from '@/lib/article-discussion'
 
 // ── Revalidation ISR ────────────────────────────────────────────────────────
 // Re-génère la page au maximum toutes les heures.
@@ -183,7 +185,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             <h1>{article.title}</h1>
             <p className="article-hero-chapo">{article.chapo}</p>
             <p className="article-hero-meta">
-              {article.publishedDate}&thinsp;·&thinsp;{article.category}&thinsp;·&thinsp;{getReadTime(article)} {t('de lecture')}
+              {article.publishedDate}&thinsp;·&thinsp;{getReadTime(article)} {t('de lecture')}
             </p>
           </div>
         </div>
@@ -222,6 +224,28 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   {section.itemConclusion && (
                     <p className="article-item-conclusion">{section.itemConclusion}</p>
                   )}
+                  {/* ── Bloc vidéo YouTube — responsive 16:9 ─────────────────── */}
+                  {section.videoUrl && (() => {
+                    const ytId = getYouTubeId(section.videoUrl)
+                    if (!ytId) return null
+                    return (
+                      <figure className="article-video-embed">
+                        {section.videoTitle && (
+                          <p className="article-video-title">{section.videoTitle}</p>
+                        )}
+                        <div className="article-video-wrapper">
+                          <iframe
+                            src={`https://www.youtube.com/embed/${ytId}?rel=0`}
+                            title={section.videoTitle ?? 'Vidéo'}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            loading="lazy"
+                          />
+                        </div>
+                      </figure>
+                    )
+                  })()}
+
                   {section.officialUrl && section.officialLogo && section.officialName && (
                     <OfficialWebsiteCard
                       name={section.officialName}
@@ -242,6 +266,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                         alt={section.sectionImageAlt ?? ""}
                         loading="lazy"
                       />
+                      {section.sectionImageCaption && (
+                        <figcaption className="article-section-img-caption">
+                          {section.sectionImageCaption}
+                        </figcaption>
+                      )}
                     </figure>
                   )}
                   {docLink !== null && <DocCard doc={docLink} t={t} />}
@@ -265,12 +294,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               )
             })}
 
-            <div className="article-conclusion">
-              {Array.isArray(article.conclusion)
-                ? article.conclusion.map((para, i) => <p key={i}>{para}</p>)
-                : <p>{article.conclusion}</p>
-              }
-            </div>
+            {discussionConclusion(article, locale).length > 0 && <div className="article-conclusion">
+              {discussionConclusion(article, locale).map((para, i) => <p key={i}>{para}</p>)}
+            </div>}
           </article>
 
           {/* Colonne éditoriale dynamique — sticky desktop, masquée sur mobile */}
@@ -280,7 +306,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </div>
       </section>
 
-      <CommentsSection slug={article.slug} />
+      <CommentsSection slug={article.slug} discussionQuestion={article.discussionQuestion} discussionQuestionEn={article.discussionQuestionEn} />
 
       <section className="article-related">
         <div className="container">

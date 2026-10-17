@@ -77,6 +77,15 @@ export type MagazineArticle = {
     itemConclusion?: string  // phrase de synthèse affichée après la liste
     sectionImage?: string    // image inline dans le corps de la section (avant la DocCard)
     sectionImageAlt?: string // texte alternatif pour l'image inline
+    sectionImageCaption?: string // légende optionnelle sous l'image de section
+    /**
+     * Bloc vidéo YouTube intégré dans la section.
+     * Accepte une URL YouTube complète (watch?v=…) ou une URL courte (youtu.be/…).
+     * Affiché en responsive 16:9 dans le corps de l'article.
+     */
+    videoUrl?: string
+    /** Titre facultatif affiché au-dessus du lecteur vidéo (ex: "À voir : le show complet") */
+    videoTitle?: string
     docLink?: DocLink        // Encart documentaire / lien visuel (optionnel)
     officialUrl?: string     // Site officiel du lieu cité — utilisé par OfficialWebsiteCard
     officialName?: string    // Nom d'affichage du lieu dans la carte (ex : "CENTQUATRE-PARIS")
@@ -106,12 +115,40 @@ export type MagazineArticle = {
   /** Provenance d'un article créé à partir d'une interview (pas un lien éditorial historique). */
   sourceEpisodeNumber?: number
   conclusion: string | string[]  // string simple ou tableau pour les conclusions multi-paragraphes
+  /** Question finale choisie éditorialement, jamais extraite automatiquement du corps. */
+  discussionQuestion?: string
+  discussionQuestionEn?: string
   /**
    * Mots-clés / expressions éditoriales affichés dans le bandeau défilant sous le hero.
    * 5 à 8 items, en majuscules, formules courtes et percutantes.
    * Générés au moment de la création de l'article.
    */
   themes?: string[]
+}
+
+/**
+ * Extrait l'ID YouTube depuis une URL watch?v= ou youtu.be/.
+ * Retourne null si l'URL n'est pas reconnue comme une URL YouTube.
+ */
+export function getYouTubeId(url: string): string | null {
+  try {
+    const u = new URL(url)
+    // Format long : youtube.com/watch?v=XXXX
+    if ((u.hostname === 'www.youtube.com' || u.hostname === 'youtube.com') && u.pathname === '/watch') {
+      return u.searchParams.get('v')
+    }
+    // Format court : youtu.be/XXXX
+    if (u.hostname === 'youtu.be') {
+      return u.pathname.slice(1) || null
+    }
+    // Format embed : youtube.com/embed/XXXX
+    if ((u.hostname === 'www.youtube.com' || u.hostname === 'youtube.com') && u.pathname.startsWith('/embed/')) {
+      return u.pathname.replace('/embed/', '')
+    }
+  } catch {
+    // URL invalide
+  }
+  return null
 }
 
 /**
@@ -137,6 +174,8 @@ export function getArticleCardMobileObjectPosition(article: MagazineArticle): st
 export const magazineArticles: MagazineArticle[] = [
   {
     slug: "cv-artistes-auront-disparu",
+    discussionQuestion: "Pour décrocher un projet, qu'est-ce qui a fait la différence pour toi : ton CV, tes vidéos ou les rencontres ?",
+    discussionQuestionEn: "When it comes to landing a project, what has made the difference for you: your CV, your videos or the people you’ve met?",
     status: "published",
     publishedAt: "2026-08-13T08:00:00.000Z", // 10h00 Paris (CEST = UTC+2)
     category: "Décryptage",
@@ -284,6 +323,8 @@ export const magazineArticles: MagazineArticle[] = [
   },
   {
     slug: "pourquoi-le-breakdance-est-devenu-olympique",
+    discussionQuestion: "Voir le break aux JO a-t-il changé ton regard sur cette danse ?",
+    discussionQuestionEn: "Did seeing breaking at the Olympics change the way you see this dance?",
     status: "published",
     publishedAt: "2026-06-18T07:00:00.000Z", // 09h00 Paris (CEST = UTC+2)
     category: "Décryptage",
@@ -375,6 +416,8 @@ export const magazineArticles: MagazineArticle[] = [
   },
   {
     slug: "comprendre-le-waacking-histoire-culture-influences",
+    discussionQuestion: "Qu'est-ce qui te touche le plus dans le waacking : la musique, l'attitude ou la liberté d'expression ?",
+    discussionQuestionEn: "What moves you most about waacking: the music, the attitude or the freedom of expression?",
     status: "published",
     publishedAt: "2026-06-25T07:00:00.000Z", // 09h00 Paris (CEST = UTC+2)
     category: "Culture",
@@ -453,6 +496,8 @@ export const magazineArticles: MagazineArticle[] = [
   },
   {
     slug: "festivals-danse-incontournables-ete",
+    discussionQuestion: "Quel festival t'a donné envie de découvrir une danse ou un artiste que tu ne connaissais pas ?",
+    discussionQuestionEn: "Which festival made you want to discover a dance style or an artist you didn’t know?",
     status: "published",
     publishedAt: "2026-07-02T07:00:00.000Z", // 09h00 Paris (CEST = UTC+2)
     category: "Agenda",
@@ -530,6 +575,8 @@ export const magazineArticles: MagazineArticle[] = [
   },
   {
     slug: "prevenir-les-blessures-danseurs",
+    discussionQuestion: "Quelle habitude t'aide le plus à prendre soin de ton corps quand tu danses ?",
+    discussionQuestionEn: "What habit helps you look after your body most when you dance?",
     status: "published",
     publishedAt: "2026-07-06T07:00:00.000Z", // 09h00 Paris (CEST = UTC+2)
     category: "Santé",
@@ -595,6 +642,8 @@ export const magazineArticles: MagazineArticle[] = [
   },
   {
     slug: "sante-mentale-artistes-danse",
+    discussionQuestion: "Qu'est-ce qui t'aide à préserver ton équilibre quand la pression monte dans un projet artistique ?",
+    discussionQuestionEn: "What helps you stay grounded when the pressure builds on an artistic project?",
     status: "published",
     publishedAt: "2026-07-09T07:00:00.000Z", // 09h00 Paris (CEST = UTC+2)
     category: "Décryptage",
@@ -665,6 +714,8 @@ export const magazineArticles: MagazineArticle[] = [
   },
   {
     slug: "construire-carriere-danseur-durable",
+    discussionQuestion: "As-tu déjà refusé un projet pour rester fidèle à tes valeurs ou à tes limites ?",
+    discussionQuestionEn: "Have you ever turned down a project to stay true to your values or respect your limits?",
     status: "published",
     publishedAt: "2026-07-11T07:00:00.000Z", // 09h00 Paris (CEST = UTC+2)
     category: "Carrière",
@@ -759,6 +810,8 @@ export const magazineArticles: MagazineArticle[] = [
   },
   {
     slug: "5-documentaires-danse-a-regarder",
+    discussionQuestion: "Et maintenant, j'ai besoin de vous : quel documentaire sur la danse tout le monde devrait avoir vu au moins une fois ?",
+    discussionQuestionEn: "Now I need your help: which dance documentary should everyone have seen at least once?",
     status: "published",
     publishedAt: "2026-08-11T07:00:00.000Z", // 09h00 Paris (CEST = UTC+2)
     category: "Sélection",
@@ -892,6 +945,8 @@ export const magazineArticles: MagazineArticle[] = [
   },
   {
     slug: "reseaux-sociaux-obligatoires-danseur",
+    discussionQuestion: "Et toi, est-ce que tu as déjà eu l'impression que ta présence ou ton absence sur les réseaux avait eu un impact sur ta carrière ?",
+    discussionQuestionEn: "And you, have you ever felt that your presence or absence on social media had an impact on your career?",
     status: "published",
     publishedAt: "2026-08-13T07:00:00.000Z", // 09h00 Paris (CEST = UTC+2)
     category: "Décryptage",
@@ -1011,6 +1066,8 @@ export const magazineArticles: MagazineArticle[] = [
   },
   {
     slug: "5-lieux-freestyler-paris",
+    discussionQuestion: "Et toi, c'est où ton spot préféré pour freestyler à Paris ?",
+    discussionQuestionEn: "And you, where’s your favourite spot to freestyle in Paris?",
     status: "published",
     publishedAt: "2026-08-15T07:00:00.000Z",
     category: "Recommandations",
@@ -1035,7 +1092,6 @@ export const magazineArticles: MagazineArticle[] = [
       {
         heading: "",
         paragraphs: [
-          "On associe encore beaucoup le freestyle au hip-hop, pourtant, \"freestyler\", improviser, ce n'est pas pratiquer un style de danse en particulier.",
           "Que tu pratiques la house, le hip-hop, le waacking, le voguing, le krump, l'électro, le contemporain, peu importe ton style, l'improvisation traverse toutes les danses, avec des histoires, des codes et des cultures qui leur sont propres.",
           "Et oui, pour progresser en freestyle, pour affiner son propre style, les cours ne font pas tout.",
           "Il faut aussi des endroits où chercher, tester, observer, échanger, entrer dans un cercle, écouter de la musique et rencontrer d'autres danseurs.ses.",
