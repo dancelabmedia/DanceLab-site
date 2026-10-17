@@ -5,7 +5,6 @@ import { join } from 'path'
 import { notFound } from 'next/navigation'
 import { getEpisodes, type UnifiedEpisode } from '@/lib/episodes'
 import MetierHero from './MetierHero'
-import MetierScrollCue from './MetierScrollCue'
 import MetierEpisodesCarousel from './MetierEpisodesCarousel'
 import { getRelatedEpisodeNumbersForMetier } from '../../metier-episode-relations'
 import {
@@ -142,7 +141,6 @@ export default async function MetierDetailPage({
         <div className="met-editorial-shell met-editorial-hero-content">
           <nav className="met-editorial-breadcrumb" aria-label="Fil d'Ariane">
             <Link href="/explorer/metiers-de-la-danse">← Tous les métiers</Link>
-            <span>{universe.label}</span>
           </nav>
           <h1>{metier.nom}</h1>
           <p>{metier.description}</p>
@@ -152,10 +150,8 @@ export default async function MetierDetailPage({
               <div><strong>{relatedEpisodes.length}</strong><span>Épisode{relatedEpisodes.length > 1 ? 's' : ''}</span></div>
             )}
             <div><strong>{relatedMetiers.length}</strong><span>Métiers associés</span></div>
-            <a href="#contenu-metier" aria-label="Découvrir la fiche">→</a>
           </div>
         </div>
-        <MetierScrollCue />
       </header>
 
       <div className="met-cat-strip met-cat-strip--detail">

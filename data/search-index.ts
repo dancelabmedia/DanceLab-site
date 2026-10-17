@@ -1,4 +1,4 @@
-import { agendaEvents } from "../app/agenda/agenda-data"
+import { getInitialAgendaEvents } from "../app/agenda/initial-events"
 import { getArticleCardObjectPosition, magazineArticles } from "../app/decouvrir/articles-data"
 import { discoverSections } from "../app/decouvrir/discover-data"
 import { explorerSections } from "../app/explorer/explorer-data"
@@ -63,7 +63,7 @@ const articleItems: SearchItem[] = magazineArticles
     ]),
   }))
 
-const eventItems: SearchItem[] = agendaEvents.map((event) => ({
+const eventItems: SearchItem[] = getInitialAgendaEvents().map((event) => ({
   id: `event-${event.slug}`,
   type: "event",
   typeLabel: "Événement",
@@ -78,6 +78,7 @@ const eventItems: SearchItem[] = agendaEvents.map((event) => ({
     event.category,
     event.city,
     event.venue,
+    ...(event.disciplines ?? []),
     event.dates,
     event.status,
   ]),

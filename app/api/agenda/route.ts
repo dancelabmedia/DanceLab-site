@@ -1,8 +1,35 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { agendaEvents, type AgendaCategory, type AgendaEvent, type AgendaStatus } from "../../agenda/agenda-data"
 import { collectedAgendaEvents } from "../../agenda/collected-events"
+import { cabaretEvents } from "../../agenda/cabaret-events"
+import { showsEvents } from "../../agenda/shows-events"
+import { isCulturalEvent, isPracticeEvent, normalizeEventForDestination } from "@/lib/event-routing"
+import { consolidateAgendaEvents } from "@/lib/event-catalogue"
+import { applyEventDisciplines } from "@/lib/event-disciplines.mjs"
 
 export const dynamic = "force-dynamic"
+
+/** Cache statique images (data/notion-image-urls.json) — rétrocompatibilité */
+let STATIC_IMAGE_URLS: Record<string, string | null> = {}
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  STATIC_IMAGE_URLS = require("../../../data/notion-image-urls.json") as Record<string, string | null>
+} catch { /* fichier absent — pas grave */ }
+
+/** Cache d'enrichissement complet (data/notion-event-enrichment.json) */
+type EnrichmentCacheEntry = {
+  image?: string | null
+  description?: string | null
+  price?: string | null
+  disciplines?: string[] | null
+  videoUrl?: string | null
+  enrichedAt?: string
+} | null
+let STATIC_ENRICHMENT: Record<string, EnrichmentCacheEntry> = {}
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  STATIC_ENRICHMENT = require("../../../data/notion-event-enrichment.json") as Record<string, EnrichmentCacheEntry>
+} catch { /* fichier absent — pas grave */ }
 
 const NOTION_VERSION = "2025-09-03"
 const DEFAULT_DATABASE_ID = "c06a1552cfcc4522ae68d32f833b3cf3"
@@ -257,6 +284,24 @@ const VENUE_DIRECTORY: Record<string, VenueFallback> = {
     longitude: 2.33023,
     officialUrl: "https://www.casinodeparis.fr/",
   },
+  "la scala paris": {
+    venue: "La Scala Paris",
+    address: "13 boulevard de Strasbourg",
+    city: "Paris",
+    postalCode: "75010",
+    latitude: 48.87121,
+    longitude: 2.35673,
+    officialUrl: "https://lascala-paris.fr/",
+  },
+  "theatre des mathurins": {
+    venue: "Théâtre des Mathurins",
+    address: "36 rue des Mathurins",
+    city: "Paris",
+    postalCode: "75008",
+    latitude: 48.87484,
+    longitude: 2.32297,
+    officialUrl: "https://www.theatredesmathurins.com/",
+  },
   "theatre du chatelet": {
     venue: "Théâtre du Châtelet",
     address: "2 rue Edouard Colonne",
@@ -404,8 +449,14 @@ const VENUE_DIRECTORY: Record<string, VenueFallback> = {
 }
 
 
-function todayIso() {
-  return new Date().toISOString().slice(0, 10)
+/**
+ * Retourne la date du jour en fuseau Europe/Paris au format YYYY-MM-DD.
+ * On n'utilise PAS toISOString() (UTC) : à 23h15 heure de Paris en hiver,
+ * UTC est déjà le lendemain, ce qui marquerait incorrectement un spectacle
+ * "terminé" alors que la représentation du soir est encore en cours.
+ */
+function todayIso(): string {
+  return new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Paris" })
 }
 
 function slugify(value: string) {
@@ -426,9 +477,10 @@ function normalizeName(value: string) {
 
 function findProperty(properties: Record<string, NotionProperty>, aliases: string[]) {
   const normalizedAliases = aliases.map(normalizeName)
-  const entry = Object.entries(properties).find(([name]) => normalizedAliases.includes(normalizeName(name)))
-
-  if (entry) return entry[1]
+  const candidates = normalizedAliases.map(alias => Object.entries(properties).find(([name]) => normalizeName(name) === alias)?.[1]).filter(Boolean) as NotionProperty[]
+  const filled = candidates.find(property => getText(property) || getDate(property) || getFileUrl(property))
+  if (filled) return filled
+  if (candidates.length) return candidates[0]
 
   return Object.values(properties).find((property) => {
     if (normalizedAliases.includes("title") && property.type === "title") return true
@@ -476,24 +528,52 @@ function getFileUrl(property?: NotionProperty) {
 }
 
 function getCoverUrl(page: NotionPage, imageProperty?: NotionProperty) {
+  // 1. Propriété files nommée explicitement (Image, Photo, Affiche, Visuel, Cover…)
   const imageFromProperty = getFileUrl(imageProperty)
   if (imageFromProperty) return imageFromProperty
-  if (!page.cover) return ""
-  return page.cover.type === "external" ? page.cover.external?.url || "" : page.cover.file?.url || ""
+
+  // 2. Propriété URL d'image de type "url" (ex : "Image URL", "Source image")
+  const imageUrlProp = findProperty(page.properties, [
+    "Image URL", "Image Url", "URL image", "Image source", "Source image", "Visuel URL"
+  ])
+  if (imageUrlProp?.type === "url") {
+    const imageUrl = imageUrlProp.url || ""
+    if (imageUrl.startsWith("http")) return imageUrl
+  }
+
+  // 3. Image de couverture Notion
+  if (page.cover) {
+    const coverUrl = page.cover.type === "external"
+      ? page.cover.external?.url || ""
+      : page.cover.file?.url || ""
+    if (coverUrl) return coverUrl
+  }
+
+  // 4. Chercher n'importe quelle propriété de type "files" contenant une image
+  for (const prop of Object.values(page.properties)) {
+    if (prop.type === "files" && prop.files?.length) {
+      const fileUrl = getFileUrl(prop)
+      if (fileUrl) return fileUrl
+    }
+  }
+
+  return ""
 }
 
 function normalizeCategory(value: string): AgendaCategory {
   const normalized = normalizeName(value)
   if (normalized.includes("festival")) return "Festival"
   if (normalized.includes("battle")) return "Battle"
+  if (normalized.includes("cabaret") || normalized.includes("revue") || normalized.includes("diner") || normalized.includes("music-hall") || normalized.includes("music hall")) return "Cabaret & dîner-spectacle"
+  if (normalized.includes("comedie musicale") || normalized.includes("comédie musicale") || normalized.includes("musical") || normalized.includes("comédie chantée")) return "Comédie musicale"
   if (normalized.includes("cours")) return "Cours / atelier"
   if (normalized.includes("stage") || normalized.includes("workshop") || normalized.includes("masterclass")) return "Stage / workshop"
-  if (normalized.includes("bal") || normalized.includes("soiree")) return "Bal / soirée"
+  if (normalized.includes("ballet")) return "Ballet"
+  if (/\bbal\b/.test(normalized) || normalized.includes("soiree")) return "Bal / soirée"
   if (normalized.includes("conference")) return "Conférence / rencontre"
   if (normalized.includes("exposition")) return "Exposition"
   if (normalized.includes("atelier") || normalized.includes("stage")) return "Atelier"
   if (normalized.includes("rue")) return "Arts de rue"
-  if (normalized.includes("ballet")) return "Ballet"
   if (normalized.includes("performance")) return "Performance"
   if (normalized.includes("rencontre")) return "Rencontre"
   return "Spectacle"
@@ -512,6 +592,8 @@ function normalizeStatus(value: string, startDate: string, endDate?: string): Ag
 }
 
 function isPastEvent(event: AgendaEvent) {
+  // Les shows récurrents (cabarets permanents) ne sont jamais considérés comme passés
+  if (event.isRecurring) return false
   const today = todayIso()
   return Boolean(event.endDate ? event.endDate < today : event.startDate < today)
 }
@@ -547,6 +629,8 @@ function getAdditionalInfo(properties: Record<string, NotionProperty>) {
     "accessibilite",
     "accessibilité",
     "compagnie",
+    "compagnie choregraphe",
+    "artistes",
     "artiste",
     "organisateur",
   ])
@@ -563,6 +647,19 @@ function getVenueFallback(title: string, venue: string) {
   return Object.entries(VENUE_DIRECTORY).find(([key]) => haystack.includes(key))?.[1]
 }
 
+const PLACEHOLDER_TEXTS = new Set([
+  "à compléter", "a completer", "à confirmer", "a confirmer",
+  "adresse à compléter", "adresse a completer",
+  "lieu à préciser", "lieu a preciser",
+  "localisation à préciser", "localisation a preciser",
+  "billetterie à compléter", "billetterie a completer",
+])
+
+function isPlaceholder(value?: string) {
+  if (!value) return true
+  return PLACEHOLDER_TEXTS.has(value.trim().toLowerCase())
+}
+
 function applyVenueFallback(event: AgendaEvent) {
   const fallback = getVenueFallback(event.title, event.venue)
 
@@ -570,14 +667,32 @@ function applyVenueFallback(event: AgendaEvent) {
 
   return {
     ...event,
-    venue: event.venue === "À compléter" || event.venue === "À confirmer" ? fallback.venue : event.venue,
+    venue: isPlaceholder(event.venue) ? fallback.venue : event.venue,
     address: event.address || fallback.address,
-    city: event.city === "À compléter" ? fallback.city : event.city,
+    city: isPlaceholder(event.city) ? fallback.city : event.city,
     postalCode: event.postalCode || fallback.postalCode,
     latitude: hasValidFranceCoordinates(event.latitude, event.longitude) ? event.latitude : fallback.latitude,
     longitude: hasValidFranceCoordinates(event.latitude, event.longitude) ? event.longitude : fallback.longitude,
     officialUrl: event.officialUrl || fallback.officialUrl || "",
   }
+}
+
+function splitDisciplines(value: string): string[] {
+  if (!value || value.trim() === "") return []
+  return value
+    .split(/[|,;]/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0 && s.toLowerCase() !== "non renseigné")
+}
+
+function formatNotionDateRange(startDate: string, endDate?: string): string {
+  if (!startDate || startDate === "9999-12-31") return ""
+  const fmt = (iso: string) => {
+    const [y, m, d] = iso.split("-")
+    return `${d}.${m}.${y.slice(2)}`
+  }
+  if (endDate && endDate !== startDate) return `${fmt(startDate)} → ${fmt(endDate)}`
+  return fmt(startDate)
 }
 
 function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
@@ -590,21 +705,75 @@ function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
   const startDate = date?.start?.slice(0, 10) || "9999-12-31"
   const endDate = date?.end?.slice(0, 10) || undefined
   const address = getText(findProperty(properties, ["Adresse", "Address", "Adresse complète", "Adresse complete"])) || undefined
-  const city = getText(findProperty(properties, ["Ville", "City", "Commune"])) || "À compléter"
+  const city = getText(findProperty(properties, ["Ville", "City", "Commune"])) || ""
   const postalCode = getText(findProperty(properties, ["Code postal", "CP", "PostalCode"])) || undefined
-  const venue = getText(findProperty(properties, ["Lieu", "Salle", "Venue", "Théâtre", "Theatre"])) || "À compléter"
+  const venue = getText(findProperty(properties, ["Lieu", "Salle", "Venue", "Théâtre", "Theatre"])) || ""
   const coordinates = getCoordinatesFromProperties(properties)
   const source = getText(findProperty(properties, ["Source", "Organisateur", "Organizer"])) || "Notion"
-  const ticketUrl = getText(findProperty(properties, ["Billetterie", "Réservation", "Reservation", "Ticket", "Tickets"]))
+  const ticketUrl = getText(findProperty(properties, ["Lien billetterie", "Billetterie", "Réservation", "Reservation", "Ticket", "Tickets"]))
   const officialUrl = getText(findProperty(properties, ["Lien", "URL", "Lien officiel", "Site", "OfficialUrl", "Page officielle"])) || ""
   const image = getCoverUrl(page, findProperty(properties, ["Image", "Photo", "Affiche", "Visuel", "Cover"]))
 
+  // Disciplines / styles de danse — cherche dans plusieurs propriétés candidates
+  const rawDisciplines = getText(findProperty(properties, [
+    "Disciplines", "Discipline", "Style", "Styles", "Danse", "Genre",
+    "Type de danse", "Pratique", "Pratiques"
+  ]))
+  const disciplines = splitDisciplines(rawDisciplines)
+
+  // Vidéo / bande-annonce
+  const videoUrl = getText(findProperty(properties, [
+    "Vidéo", "Video", "Bande-annonce", "Bande annonce", "Teaser", "Trailer",
+    "Lien vidéo", "Lien video", "YouTube", "Vimeo"
+  ])) || undefined
+
+  // Durée
+  const duration = getText(findProperty(properties, [
+    "Durée", "Duree", "Duration", "Temps", "Longueur"
+  ])) || undefined
+
+  // Public / audience
+  const audience = getText(findProperty(properties, [
+    "Public", "Audience", "Âge", "Age", "Tranche d'âge", "Tranche d age"
+  ])) || undefined
+
+  // Informations complémentaires enrichies
+  const baseAdditionalInfo = getAdditionalInfo(properties)
+  const extraInfo = [
+    disciplines.length ? { label: "Disciplines", value: disciplines.join(" · ") } : null,
+    audience ? { label: "Public", value: audience } : null,
+    duration ? { label: "Durée", value: duration } : null,
+  ].filter((x): x is { label: string; value: string } => x !== null)
+
+  // Fusionner sans doublon (eviter "Disciplines" en double si déjà dans getAdditionalInfo)
+  const additionalInfoLabels = new Set(baseAdditionalInfo.map((i) => i.label))
+  const mergedAdditionalInfo = [
+    ...baseAdditionalInfo,
+    ...extraInfo.filter((e) => !additionalInfoLabels.has(e.label)),
+  ]
+
   const event: AgendaEvent = {
-    slug: slugify(`${title}-${startDate}`),
+    canonicalSourceId: `notion:${page.id}`,
+    slug: getText(findProperty(properties, ['Slug Dance Lab'])) || slugify(`${title}-${startDate}`),
+    ...(() => {
+      const json = (name: string): unknown[] => {
+        try { const parsed = JSON.parse(getText(findProperty(properties, [name])) || '[]'); return Array.isArray(parsed) ? parsed : [] } catch { return [] }
+      }
+      return {
+        aliasSlugs: json('Anciennes URL Dance Lab').filter((value): value is string => typeof value === 'string' && /^[a-z0-9-]+$/.test(value)),
+        sourceUrls: json('Sources fusionnées Dance Lab').filter((value): value is string => typeof value === 'string' && /^https?:\/\//.test(value)),
+        performances: json('Représentations Dance Lab').filter((value): value is { date: string; time?: string } => Boolean(value && typeof value === 'object' && /^\d{4}-\d{2}-\d{2}$/.test((value as { date?: string }).date || ''))),
+        cast: json('Distribution Dance Lab').filter((value): value is { name: string; role: string } => Boolean(value && typeof value === 'object' && typeof (value as { name?: unknown }).name === 'string' && typeof (value as { role?: unknown }).role === 'string')),
+      }
+    })(),
+    sourceIds: [`notion:${page.id}`, ...(() => {
+      const id = getText(findProperty(properties, ["ID source", "Identifiant source"]))
+      return id && source ? [`${normalizeName(source)}:${id}`] : []
+    })()],
     title,
-    description: getText(findProperty(properties, ["Description", "Résumé", "Resume", "Texte", "Notes"])) || "À compléter",
+    description: getText(findProperty(properties, ["Description", "Résumé", "Resume", "Texte", "Notes"])) || "",
     image: image || undefined,
-    dates: date?.start ? "Date renseignée" : "À compléter",
+    dates: formatNotionDateRange(startDate, endDate),
     startDate,
     endDate,
     venue,
@@ -613,12 +782,15 @@ function normalizeNotionPage(page: NotionPage): AgendaEvent | null {
     postalCode,
     latitude: hasValidFranceCoordinates(coordinates.latitude, coordinates.longitude) ? coordinates.latitude : undefined,
     longitude: hasValidFranceCoordinates(coordinates.latitude, coordinates.longitude) ? coordinates.longitude : undefined,
-    price: getText(findProperty(properties, ["Prix", "Tarif", "Tarifs", "Price"])) || "À compléter",
+    price: getText(findProperty(properties, ["Prix", "Tarif", "Tarifs", "Price"])) || "",
     time: getText(findProperty(properties, ["Horaires", "Horaire", "Heure", "Heures", "Time"])) || undefined,
     category: normalizeCategory(getText(findProperty(properties, ["Type", "Catégorie", "Categorie", "Category"]))),
+    disciplines: disciplines.length ? disciplines : undefined,
+    videoUrl,
+    duration,
     officialUrl,
     ticketUrl: ticketUrl || undefined,
-    additionalInfo: getAdditionalInfo(properties),
+    additionalInfo: mergedAdditionalInfo,
     source,
     sourceLabel: source,
     lastVerifiedAt: getText(findProperty(properties, ["Dernière vérification", "Derniere verification", "Vérifié le", "Verifie le"])) || todayIso(),
@@ -679,32 +851,360 @@ async function fetchAllNotionPages() {
   return pages
 }
 
+// ─── Enrichissement automatique multi-champs ─────────────────────────────────
+
+/** Données extraites d'une page web officielle d'un événement */
+type EventPageData = {
+  image?: string | null
+  description?: string | null
+  price?: string | null
+  disciplines?: string[]
+  videoUrl?: string | null
+}
+
+/**
+ * Cache in-memory des données de pages, par URL officielle.
+ * Persiste entre les requêtes (durée de vie du process).
+ * undefined = non tentée, null = tentée sans résultat
+ */
+const PAGE_CACHE = new Map<string, EventPageData | null>()
+
+/** Résout et normalise une URL relative/protocole-relative en URL absolue */
+function resolveUrl(url: string, base: string): string {
+  const clean = url.trim().replace(/&amp;/g, "&").replace(/&#x26;/g, "&")
+  if (clean.startsWith("//")) return "https:" + clean
+  if (clean.startsWith("/")) {
+    try { return new URL(clean, base).href } catch { return "" }
+  }
+  return clean
+}
+
+/** Extrait une valeur de meta tag (property= ou name=) */
+function extractMeta(html: string, keys: string[]): string | null {
+  for (const key of keys) {
+    // property="..." ou name="..."
+    const patterns = [
+      new RegExp(`<meta[^>]+(?:property|name)=["']${key}["'][^>]+content=["']([^"']+)["']`, "i"),
+      new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${key}["']`, "i"),
+    ]
+    for (const pat of patterns) {
+      const m = html.match(pat)
+      if (m?.[1]) return m[1].trim()
+    }
+  }
+  return null
+}
+
+/** Extrait les données schema.org Event depuis les blocs JSON-LD */
+function extractSchemaOrgEvent(html: string, baseUrl: string): Partial<EventPageData> {
+  const result: Partial<EventPageData> = {}
+  const scriptMatches = html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)
+
+  for (const match of scriptMatches) {
+    try {
+      const raw = match[1].trim()
+      const parsed: unknown = JSON.parse(raw)
+      const items: unknown[] = Array.isArray(parsed)
+        ? parsed
+        : (parsed as Record<string, unknown>)["@graph"]
+          ? ((parsed as Record<string, unknown>)["@graph"] as unknown[])
+          : [parsed]
+
+      for (const item of items) {
+        const obj = item as Record<string, unknown>
+        const type = String(obj["@type"] ?? "")
+        if (!type.includes("Event") && !type.includes("MusicEvent") && !type.includes("TheaterEvent")) continue
+
+        // Image
+        if (!result.image) {
+          const img = obj["image"]
+          if (typeof img === "string" && img.startsWith("http")) result.image = img
+          else if (img && typeof img === "object") {
+            const imgObj = img as Record<string, unknown>
+            const imgUrl = String(imgObj["url"] ?? imgObj["contentUrl"] ?? "")
+            if (imgUrl.startsWith("http")) result.image = imgUrl
+          }
+        }
+
+        // Description
+        if (!result.description) {
+          const desc = String(obj["description"] ?? "")
+          if (desc.length > 20) result.description = desc
+        }
+
+        // Prix (offers)
+        if (!result.price) {
+          const offers = obj["offers"]
+          if (offers) {
+            const offersList = Array.isArray(offers) ? offers : [offers]
+            const prices: string[] = []
+            for (const offer of offersList) {
+              const o = offer as Record<string, unknown>
+              const price = o["price"]
+              const currency = String(o["priceCurrency"] ?? "€")
+              if (price !== undefined && price !== null) {
+                const p = String(price)
+                if (p !== "0" && p !== "") prices.push(`${p}${currency === "EUR" ? "€" : currency}`)
+                else if (p === "0") prices.push("Gratuit")
+              }
+            }
+            if (prices.length) result.price = [...new Set(prices)].join(" – ")
+          }
+        }
+
+        // Disciplines / mots-clés
+        if (!result.disciplines?.length) {
+          const keywords = String(obj["keywords"] ?? "")
+          if (keywords) {
+            result.disciplines = keywords.split(",").map((k) => k.trim()).filter(Boolean).slice(0, 5)
+          }
+        }
+
+        // Vidéo
+        if (!result.videoUrl) {
+          const video = obj["video"] ?? obj["trailer"]
+          if (video) {
+            const v = video as Record<string, unknown>
+            const videoUrl = resolveUrl(String(v["contentUrl"] ?? v["url"] ?? v["embedUrl"] ?? ""), baseUrl)
+            if (videoUrl.startsWith("http")) result.videoUrl = videoUrl
+          }
+        }
+      }
+    } catch {
+      // JSON-LD invalide — ignorer
+    }
+  }
+  return result
+}
+
+/**
+ * Récupère toutes les données enrichissables d'une page officielle.
+ * Priorité :
+ *   0. Cache enrichissement complet (data/notion-event-enrichment.json)
+ *   0b. Cache images legacy (data/notion-image-urls.json)
+ *   1. Fetch HTML direct (SSR sites + schema.org)
+ *   2. Microlink fallback (SPA/CSR)
+ * Cache in-memory : chaque URL n'est traitée qu'une seule fois par process.
+ */
+async function fetchEventPageData(pageUrl: string): Promise<EventPageData | null> {
+  if (!pageUrl || !pageUrl.startsWith("http")) return null
+
+  // 0. Cache enrichissement complet (data/notion-event-enrichment.json)
+  if (pageUrl in STATIC_ENRICHMENT) {
+    const entry = STATIC_ENRICHMENT[pageUrl]
+    if (!entry) return null
+    return {
+      image: entry.image ?? null,
+      description: entry.description ?? null,
+      price: entry.price ?? null,
+      disciplines: entry.disciplines ?? undefined,
+      videoUrl: entry.videoUrl ?? null,
+    }
+  }
+
+  // 0b. Cache images legacy (data/notion-image-urls.json)
+  if (pageUrl in STATIC_IMAGE_URLS) {
+    return { image: STATIC_IMAGE_URLS[pageUrl] }
+  }
+
+  // 1. Fetch HTML (SSR sites + extraction schema.org)
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 6000)
+
+  try {
+    const res = await fetch(pageUrl, {
+      signal: controller.signal,
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; DanceLab/1.0)", Accept: "text/html" },
+      cache: "no-store",
+    })
+    clearTimeout(timer)
+
+    if (!res.ok) return null
+
+    const html = await res.text()
+
+    // Extraire image depuis og:image / twitter:image
+    const rawOgImage = extractMeta(html, [
+      "og:image", "og:image:secure_url", "twitter:image", "twitter:image:src"
+    ])
+    const ogImage = rawOgImage ? resolveUrl(rawOgImage, pageUrl) : null
+
+    // Extraire description depuis og:description
+    const rawDesc = extractMeta(html, ["og:description", "description", "twitter:description"])
+
+    // Extraire depuis schema.org
+    const schemaData = extractSchemaOrgEvent(html, pageUrl)
+
+    // Extraire og:video
+    const rawVideo = extractMeta(html, ["og:video", "og:video:url", "og:video:secure_url"])
+    const ogVideo = rawVideo ? resolveUrl(rawVideo, pageUrl) : null
+
+    const image = schemaData.image || (ogImage?.startsWith("http") ? ogImage : null)
+
+    // Si aucune image trouvée en HTML direct → tenter Microlink
+    let microlinkImage: string | null = null
+    if (!image) {
+      try {
+        const mc = new AbortController()
+        const mcTimer = setTimeout(() => mc.abort(), 10000)
+        const mcRes = await fetch(
+          `https://api.microlink.io/?url=${encodeURIComponent(pageUrl)}&meta=true`,
+          { signal: mc.signal, headers: { Accept: "application/json" }, cache: "no-store" }
+        )
+        clearTimeout(mcTimer)
+        if (mcRes.ok) {
+          const mcData = (await mcRes.json()) as { status?: string; data?: { image?: { url?: string } } }
+          if (mcData?.status === "success" && mcData?.data?.image?.url) {
+            microlinkImage = mcData.data.image.url.trim()
+          }
+        }
+      } catch { /* pas de microlink */ }
+    }
+
+    return {
+      image: image || microlinkImage || null,
+      description: schemaData.description || (rawDesc && rawDesc.length > 20 ? rawDesc : null) || null,
+      price: schemaData.price || null,
+      disciplines: schemaData.disciplines?.length ? schemaData.disciplines : undefined,
+      videoUrl: schemaData.videoUrl || (ogVideo?.startsWith("http") ? ogVideo : null) || null,
+    }
+  } catch {
+    clearTimeout(timer)
+    return null
+  }
+}
+
+/**
+ * Détecte les URLs d'images volatiles qui peuvent expirer ou changer :
+ * - URLs signées AWS S3 de Notion (expirent en quelques heures)
+ * - Blobs de fichiers Notion (prod-files-secure.s3…)
+ * - Toute URL avec paramètre X-Amz-Expires (pre-signed S3)
+ *
+ * Ces images ne doivent pas bloquer le ré-enrichissement — elles seront
+ * remplacées par l'URL stable extraite depuis la page officielle.
+ */
+function isVolatileImageUrl(url: string): boolean {
+  if (!url) return false
+  // Notion block files hébergés sur S3 AWS (URLs pré-signées, expirent)
+  if (url.includes("prod-files-secure.s3") || url.includes("secure.notion-static.com")) return true
+  // Toute URL signée AWS (X-Amz-Expires ou X-Amz-Security-Token dans le query string)
+  if (url.includes("X-Amz-Expires") || url.includes("X-Amz-Security-Token")) return true
+  // Sous-domaines S3 amazonaws.com avec notion dans le nom
+  if (url.includes("amazonaws.com") && url.includes("notion")) return true
+  return false
+}
+
+/**
+ * Enrichit en parallèle tous les événements dont il manque des données
+ * (image, description, prix) en fetchant leur URL officielle.
+ *
+ * Cas couverts :
+ *   - champ image / price / description absent
+ *   - image présente mais URL volatile (Notion S3 pré-signée qui expire)
+ *
+ * Cache in-memory persistant — ne traite chaque URL qu'une seule fois par process.
+ */
+async function enrichEventsWithPageData(events: AgendaEvent[]): Promise<AgendaEvent[]> {
+  // Cibler les événements qui manquent d'au moins un champ important,
+  // ou dont l'image provient d'une URL volatile susceptible d'expirer.
+  const needsEnrichment = events.filter(
+    (e) =>
+      e.officialUrl?.startsWith("http") &&
+      (!e.image || isVolatileImageUrl(e.image) || !e.price || !e.description)
+  )
+  if (needsEnrichment.length === 0) return events
+
+  const uniqueUrls = [...new Set(needsEnrichment.map((e) => e.officialUrl).filter(Boolean))]
+
+  // Charger en parallèle (max 10 simultanément pour ne pas saturer)
+  const BATCH = 10
+  for (let i = 0; i < uniqueUrls.length; i += BATCH) {
+    const batch = uniqueUrls.slice(i, i + BATCH)
+    await Promise.allSettled(
+      batch.map(async (url) => {
+        if (PAGE_CACHE.has(url)) return
+        const data = await fetchEventPageData(url)
+        PAGE_CACHE.set(url, data)
+      })
+    )
+  }
+
+  // Appliquer les données récupérées aux événements.
+  // Pour les URLs volatiles, on laisse la donnée fraîchement extraite
+  // prendre le dessus sur l'URL qui risque d'être expirée.
+  return events.map((event) => {
+    if (!event.officialUrl?.startsWith("http")) return event
+    const data = PAGE_CACHE.get(event.officialUrl)
+    if (!data) return event
+
+    const imageIsVolatile = event.image ? isVolatileImageUrl(event.image) : false
+    const resolvedImage = imageIsVolatile
+      ? (data.image || event.image || undefined)
+      : (event.image || data.image || undefined)
+
+    return {
+      ...event,
+      image: resolvedImage,
+      description: event.description || data.description || undefined,
+      price: event.price || data.price || undefined,
+      disciplines: (event.disciplines?.length ? event.disciplines : data.disciplines) || undefined,
+      videoUrl: event.videoUrl || data.videoUrl || undefined,
+    }
+  })
+}
+
+// Alias de compatibilité avec le code existant qui appelait enrichEventsWithOgImages
+const enrichEventsWithOgImages = enrichEventsWithPageData
+
 function sortEvents(events: AgendaEvent[]) {
   return [...events].sort((a, b) => a.startDate.localeCompare(b.startDate))
 }
 
-function cleanVisibleText(value: string) {
-  return value.replace(/[--]/g, "-")
+/**
+ * Normalise le texte visible d'un champ événement :
+ * - Remplace les tirets longs (— U+2014) et demi-longs (– U+2013) par un tiret simple " - "
+ *   pour uniformiser l'affichage dans toute la rubrique Sortir.
+ * - Ne touche pas aux traits d'union dans les mots composés (dîner-spectacle, music-hall…)
+ *   car ils n'ont pas d'espace autour d'eux et ne correspondent pas à ce pattern.
+ */
+function cleanVisibleText(value: string = "") {
+  return value
+    .replace(/\s*[—–]\s*/g, " - ")   // em dash & en dash → " - "
+    .replace(/\s{2,}/g, " ")          // double espaces résiduels
+    .trim()
+}
+
+function sanitizeString(value: string): string {
+  const cleaned = cleanVisibleText(value)
+  return isPlaceholder(cleaned) ? "" : cleaned
+}
+
+function sanitizeOptional(value?: string): string | undefined {
+  if (!value) return undefined
+  const cleaned = sanitizeString(value)
+  return cleaned || undefined
 }
 
 function sanitizeAgendaEvent(event: AgendaEvent): AgendaEvent {
   return {
     ...event,
     title: cleanVisibleText(event.title),
-    description: cleanVisibleText(event.description),
-    dates: cleanVisibleText(event.dates),
-    venue: cleanVisibleText(event.venue),
-    address: event.address ? cleanVisibleText(event.address) : undefined,
-    city: cleanVisibleText(event.city),
-    postalCode: event.postalCode ? cleanVisibleText(event.postalCode) : undefined,
-    price: cleanVisibleText(event.price),
-    time: event.time ? cleanVisibleText(event.time) : undefined,
+    description: sanitizeString(event.description),
+    dates: sanitizeString(event.dates),
+    venue: sanitizeString(event.venue),
+    address: sanitizeOptional(event.address),
+    city: sanitizeString(event.city),
+    postalCode: sanitizeOptional(event.postalCode),
+    price: sanitizeString(event.price),
+    time: sanitizeOptional(event.time),
     source: cleanVisibleText(event.source),
     sourceLabel: cleanVisibleText(event.sourceLabel),
-    additionalInfo: event.additionalInfo?.map((item) => ({
-      label: cleanVisibleText(item.label),
-      value: cleanVisibleText(item.value),
-    })),
+    additionalInfo: event.additionalInfo
+      ?.map((item) => ({
+        label: cleanVisibleText(item.label),
+        value: cleanVisibleText(item.value),
+      }))
+      .filter((item) => !isPlaceholder(item.value)),
   }
 }
 
@@ -712,24 +1212,9 @@ async function prepareAgendaResponseEvents(events: AgendaEvent[]) {
   return sortEvents(await enrichEventsWithCoordinates(events)).map(sanitizeAgendaEvent)
 }
 
-function getAgendaEventKey(event: AgendaEvent) {
-  return normalizeName([event.title, event.startDate, event.venue, event.city].join("|"))
-}
-
 function mergeAgendaSources(notionEvents: AgendaEvent[]) {
-  const merged = new Map<string, AgendaEvent>()
-
-  ;[...agendaEvents, ...collectedAgendaEvents]
-    .filter((event) => !isPastEvent(event))
-    .forEach((event) => {
-      merged.set(getAgendaEventKey(event), applyVenueFallback(event))
-    })
-
-  notionEvents.forEach((event) => {
-    merged.set(getAgendaEventKey(event), event)
-  })
-
-  return Array.from(merged.values())
+  return consolidateAgendaEvents([...agendaEvents, ...collectedAgendaEvents, ...cabaretEvents, ...showsEvents, ...notionEvents].map(applyVenueFallback))
+    .filter(event => !isPastEvent(event))
 }
 
 function hasValidFranceCoordinates(latitude?: number, longitude?: number) {
@@ -845,7 +1330,23 @@ async function enrichEventsWithCoordinates(events: AgendaEvent[]) {
   return enriched
 }
 
-export async function GET() {
+function filterEventScope(events: AgendaEvent[], scope: string | null) {
+  if (scope === "cultural") return events.filter(isCulturalEvent).map(normalizeEventForDestination)
+  if (scope === "practice") return events.filter(isPracticeEvent)
+  return events
+}
+
+export async function GET(request: NextRequest) {
+  const scope = request.nextUrl.searchParams.get("scope")
+  const detailView = request.nextUrl.searchParams.get("view") === "detail"
+  const respond = async (events: AgendaEvent[]) => {
+    const scoped = filterEventScope(events, scope)
+    // Detail pages retain the catalogue for related cards, without waiting for
+    // external enrichment or geocoding, which their map links do not require.
+    return detailView
+      ? sortEvents(scoped.map(applyEventDisciplines)).map(sanitizeAgendaEvent)
+      : prepareAgendaResponseEvents((await enrichEventsWithOgImages(scoped)).map(applyEventDisciplines))
+  }
   try {
     const notionPages = await fetchAllNotionPages()
     const notionEvents = notionPages
@@ -853,11 +1354,11 @@ export async function GET() {
       .filter((event): event is AgendaEvent => Boolean(event))
       .filter((event) => !isPastEvent(event))
 
-    const events = mergeAgendaSources(notionEvents)
+    const merged = mergeAgendaSources(notionEvents)
 
     return NextResponse.json({
       source: "notion+selection-nationale",
-      events: await prepareAgendaResponseEvents(events),
+      events: await respond(merged),
     })
   } catch (error) {
     console.error(error)
@@ -870,7 +1371,7 @@ export async function GET() {
       source: "selection-nationale",
       error: "notion_unavailable",
       detail,
-      events: await prepareAgendaResponseEvents(mergeAgendaSources([])),
+      events: await respond(mergeAgendaSources([])),
     })
   }
 }

@@ -1,0 +1,118 @@
+{
+  "generatedAt": "2026-10-16T00:00:00.000Z",
+  "method": "HTTP HEAD + WebFetch verification",
+  "summary": {
+    "total": 38,
+    "ok": 24,
+    "broken_fixed": 7,
+    "antiBot_ignored": 4,
+    "redirect_ok": 4,
+    "tls_warning": 1,
+    "unknown_timeout": 0
+  },
+  "fixed": [
+    {
+      "slug": "le-roi-soleil-retour-paris-2026",
+      "field": "officialUrl",
+      "old": "https://leroisoleil-lespectacle.fr",
+      "new": "https://www.ledomedeparis.com/fr/spectacle/331/le-roi-soleil",
+      "reason": "URL générique remplacée par la page officielle Dôme de Paris (run 1)"
+    },
+    {
+      "slug": "le-roi-soleil-retour-paris-2026",
+      "field": "ticketUrl",
+      "old": "https://www.ticketmaster.fr/search?q=le+roi+soleil",
+      "new": "https://www.ticketmaster.fr/fr/manifestation/le-roi-soleil-billet/idmanif/642899/idtier/78166",
+      "reason": "Lien de recherche générique → lien de réservation direct idmanif/642899"
+    },
+    {
+      "slug": "le-roi-soleil-retour-paris-dec-2026",
+      "field": "officialUrl",
+      "old": "https://leroisoleil-lespectacle.fr",
+      "new": "https://www.ledomedeparis.com/fr/spectacle/381/le-roi-soleil",
+      "reason": "URL générique remplacée par la page officielle Dôme de Paris (run 2)"
+    },
+    {
+      "slug": "le-roi-soleil-retour-paris-dec-2026",
+      "field": "ticketUrl",
+      "old": "https://www.ticketmaster.fr/search?q=le+roi+soleil",
+      "new": "https://www.ticketmaster.fr/fr/manifestation/le-roi-soleil-billet/idmanif/668474/idtier/78166",
+      "reason": "Lien de recherche générique → lien de réservation direct idmanif/668474"
+    },
+    {
+      "slug": "the-rise-rb-dance-company-2027",
+      "field": "ticketUrl",
+      "old": "https://www.ticketmaster.fr/search?q=the+rise+rb+dance",
+      "new": "https://www.ticketmaster.fr/fr/manifestation/the-rise-billet/idmanif/655260/idtier/78166",
+      "reason": "Lien de recherche générique → lien de réservation direct idmanif/655260"
+    },
+    {
+      "slug": "monte-cristo-musical-paris-*",
+      "field": "officialUrl",
+      "old": "https://www.sortiraparis.com/fr/quoi-faire-a-paris/spectacle/articles/326559",
+      "new": "https://lalegendedemontecristo.com",
+      "reason": "Article SortirAParis redirige vers la homepage → site officiel du spectacle"
+    },
+    {
+      "slug": "drag-race-france-live-s4-2026",
+      "field": "ticketUrl",
+      "old": "https://www.casinodeparis.fr/fr/product/",
+      "new": "https://www.casinodeparis.fr/fr/Drag-Race-France-Live-Saison-4-24-Septembre-Au-3-Octobre-2026-Billetterie-Paris",
+      "reason": "Page produit générique → page de l'événement spécifique (déjà l'officialUrl)"
+    },
+    {
+      "slug": "alcazar-paris-s-eveille",
+      "field": "ticketUrl",
+      "old": "https://www.alcazar.fr/reservation",
+      "new": "https://eu.sevenrooms.com/explore/lalcazar/reservations/create/search/?lang=fr",
+      "reason": "404 → lien SevenRooms trouvé sur le site officiel"
+    },
+    {
+      "slug": "oh-cesar-paris-nuits-caraibes",
+      "field": "ticketUrl",
+      "old": "https://ohcesarparis.com/reservation",
+      "new": "https://ohcesarparis.com/offres-experience/",
+      "reason": "404 → page des offres/formules trouvée sur le site officiel"
+    },
+    {
+      "slug": "artishow-cabaret",
+      "field": "ticketUrl",
+      "old": "https://www.artishowcabaret.com/billetterie",
+      "new": "https://www.artishowcabaret.com/accueil-artishow-2/",
+      "reason": "404 → page d'accueil avec infos de réservation (tél. + Ticketac/FNAC)"
+    },
+    {
+      "slug": "lou-diprey-love-bazar + lou-diprey-brunch-queen",
+      "field": "ticketUrl",
+      "old": "https://www.loudiprey.com/billetterie",
+      "new": "https://widget.thefork.com/4111648a-8dea-4d00-9f27-711757fa76da",
+      "reason": "404 → widget TheFork trouvé sur le site officiel (réservation directe)"
+    },
+    {
+      "slug": "boeuf-sur-le-toit",
+      "field": "ticketUrl",
+      "old": "https://boeufsurletoit.com/reservation",
+      "new": "https://eu.sevenrooms.com/explore/leboeufsurletoit/reservations/create/search?venues=leboeufsurletoit",
+      "reason": "404 → lien SevenRooms trouvé sur le site officiel"
+    }
+  ],
+  "manual_review": [
+    {
+      "url": "https://lanouvelleeve.com/",
+      "issue": "Erreur TLS (EPROTO) — le site répond mais utilise une version SSL incompatible avec Node.js. Le lien fonctionne dans les navigateurs. Aucune correction nécessaire côté données.",
+      "recommendation": "Laisser le lien tel quel. Signaler au propriétaire du site pour mise à jour SSL."
+    },
+    {
+      "url": "https://www.artishowcabaret.com/accueil-artishow-2/",
+      "issue": "Pas de billetterie en ligne directe. La réservation se fait par téléphone (01.43.48.56.04), Ticketac ou FNAC Spectacles.",
+      "recommendation": "Ajouter le numéro de téléphone dans additionalInfo si possible."
+    }
+  ],
+  "anti_bot_ignored": [
+    "https://www.ticketmaster.fr/fr/manifestation/le-roi-soleil-billet/idmanif/642899/idtier/78166",
+    "https://www.ticketmaster.fr/fr/manifestation/le-roi-soleil-billet/idmanif/668474/idtier/78166",
+    "https://www.ticketmaster.fr/fr/manifestation/the-rise-billet/idmanif/655260/idtier/78166",
+    "https://indiv.themisweb.fr/0588/fEventChoiceIsMade.aspx?idstructure=0588&idevent=564"
+  ],
+  "next_scheduled_audit": "2026-10-17T06:00:00.000Z"
+}

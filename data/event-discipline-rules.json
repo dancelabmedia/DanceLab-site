@@ -1,0 +1,42 @@
+[
+  {
+    "id": "memento-mazelfreten",
+    "title": "\\bmemento\\b",
+    "artist": "mazel\\s*freten|masele|defretin",
+    "disciplines": ["Électro", "Hip-hop"],
+    "source": "https://www.mazelfreten.com/memento",
+    "verifiedAt": "2026-10-16",
+    "locked": true,
+    "reason": "La présentation officielle décrit la rencontre de trois danseurs électro et trois danseuses hip-hop. Aucun breaking documenté."
+  },
+  {
+    "id": "sware-house-an-nou",
+    "title": "la sware house an nou",
+    "artist": "house an nou",
+    "disciplines": ["House", "Gwoka"],
+    "source": "https://www.paris.fr/evenements/la-sware-house-an-nou-123979",
+    "verifiedAt": "2026-10-16",
+    "locked": true,
+    "reason": "La présentation de l'organisateur décrit un dialogue dansé entre house dance et gwoka. La pratique hip-hop d'une intervenante ne suffit pas à classer toute la soirée en hip-hop ou breaking."
+  },
+  {
+    "id": "rave-lucid-mazelfreten",
+    "title": "\\brave lucid\\b",
+    "artist": "mazel\\s*freten|masele|defretin",
+    "disciplines": ["Électro"],
+    "source": "https://www.mazelfreten.com/rave-lucid",
+    "verifiedAt": "2026-10-16",
+    "locked": true,
+    "reason": "La compagnie décrit explicitement l'écriture de groupe fondée sur les codes et techniques de la danse électro."
+  },
+  {
+    "id": "same-old-songs-maud-blandel",
+    "title": "\\bsame old songs\\b",
+    "artist": "maud blandel",
+    "disciplines": ["Contemporain"],
+    "source": "https://theatrepublicmontreuil.com/same-old-songs",
+    "verifiedAt": "2026-10-17",
+    "locked": true,
+    "reason": "La présentation et les données structurées du théâtre identifient le trio de danse contemporaine de Maud Blandel."
+  }
+]

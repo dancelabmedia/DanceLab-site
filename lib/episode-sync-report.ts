@@ -4,6 +4,7 @@ export type EpisodeSyncIssue = {
   episodeNumber: number
   aushaGuid: string
   title: string
+  officialCoverUrl?: string
   missing: string[]
   warnings: string[]
 }

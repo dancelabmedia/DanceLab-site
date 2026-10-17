@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { revalidatePath, revalidateTag } from 'next/cache'
 import { getEpisodesFromRSS, isGenericGuestLabel } from '@/lib/ausha-rss'
 import { getYoutubeEpisodeMap, youtubeVideoMatchesEpisode } from '@/lib/youtube-rss'
 import { getRecentInstagramReels, matchReelToEpisode } from '@/lib/instagram-api'
@@ -8,6 +7,8 @@ import { getEpisodeMediaOverride } from '@/lib/episode-media-overrides'
 import { getResolvedTeaser } from '@/lib/teaser-resolved'
 import { episodeSyncReport, type EpisodeSyncReport } from '@/lib/episode-sync-report'
 import { commitFileToGitHub } from '@/lib/github-commit'
+import { isOfficialAushaCoverUrl } from '@/lib/episode-cover'
+import { revalidateEpisodeContent } from '@/lib/revalidate-episode-content'
 
 export const maxDuration = 120
 const REPORT_PATH = 'data/episode-sync-report.json'
@@ -26,10 +27,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
   }
 
-  revalidateTag('ausha-episodes')
-  revalidateTag('ausha-derived-content')
-  revalidatePath('/ecouter')
-  revalidatePath('/episodes/[slug]', 'page')
+  revalidateEpisodeContent()
 
   try {
     const [episodes, youtubeMap, reels] = await Promise.all([
@@ -40,6 +38,7 @@ export async function GET(request: NextRequest) {
 
     const seenNumbers = new Set<number>()
     const seenGuids = new Set<string>()
+    const coverOwners = new Map<string, string>()
     const issues: EpisodeSyncReport['issues'] = []
 
     for (const episode of episodes) {
@@ -63,7 +62,17 @@ export async function GET(request: NextRequest) {
       if (!episode.guid) missing.push('GUID Ausha')
       if (!episode.title) missing.push('titre')
       if (isGenericGuestLabel(episode.guest)) missing.push('invité.e à identifier')
-      if (!episode.aushaImage) missing.push('couverture Ausha')
+      if (!episode.aushaImage) {
+        missing.push('couverture Ausha')
+      } else if (!isOfficialAushaCoverUrl(episode.aushaImage)) {
+        missing.push('URL de couverture Ausha invalide')
+      } else {
+        const previousOwner = coverOwners.get(episode.aushaImage)
+        if (previousOwner && previousOwner !== episode.guid) {
+          warnings.push('couverture partagée avec un autre GUID')
+        }
+        coverOwners.set(episode.aushaImage, episode.guid)
+      }
       if (!episode.audioUrl) missing.push('audio')
       if (!episode.link) missing.push('lien Ausha')
       if (!episode.platformLinks.spotify) warnings.push('Spotify')
@@ -80,6 +89,7 @@ export async function GET(request: NextRequest) {
           episodeNumber: episode.number,
           aushaGuid: episode.guid,
           title: episode.title,
+          officialCoverUrl: episode.aushaImage || undefined,
           missing,
           warnings,
         })

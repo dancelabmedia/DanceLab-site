@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { requireExplorerAccess } from '@/lib/explorer-access'
 import EcolesClient from './EcolesClient'
 import { ecolesDanse } from './ecoles-data'
+import { getPracticeEvents } from './practice-events'
 
 export const metadata: Metadata = {
   title: 'Écoles et formations professionnelles en danse en France | Dance Lab',
@@ -23,5 +24,5 @@ export const metadata: Metadata = {
 
 export default async function EcolesPage() {
   await requireExplorerAccess('schools')
-  return <EcolesClient ecoles={ecolesDanse} />
+  return <EcolesClient ecoles={ecolesDanse} initialPracticeEvents={getPracticeEvents()} />
 }

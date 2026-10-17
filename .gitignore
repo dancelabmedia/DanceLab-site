@@ -4,6 +4,7 @@ node_modules
 .DS_Store
 .env*
 tsconfig.tsbuildinfo
+.local/event-deduplication/
 
 # Données locales et fichiers de travail
 dancelab.db
@@ -11,3 +12,6 @@ dancelab.db-shm
 dancelab.db-wal
 *.numbers
 data/podcast-articles/*.tmp
+
+# Images agenda téléchargées localement (trop volumineuses pour Git — stocker sur CDN)
+public/images/agenda/

@@ -6,6 +6,8 @@ import { getPublishedArticles } from '@/app/decouvrir/articles-data'
 import { danceStyles } from '@/app/explorer/styles-de-danse/styles-data'
 import { getEpisodes } from '@/lib/episodes'
 import { ecolesDanse, getEcoleById, getEcoleLocationLabel } from '../ecoles-data'
+import { getPracticeEventsForSchool } from '../practice-events'
+import { googleMapsUrl } from '@/lib/event-routing'
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -47,6 +49,7 @@ export default async function EcoleDetailPage({ params }: Props) {
   const linkedEpisodes = episodeSlugs.map(slug => allEpisodes.find(episode => episode.slug === slug)).filter(Boolean).slice(0, 3)
   const styleTerms = new Set(linkedStyles.flatMap(style => [style.name, ...(style.aliases ?? [])]).map(normalize))
   const linkedArticles = getPublishedArticles().filter(article => article.tags.some(tag => styleTerms.has(normalize(tag)))).slice(0, 3)
+  const practiceEvents = getPracticeEventsForSchool(ecole.id)
 
   return <main className="ecole-detail-page">
     <header className="ecole-detail-hero">
@@ -79,6 +82,25 @@ export default async function EcoleDetailPage({ params }: Props) {
         {ecole.siteWeb && <a href={ecole.siteWeb} target="_blank" rel="noopener noreferrer">Visiter le site officiel ↗</a>}
       </aside>
     </div>
+
+    {practiceEvents.length > 0 && <section className="ecole-detail-events">
+      <div className="container">
+        <span className="section-label">Cours et rendez-vous</span>
+        <h2>Pratiquer dans cet établissement</h2>
+        <div className="ecole-detail-events-grid">
+          {practiceEvents.map(event => {
+            const mapUrl = googleMapsUrl(event)
+            return <article key={event.slug}>
+              {event.image && <Link href={`/sortir/${event.slug}`} className="ecole-detail-event-image"><img src={event.image} alt="" /></Link>}
+              <small>{event.practiceKind}</small>
+              <h3><Link href={`/sortir/${event.slug}`}>{event.title}</Link></h3>
+              <p>{event.dates} · {event.price}</p>
+              <div>{mapUrl && <a href={mapUrl} target="_blank" rel="noopener noreferrer">Google Maps ↗</a>}<a href={event.ticketUrl || event.officialUrl} target="_blank" rel="noopener noreferrer">S'inscrire ↗</a></div>
+            </article>
+          })}
+        </div>
+      </div>
+    </section>}
 
     {(linkedStyles.length > 0 || linkedEpisodes.length > 0 || linkedArticles.length > 0) && <section className="ecole-detail-ecosystem">
       <div className="container">

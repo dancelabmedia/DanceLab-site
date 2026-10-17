@@ -1,0 +1,69 @@
+[
+  {
+    "key": "tce-les-4-saisons-dansees-2027-05",
+    "startDate": "2027-05-10",
+    "endDate": "2027-05-13",
+    "venueAliases": ["Théâtre des Champs-Élysées", "Théâtre des Champs Elysées", "TCE"],
+    "titleAliases": ["Les 4 saisons dansées", "Les Quatre Saisons Dansées"],
+    "notionCanonicalId": "38ac0d76-c249-81de-8323-c5a0b324dc5c",
+    "event": {
+      "slug": "les-4-saisons-dansees-merzouki-chauvin-2027-05-10",
+      "canonicalSourceId": "notion:38ac0d76-c249-81de-8323-c5a0b324dc5c",
+      "title": "Les 4 saisons dansées",
+      "description": "Mourad Merzouki met en scène la musique de Vivaldi avec les danseurs de la Compagnie Käfig et Le Concert de la Loge, dirigé par le violoniste Julien Chauvin. La chorégraphie mêle hip-hop et danse contemporaine aux œuvres interprétées en direct par l’ensemble baroque.",
+      "image": "https://www.theatrechampselysees.fr/uploads/media/6/4/0/2/69a1b155bfbfa-new-event-slider.webp",
+      "dates": "10, 11 et 13 mai 2027",
+      "startDate": "2027-05-10",
+      "endDate": "2027-05-13",
+      "time": "19h30",
+      "duration": "1h15 environ, sans entracte",
+      "venue": "Théâtre des Champs-Élysées",
+      "city": "Paris",
+      "address": "15 avenue Montaigne",
+      "postalCode": "75008",
+      "price": "15 à 95 € : catégorie 6 15 €, catégorie 5 30 €, catégorie 4 40 €, catégorie 3 60 €, catégorie 2 75 €, catégorie 1 85 €, cœur orchestre 95 €. Catégories 5 et 6 : visibilité réduite ou très réduite.",
+      "category": "Spectacle",
+      "disciplines": ["Hip-hop", "Danse contemporaine", "Musique baroque"],
+      "officialUrl": "https://www.theatrechampselysees.fr/saison-2026-27/danse/les-4-saisons-dansees",
+      "ticketUrl": "https://billetterie.theatrechampselysees.fr/selection/event/date?lang=fr&productId=10229724588627",
+      "source": "Théâtre des Champs-Élysées",
+      "sourceLabel": "Théâtre des Champs-Élysées",
+      "lastVerifiedAt": "2026-10-15",
+      "status": "À venir",
+      "performances": [
+        { "date": "2027-05-10", "time": "19h30" },
+        { "date": "2027-05-11", "time": "19h30" },
+        { "date": "2027-05-13", "time": "19h30" }
+      ],
+      "cast": [
+        { "name": "Mourad Merzouki", "role": "Chorégraphie, mise en scène" },
+        { "name": "Nadine Chabannier", "role": "Costumes" },
+        { "name": "Cécile Trelluyer", "role": "Lumières" },
+        { "name": "Danseurs de la Compagnie Käfig", "role": "Interprétation chorégraphique" },
+        { "name": "Le Concert de la Loge", "role": "Ensemble instrumental" },
+        { "name": "Julien Chauvin", "role": "Violon et direction" },
+        { "name": "Jérôme Huille", "role": "Violoncelle" }
+      ],
+      "additionalInfo": [
+        { "label": "Production", "value": "Théâtre des Champs-Élysées" },
+        { "label": "Programme", "value": "Antonio Vivaldi : Les Quatre saisons ; Sinfonia de L’Olimpiade RV 725 ; Concerto en si mineur pour 4 violons RV 580 ; Sonate pour violoncelle RV 43 ; Sinfonia RV 151 alla Rustica." },
+        { "label": "Crédit image", "value": "DR / Théâtre des Champs-Élysées" }
+      ],
+      "sourceIds": [
+        "tce:product:10229724588627",
+        "notion:38ac0d76-c249-81de-8323-c5a0b324dc5c",
+        "notion:3dbc0d76-c249-81cb-871e-f9fc7968f9c6",
+        "notion:3d4c0d76-c249-8121-8b12-c0311ee7ebdd",
+        "notion:3b8c0d76-c249-81c8-ba32-f9f7440ce030",
+        "notion:3aac0d76-c249-81bb-92eb-c6175afa6dce"
+      ],
+      "aliasSlugs": [
+        "les-4-saisons-dansees-2027-05-10",
+        "les-4-saisons-dansees-mourad-merzouki-julien-chauvin-vivaldi-hip-hop-2027-05-10",
+        "les-4-saisons-dansees-mourad-merzouki-julien-chauvin-tce-2027-05-10",
+        "les-quatre-saisons-dansees-mourad-merzouki-compagnie-kafig-2027-05-10",
+        "les-quatre-saisons-dansees-mourad-merzouki-cie-kafig-2027-05-10"
+      ]
+    }
+  }
+]

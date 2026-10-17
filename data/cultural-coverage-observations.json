@@ -1,0 +1,361 @@
+[
+  {
+    "title": "Belle(s) de scène",
+    "url": "https://www.lecarreaudutemple.eu/evenements/cabaret-belles-de-scene-la-sirene-a-barbe-olivier-dubois/",
+    "startDate": "2026-12-11",
+    "endDate": "2026-12-18",
+    "venue": "Le Carreau du Temple",
+    "city": "Paris",
+    "alreadyPresent": null,
+    "needsReview": true,
+    "missing": [
+      "ticketUrl",
+      "price"
+    ],
+    "discipline": {
+      "disciplines": [],
+      "status": "needs-review",
+      "locked": false,
+      "issues": [
+        "missing-discipline"
+      ]
+    },
+    "rawEventType": "Event"
+  },
+  {
+    "title": "Ameth Sissokho & Sora Yaa Band / DJ Cucurucho",
+    "url": "https://www.104.fr/fr/programmation/saison-2026-2027/concert/ameth-sissokho-sora-yaa-band-dj-cucurucho",
+    "startDate": "2026-10-31",
+    "endDate": "2026-10-31",
+    "venue": "CENTQUATRE-PARIS",
+    "city": "Paris",
+    "alreadyPresent": null,
+    "needsReview": true,
+    "missing": [
+      "ticketUrl",
+      "price"
+    ],
+    "discipline": {
+      "disciplines": [],
+      "status": "needs-review",
+      "locked": false,
+      "issues": [
+        "missing-discipline"
+      ]
+    },
+    "rawEventType": "Event"
+  },
+  {
+    "title": "Les Beautés de la Danse",
+    "url": "https://www.laseinemusicale.com/spectacles-concerts/les-beautes-de-la-danse-2027/",
+    "startDate": "2027-01-09",
+    "endDate": "2027-01-09",
+    "venue": "La Seine Musicale",
+    "city": "Boulogne-Billancourt",
+    "alreadyPresent": null,
+    "needsReview": true,
+    "missing": [],
+    "discipline": {
+      "disciplines": [],
+      "status": "needs-review",
+      "locked": false,
+      "issues": [
+        "missing-discipline"
+      ]
+    },
+    "rawEventType": "Event"
+  },
+  {
+    "title": "Junior Ballet de l’Opéra national de Paris",
+    "url": "https://le13emeart.com/les-evenements/junior-ballet-de-lopera-national-de-paris-2/",
+    "startDate": "2027-06-04",
+    "endDate": "2027-06-13",
+    "venue": "Le 13e Art",
+    "city": "Paris",
+    "alreadyPresent": "junior-ballet-opera-national-paris-13e-art-2027-06-04",
+    "editoriallyVerified": true,
+    "needsReview": false,
+    "missing": [
+      "programme détaillé non publié",
+      "distribution nominative non publiée"
+    ]
+  },
+  {
+    "title": "Rencontres chorégraphiques internationales de Seine-Saint-Denis 2027",
+    "url": "https://theatrepublicmontreuil.com/rencontres-choregraphiques-internationales-de-seine-saint-denis-2027",
+    "startDate": "2027-05-11",
+    "endDate": "2027-05-12",
+    "venue": "Théâtre Public de Montreuil",
+    "city": "Montreuil",
+    "alreadyPresent": null,
+    "needsReview": true,
+    "missing": [
+      "price"
+    ],
+    "discipline": {
+      "disciplines": [],
+      "status": "needs-review",
+      "locked": false,
+      "issues": [
+        "missing-discipline"
+      ]
+    },
+    "rawEventType": "Event"
+  },
+  {
+    "title": "Nocturne (Parade)",
+    "url": "https://theatrepublicmontreuil.com/nocturne-parade",
+    "startDate": "2027-02-24",
+    "endDate": "2027-03-03",
+    "venue": "Théâtre Public de Montreuil - Salle Jean-Pierre Vernant",
+    "city": "Montreuil",
+    "alreadyPresent": null,
+    "needsReview": true,
+    "missing": [
+      "price"
+    ],
+    "discipline": {
+      "disciplines": [],
+      "status": "needs-review",
+      "locked": false,
+      "issues": [
+        "missing-discipline"
+      ]
+    },
+    "rawEventType": "TheaterEvent"
+  },
+  {
+    "title": "Same Old Songs",
+    "url": "https://theatrepublicmontreuil.com/same-old-songs",
+    "startDate": "2026-11-20",
+    "endDate": "2026-11-25",
+    "venue": "Théâtre Public de Montreuil - Salle Maria Casarès",
+    "city": "Montreuil",
+    "alreadyPresent": "same-old-songs-maud-blandel-montreuil-2026-11-20",
+    "editoriallyVerified": true,
+    "needsReview": false,
+    "performances": [
+      {
+        "date": "2026-11-20",
+        "time": "20h"
+      },
+      {
+        "date": "2026-11-21",
+        "time": "18h"
+      },
+      {
+        "date": "2026-11-23",
+        "time": "20h"
+      },
+      {
+        "date": "2026-11-24",
+        "time": "20h"
+      },
+      {
+        "date": "2026-11-25",
+        "time": "20h"
+      }
+    ],
+    "missing": []
+  },
+  {
+    "title": "GERMAINE ACOGNY, GREGORY MAQOMA *AS WE ARE*",
+    "url": "https://www.theatredelaville-paris.com/fr/spectacles/saison-26-27/danse/germaine-acogny-gregory-maqoma-as-we-are",
+    "startDate": "2026-10-12",
+    "endDate": "2026-10-18",
+    "venue": "TDV-Sarah Bernhardt_Grande salle",
+    "city": "",
+    "alreadyPresent": null,
+    "needsReview": true,
+    "missing": [
+      "city",
+      "address",
+      "ticketUrl",
+      "price"
+    ],
+    "discipline": {
+      "disciplines": [],
+      "status": "needs-review",
+      "locked": false,
+      "issues": [
+        "missing-discipline"
+      ]
+    },
+    "rawEventType": "Event"
+  },
+  {
+    "title": "EMILY TERNDRUP *Offspring (A Modern Frankenstein)*",
+    "url": "https://www.theatredelaville-paris.com/fr/spectacles/saison-26-27/danse/emily-terndrup-offspring-a-modern-frankenstein",
+    "startDate": "2026-10-30",
+    "endDate": "2026-11-01",
+    "venue": "TDV-Sarah Bernhardt_Coupole",
+    "city": "",
+    "alreadyPresent": null,
+    "needsReview": true,
+    "missing": [
+      "city",
+      "address",
+      "ticketUrl",
+      "price"
+    ],
+    "discipline": {
+      "disciplines": [],
+      "status": "needs-review",
+      "locked": false,
+      "issues": [
+        "missing-discipline"
+      ]
+    },
+    "rawEventType": "Event"
+  },
+  {
+    "title": "GROUPE GRENADE, José Montalvo *Un coin de Paradis*",
+    "url": "https://www.theatredelaville-paris.com/fr/spectacles/saison-26-27/danse/groupe-grenade-jose-montalvo-un-coin-de-paradis",
+    "startDate": "2026-11-11",
+    "endDate": "2026-11-14",
+    "venue": "TDV-Sarah Bernhardt_Grande salle",
+    "city": "",
+    "alreadyPresent": null,
+    "needsReview": true,
+    "missing": [
+      "city",
+      "address",
+      "ticketUrl",
+      "price"
+    ],
+    "discipline": {
+      "disciplines": [],
+      "status": "needs-review",
+      "locked": false,
+      "issues": [
+        "missing-discipline"
+      ]
+    },
+    "rawEventType": "Event"
+  },
+  {
+    "title": "Marion Lévy *ROMÉO*",
+    "url": "https://www.theatredelaville-paris.com/fr/spectacles/saison-26-27/enfance-jeunesse/marion-levy-romeo",
+    "startDate": "2027-02-02",
+    "endDate": "2027-02-06",
+    "venue": "TDV-Sarah Bernhardt_Coupole",
+    "city": "",
+    "alreadyPresent": null,
+    "needsReview": true,
+    "missing": [
+      "city",
+      "address",
+      "ticketUrl",
+      "price"
+    ],
+    "discipline": {
+      "disciplines": [],
+      "status": "needs-review",
+      "locked": false,
+      "issues": [
+        "missing-discipline"
+      ]
+    },
+    "rawEventType": "Event"
+  },
+  {
+    "title": "Ambra Senatore *LE MOULIN DES AUTRES (TITRE PROVISOIRE) *",
+    "url": "https://www.theatredelaville-paris.com/fr/spectacles/saison-26-27/enfance-jeunesse/ambra-senatore-le-moulin-des-autres-working-title",
+    "startDate": "2027-03-25",
+    "endDate": "2027-04-03",
+    "venue": "TDV-Sarah Bernhardt_Studio",
+    "city": "",
+    "alreadyPresent": null,
+    "needsReview": true,
+    "missing": [
+      "city",
+      "address",
+      "ticketUrl",
+      "price"
+    ],
+    "discipline": {
+      "disciplines": [],
+      "status": "needs-review",
+      "locked": false,
+      "issues": [
+        "missing-discipline"
+      ]
+    },
+    "rawEventType": "Event"
+  },
+  {
+    "title": "Rachid Ouramdane / Lora Juodkaitė *LE SECRET DES OISEAUX*",
+    "url": "https://www.theatredelaville-paris.com/fr/spectacles/saison-26-27/enfance-jeunesse/rachid-ouramdane-lora-juodkaite-le-secret-des-oiseaux",
+    "startDate": "2027-05-19",
+    "endDate": "2027-05-22",
+    "venue": "TDV-Sarah Bernhardt_Coupole",
+    "city": "",
+    "alreadyPresent": null,
+    "needsReview": true,
+    "missing": [
+      "city",
+      "address",
+      "ticketUrl",
+      "price"
+    ],
+    "discipline": {
+      "disciplines": [],
+      "status": "needs-review",
+      "locked": false,
+      "issues": [
+        "missing-discipline"
+      ]
+    },
+    "rawEventType": "Event"
+  },
+  {
+    "title": "Samhain partie 2 *Gigue macabre*",
+    "url": "https://www.theatredelaville-paris.com/fr/spectacles/saison-26-27/focus-irlande/samhain-part-2-gigue-macabre",
+    "startDate": "2026-11-01",
+    "endDate": "2026-11-01",
+    "venue": "TDV-Sarah Bernhardt_Grande salle",
+    "city": "",
+    "alreadyPresent": null,
+    "needsReview": true,
+    "missing": [
+      "city",
+      "address",
+      "ticketUrl",
+      "price"
+    ],
+    "discipline": {
+      "disciplines": [],
+      "status": "needs-review",
+      "locked": false,
+      "issues": [
+        "missing-discipline"
+      ]
+    },
+    "rawEventType": "Event"
+  },
+  {
+    "title": "Gaelic sounds",
+    "url": "https://www.theatredelaville-paris.com/fr/spectacles/saison-26-27/focus-irlande/gaelic-sounds",
+    "startDate": "2026-11-01",
+    "endDate": "2026-11-01",
+    "venue": "TDV-Sarah Bernhardt_Grande salle",
+    "city": "",
+    "alreadyPresent": null,
+    "needsReview": true,
+    "missing": [
+      "city",
+      "address",
+      "ticketUrl",
+      "price"
+    ],
+    "discipline": {
+      "disciplines": [],
+      "status": "needs-review",
+      "locked": false,
+      "issues": [
+        "missing-discipline"
+      ]
+    },
+    "rawEventType": "Event"
+  }
+]

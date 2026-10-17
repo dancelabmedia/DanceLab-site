@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { revalidatePath, revalidateTag } from 'next/cache'
 import { getEpisodesFromRSS } from '@/lib/ausha-rss'
+import { revalidateEpisodeContent } from '@/lib/revalidate-episode-content'
 
 /** Point d'entrée optionnel pour un webhook Ausha ou un automatisme autorisé. */
 export async function POST(request: NextRequest) {
@@ -12,10 +12,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
   }
 
-  revalidateTag('ausha-episodes')
-  revalidateTag('ausha-derived-content')
-  revalidatePath('/ecouter')
-  revalidatePath('/episodes/[slug]', 'page')
+  revalidateEpisodeContent()
 
   try {
     const episodes = await getEpisodesFromRSS(false)

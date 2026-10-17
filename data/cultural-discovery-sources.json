@@ -1,0 +1,5 @@
+[
+  { "name": "Association des Scènes nationales - annuaire national", "url": "https://www.scenes-nationales.fr/carte", "scope": "France, incluant Île-de-France", "status": "discovery-only" },
+  { "name": "Ministère de la Culture - structures de création artistique", "url": "https://www.culture.gouv.fr/thematiques/theatre-spectacles/le-theatre-et-les-spectacles-en-france/cartes-des-structures-de-la-creation-artistique", "scope": "France", "status": "discovery-only" },
+  { "name": "Ministère de la Culture - CDCN", "url": "https://www.culture.gouv.fr/thematiques/danse/la-danse-en-france/centres-de-developpement-choregraphique-nationaux", "scope": "France", "status": "discovery-only" }
+]

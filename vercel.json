@@ -6,11 +6,15 @@
     },
     {
       "path": "/api/cron/match-teasers",
-      "schedule": "15 */6 * * *"
+      "schedule": "15 6 * * *"
     },
     {
       "path": "/api/cron/sync-episodes",
-      "schedule": "5 * * * *"
+      "schedule": "5 5 * * *"
+    },
+    {
+      "path": "/api/cron/check-agenda",
+      "schedule": "0 4 * * *"
     }
   ]
 }

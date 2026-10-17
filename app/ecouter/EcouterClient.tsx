@@ -14,26 +14,6 @@ const EPISODES_PAGE_SIZE = 12
 
 // ─── Helpers image ─────────────────────────────────────────────────────────────
 
-/**
- * Tente /images/les-invites/{filename} (optimisé édito).
- * Retourne l'image directe en fallback pour les nouveaux épisodes RSS.
- */
-function getGuestCardImage(episode: UnifiedEpisode) {
-  if (!episode.image) return '/images/les-invites/placeholder.png'
-  const filename = episode.image
-    .split("/")
-    .pop()
-    ?.replace(/\.png\.png$/i, ".png")
-    ?.replace(/\.jpg\.jpg$/i, ".jpg")
-
-  // Pour les anciens épisodes (image locale dans /episodes/…), on essaie les-invites
-  if (filename && filename !== "logo.png" && !filename.match(/^\d+\.(jpg|png)$/i)) {
-    return `/images/les-invites/${filename}`
-  }
-  // Pour les nouveaux épisodes (convention {number}.jpg), utiliser directement l'image
-  return episode.image
-}
-
 function getHeroHeaderImage(episode: UnifiedEpisode) {
   if (!episode.image) return '/images/les-invites-header/imagetest.png'
   const filename = episode.image
@@ -243,7 +223,7 @@ export default function EcouterClient({ episodes }: Props) {
 
   const latestEpisode = episodes[0]
   const heroImage = latestEpisode ? getHeroHeaderImage(latestEpisode) : ""
-  const heroImageFallback = latestEpisode ? getGuestCardImage(latestEpisode) : ""
+  const heroImageFallback = '/images/les-invites-header/imagetest.png'
 
   const guestOptions = useMemo(() => {
     const all = [...new Set(episodes.map(e => e.guest))].sort((a, b) =>
@@ -370,13 +350,7 @@ export default function EcouterClient({ episodes }: Props) {
               className="el-hero-img"
               onError={e => {
                 const img = e.currentTarget
-                if (!img.src.includes("/les-invites/")) {
-                  img.src = heroImageFallback
-                } else if (latestEpisode.image && !img.src.endsWith(latestEpisode.image)) {
-                  img.src = latestEpisode.image
-                } else if (latestEpisode.aushaImage && !img.src.startsWith("https://image.ausha.co")) {
-                  img.src = latestEpisode.aushaImage
-                }
+                if (!img.src.endsWith(heroImageFallback)) img.src = heroImageFallback
               }}
             />
           )}
@@ -503,19 +477,19 @@ export default function EcouterClient({ episodes }: Props) {
                   data-duo={episode.guest.includes("&") ? "true" : undefined}
                 >
                   <div className="ep2-card-img-wrap">
-                    <img
-                      src={getGuestCardImage(episode)}
-                      alt={episode.guest}
-                      className="ep2-card-img"
-                      style={episode.guest.includes("&") ? { objectPosition: "center 40%" } : undefined}
-                      onError={ev => {
-                        const img = ev.currentTarget
-                        if (!img.src.startsWith("https://")) {
-                          // Essayer l'image Ausha CDN en dernier recours
-                          img.src = episode.aushaImage || episode.image
-                        }
-                      }}
-                    />
+                    {episode.image ? (
+                      <img
+                        src={episode.image}
+                        alt={`${t('Pochette de l’épisode')} ${episode.number} - ${episode.guest}`}
+                        className="ep2-card-img"
+                        onError={ev => {
+                          ev.currentTarget.hidden = true
+                          ev.currentTarget.parentElement?.setAttribute('data-cover-missing', 'true')
+                        }}
+                      />
+                    ) : (
+                      <span className="ep2-card-cover-missing">{t('Pochette indisponible')}</span>
+                    )}
                   </div>
                   <div className="ep2-card-content">
                     <span className="ep2-card-number">{t('Épisode')} {episode.number}</span>

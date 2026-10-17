@@ -1,0 +1,515 @@
+[
+  {
+    "name": "scenenationale61.com",
+    "url": "https://www.scenenationale61.com",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "theatre-angouleme.org",
+    "url": "https://www.theatre-angouleme.org",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "acb-scenenationale.org",
+    "url": "https://www.acb-scenenationale.org",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "scenenationale.fr",
+    "url": "https://www.scenenationale.fr",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "les2scenes.fr",
+    "url": "https://www.les2scenes.fr",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "trident-scenenationale.com",
+    "url": "https://www.trident-scenenationale.com",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "scenenationale-essonne.com",
+    "url": "https://www.scenenationale-essonne.com",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "theatre-la-passerelle.eu",
+    "url": "https://www.theatre-la-passerelle.eu",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "larcscenenationale.fr",
+    "url": "https://www.larcscenenationale.fr",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "scenesdujura.com",
+    "url": "https://www.scenesdujura.com",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "theatre-macon.com",
+    "url": "https://www.theatre-macon.com",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "malakoffscenenationale.fr",
+    "url": "https://www.malakoffscenenationale.fr",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "theatre-hexagone.eu",
+    "url": "https://www.theatre-hexagone.eu",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "mascenenationale.eu",
+    "url": "https://www.mascenenationale.eu",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "theatresqy.org",
+    "url": "https://www.theatresqy.org",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "theatrecinema-narbonne.com",
+    "url": "https://www.theatrecinema-narbonne.com",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "scenenationale-orleans.fr",
+    "url": "https://scenenationale-orleans.fr/",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "theatredelarchipel.org",
+    "url": "https://www.theatredelarchipel.org",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "theatre-cornouaille.fr",
+    "url": "http://www.theatre-cornouaille.fr",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "letheatre-saintnazaire.fr",
+    "url": "https://www.letheatre-saintnazaire.fr",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "theatre-senart.com",
+    "url": "https://www.theatre-senart.com",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "theatredubeauvaisis.com",
+    "url": "https://www.theatredubeauvaisis.com",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "theatre-bourg.fr",
+    "url": "https://www.theatre-bourg.fr",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "theatredurance.fr",
+    "url": "https://www.theatredurance.fr",
+    "discoveredOn": "https://www.scenes-nationales.fr/carte",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "sur le site de l'A-CDCN",
+    "url": "https://www.a-cdcn.fr/",
+    "discoveredOn": "https://www.culture.gouv.fr/thematiques/danse/la-danse-en-france/centres-de-developpement-choregraphique-nationaux",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "art-danse.org/",
+    "url": "https://art-danse.org/",
+    "discoveredOn": "https://www.culture.gouv.fr/thematiques/danse/la-danse-en-france/centres-de-developpement-choregraphique-nationaux",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "www.danseatouslesetages.org/",
+    "url": "https://www.danseatouslesetages.org/",
+    "discoveredOn": "https://www.culture.gouv.fr/thematiques/danse/la-danse-en-france/centres-de-developpement-choregraphique-nationaux",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "www.toukadanses-cdc-guyane.com/",
+    "url": "https://www.toukadanses-cdc-guyane.com/",
+    "discoveredOn": "https://www.culture.gouv.fr/thematiques/danse/la-danse-en-france/centres-de-developpement-choregraphique-nationaux",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "www.gymnase-cdcn.com/",
+    "url": "http://www.gymnase-cdcn.com/",
+    "discoveredOn": "https://www.culture.gouv.fr/thematiques/danse/la-danse-en-france/centres-de-developpement-choregraphique-nationaux",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "chorege-cdcn.com",
+    "url": "https://chorege-cdcn.com",
+    "discoveredOn": "https://www.culture.gouv.fr/thematiques/danse/la-danse-en-france/centres-de-developpement-choregraphique-nationaux",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "www.lamanufacture-cdcn.org/",
+    "url": "http://www.lamanufacture-cdcn.org/",
+    "discoveredOn": "https://www.culture.gouv.fr/thematiques/danse/la-danse-en-france/centres-de-developpement-choregraphique-nationaux",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "www.lamaison-cdcn.fr/",
+    "url": "http://www.lamaison-cdcn.fr/",
+    "discoveredOn": "https://www.culture.gouv.fr/thematiques/danse/la-danse-en-france/centres-de-developpement-choregraphique-nationaux",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "laplacedeladanse.com/",
+    "url": "https://laplacedeladanse.com/",
+    "discoveredOn": "https://www.culture.gouv.fr/thematiques/danse/la-danse-en-france/centres-de-developpement-choregraphique-nationaux",
+    "status": "unverified-venue-candidate",
+    "region": "to-verify"
+  },
+  {
+    "name": "Théâtre Paris-Villette",
+    "url": "https://maps.app.goo.gl/kSfmENsdL4QMCFt56",
+    "discoveredOn": "https://www.lavillette.com/en/manifestations/en-lea-millet-cie-oran-fantome-26-27/",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Book via the Théâtre Paris-Villette website",
+    "url": "https://www.theatre-paris-villette.fr/spectacle/certains-pleurent-leurs-morts-nous-on-les-chante/",
+    "discoveredOn": "https://www.lavillette.com/en/manifestations/en-lea-millet-cie-oran-fantome-26-27/",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Offres tarifaires du festival",
+    "url": "https://shotgun.live/fr/festivals/grunt-festival-5",
+    "discoveredOn": "https://www.lavillette.com/manifestations/grunt-festival-26-27/",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Une publication partagée par Théâtre du Châtelet (@theatrechatelet)",
+    "url": "https://www.instagram.com/p/Dc3ADIqjiYV/?utm_source=ig_embed&amp;utm_campaign=loading",
+    "discoveredOn": "https://www.chatelet.com/",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Une publication partagée par Théâtre du Châtelet (@theatrechatelet)",
+    "url": "https://www.instagram.com/p/DZhRSDRDK_v/?utm_source=ig_embed&amp;utm_campaign=loading",
+    "discoveredOn": "https://www.chatelet.com/",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "👑 UBU ROI arrive au Théâtre de Paris ! Déco",
+    "url": "https://www.instagram.com/reel/DcyngKcjMCH/",
+    "discoveredOn": "https://www.theatredeparis.com/",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Théâtre de l&#39;Atelier",
+    "url": "http:///www.theatre-atelier.com/event/merci-de-votre-collaboration-lola-lafon-2027/",
+    "discoveredOn": "https://www.theatredurondpoint.fr/fr/programmation/saison-26-27/theatre/merci-de-votre-collaboration",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Festival d&rsquo;Automne 2026",
+    "url": "https://www.festival-automne.com/fr",
+    "discoveredOn": "https://theatrepublicmontreuil.com/la-parabole-du-seum",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "JE 12, VE 13 NOV 20H, SA 14 NOV 14H + 18H | Théâtre 71-Malakoff",
+    "url": "https://malakoffscenenationale.fr/theatre-71/programme/nocturne-parade",
+    "discoveredOn": "https://www.theatre-vanves.fr/evenement/ovni-festival-de-linclassable/",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "VE 13 NOV 20H, SA 14 NOV 18H | Théâtre de Vanves",
+    "url": "https://www.billetterie.theatre-vanves.fr/spectacle?id_spectacle=7443&amp;lng=1",
+    "discoveredOn": "https://www.theatre-vanves.fr/evenement/ovni-festival-de-linclassable/",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "SA 14 NOV 10H HORS LES MURS À VANVES | Théâtre de Vanves",
+    "url": "https://www.billetterie.theatre-vanves.fr/spectacle?id_spectacle=7444&amp;lng=1",
+    "discoveredOn": "https://www.theatre-vanves.fr/evenement/ovni-festival-de-linclassable/",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Théâtre de Châtillon",
+    "url": "https://malakoffscenenationale.fr/theatre-71/programme/arpenter-les-lieux-ou-l-on-fait-dormir-les-morts",
+    "discoveredOn": "https://www.theatre-vanves.fr/evenement/ovni-festival-de-linclassable/",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Théâtre de Châtillon",
+    "url": "https://billetterie.theatreachatillon.com/spectacle?id_spectacle=5888&amp;lng=1",
+    "discoveredOn": "https://www.theatre-vanves.fr/evenement/ovni-festival-de-linclassable/",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Théâtre 71-Malakoff",
+    "url": "https://malakoffscenenationale.fr/theatre-71/programme/en-sicile",
+    "discoveredOn": "https://www.theatre-vanves.fr/evenement/ovni-festival-de-linclassable/",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "JE 19 NOV 20H | Théâtre de Vanves",
+    "url": "https://www.billetterie.theatre-vanves.fr/spectacle?id_spectacle=7445&amp;lng=1",
+    "discoveredOn": "https://www.theatre-vanves.fr/evenement/ovni-festival-de-linclassable/",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Théâtre 71-Malakoff",
+    "url": "https://malakoffscenenationale.fr/theatre-71/programme/consolo",
+    "discoveredOn": "https://www.theatre-vanves.fr/evenement/ovni-festival-de-linclassable/",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "ME 25 NOV 20h | Théâtre de Vanves",
+    "url": "https://www.billetterie.theatre-vanves.fr/spectacle?id_spectacle=7448&amp;lng=1",
+    "discoveredOn": "https://www.theatre-vanves.fr/evenement/ovni-festival-de-linclassable/",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Théâtre de Châtillon",
+    "url": "https://billetterie.theatreachatillon.com/spectacle?id_spectacle=5889&amp;lng=1",
+    "discoveredOn": "https://www.theatre-vanves.fr/evenement/ovni-festival-de-linclassable/",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "theatreachatillon.com",
+    "url": "http://theatreachatillon.com",
+    "discoveredOn": "https://www.theatre-vanves.fr/evenement/ovni-festival-de-linclassable/",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Les podcasts du Théâtre",
+    "url": "https://podcasters.spotify.com/pod/show/thtre-de-suresnes-j",
+    "discoveredOn": "https://www.theatre-suresnes.fr/autour-des-spectacles/atelier-parents-enfant-theatre-trouver-son-nom-dans-la-foret/",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "L'Archipel - Scène nationale de Perpignan",
+    "url": "https://www.theatredelarchipel.org/rien-n-est-su",
+    "discoveredOn": "https://www.mc93.com/saison/rien-n-est-su",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "TANDEM - Scène nationale Douai-Arras",
+    "url": "https://www.tandem-arrasdouai.eu/evenement/rien-nest-su",
+    "discoveredOn": "https://www.mc93.com/saison/rien-n-est-su",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Le Quartz - Scène nationale de Brest",
+    "url": "https://www.lequartz.com/audrey-bonnet-sabine-garrigues.html",
+    "discoveredOn": "https://www.mc93.com/saison/rien-n-est-su",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Théâtre National de Bretagne, Rennes",
+    "url": "https://www.t-n-b.fr/calendrier/rien-n-est-su",
+    "discoveredOn": "https://www.mc93.com/saison/rien-n-est-su",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Scène Nationale de l’Essonne, Agora-Desnos",
+    "url": "https://www.scenenationale-essonne.com/saison/rien-nest-su",
+    "discoveredOn": "https://www.mc93.com/saison/rien-n-est-su",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "tnba - Théâtre national Bordeaux Aquitaine",
+    "url": "https://tnba.org/programmation/rien-nest-su",
+    "discoveredOn": "https://www.mc93.com/saison/rien-n-est-su",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "le Festival Jerk Off",
+    "url": "https://www.instagram.com/festivaljerkoff/?hl=fr",
+    "discoveredOn": "https://www.legenerateur.com/spectacle/festival-jerk-off-festival-frasq/",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "www.festivalmarto.com",
+    "url": "https://www.festivalmarto.com/",
+    "discoveredOn": "https://l-azimut.fr/programme/le-festival-marto/",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "www.letheatredesbergeries.fr",
+    "url": "https://letheatredesbergeries.fr/",
+    "discoveredOn": "https://rencontreschoregraphiques.com/spectacle/rencontre-art-et-handicap/",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Théâtre de la Ville – Les Abbesses",
+    "url": "https://www.theatredelaville-paris.com/fr",
+    "discoveredOn": "https://www.festival-automne.com/fr/lieux",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Théâtre du Rond-Point",
+    "url": "https://www.theatredurondpoint.fr",
+    "discoveredOn": "https://www.festival-automne.com/fr/lieux",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Théâtre des Bouffes du Nord",
+    "url": "https://www.bouffesdunord.com",
+    "discoveredOn": "https://www.festival-automne.com/fr/lieux",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Théâtre de la Bastille",
+    "url": "https://www.theatre-bastille.com",
+    "discoveredOn": "https://www.festival-automne.com/fr/lieux",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Théâtre 13 – Bibliothèque",
+    "url": "https://www.theatre13.com",
+    "discoveredOn": "https://www.festival-automne.com/fr/lieux",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Théâtre de la Cité internationale",
+    "url": "https://www.theatredelacite.com",
+    "discoveredOn": "https://www.festival-automne.com/fr/lieux",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Odéon Théâtre de l’Europe – Berthier Paris 17",
+    "url": "https://www.theatre-odeon.eu",
+    "discoveredOn": "https://www.festival-automne.com/fr/lieux",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "La Colline – théâtre national",
+    "url": "https://www.colline.fr/",
+    "discoveredOn": "https://www.festival-automne.com/fr/lieux",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Chaillot – Théâtre national de la Danse",
+    "url": "https://theatre-chaillot.fr/fr",
+    "discoveredOn": "https://www.festival-automne.com/fr/lieux",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Théâtre Nanterre-Amandiers – Centre dramatique national",
+    "url": "https://nanterre-amandiers.com",
+    "discoveredOn": "https://www.festival-automne.com/fr/lieux",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "T2G Théâtre de Gennevilliers – Centre Dramatique National",
+    "url": "https://theatredegennevilliers.fr",
+    "discoveredOn": "https://www.festival-automne.com/fr/lieux",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Malakoff Scène nationale – Théâtre 71",
+    "url": "https://malakoffscenenationale.fr",
+    "discoveredOn": "https://www.festival-automne.com/fr/lieux",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Théâtre Public de Montreuil – Centre dramatique national",
+    "url": "https://www.theatrepublicmontreuil.com",
+    "discoveredOn": "https://www.festival-automne.com/fr/lieux",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Théâtre Louis Aragon, Scène conventionnée d’intérêt national Art et création – danse – Tremblay-en-France",
+    "url": "https://theatrelouisaragon.fr/accueil-1524.html",
+    "discoveredOn": "https://www.festival-automne.com/fr/lieux",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Théâtre des Quartiers d'Ivry",
+    "url": "https://www.theatre-quartiers-ivry.com",
+    "discoveredOn": "https://www.festival-automne.com/fr/lieux",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Points communs – Théâtre des Louvrais",
+    "url": "https://points-communs.com",
+    "discoveredOn": "https://www.festival-automne.com/fr/lieux",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "Théâtre Mogador",
+    "url": "https://www.theatremogador.com/",
+    "discoveredOn": "https://www.stage-entertainment.fr/",
+    "status": "unverified-venue-candidate"
+  },
+  {
+    "name": "https://www.theatredelaquarium.net/",
+    "url": "https://www.theatredelaquarium.net/",
+    "discoveredOn": "https://tgp.theatregerardphilipe.com/spectacle/capra-une-chevre/",
+    "status": "unverified-venue-candidate"
+  }
+]

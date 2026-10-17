@@ -42,7 +42,15 @@ export default async function DerniersEpisodesPage() {
             {episodes.map((episode) => (
               <Link key={episode.number} href={`/episodes/${episode.slug}`} className="episode-card">
                 <div className="episode-image-wrapper">
-                  <img src={episode.image} alt={episode.guest} className="episode-image" />
+                  {episode.image ? (
+                    <img
+                      src={episode.image}
+                      alt={`${t('Pochette de l’épisode')} ${episode.number} - ${episode.guest}`}
+                      className="episode-image"
+                    />
+                  ) : (
+                    <span className="episode-cover-missing">{t('Pochette indisponible')}</span>
+                  )}
                 </div>
                 <div className="episode-content">
                   <span className="episode-meta">{t('Épisode')} {episode.number}</span>

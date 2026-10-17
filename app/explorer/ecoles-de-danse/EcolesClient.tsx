@@ -7,8 +7,12 @@ import { AnimatedStats } from '../styles-de-danse/StylesStats'
 import { useLocale } from '@/components/LocaleProvider'
 import { uiText } from '@/data/i18n/messages'
 import { useBackNavigationState } from '@/lib/use-back-navigation-state'
+import { googleMapsUrl } from '@/lib/event-routing'
+import type { SchoolPracticeEvent } from './practice-events'
+import type { AgendaEvent } from '@/app/agenda/agenda-data'
+import { getEventInfo, getPracticeEventKind } from '@/lib/event-routing'
 
-interface Props { ecoles: EcoleDanse[] }
+interface Props { ecoles: EcoleDanse[]; initialPracticeEvents: SchoolPracticeEvent[] }
 
 const PARCOURS: ParcoursFormation[] = [
   'Formation professionnelle', 'Préprofessionnel', 'CPES / COP', 'Danse-études',
@@ -43,7 +47,7 @@ function distanceKm(from: [number, number], ecole: EcoleDanse) {
   return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
 
-export default function EcolesClient({ ecoles }: Props) {
+export default function EcolesClient({ ecoles, initialPracticeEvents }: Props) {
   const locale = useLocale()
   const t = (text: string) => uiText(locale, text)
 
@@ -75,6 +79,8 @@ export default function EcolesClient({ ecoles }: Props) {
   const [hoveredEcoleId, setHoveredEcoleId] = useState<string | null>(null)
   const [mapError, setMapError] = useState(false)
   const [mapReady, setMapReady] = useState(false)
+  const [practiceEvents, setPracticeEvents] = useState(initialPracticeEvents)
+  const [visiblePracticeCount, setVisiblePracticeCount] = useState(6)
   useBackNavigationState('dance-schools', {
     search, activeType, region, ville, arrondissement, style, parcours, niveau, pratique, publicFilter,
     professionalOnly, moreOpen, sort, mobileView, selectedEcoleId: selectedEcole?.id ?? null,
@@ -137,6 +143,36 @@ export default function EcolesClient({ ecoles }: Props) {
       setSort('distance')
     })
   }
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/agenda?scope=practice')
+      .then(response => response.ok ? response.json() : Promise.reject())
+      .then(data => {
+        if (cancelled || !Array.isArray(data.events)) return
+        const nextEvents = (data.events as AgendaEvent[]).map(event => {
+          const eventText = normalizeEcoleSearch([event.venue, getEventInfo(event, ['Organisateur']), event.address].filter(Boolean).join(' '))
+          const matches = ecoles.filter(school => {
+            const schoolName = normalizeEcoleSearch(school.nom)
+            const baseName = normalizeEcoleSearch(school.nom.split(/\s[-–—]\s|\s\(/)[0])
+            const address = normalizeEcoleSearch(school.adresse ?? '')
+            return (schoolName.length >= 6 && eventText.includes(schoolName))
+              || (baseName.length >= 8 && eventText.includes(baseName))
+              || (address.length >= 10 && eventText.includes(address))
+          })
+          return {
+            ...event,
+            practiceKind: getPracticeEventKind(event),
+            schoolId: matches.length === 1 ? matches[0].id : undefined,
+            level: getEventInfo(event, ['Niveau', 'Niveaux', 'Public']),
+            instructor: getEventInfo(event, ['Intervenant', 'Intervenant.e', 'Professeur', 'Artiste']),
+          } satisfies SchoolPracticeEvent
+        })
+        setPracticeEvents(nextEvents)
+      })
+      .catch(() => undefined)
+    return () => { cancelled = true }
+  }, [ecoles])
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return
@@ -260,6 +296,51 @@ export default function EcolesClient({ ecoles }: Props) {
         </div>
       </section>
 
+      <section className="ecoles-practice" aria-labelledby="ecoles-practice-title">
+        <div className="container">
+          <div className="ecoles-practice-heading">
+            <div>
+              <span className="section-label">{t('Pratiquer et se former')}</span>
+              <h2 id="ecoles-practice-title">{t('Cours, stages et masterclass')}</h2>
+            </div>
+            <p>{t("Les rendez-vous pour pratiquer la danse sont réunis ici, séparément de l'agenda culturel Sortir.")}</p>
+          </div>
+          <div className="ecoles-practice-grid">
+            {practiceEvents.slice(0, visiblePracticeCount).map(event => {
+              const mapUrl = googleMapsUrl(event)
+              const school = event.schoolId ? ecoles.find(item => item.id === event.schoolId) : undefined
+              return <article className="ecoles-practice-card" key={event.slug}>
+                <Link className="ecoles-practice-card-main" href={`/sortir/${event.slug}`}>
+                  <div className="ecoles-practice-image">
+                    {event.image ? <img src={event.image} alt="" loading="lazy" /> : <span aria-hidden="true">DL</span>}
+                    <small>{event.practiceKind}</small>
+                  </div>
+                  <div className="ecoles-practice-copy">
+                    <span>{event.disciplines?.[0] ?? t('Danse')}</span>
+                    <h3>{event.title}</h3>
+                    <p>{event.description}</p>
+                    <dl>
+                      <div><dt>{t('Dates')}</dt><dd>{event.dates}</dd></div>
+                      <div><dt>{t('Niveau')}</dt><dd>{event.level ?? t('À vérifier auprès de l’organisateur')}</dd></div>
+                      <div><dt>{t('Intervenant.e')}</dt><dd>{event.instructor ?? t('Non renseigné')}</dd></div>
+                      <div><dt>{t('Tarif')}</dt><dd>{event.price}</dd></div>
+                      <div><dt>{t('Lieu')}</dt><dd>{[event.venue, event.city].filter(Boolean).join(' · ')}</dd></div>
+                    </dl>
+                  </div>
+                </Link>
+                <div className="ecoles-practice-actions">
+                  {school && <Link href={`/explorer/ecoles-de-danse/${school.id}`}>{school.nom} →</Link>}
+                  {mapUrl && <a href={mapUrl} target="_blank" rel="noopener noreferrer">Google Maps ↗</a>}
+                  <a href={event.ticketUrl || event.officialUrl} target="_blank" rel="noopener noreferrer">{t("S'inscrire")} ↗</a>
+                </div>
+              </article>
+            })}
+          </div>
+          {visiblePracticeCount < practiceEvents.length && <button type="button" className="btn btn-outline" style={{ marginTop: 24 }} onClick={() => setVisiblePracticeCount(count => count + 6)}>{t('Voir plus')} ({practiceEvents.length - visiblePracticeCount})</button>}
+          {!practiceEvents.length && <p className="ecoles-practice-empty">{t('Aucun cours ou stage à venir pour le moment.')}</p>}
+        </div>
+      </section>
+
       <section className="ecoles-directory">
         <div className="ecoles-directory-inner">
           <nav className="ecoles-tabs" aria-label={t("Type d'établissement")}>
@@ -310,7 +391,7 @@ export default function EcolesClient({ ecoles }: Props) {
                     <div className="ecole-result-content">
                       <span className="ecole-result-type">{ecole.type}</span><h2>{ecole.nom}</h2><p className="ecole-result-place">{getEcoleLocationLabel(ecole)}</p>
                       <div className="ecole-result-tags">{tags.slice(0, 3).map(tag => <span key={tag}>{tag}</span>)}{tags.length > 3 && <span>+{tags.length - 3} {t('styles')}</span>}</div>
-                      <div className="ecole-result-facts">{facts.map(fact => <span key={fact}>{fact}</span>)}</div>
+                      <div className="ecole-result-facts">{facts.map((fact, factIndex) => <span key={`${fact}-${factIndex}`}>{fact}</span>)}</div>
                       {ecole.description && <p className="ecole-result-desc">{ecole.description}</p>}
                       <div className="ecole-result-actions"><Link href={`/explorer/ecoles-de-danse/${ecole.id}`} onClick={event => event.stopPropagation()}>{t('Voir la fiche')} <span>→</span></Link>{ecole.siteWeb && <a href={ecole.siteWeb} target="_blank" rel="noopener noreferrer" onClick={event => event.stopPropagation()} aria-label={`${t('Voir le site officiel')} de ${ecole.nom}`}>{t('Site officiel')} <span>↗</span></a>}</div>
                     </div><span className="ecole-result-arrow" aria-hidden="true">→</span>

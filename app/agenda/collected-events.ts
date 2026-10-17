@@ -1,5 +1,6 @@
-import collectedEvents from "../../Collecte/dance_lab_tous_evenements.json"
+import collectedEvents from "../../collecte/dance_lab_tous_evenements.json"
 import type { AgendaCategory, AgendaEvent, AgendaStatus } from "./agenda-data"
+import { resolveAgendaImage } from "../../data/agenda-image-overrides"
 
 type CollectedEvent = (typeof collectedEvents)[number]
 
@@ -16,8 +17,14 @@ const CATEGORY_MAP: Record<string, AgendaCategory> = {
   "Exposition": "Exposition",
 }
 
+function normalizeDashes(value: string) {
+  // Remplace les tirets longs (—) et demi-longs (–) par un tiret simple " - "
+  // Ne touche pas aux traits d'union dans les mots composés (sans espace autour)
+  return value.replace(/\s*[—–]\s*/g, " - ").replace(/\s{2,}/g, " ")
+}
+
 function clean(value?: string) {
-  const trimmed = value?.trim() ?? ""
+  const trimmed = normalizeDashes(value?.trim() ?? "")
   return EMPTY_VALUES.has(trimmed.toLocaleLowerCase("fr")) ? undefined : trimmed
 }
 
@@ -51,6 +58,24 @@ function priceLabel(item: CollectedEvent) {
   if (item.tarif_type === "gratuit") return "Gratuit"
   if (item.tarif_type === "gratuit sous condition") return "Gratuit sous condition"
   return "Payant - détails sur la page officielle"
+}
+
+function formatProchainSeance(value?: string): string | undefined {
+  const cleaned = clean(value)
+  if (!cleaned) return undefined
+  // Extract HH:MM from ISO datetime e.g. "2026-10-12T09:00:00+02:00"
+  const match = cleaned.match(/T(\d{2}):(\d{2})/)
+  if (!match) return undefined
+  const h = match[1]
+  const m = match[2]
+  return m === "00" ? `${h}h` : `${h}h${m}`
+}
+
+function cleanHoraires(value?: string): string | undefined {
+  const cleaned = clean(value)
+  if (!cleaned) return undefined
+  // Remove trailing colons that sometimes appear in source data
+  return cleaned.replace(/\s*:\s*$/, "").trim() || undefined
 }
 
 function splitValues(value?: string, separator = "|") {
@@ -96,20 +121,21 @@ function normalizeCollectedEvent(item: CollectedEvent, asOf: string): AgendaEven
 
   return {
     slug: `${item.id.toLowerCase()}-${slugify(item.nom)}`,
+    sourceIds: [`${item.source}:${item.id}`],
     title: item.nom,
     description: item.resume,
-    image: clean(item.image_url),
+    image: resolveAgendaImage(item.id, clean(item.image_url)),
     dates: clean(item.horaires_texte) ?? "Date renseignée",
     startDate,
     endDate,
-    venue: clean(item.lieu) ?? "Lieu à préciser",
+    venue: clean(item.lieu) ?? "",
     address: clean(item.adresse),
-    city: clean(item.ville) ?? "Localisation à préciser",
+    city: clean(item.ville) ?? "",
     postalCode: clean(item.code_postal),
     latitude: numberValue(item.latitude),
     longitude: numberValue(item.longitude),
     price: priceLabel(item),
-    time: clean(item.prochaine_seance) ?? clean(item.horaires_texte),
+    time: formatProchainSeance(item.prochaine_seance) ?? cleanHoraires(item.horaires_texte),
     category,
     disciplines,
     officialUrl,

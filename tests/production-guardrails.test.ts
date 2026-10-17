@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { episodesList } from '../data/episodes-list'
 import { magazineArticles } from '../app/decouvrir/articles-data'
 import { SITE_URL } from '../data/site'
@@ -12,6 +12,19 @@ import { resolveEpisodeGuest } from '../lib/episodes'
 import { extractGuestFromDescription, isGenericGuestLabel, parseRssChapters } from '../lib/ausha-rss'
 import { youtubeVideoMatchesEpisode, type YoutubeVideo } from '../lib/youtube-rss'
 import { cleanEpisodeTitle } from '../lib/episode-title'
+import { episodeNumberFromImageName } from '../lib/episode-image-presentation'
+
+test('toutes les fiches métiers conservent un header sans libellé de catégorie ni boutons flèche', () => {
+  const source = readFileSync('app/explorer/metiers-de-la-danse/[univers]/[metier]/page.tsx', 'utf8')
+  const header = source.slice(source.indexOf('<header '), source.indexOf('</header>'))
+  assert.ok(header.includes('← Tous les métiers'))
+  assert.ok(header.includes('{metier.nom}'))
+  assert.ok(header.includes('Métiers associés'))
+  assert.ok(!header.includes('{universe.label}'))
+  assert.ok(!header.includes('MetierScrollCue'))
+  assert.ok(!header.includes('href="#contenu-metier"'))
+  assert.ok(!header.includes('<button'))
+})
 
 test('le domaine canonique est public et jamais un domaine technique Vercel', () => {
   assert.equal(SITE_URL, 'https://dancelab.fr')
@@ -27,6 +40,22 @@ test('les données essentielles des épisodes historiques sont valides', () => {
     for (const [field, value] of Object.entries({ slug: episode.slug, title: episode.title, guest: episode.guest, image: episode.image })) {
       assert.ok(typeof value === 'string' && value.trim(), `épisode ${episode.number}: ${field} absent`)
     }
+  }
+})
+
+test('Écouter utilise exclusivement les couvertures locales validées', () => {
+  const files = readdirSync('public/images/les-invites').filter(file => !file.startsWith('.'))
+  const coveredNumbers = new Set(files.map(episodeNumberFromImageName).filter((number): number is number => number !== undefined))
+
+  for (let number = 1; number <= 134; number += 1) {
+    assert.ok(coveredNumbers.has(number), `couverture locale absente pour l'épisode ${number}`)
+  }
+
+  for (const component of ['app/ecouter/EcouterClient.tsx', 'app/ecouter/derniers-episodes/page.tsx']) {
+    const source = readFileSync(component, 'utf8')
+    assert.match(source, /src=\{episode\.image\}/)
+    assert.doesNotMatch(source, /getOfficialEpisodeCover/)
+    assert.doesNotMatch(source, /src=\{episode\.aushaImage\}/)
   }
 })
 

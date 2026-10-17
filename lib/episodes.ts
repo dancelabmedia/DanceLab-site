@@ -14,8 +14,7 @@
  *   créer de doublon ni modifier le slug (URL permanente).
  *
  * Images des encarts :
- *   Priorité : public/images/les-invites/{guest}{number}.png
- *   Fallback : URL CDN Ausha (épisodes RSS) ou chemin hérité (épisodes legacy)
+ *   Source exclusive : public/images/les-invites/{guest}{number}.png
  *   Convention de nommage : le fichier doit se terminer par {number}.png/.jpg
  *   Ex : bertrandexertier123.png  →  épisode 123
  *
@@ -57,7 +56,7 @@ export type UnifiedEpisode = {
    *   3. Fallback : URL CDN Ausha (RSS) ou chemin hérité (legacy)
    */
   image: string
-  /** URL CDN Ausha — fallback réseau si image locale absente */
+  /** URL CDN Ausha conservée comme métadonnée, jamais utilisée par les cartes Écouter. */
   aushaImage: string
   /** Résumé court (pour les cards et l'og:description) */
   excerpt: string
@@ -156,6 +155,11 @@ function buildInviteImageMap(): Map<number, string> {
   try {
     const dir   = path.join(process.cwd(), 'public', 'images', 'les-invites')
     const files = readdirSync(dir)
+      .filter(file => !file.startsWith('.'))
+      .sort((a, b) => {
+        const cleanliness = Number(a.trim() !== a) - Number(b.trim() !== b)
+        return cleanliness || a.localeCompare(b, 'fr')
+      })
     for (const file of files) {
       // Both guest128.png and 128guest.png are valid; exact episode number.
       const num = episodeNumberFromImageName(file)
@@ -173,9 +177,11 @@ function buildInviteImageMap(): Map<number, string> {
 
 /**
  * Résout l'image d'encart d'un épisode selon la priorité :
- *   1. Override manuel dans episode-extras.ts
+ *   1. Override manuel local dans episode-extras.ts
  *   2. Fichier dans public/images/les-invites/ correspondant au numéro
- *   3. Fallback fourni (CDN Ausha ou chemin hérité)
+ *   3. Ancien chemin local valide
+ *
+ * Les URL CDN et les images de header sont volontairement refusées ici.
  */
 function resolveCardImage(
   number: number,
@@ -183,9 +189,10 @@ function resolveCardImage(
   inviteImages: Map<number, string>,
   fallback: string | undefined,
 ): string {
-  if (extras?.image)            return extras.image
+  if (extras?.image?.startsWith('/images/les-invites/') && !extras.image.includes('/les-invites-header/')) return extras.image
   if (inviteImages.has(number)) return inviteImages.get(number)!
-  return fallback ?? ''
+  if (fallback?.startsWith('/images/les-invites/') && !fallback.includes('/les-invites-header/')) return fallback
+  return ''
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -421,10 +428,9 @@ function fromRss(
     verifiedYtVideo?.isShort ??
     undefined
 
-  // Ausha est prioritaire pour les nouveaux épisodes. Une image locale ne
-  // remplace la pochette officielle que si elle a été explicitement validée
-  // dans episode-extras.ts.
-  const image = extras?.image || ep.aushaImage || inviteImages.get(ep.number) || ''
+  // Les cartes utilisent exclusivement le fichier local validé du dossier
+  // public/images/les-invites. L'URL Ausha reste stockée séparément.
+  const image = resolveCardImage(ep.number, extras, inviteImages, undefined)
 
   // Reel Instagram : extras manuel > cache résolu (cron) > détection auto via Graph API
   const instagramReelUrl =

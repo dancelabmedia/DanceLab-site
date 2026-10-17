@@ -96,7 +96,7 @@ function clampPosition(
 ): FloatingPosition {
   return {
     x: Math.min(Math.max(VIEWPORT_GUTTER, position.x), Math.max(VIEWPORT_GUTTER, window.innerWidth - width - VIEWPORT_GUTTER)),
-    y: Math.min(Math.max(topSafeZone, position.y), Math.max(topSafeZone, window.innerHeight - height - VIEWPORT_GUTTER)),
+    y: Math.min(Math.max(topSafeZone, position.y), Math.max(topSafeZone, (window.visualViewport?.height ?? window.innerHeight) - height - VIEWPORT_GUTTER)),
   }
 }
 
@@ -164,6 +164,7 @@ export default function DanceLabAssistant() {
   const [orbPosition, setOrbPosition] = useState<FloatingPosition | null>(null)
   const [orbLabelSide, setOrbLabelSide] = useState<OrbLabelSide>('left')
   const [panelPosition, setPanelPosition] = useState<FloatingPosition | null>(null)
+  const [visibleViewportHeight, setVisibleViewportHeight] = useState<number | null>(null)
   const [dragTarget, setDragTarget] = useState<'orb' | 'panel' | null>(null)
   const orbRef = useRef<HTMLButtonElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
@@ -241,16 +242,24 @@ export default function DanceLabAssistant() {
 
   useEffect(() => {
     setMounted(true)
-    const onResize = () => fitFloatingElementsToViewport()
+    const onResize = () => {
+      setVisibleViewportHeight(window.visualViewport?.height ?? window.innerHeight)
+      fitFloatingElementsToViewport()
+    }
+    onResize()
     window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
+    window.visualViewport?.addEventListener('resize', onResize)
+    return () => {
+      window.removeEventListener('resize', onResize)
+      window.visualViewport?.removeEventListener('resize', onResize)
+    }
   }, [fitFloatingElementsToViewport])
 
   useEffect(() => {
     if (!mounted) return
     const frame = window.requestAnimationFrame(fitFloatingElementsToViewport)
     return () => window.cancelAnimationFrame(frame)
-  }, [mounted, isOpen, fitFloatingElementsToViewport])
+  }, [mounted, isOpen, visibleViewportHeight, fitFloatingElementsToViewport])
 
   useEffect(() => {
     if (orbPosition) window.localStorage.setItem(ORB_POSITION_KEY, JSON.stringify(orbPosition))
@@ -466,7 +475,10 @@ export default function DanceLabAssistant() {
       className="ast-panel"
       data-open={isOpen}
       data-dragging={dragTarget === 'panel'}
-      style={panelPosition ? ({ '--ast-panel-x': `${panelPosition.x}px`, '--ast-panel-y': `${panelPosition.y}px` } as CSSProperties) : undefined}
+      style={{
+        ...(panelPosition ? { '--ast-panel-x': `${panelPosition.x}px`, '--ast-panel-y': `${panelPosition.y}px` } : {}),
+        ...(visibleViewportHeight ? { '--ast-visible-height': `${visibleViewportHeight}px` } : {}),
+      } as CSSProperties}
       role="dialog"
       aria-modal="true"
       aria-hidden={!isOpen}

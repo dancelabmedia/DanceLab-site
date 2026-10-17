@@ -1,0 +1,85 @@
+[
+  {
+    "slug": "junior-ballet-opera-national-paris-13e-art-2027-06-04",
+    "title": "Junior Ballet de l’Opéra national de Paris",
+    "description": "Le Junior Ballet de l’Opéra national de Paris se produit au 13e Art du 4 au 13 juin 2027. La salle annonce que le programme détaillé sera dévoilé ultérieurement.",
+    "startDate": "2027-06-04",
+    "endDate": "2027-06-13",
+    "dates": "Du 4 au 13 juin 2027",
+    "venue": "Le 13e Art",
+    "address": "30 place d’Italie, Centre commercial Italie Deux",
+    "postalCode": "75013",
+    "city": "Paris",
+    "category": "Ballet",
+    "disciplines": [],
+    "time": "Horaires selon la représentation ; séance du dimanche 6 juin 2027 à 17h publiée sur le site officiel.",
+    "duration": "1h30 annoncée sur la fiche officielle",
+    "price": "À partir de 45 €",
+    "image": "https://le13emeart.com/wp-content/uploads/2026/07/SITE-800x1200px-3.png",
+    "officialUrl": "https://le13emeart.com/les-evenements/junior-ballet-de-lopera-national-de-paris-2/",
+    "ticketUrl": "https://www.ticketmaster.fr/fr/manifestation/junior-ballet-billet/idmanif/668455/codtypadh/FTT/numadh/01/codeconf/FTMS01/adhonly/idtier/29739356",
+    "source": "Le 13e Art (officiel)",
+    "sourceLabel": "Le 13e Art",
+    "lastVerifiedAt": "2026-10-16",
+    "status": "À venir",
+    "sourceIds": ["official:le13emeart.com:junior-ballet-2027"],
+    "sourceUrls": ["https://le13emeart.com/les-evenements/junior-ballet-de-lopera-national-de-paris-2/"],
+    "cast": [
+      { "name": "Junior Ballet de l’Opéra national de Paris", "role": "Interprétation ; distribution nominative non publiée" },
+      { "name": "Le 13e Art et Delta Danse", "role": "Production" }
+    ],
+    "additionalInfo": [
+      { "label": "Programme", "value": "Programme détaillé et distribution nominative à venir sur la page officielle ; aucune esthétique supplémentaire déduite du seul nom de la compagnie." },
+      { "label": "Public", "value": "Tous publics" }
+    ]
+  },
+  {
+    "slug": "same-old-songs-maud-blandel-montreuil-2026-11-20",
+    "title": "Same Old Songs",
+    "description": "Maud Blandel crée un trio dansé inspiré de Trois Guinées de Virginia Woolf. La pièce explore les rapports entre les corps, le rythme et la guerre. Présenté au Théâtre Public de Montreuil dans le cadre du Festival d’Automne et de la Swiss Dance Week.",
+    "startDate": "2026-11-20",
+    "endDate": "2026-11-25",
+    "dates": "Du 20 au 25 novembre 2026, relâche le dimanche",
+    "performances": [
+      { "date": "2026-11-20", "time": "20h" },
+      { "date": "2026-11-21", "time": "18h" },
+      { "date": "2026-11-23", "time": "20h" },
+      { "date": "2026-11-24", "time": "20h" },
+      { "date": "2026-11-25", "time": "20h" }
+    ],
+    "venue": "Théâtre Public de Montreuil - Salle Maria Casarès",
+    "address": "63 rue Victor-Hugo",
+    "postalCode": "93100",
+    "city": "Montreuil",
+    "category": "Spectacle",
+    "disciplines": ["Contemporain"],
+    "time": "Lundi, mardi, mercredi et vendredi à 20h ; samedi à 18h ; relâche dimanche.",
+    "duration": "1h",
+    "price": "De 9 à 27 €",
+    "image": "https://cdn.artishoc.coop/ba9efd25-5132-478e-8c9f-ef423f817e98/v1/medias/eyJfcmFpbHMiOnsibWVzc2FnZSI6Ik5EQTVNVEUyIiwiZXhwIjpudWxsLCJwdXIiOiJtZWRpYS9tZWRpYV9pZCJ9fQ==--ec39d95cae74d9f3aeb69813fc5eba37f86e5774623bbbbc03d49b12f20a8324/7a123871def8/maud-blandel-elie_gappe.jpg",
+    "officialUrl": "https://theatrepublicmontreuil.com/same-old-songs",
+    "ticketUrl": "https://billetterie.theatrepublicmontreuil.com/catalogue_abonnement?lng=1",
+    "source": "Théâtre Public de Montreuil (officiel)",
+    "sourceLabel": "Théâtre Public de Montreuil",
+    "lastVerifiedAt": "2026-10-17",
+    "status": "À venir",
+    "sourceIds": ["official:theatrepublicmontreuil.com:same-old-songs:2026"],
+    "sourceUrls": ["https://theatrepublicmontreuil.com/same-old-songs"],
+    "cast": [
+      { "name": "Maud Blandel", "role": "Mise en scène et chorégraphie" },
+      { "name": "Jessica Allemann, Lou Couton, Karine Dahouindji, Maya Masse", "role": "Cocréation et interprétation, en alternance" },
+      { "name": "Romain Simon, Flavio Virzì, Maud Blandel", "role": "Création sonore" },
+      { "name": "Simon Leopold", "role": "Accompagnement à la régie et à la création sonore" },
+      { "name": "Gautier Teuscher", "role": "Création et régie lumière" },
+      { "name": "Julia Bothelo", "role": "Costumes" },
+      { "name": "Vérène Girod / SALVE", "role": "Administration" },
+      { "name": "Claudia Petagna / I L K A", "role": "Production et diffusion" }
+    ],
+    "additionalInfo": [
+      { "label": "Public", "value": "Dès 12 ans" },
+      { "label": "Production", "value": "I L K A" },
+      { "label": "Crédit image", "value": "Élie Gappe" },
+      { "label": "Autour du spectacle", "value": "Causerie avec l’équipe artistique à l’issue de la représentation du samedi 21 novembre. L’atelier d’écriture du 17 novembre est une activité distincte, non inclus dans cette fiche spectacle." }
+    ]
+  }
+]

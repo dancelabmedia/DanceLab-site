@@ -1,13 +1,15 @@
 "use client"
 
 import Link from "next/link"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import AgendaMap from "./AgendaMap"
+import dynamic from "next/dynamic"
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import type { AgendaEvent } from "./agenda-data"
-import { formatAgendaDateRange } from "./agenda-data"
+import { formatAgendaDateRange, isLastChance, getUrgencyBadge, todayIso, CITY_COORDINATES, haversineDistance, normalizeCity, resolveEventCoordinates } from "./agenda-data"
 import { useLocale } from "@/components/LocaleProvider"
 import { uiText } from "@/data/i18n/messages"
 import { useBackNavigationState } from '@/lib/use-back-navigation-state'
+
+const AgendaMap = dynamic(() => import("./AgendaMap"), { ssr: false })
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
@@ -19,13 +21,21 @@ const ALL_DISCIPLINES = "Toutes les disciplines"
 const SORT_RECENT = "Les plus récents"
 const SORT_OLD    = "Les plus anciens"
 
+// Options du filtre rayon géographique
+const RADIUS_CITY   = "Ville uniquement"
+const RADIUS_ALL    = "Toute la France"
+const RADIUS_OPTIONS = [RADIUS_CITY, "10 km", "25 km", "50 km", "100 km", RADIUS_ALL]
+const RADIUS_KM: Record<string, number> = {
+  "10 km": 10, "25 km": 25, "50 km": 50, "100 km": 100,
+}
+
 const DATE_OPTIONS = [
   ALL_DATES,
   "Aujourd'hui",
   "Ce week-end",
   "Cette semaine",
   "Ce mois-ci",
-  "En cours",
+  "Dernières représentations",
   "À venir",
 ]
 
@@ -119,9 +129,11 @@ function getDateRange(filter: string): { start: Date; end: Date } | null {
 }
 
 function eventMatchesDate(event: AgendaEvent, filter: string): boolean {
-  if (filter === ALL_DATES)  return true
-  if (filter === "En cours") return event.status === "En cours"
-  if (filter === "À venir")  return event.status !== "En cours"
+  if (filter === ALL_DATES) return true
+  if (filter === "Dernières représentations") return isLastChance(event)
+  if (filter === "À venir") {
+    return event.startDate > todayIso()
+  }
 
   const range = getDateRange(filter)
   if (!range) return true
@@ -184,8 +196,34 @@ interface DropdownProps {
 
 function Dropdown({ label, value, options, onChange, align = "left", translate }: DropdownProps) {
   const [open, setOpen] = useState(false)
+  const [menuStyle, setMenuStyle] = useState<CSSProperties>({})
   const ref = useRef<HTMLDivElement>(null)
   const display = translate ?? ((s: string) => s)
+
+  useEffect(() => {
+    if (!open) return
+    const fitMenu = () => {
+      const rect = ref.current?.getBoundingClientRect()
+      if (!rect) return
+      const below = window.innerHeight - rect.bottom - 18
+      const above = rect.top - 88
+      const openAbove = below < 180 && above > below
+      const menuWidth = Math.min(ref.current?.querySelector('.srt-dd-menu')?.getBoundingClientRect().width || 190, window.innerWidth - 32)
+      setMenuStyle({
+        maxHeight: Math.max(80, Math.min(360, openAbove ? above : below)),
+        maxWidth: window.innerWidth - 32,
+        ...(align === 'left' ? { left: Math.min(0, window.innerWidth - 16 - rect.left - menuWidth), right: 'auto' } : {}),
+        ...(openAbove ? { top: 'auto', bottom: 'calc(100% + 6px)' } : {}),
+      })
+    }
+    fitMenu()
+    window.addEventListener('resize', fitMenu)
+    window.addEventListener('scroll', fitMenu, true)
+    return () => {
+      window.removeEventListener('resize', fitMenu)
+      window.removeEventListener('scroll', fitMenu, true)
+    }
+  }, [open, align])
 
   useEffect(() => {
     function onClickOut(e: MouseEvent) {
@@ -217,7 +255,7 @@ function Dropdown({ label, value, options, onChange, align = "left", translate }
       </button>
 
       {open && (
-        <div className={`srt-dd-menu srt-dd-menu--${align}`} role="listbox">
+        <div className={`srt-dd-menu srt-dd-menu--${align}`} role="listbox" style={menuStyle}>
           {options.map((opt) => (
             <button
               key={opt}
@@ -249,19 +287,31 @@ function EventCard({
   animDelay?: number
   t?: (s: string) => string
 }) {
-  const isOngoing = event.status === "En cours"
+  const today = todayIso()
+  const urgency = getUrgencyBadge(event)
+  const upcoming = event.startDate > today
   const color = CATEGORY_COLORS[event.category] ?? "#5B7377"
   const priceDisplay = isFree(event)
     ? t("Gratuit")
     : event.price === "À compléter"
     ? t("À compléter")
     : event.price
+  const isInitiallyVisible = animDelay < 90
 
   return (
     <article className="srt-card" style={{ animationDelay: `${animDelay}ms` }}>
       <div className="srt-card-media">
         {event.image ? (
-          <img src={event.image} alt={event.title} className="srt-card-img" />
+          <img
+            src={event.image}
+            alt={event.title}
+            className="srt-card-img"
+            width={640}
+            height={400}
+            loading={isInitiallyVisible ? "eager" : "lazy"}
+            fetchPriority={isInitiallyVisible ? "high" : "auto"}
+            decoding="async"
+          />
         ) : (
           <div
             className="srt-card-placeholder"
@@ -271,9 +321,11 @@ function EventCard({
           </div>
         )}
         <span className="srt-badge srt-badge--cat">{event.category}</span>
-        <span className={`srt-badge srt-badge--status${isOngoing ? " srt-badge--on" : " srt-badge--soon"}`}>
-          {isOngoing ? t("EN COURS") : t("À VENIR")}
-        </span>
+        {urgency ? (
+          <span className={`srt-badge srt-badge--status srt-badge--${urgency.level}`}>{t(urgency.label)}</span>
+        ) : upcoming ? (
+          <span className="srt-badge srt-badge--status srt-badge--soon">{t("À VENIR")}</span>
+        ) : null}
       </div>
 
       <div className="srt-card-body">
@@ -392,21 +444,78 @@ function EventCluster({
 
 type AgendaExperienceProps = { events: AgendaEvent[] }
 
+function DeferredAgendaMap({
+  events,
+  activeSlug,
+  onSelectEvent,
+  loadNow,
+  t,
+}: {
+  events: AgendaEvent[]
+  activeSlug?: string
+  onSelectEvent: (event: AgendaEvent) => void
+  loadNow: boolean
+  t: (text: string) => string
+}) {
+  const boundaryRef = useRef<HTMLDivElement>(null)
+  const [shouldLoad, setShouldLoad] = useState(loadNow)
+
+  useEffect(() => {
+    if (loadNow) setShouldLoad(true)
+  }, [loadNow])
+
+  useEffect(() => {
+    if (shouldLoad || !boundaryRef.current) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return
+        setShouldLoad(true)
+        observer.disconnect()
+      },
+      { rootMargin: "600px 0px" }
+    )
+    observer.observe(boundaryRef.current)
+    return () => observer.disconnect()
+  }, [shouldLoad])
+
+  if (shouldLoad) {
+    return <AgendaMap events={events} activeSlug={activeSlug} onSelectEvent={onSelectEvent} />
+  }
+
+  return (
+    <div ref={boundaryRef}>
+      <section className="agenda-map-section" id="agenda-map">
+        <div className="container">
+          <div className="agenda-map-grid">
+            <div className="agenda-map-copy">
+              <span className="section-label">{t("Cartographie")}</span>
+              <h2>{t("Explorer les événements sur la carte")}</h2>
+              <p>{t("La carte se charge indépendamment de la liste des événements.")}</p>
+            </div>
+            <div className="agenda-map-shell agenda-map-shell--deferred" aria-busy="true" />
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}
+
 export default function AgendaExperience({ events }: AgendaExperienceProps) {
   const locale = useLocale()
   const t = (text: string) => uiText(locale, text)
 
   // ── Données live ──
   const [agendaEvents, setAgendaEvents] = useState<AgendaEvent[]>(events)
-  const [isLoading, setIsLoading]       = useState(true)
+  const [isLoading, setIsLoading]       = useState(events.length === 0)
   const [hasNotionError, setHasNotionError] = useState(false)
   const [activeSlug, setActiveSlug]     = useState<string | undefined>(events[0]?.slug)
+  const [mapRequested, setMapRequested] = useState(false)
 
   useEffect(() => {
     let cancelled = false
     async function loadAgenda() {
       try {
-        const res = await fetch("/api/agenda", { cache: "no-store" })
+        const res = await fetch("/api/agenda?scope=cultural")
         if (!res.ok) throw new Error("Agenda unavailable")
         const data = await res.json()
         if (cancelled) return
@@ -429,6 +538,7 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
   const [search,      setSearch]      = useState("")
   const [typeFilter,  setTypeFilter]  = useState(ALL_TYPES)
   const [cityFilter,  setCityFilter]  = useState(ALL_CITIES)
+  const [radiusFilter, setRadiusFilter] = useState(RADIUS_CITY)
   const [dateFilter,  setDateFilter]  = useState(ALL_DATES)
   const [priceFilter, setPriceFilter] = useState(ALL_PRICES)
   const [disciplineFilter, setDisciplineFilter] = useState(ALL_DISCIPLINES)
@@ -437,9 +547,10 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
   // ── Mobile : panneau filtres ──
   const [filtersOpen, setFiltersOpen] = useState(false)
   useBackNavigationState('agenda', {
-    search, typeFilter, cityFilter, dateFilter, priceFilter, disciplineFilter, sortValue, filtersOpen, activeSlug,
+    search, typeFilter, cityFilter, radiusFilter, dateFilter, priceFilter, disciplineFilter, sortValue, filtersOpen, activeSlug,
   }, saved => {
     setSearch(saved.search); setTypeFilter(saved.typeFilter); setCityFilter(saved.cityFilter)
+    setRadiusFilter(saved.radiusFilter ?? RADIUS_CITY)
     setDateFilter(saved.dateFilter); setPriceFilter(saved.priceFilter); setSortValue(saved.sortValue)
     setDisciplineFilter(saved.disciplineFilter ?? ALL_DISCIPLINES)
     setFiltersOpen(saved.filtersOpen); setActiveSlug(saved.activeSlug)
@@ -484,8 +595,35 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
       )
     }
 
-    if (typeFilter  !== ALL_TYPES)  r = r.filter((e) => e.category === typeFilter)
-    if (cityFilter  !== ALL_CITIES) r = r.filter((e) => e.city === cityFilter)
+    if (typeFilter !== ALL_TYPES) r = r.filter((e) => e.category === typeFilter)
+
+    // ── Filtre géographique (ville + rayon) ──────────────────────────────
+    if (cityFilter !== ALL_CITIES) {
+      if (radiusFilter === RADIUS_ALL) {
+        // "Toute la France" → pas de filtre géographique, on montre tout
+      } else if (radiusFilter === RADIUS_CITY || !(radiusFilter in RADIUS_KM)) {
+        // Correspondance exacte sur la ville
+        r = r.filter((e) => e.city === cityFilter)
+      } else {
+        // Filtre par rayon Haversine
+        const maxKm = RADIUS_KM[radiusFilter]
+        const centerCoords = CITY_COORDINATES[normalizeCity(cityFilter)]
+        if (!centerCoords) {
+          // Pas de coordonnées pour cette ville → fallback exact match
+          r = r.filter((e) => e.city === cityFilter)
+        } else {
+          r = r.filter((e) => {
+            const coords = resolveEventCoordinates(e.latitude, e.longitude, e.venue, e.city)
+            if (!coords) return e.city === cityFilter // fallback
+            return haversineDistance(
+              centerCoords.latitude, centerCoords.longitude,
+              coords.latitude, coords.longitude,
+            ) <= maxKm
+          })
+        }
+      }
+    }
+
     if (dateFilter  !== ALL_DATES)  r = r.filter((e) => eventMatchesDate(e, dateFilter))
     if (priceFilter !== ALL_PRICES) r = r.filter((e) => eventMatchesPrice(e, priceFilter))
     if (disciplineFilter !== ALL_DISCIPLINES) r = r.filter((e) => e.disciplines?.includes(disciplineFilter))
@@ -497,16 +635,17 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
     )
 
     return r
-  }, [agendaEvents, search, typeFilter, cityFilter, dateFilter, priceFilter, disciplineFilter, sortValue])
+  }, [agendaEvents, search, typeFilter, cityFilter, radiusFilter, dateFilter, priceFilter, disciplineFilter, sortValue])
 
-  const ongoingEvents  = useMemo(() => filtered.filter((e) => e.status === "En cours"), [filtered])
-  const upcomingEvents = useMemo(() => filtered.filter((e) => e.status !== "En cours"),  [filtered])
+  const lastChanceEvents = useMemo(() => filtered.filter(event => getUrgencyBadge(event) !== null), [filtered])
 
   // ── Filtres actifs ──
+  const radiusIsActive = cityFilter !== ALL_CITIES && radiusFilter !== RADIUS_CITY
   const hasActiveFilter =
     search.trim() !== "" ||
     typeFilter  !== ALL_TYPES  ||
     cityFilter  !== ALL_CITIES ||
+    radiusIsActive ||
     dateFilter  !== ALL_DATES  ||
     priceFilter !== ALL_PRICES ||
     disciplineFilter !== ALL_DISCIPLINES
@@ -515,6 +654,7 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
     search.trim() !== "",
     typeFilter  !== ALL_TYPES,
     cityFilter  !== ALL_CITIES,
+    radiusIsActive,
     dateFilter  !== ALL_DATES,
     priceFilter !== ALL_PRICES,
     disciplineFilter !== ALL_DISCIPLINES,
@@ -524,6 +664,7 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
     setSearch("")
     setTypeFilter(ALL_TYPES)
     setCityFilter(ALL_CITIES)
+    setRadiusFilter(RADIUS_CITY)
     setDateFilter(ALL_DATES)
     setPriceFilter(ALL_PRICES)
     setDisciplineFilter(ALL_DISCIPLINES)
@@ -532,7 +673,10 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
 
   const handleMap = useCallback((slug: string) => {
     setActiveSlug(slug)
-    document.getElementById("srt-map")?.scrollIntoView({ behavior: "smooth", block: "start" })
+    setMapRequested(true)
+    window.requestAnimationFrame(() => {
+      document.getElementById("agenda-map")?.scrollIntoView({ behavior: "smooth", block: "start" })
+    })
   }, [])
 
   const handleSelectEvent = useCallback((event: AgendaEvent) => {
@@ -549,7 +693,17 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
       else suggestions.push({ label: t("Toutes les dates"), action: () => setDateFilter(ALL_DATES) })
     }
     if (cityFilter !== ALL_CITIES) {
-      suggestions.push({ label: t("Toutes les villes"), action: () => setCityFilter(ALL_CITIES) })
+      if (radiusFilter === RADIUS_CITY) {
+        suggestions.push({ label: t("Toutes les villes"), action: () => { setCityFilter(ALL_CITIES); setRadiusFilter(RADIUS_CITY) } })
+      } else {
+        const idx = RADIUS_OPTIONS.indexOf(radiusFilter)
+        const next = RADIUS_OPTIONS[idx + 1]
+        if (next && next !== RADIUS_ALL) {
+          suggestions.push({ label: `${cityFilter} · ${next}`, action: () => setRadiusFilter(next) })
+        } else {
+          suggestions.push({ label: t("Toutes les villes"), action: () => { setCityFilter(ALL_CITIES); setRadiusFilter(RADIUS_CITY) } })
+        }
+      }
     }
     if (priceFilter !== ALL_PRICES && priceFilter !== "Gratuit") {
       suggestions.push({ label: t("Tous les tarifs"), action: () => setPriceFilter(ALL_PRICES) })
@@ -559,16 +713,21 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
 
   return (
     <>
-      {/* ════════════════════════════════════════════════
-          Barre de contrôles sticky
-      ════════════════════════════════════════════════ */}
-      <section className="srt-controls-section">
-        <div className="container">
+      <section className="srt-hero el-hero srt-hero--search" aria-label={t('Sortir - en-tête')}>
+        <div className="el-hero-img-wrap" aria-hidden="true">
+          <img src="/images/fondlaptop.png" alt="" className="el-hero-img srt-hero-img" />
+        </div>
+        <div className="el-hero-fade" aria-hidden="true" />
+        <div className="el-hero-left srt-hero-inner">
+          <span className="el-kicker">{t('Sortir')}</span>
+          <h1 className="el-hero-title">{t('Les rendez-vous danse à ne pas manquer.')}</h1>
+          <p className="el-hero-desc srt-hero-sub">{t('Spectacles, festivals, performances et événements partout en France.')}</p>
+          <div className="srt-hero-controls">
 
           {/* Recherche */}
           <div className="srt-search-row">
-            <label className="srt-search-wrap" htmlFor="srt-search">
-              <svg className="srt-search-icon" width="17" height="17" viewBox="0 0 18 18"
+            <label className="el-search-wrap" htmlFor="srt-search">
+              <svg className="el-search-icon" width="17" height="17" viewBox="0 0 18 18"
                    fill="none" aria-hidden="true">
                 <circle cx="7.5" cy="7.5" r="5.5" stroke="currentColor" strokeWidth="1.5" />
                 <path d="M13 13l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -576,7 +735,8 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
               <input
                 id="srt-search"
                 type="search"
-                className="srt-search"
+                className="el-search"
+                aria-label={t("Rechercher une ville, un spectacle, un festival…")}
                 placeholder={t("Rechercher une ville, un spectacle, un festival…")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -585,7 +745,7 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
               {search && (
                 <button
                   type="button"
-                  className="srt-search-clear"
+                  className="el-search-clear"
                   onClick={() => setSearch("")}
                   aria-label={t("Effacer la recherche")}
                 >
@@ -627,7 +787,10 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
             <div className="srt-filters">
               <Dropdown label={t("Type")}  value={typeFilter}  options={typeOptions}  onChange={setTypeFilter} translate={t} />
               <Dropdown label={t("Discipline")} value={disciplineFilter} options={disciplineOptions} onChange={setDisciplineFilter} />
-              <Dropdown label={t("Ville")} value={cityFilter}  options={cityOptions}  onChange={setCityFilter} />
+              <Dropdown label={t("Ville")} value={cityFilter}  options={cityOptions}  onChange={(v) => { setCityFilter(v); if (v === ALL_CITIES) setRadiusFilter(RADIUS_CITY) }} />
+              {cityFilter !== ALL_CITIES && (
+                <Dropdown label={t("Rayon")} value={radiusFilter} options={RADIUS_OPTIONS} onChange={setRadiusFilter} translate={t} />
+              )}
               <Dropdown label={t("Date")}  value={dateFilter}  options={DATE_OPTIONS} onChange={setDateFilter} translate={t} />
               <Dropdown label={t("Prix")}  value={priceFilter} options={PRICE_OPTIONS} onChange={setPriceFilter} translate={t} />
               {hasActiveFilter && (
@@ -663,8 +826,8 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
                 </button>
               )}
               {cityFilter !== ALL_CITIES && (
-                <button className="srt-chip" type="button" onClick={() => setCityFilter(ALL_CITIES)}>
-                  {cityFilter}
+                <button className="srt-chip" type="button" onClick={() => { setCityFilter(ALL_CITIES); setRadiusFilter(RADIUS_CITY) }}>
+                  {cityFilter}{radiusIsActive ? ` · ${radiusFilter}` : ""}
                   <span className="srt-chip-x" aria-hidden="true">×</span>
                 </button>
               )}
@@ -694,6 +857,7 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
             </div>
           )}
 
+          </div>
         </div>
       </section>
 
@@ -729,7 +893,7 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
               </div>
               <p className="srt-empty-title">{t('Aucun événement trouvé')}</p>
               <p className="srt-empty-desc">
-                {dateFilter !== ALL_DATES && dateFilter !== "En cours" && dateFilter !== "À venir"
+                {dateFilter !== ALL_DATES && dateFilter !== "À venir"
                   ? locale === 'en'
                     ? `No events match "${t(dateFilter)}" with these criteria.`
                     : `Aucun événement ne correspond à « ${dateFilter} » avec ces critères.`
@@ -769,17 +933,13 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
           )}
 
           <EventCluster
-            title={t('En cours')}
-            subtitle={t('Des rendez-vous déjà ouverts au public ou actuellement actifs.')}
-            events={ongoingEvents}
-            onMap={handleMap}
-            t={t}
-          />
-
-          <EventCluster
-            title={t('À venir')}
-            subtitle={t('Les événements à ne pas manquer prochainement.')}
-            events={upcomingEvents}
+            title={t('Programmation')}
+            subtitle={
+              lastChanceEvents.length > 0
+                ? t(`${lastChanceEvents.length} spectacle${lastChanceEvents.length > 1 ? 's' : ''} en dernières représentations`)
+                : t('Spectacles, festivals et rendez-vous chorégraphiques sélectionnés.')
+            }
+            events={filtered}
             onMap={handleMap}
             t={t}
           />
@@ -788,10 +948,12 @@ export default function AgendaExperience({ events }: AgendaExperienceProps) {
       </section>
 
       {/* ════ Carte ════ */}
-      <AgendaMap
+      <DeferredAgendaMap
         events={filtered}
         activeSlug={activeSlug}
         onSelectEvent={handleSelectEvent}
+        loadNow={mapRequested}
+        t={t}
       />
     </>
   )
