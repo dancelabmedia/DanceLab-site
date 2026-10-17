@@ -67,6 +67,11 @@ export const culturalVenuesIdf = [
   ['Musée du quai Branly', 'Paris', 'https://www.quaibranly.fr/fr/agenda', ''],
   ['Musée d’Orsay', 'Paris', 'https://www.musee-orsay.fr/fr/agenda', ''],
   ['Palais de Tokyo', 'Paris', 'https://palaisdetokyo.com/', ''],
-  ['Festival d’Automne', 'Paris', 'https://www.festival-automne.com/', 'Festival d Automne'],
-  ['Rencontres chorégraphiques internationales de Seine-Saint-Denis', 'Seine-Saint-Denis', 'https://www.rencontreschoregraphiques.com/', ''],
+  [‘Festival d’Automne’, ‘Paris’, ‘https://www.festival-automne.com/’, ‘Festival d Automne’],
+  [‘Rencontres chorégraphiques internationales de Seine-Saint-Denis’, ‘Seine-Saint-Denis’, ‘https://www.rencontreschoregraphiques.com/’, ‘’],
+  // ─── Nouveaux lieux découverts lors de l’audit du 2026-10-17 ───────────────
+  [‘Folies Bergère’, ‘Paris’, ‘https://foliesbergere.com/’, ‘Folies-Bergere|Les Folies Bergere’],
+  [‘Bobino’, ‘Paris’, ‘https://bobino.fr/’, ‘Théâtre Bobino’],
+  [‘T2G — Théâtre de Gennevilliers’, ‘Gennevilliers’, ‘https://theatredegennevilliers.fr/’, ‘Theatre de Gennevilliers|T2G’],
+  [‘Adidas Arena’, ‘Paris’, ‘https://www.adidas-arena.com/’, ‘Arena Porte de la Chapelle|Porte de la Chapelle Arena’],
 ] as const

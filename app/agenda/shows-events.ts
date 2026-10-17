@@ -577,4 +577,164 @@ export const showsEvents: AgendaEvent[] = [
       { name: "Manon Perrin", role: "Artiste principale", character: "Young Anna (alternance)" },
     ],
   },
+
+  // ─────────────────────────────────────────────────────────────────
+  // Benjamin Millepied — Cycle aux Folies Bergère, novembre 2026
+  // 3 créations chorégraphiques distinctes au même lieu
+  // Source : foliesbergere.com / jds.fr / arts-in-the-city.com / fnacspectacles.com
+  // ─────────────────────────────────────────────────────────────────
+  {
+    slug: "millepied-barbara-folies-bergere-nov-2026",
+    title: "Barbara, du bout des lèvres",
+    category: "Danse contemporaine",
+    dates: "9 – 22 novembre 2026",
+    startDate: "2026-11-09",
+    endDate: "2026-11-22",
+    venue: "Les Folies Bergère",
+    address: "32 rue de Richer",
+    city: "Paris",
+    postalCode: "75009",
+    latitude: 48.8739,
+    longitude: 2.3464,
+    price: "Voir billetterie",
+    time: "20h30",
+    description:
+      "Benjamin Millepied rend hommage à Barbara dans cette première des trois créations de son cycle aux Folies Bergère. Le répertoire de la chanteuse est incarné par des interprètes de plusieurs générations dans un espace scénique dépouillé et lumineux. La musique de Barbara se transforme en geste, en corps, en présence.",
+    officialUrl: "https://foliesbergere.com/",
+    ticketUrl: "https://www.fnacspectacles.com/event/benjamin-millepied-barbara-du-bout-des-levres-les-folies-bergere-20981278/",
+    source: "Folies Bergère / Fnac Spectacles",
+    sourceLabel: "Folies Bergère",
+    lastVerifiedAt: "2026-10-17",
+    status: "En cours",
+    disciplines: ["Danse contemporaine"],
+    cast: [
+      { name: "Benjamin Millepied", role: "Chorégraphie" },
+    ],
+  },
+
+  {
+    slug: "millepied-move-me-once-more-folies-bergere-nov-2026",
+    title: "Move Me Once More — Le Dernier Cabaret",
+    category: "Danse contemporaine",
+    dates: "14 – 29 novembre 2026",
+    startDate: "2026-11-14",
+    endDate: "2026-11-29",
+    venue: "Les Folies Bergère",
+    address: "32 rue de Richer",
+    city: "Paris",
+    postalCode: "75009",
+    latitude: 48.8739,
+    longitude: 2.3464,
+    price: "Voir billetterie",
+    time: "21h00",
+    description:
+      "Deuxième volet du cycle Benjamin Millepied aux Folies Bergère, co-signé avec la cinéaste Léa Mysius. Un corps découvert après une tempête revient à la vie par la danse, la voix et le chant, dans une forme cabaret qui habite le lieu historique de la rue de Richer.",
+    officialUrl: "https://foliesbergere.com/",
+    ticketUrl: "https://www.fnacspectacles.com/event/benjamin-millepied-move-me-once-more-le-dernier-cabaret-les-folies-bergere-20977676/",
+    source: "Folies Bergère / Fnac Spectacles",
+    sourceLabel: "Folies Bergère",
+    lastVerifiedAt: "2026-10-17",
+    status: "À venir",
+    disciplines: ["Danse contemporaine", "Chant"],
+    cast: [
+      { name: "Benjamin Millepied", role: "Chorégraphie" },
+      { name: "Léa Mysius", role: "Co-création" },
+    ],
+  },
+
+  {
+    slug: "millepied-summerland-folies-bergere-nov-2026",
+    title: "Summerland",
+    category: "Danse contemporaine",
+    dates: "24 – 29 novembre 2026",
+    startDate: "2026-11-24",
+    endDate: "2026-11-29",
+    venue: "Les Folies Bergère",
+    address: "32 rue de Richer",
+    city: "Paris",
+    postalCode: "75009",
+    latitude: 48.8739,
+    longitude: 2.3464,
+    price: "Voir billetterie",
+    time: "Voir billetterie",
+    description:
+      "Troisième création de Benjamin Millepied dans son cycle aux Folies Bergère. Summerland évoque une petite ville californienne nimbée de lumière et de souvenirs, métaphore d'un lieu réel et imaginaire à la fois — paysage sensoriel et promesse d'horizon sensuel et lumineux.",
+    officialUrl: "https://foliesbergere.com/",
+    ticketUrl: "https://www.jds.fr/paris/spectacles/danse/summerland-avec-november-ultra-1257198_A",
+    source: "Folies Bergère / JDS",
+    sourceLabel: "Folies Bergère",
+    lastVerifiedAt: "2026-10-17",
+    status: "À venir",
+    disciplines: ["Danse contemporaine"],
+    cast: [
+      { name: "Benjamin Millepied", role: "Chorégraphie" },
+    ],
+  },
+
+  // ─────────────────────────────────────────────────────────────────
+  // A4 (Comme la Feuille) — Bobino, nov. 2026 – jan. 2027
+  // Source : bobino.fr / arts-in-the-city.com / jds.fr
+  // ─────────────────────────────────────────────────────────────────
+  {
+    slug: "a4-comme-la-feuille-bobino-2026",
+    title: "A4 (Comme la Feuille)",
+    category: "Danse",
+    dates: "26 novembre 2026 – 24 janvier 2027",
+    startDate: "2026-11-26",
+    endDate: "2027-01-24",
+    venue: "Bobino",
+    address: "20 rue de la Gaîté",
+    city: "Paris",
+    postalCode: "75014",
+    latitude: 48.8388,
+    longitude: 2.3263,
+    price: "Voir billetterie",
+    time: "Voir billetterie",
+    description:
+      "Quatre danseurs aux styles radicalement différents — hip-hop, contemporain, acrobatique et comique — partagent la scène de Bobino dans une création de Philippe Lafeuille. Les Quatre Saisons de Vivaldi sont leur terrain de jeu. Danse, théâtre, cirque et poésie se mêlent dans un spectacle festif accessible à tous.",
+    officialUrl: "https://bobino.fr/event-pro/a4-comme-la-feuille/",
+    ticketUrl: "https://bobino.fr/event-pro/a4-comme-la-feuille/",
+    source: "Bobino (officiel)",
+    sourceLabel: "Bobino",
+    lastVerifiedAt: "2026-10-17",
+    status: "À venir",
+    disciplines: ["Danse hip-hop", "Danse contemporaine", "Cirque"],
+    cast: [
+      { name: "Philippe Lafeuille", role: "Chorégraphie et mise en scène" },
+    ],
+  },
+
+  // ─────────────────────────────────────────────────────────────────
+  // Breaking & Hip-Hop Freestyle World Championships — Adidas Arena
+  // Source : sortiraparis.com / paris.fr / parisjetaime.com
+  // ─────────────────────────────────────────────────────────────────
+  {
+    slug: "breaking-hiphop-world-championships-paris-dec-2026",
+    title: "Breaking & Hip-Hop Freestyle World Championships",
+    category: "Battle / Compétition",
+    dates: "4 – 6 décembre 2026",
+    startDate: "2026-12-04",
+    endDate: "2026-12-06",
+    venue: "Adidas Arena",
+    address: "6 rue Paul Meurice",
+    city: "Paris",
+    postalCode: "75018",
+    latitude: 48.8978,
+    longitude: 2.3597,
+    price: "Voir billetterie",
+    time: "Voir programme officiel",
+    description:
+      "Première édition mondiale unifiée des championnats du monde de Breaking et de Hip-Hop Freestyle. Les meilleurs B-Boys, B-Girls et danseurs Hip-Hop Freestyle du monde entier se retrouvent à Paris pour décrocher les titres mondiaux dans une compétition historique à l'Adidas Arena (ancienne Arena Porte de la Chapelle).",
+    officialUrl: "https://www.paris.fr/evenements/world-championships-breaking-hip-hop-freestyle-123883",
+    ticketUrl: "https://parisjetaime.com/eng/event/breaking-hip-hop-freestyle-world-championships-paris-e2262",
+    source: "Ville de Paris / Paris Je T'aime",
+    sourceLabel: "Adidas Arena",
+    lastVerifiedAt: "2026-10-17",
+    status: "À venir",
+    disciplines: ["Breaking", "Hip-hop", "Battle"],
+    additionalInfo: [
+      { label: "Édition", value: "1ère édition — première unification mondiale Breaking + Hip-Hop Freestyle" },
+      { label: "Accès", value: "Porte de la Chapelle (ligne 12)" },
+    ],
+  },
 ]
