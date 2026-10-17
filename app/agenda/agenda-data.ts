@@ -623,16 +623,21 @@ export function getUrgencyBadge(
 }
 
 export function formatAgendaDate(date: string) {
+  // "9999-12-31" est une sentinelle Notion pour "date inconnue" — ne pas afficher
+  if (!date || date === "9999-12-31") return ""
   const [year, month, day] = date.split("-")
-
   if (!year || !month || !day) return ""
-
   return `${day}.${month}.${year.slice(-2)}`
 }
 
 export function formatAgendaDateRange(event: AgendaEvent) {
+  // Spectacles permanents ou récurrents : afficher le texte "dates" (ex: "Spectacle permanent")
+  // plutôt qu'une date de début fictive (ex: "2024-01-01" → "01.01.24")
+  if (event.isRecurring) return event.dates || "Spectacle permanent"
+  // Événements sans date connue (sentinelle Notion "9999-12-31") : afficher le champ dates ou rien
+  if (!event.startDate || event.startDate === "9999-12-31") return event.dates || "Dates à confirmer"
   const start = formatAgendaDate(event.startDate)
-  if (!start) return ""
+  if (!start) return event.dates || ""
   if (event.endDate && event.endDate !== event.startDate) {
     const end = formatAgendaDate(event.endDate)
     if (end) return `${start} → ${end}`

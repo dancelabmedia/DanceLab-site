@@ -7,8 +7,13 @@
  *
  * Politique de mise à jour :
  *   - isRecurring: true → jamais retiré par la logique "événement passé"
- *   - startDate = date de début de la production en cours (ou date de création
- *     de la fiche si non connue)
+ *   - startDate = date de début de la production en cours (ou 1er janvier de
+ *     l'année courante si non connue). NE PAS mettre "2024-01-01" : cette valeur
+ *     s'affichait en clair sur les cartes comme "01.01.24" (fausse date).
+ *     Depuis le fix 2026-10-17, formatAgendaDateRange retourne dates ("Spectacle
+ *     permanent") pour isRecurring:true, donc startDate n'est plus visible
+ *     directement, mais il influence l'ordre de tri : préférer l'année en cours.
+ *   - dates = texte libre affiché sur la carte (ex: "Spectacle permanent")
  *   - endDate absent pour les shows sans date de fin annoncée
  *   - Toutes les informations proviennent exclusivement des sites officiels
  */
@@ -26,7 +31,7 @@ export const cabaretEvents: AgendaEvent[] = [
     title: "Paris s'éveille - Alcazar",
     category: "Cabaret & dîner-spectacle",
     dates: "Spectacle permanent",
-    startDate: "2024-01-01",
+    startDate: "2026-01-01",  // année courante — non affiché (isRecurring: true → affiche dates)
     venue: "Alcazar",
     address: "62 rue Mazarine",
     city: "Paris",
@@ -64,7 +69,7 @@ export const cabaretEvents: AgendaEvent[] = [
     title: "Paris, je t'aime - La Nouvelle Ève",
     category: "Cabaret & dîner-spectacle",
     dates: "Spectacle permanent",
-    startDate: "2024-01-01",
+    startDate: "2026-01-01",  // année courante — non affiché (isRecurring: true → affiche dates)
     venue: "La Nouvelle Ève",
     address: "25 rue Pierre Fontaine",
     city: "Paris",
@@ -105,7 +110,7 @@ export const cabaretEvents: AgendaEvent[] = [
     title: "Les Nuits Caraïbes - Oh! César Paris",
     category: "Cabaret & dîner-spectacle",
     dates: "Spectacle permanent",
-    startDate: "2024-01-01",
+    startDate: "2026-01-01",  // année courante — non affiché (isRecurring: true → affiche dates)
     venue: "Oh! César Paris",
     address: "23 avenue du Maine",
     city: "Paris",

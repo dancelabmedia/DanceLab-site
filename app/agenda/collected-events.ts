@@ -90,10 +90,18 @@ function optionalInfo(label: string, value?: string) {
 }
 
 function normalizeCollectedEvent(item: CollectedEvent, asOf: string): AgendaEvent | null {
+  // Rejeter les événements sans titre — ils ne peuvent pas être affichés
+  const title = clean(item.nom)
+  if (!title) return null
+
   const startDate = isoDate(item.date_debut)
   if (!startDate) return null
   const endDate = isoDate(item.date_fin)
   if ((endDate ?? startDate) < asOf) return null
+
+  // Rejeter les événements avec date de début-placeholder (1er janvier d'une année passée)
+  // qui n'ont pas de date de fin connue — signe d'une donnée de collecte invalide
+  if (startDate.endsWith("-01-01") && startDate < asOf && !endDate) return null
 
   const disciplines = splitValues(item.disciplines)
   const officialUrl = clean(item.site_officiel) ?? item.url_source
@@ -120,9 +128,9 @@ function normalizeCollectedEvent(item: CollectedEvent, asOf: string): AgendaEven
   ].filter((entry): entry is { label: string; value: string } => Boolean(entry))
 
   return {
-    slug: `${item.id.toLowerCase()}-${slugify(item.nom)}`,
+    slug: `${item.id.toLowerCase()}-${slugify(title)}`,
     sourceIds: [`${item.source}:${item.id}`],
-    title: item.nom,
+    title,
     description: item.resume,
     image: resolveAgendaImage(item.id, clean(item.image_url)),
     dates: clean(item.horaires_texte) ?? "Date renseignée",
